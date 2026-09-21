@@ -64,7 +64,16 @@ export const contactSchema = antiSpamSchema.extend({
   message,
   locale: localeField,
 });
-export type ContactInput = z.infer<typeof contactSchema>;
+/**
+ * Two types per form, because they genuinely differ.
+ *
+ * `*Input` is what a form holds *before* Zod applies defaults and coercion —
+ * which is what react-hook-form is generic over. `*Values` is what the action
+ * receives after parsing. Conflating them is what makes the resolver types
+ * refuse to line up.
+ */
+export type ContactInput = z.input<typeof contactSchema>;
+export type ContactValues = z.output<typeof contactSchema>;
 
 export const membershipSchema = antiSpamSchema.extend({
   name,
@@ -74,7 +83,8 @@ export const membershipSchema = antiSpamSchema.extend({
   message: message.or(z.literal('')).optional().default(''),
   locale: localeField,
 });
-export type MembershipInput = z.infer<typeof membershipSchema>;
+export type MembershipInput = z.input<typeof membershipSchema>;
+export type MembershipValues = z.output<typeof membershipSchema>;
 
 export const donationSchema = antiSpamSchema.extend({
   name,
@@ -84,7 +94,8 @@ export const donationSchema = antiSpamSchema.extend({
   message: message.or(z.literal('')).optional().default(''),
   locale: localeField,
 });
-export type DonationInput = z.infer<typeof donationSchema>;
+export type DonationInput = z.input<typeof donationSchema>;
+export type DonationValues = z.output<typeof donationSchema>;
 
 export const volunteerSchema = antiSpamSchema.extend({
   name,
@@ -93,7 +104,8 @@ export const volunteerSchema = antiSpamSchema.extend({
   message,
   locale: localeField,
 });
-export type VolunteerInput = z.infer<typeof volunteerSchema>;
+export type VolunteerInput = z.input<typeof volunteerSchema>;
+export type VolunteerValues = z.output<typeof volunteerSchema>;
 
 export const searchSchema = z.object({
   query: z.string().trim().min(2).max(120),

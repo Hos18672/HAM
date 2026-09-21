@@ -344,7 +344,7 @@ export const BLOCKS: {
       text: 'انجمن ما در سال‌های اخیر از یک حلقهٔ کوچک خانوادگی به جایی رسیده است که هفته‌ای چند بار در آن برنامه برگزار می‌شود. آغاز کار ساده بود: چند خانواده که می‌خواستند بچه‌هایشان فارسی را از یاد نبرند و در عین حال در وین احساس غریبگی نکنند. نام «خانهٔ همهٔ انسان‌ها» را از همان روزها با خود داریم، چون از ابتدا روشن بود که این در فقط به روی گروه خودمان باز نیست.',
     },
     de: {
-      text: 'Unser Verein ist in den letzten Jahren aus einem kleinen Familienkreis zu einem Ort geworden, an dem mehrmals wöchentlich etwas stattfindet. Der Anfang war einfach: ein paar Familien, die wollten, dass ihre Kinder Persisch nicht verlernen und sich in Wien trotzdem nicht fremd fühlen. Den Namen „Haus aller Menschen" tragen wir seit damals, weil von Anfang an klar war, dass diese Tür nicht nur der eigenen Gruppe offensteht.',
+      text: 'Unser Verein ist in den letzten Jahren aus einem kleinen Familienkreis zu einem Ort geworden, an dem mehrmals wöchentlich etwas stattfindet. Der Anfang war einfach: ein paar Familien, die wollten, dass ihre Kinder Persisch nicht verlernen und sich in Wien trotzdem nicht fremd fühlen. Den Namen „Haus aller Menschen“ tragen wir seit damals, weil von Anfang an klar war, dass diese Tür nicht nur der eigenen Gruppe offensteht.',
     },
   },
   {
@@ -1019,7 +1019,7 @@ export const DUAS: {
     },
     de: {
       title: 'Duʿa as-Simat',
-      summary: 'Das „Schabur"-Gebet: die Anrufung Gottes bei den Zeichen, die er seinen Propheten offenbarte.',
+      summary: 'Das „Schabur“-Gebet: die Anrufung Gottes bei den Zeichen, die er seinen Propheten offenbarte.',
       whenToRead: 'In der letzten Stunde des Freitags, vor Sonnenuntergang',
       source: 'Misbah al-Mutahaddschid',
     },

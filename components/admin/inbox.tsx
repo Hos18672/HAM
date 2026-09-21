@@ -81,7 +81,15 @@ export function Inbox({ submissions }: { submissions: SubmissionRow[] }) {
       {visible.length === 0 ? (
         <p style={{ color: 'var(--color-ink-muted)' }}>Keine Nachrichten in dieser Ansicht.</p>
       ) : (
-        <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'grid', gap: 'var(--space-2)' }}>
+        <ul
+          style={{
+            listStyle: 'none',
+            margin: 0,
+            padding: 0,
+            display: 'grid',
+            gap: 'var(--space-2)',
+          }}
+        >
           {visible.map((row) => {
             const isOpen = expanded === row.id;
             return (
@@ -91,7 +99,8 @@ export function Inbox({ submissions }: { submissions: SubmissionRow[] }) {
                   style={{
                     gap: 'var(--space-2)',
                     borderInlineStartWidth: row.status === 'new' ? 'var(--rule-thick)' : undefined,
-                    borderInlineStartColor: row.status === 'new' ? 'var(--color-accent)' : undefined,
+                    borderInlineStartColor:
+                      row.status === 'new' ? 'var(--color-accent)' : undefined,
                   }}
                 >
                   <button
@@ -114,7 +123,10 @@ export function Inbox({ submissions }: { submissions: SubmissionRow[] }) {
                     <span className="text-xs" style={{ color: 'var(--color-ink-faint)' }} dir="ltr">
                       {row.email}
                     </span>
-                    <span className="text-xs tabular ms-auto" style={{ color: 'var(--color-ink-faint)' }}>
+                    <span
+                      className="tabular ms-auto text-xs"
+                      style={{ color: 'var(--color-ink-faint)' }}
+                    >
                       {new Intl.DateTimeFormat('de-AT', {
                         day: '2-digit',
                         month: '2-digit',

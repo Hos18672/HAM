@@ -99,6 +99,8 @@ export function courseJsonLd(course: Course, locale: Locale) {
       url: `${siteUrl()}/${locale}`,
     },
     ...(course.level ? { educationalLevel: course.level } : {}),
-    ...(course.targetGroup ? { audience: { '@type': 'Audience', audienceType: course.targetGroup } } : {}),
+    ...(course.targetGroup
+      ? { audience: { '@type': 'Audience', audienceType: course.targetGroup } }
+      : {}),
   };
 }

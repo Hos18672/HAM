@@ -80,16 +80,14 @@ export const AREAS: Record<string, AreaSpec> = {
     key: 'offers',
     entity: 'offer',
     title: 'Angebote',
-    description: 'Die Bereiche, in denen der Verein arbeitet. Sie erscheinen auf der Startseite und unter „Angebote“.',
+    description:
+      'Die Bereiche, in denen der Verein arbeitet. Sie erscheinen auf der Startseite und unter „Angebote“.',
     titleField: 'title',
     fields: [
       { name: 'title', label: 'Titel' },
       { name: 'body', label: 'Beschreibung', multiline: true, rows: 3 },
     ],
-    baseFields: [
-      { name: 'icon', label: 'Symbol', type: 'icon' },
-      PUBLISHED,
-    ],
+    baseFields: [{ name: 'icon', label: 'Symbol', type: 'icon' }, PUBLISHED],
     addable: true,
     sortable: true,
   },
@@ -120,7 +118,12 @@ export const AREAS: Record<string, AreaSpec> = {
           { value: 'art', label: 'Kunst' },
         ],
       },
-      { name: 'level', label: 'Niveau', type: 'text', hint: 'Zum Beispiel A1, B1 — oder leer lassen.' },
+      {
+        name: 'level',
+        label: 'Niveau',
+        type: 'text',
+        hint: 'Zum Beispiel A1, B1 — oder leer lassen.',
+      },
       { name: 'slug', label: 'Kurzname (URL)', type: 'text' },
       PUBLISHED,
     ],

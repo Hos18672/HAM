@@ -28,10 +28,7 @@ export default async function CoursesPage({ params }: { params: Promise<{ locale
   setRequestLocale(locale);
   const typed = locale as Locale;
 
-  const [header, courses] = await Promise.all([
-    getPageHeader('courses', typed),
-    getCourses(typed),
-  ]);
+  const [header, courses] = await Promise.all([getPageHeader('courses', typed), getCourses(typed)]);
   if (!header) notFound();
 
   const t = await getTranslations({ locale, namespace: 'courses' });

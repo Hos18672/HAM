@@ -101,7 +101,8 @@ function fieldErrors(issues: { path: PropertyKey[]; message: string }[]): Record
 
 export async function submitContact(input: unknown): Promise<SubmitResult> {
   const parsed = contactSchema.safeParse(input);
-  if (!parsed.success) return { ok: false, error: 'form.error', fields: fieldErrors(parsed.error.issues) };
+  if (!parsed.success)
+    return { ok: false, error: 'form.error', fields: fieldErrors(parsed.error.issues) };
 
   const { website, elapsed, ...data } = parsed.data;
   if (looksAutomated(website, elapsed)) return SUCCESS;
@@ -114,7 +115,8 @@ export async function submitContact(input: unknown): Promise<SubmitResult> {
 
 export async function submitMembership(input: unknown): Promise<SubmitResult> {
   const parsed = membershipSchema.safeParse(input);
-  if (!parsed.success) return { ok: false, error: 'form.error', fields: fieldErrors(parsed.error.issues) };
+  if (!parsed.success)
+    return { ok: false, error: 'form.error', fields: fieldErrors(parsed.error.issues) };
 
   const { website, elapsed, tier, ...rest } = parsed.data;
   if (looksAutomated(website, elapsed)) return SUCCESS;
@@ -127,7 +129,8 @@ export async function submitMembership(input: unknown): Promise<SubmitResult> {
 
 export async function submitDonation(input: unknown): Promise<SubmitResult> {
   const parsed = donationSchema.safeParse(input);
-  if (!parsed.success) return { ok: false, error: 'form.error', fields: fieldErrors(parsed.error.issues) };
+  if (!parsed.success)
+    return { ok: false, error: 'form.error', fields: fieldErrors(parsed.error.issues) };
 
   const { website, elapsed, purpose, ...rest } = parsed.data;
   if (looksAutomated(website, elapsed)) return SUCCESS;
@@ -140,7 +143,8 @@ export async function submitDonation(input: unknown): Promise<SubmitResult> {
 
 export async function submitVolunteer(input: unknown): Promise<SubmitResult> {
   const parsed = volunteerSchema.safeParse(input);
-  if (!parsed.success) return { ok: false, error: 'form.error', fields: fieldErrors(parsed.error.issues) };
+  if (!parsed.success)
+    return { ok: false, error: 'form.error', fields: fieldErrors(parsed.error.issues) };
 
   const { website, elapsed, ...data } = parsed.data;
   if (looksAutomated(website, elapsed)) return SUCCESS;

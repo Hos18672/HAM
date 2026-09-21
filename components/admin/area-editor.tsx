@@ -2,14 +2,7 @@
 
 import { useCallback, useMemo, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
-import {
-  CaretDown,
-  Plus,
-  Copy,
-  Trash,
-  ArrowUp,
-  ArrowDown,
-} from '@phosphor-icons/react/dist/ssr';
+import { CaretDown, Plus, Copy, Trash, ArrowUp, ArrowDown } from '@phosphor-icons/react/dist/ssr';
 import { updateField, updateBaseField, listOperation } from '@/app/actions/content';
 import type { AreaSpec } from '@/lib/admin-areas';
 import type { EditableRow } from '@/lib/db/queries/admin';
@@ -135,7 +128,10 @@ export function AreaEditor({ area, rows }: { area: AreaSpec; rows: EditableRow[]
     } else {
       // The successful writes stand; only the failures are still pending, so
       // the editor can retry without redoing the rest.
-      toast.show(`${failures} von ${entries.length} Änderungen konnten nicht gespeichert werden.`, 'error');
+      toast.show(
+        `${failures} von ${entries.length} Änderungen konnten nicht gespeichert werden.`,
+        'error',
+      );
     }
   }
 
@@ -192,7 +188,9 @@ export function AreaEditor({ area, rows }: { area: AreaSpec; rows: EditableRow[]
         </p>
       ) : null}
 
-      <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'grid', gap: 'var(--space-3)' }}>
+      <ul
+        style={{ listStyle: 'none', margin: 0, padding: 0, display: 'grid', gap: 'var(--space-3)' }}
+      >
         {rows.map((row, index) => {
           const isCollapsed = collapsed[row.id] ?? false;
           const heading =
@@ -326,7 +324,10 @@ export function AreaEditor({ area, rows }: { area: AreaSpec; rows: EditableRow[]
                           if (spec.type === 'boolean') {
                             return (
                               <div key={spec.name} className="field">
-                                <label className="flex items-center gap-2" style={{ cursor: 'pointer' }}>
+                                <label
+                                  className="flex items-center gap-2"
+                                  style={{ cursor: 'pointer' }}
+                                >
                                   <input
                                     type="checkbox"
                                     checked={Boolean(value)}

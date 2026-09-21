@@ -17,13 +17,7 @@ interface UserRow {
   createdAt: Date;
 }
 
-export function UserManager({
-  users,
-  currentUserId,
-}: {
-  users: UserRow[];
-  currentUserId: string;
-}) {
+export function UserManager({ users, currentUserId }: { users: UserRow[]; currentUserId: string }) {
   const router = useRouter();
   const toast = useToast();
   const [pending, startTransition] = useTransition();
@@ -34,7 +28,10 @@ export function UserManager({
   function run(promise: Promise<{ ok: boolean; error?: string }>, success: string) {
     startTransition(async () => {
       const result = await promise;
-      toast.show(result.ok ? success : (result.error ?? 'Das hat nicht geklappt.'), result.ok ? 'success' : 'error');
+      toast.show(
+        result.ok ? success : (result.error ?? 'Das hat nicht geklappt.'),
+        result.ok ? 'success' : 'error',
+      );
       if (result.ok) {
         setShowInvite(false);
         setResetting(null);
@@ -92,7 +89,9 @@ export function UserManager({
             required
             hint="Mindestens 12 Zeichen. Ein langer Satz ist sicherer und leichter zu merken als ein kurzes Kauderwelsch."
           >
-            {(props) => <Input {...props} name="password" type="text" autoComplete="new-password" />}
+            {(props) => (
+              <Input {...props} name="password" type="text" autoComplete="new-password" />
+            )}
           </Field>
 
           <div className="flex gap-2">
@@ -182,12 +181,22 @@ export function UserManager({
                       <Button type="submit" size="sm" loading={pending}>
                         Setzen
                       </Button>
-                      <Button type="button" variant="ghost" size="sm" onClick={() => setResetting(null)}>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setResetting(null)}
+                      >
                         Abbrechen
                       </Button>
                     </form>
                   ) : (
-                    <Button variant="ghost" size="sm" onClick={() => setResetting(user.id)} disabled={pending}>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setResetting(user.id)}
+                      disabled={pending}
+                    >
                       Passwort
                     </Button>
                   )}
@@ -205,7 +214,12 @@ export function UserManager({
                       Wirklich löschen?
                     </Button>
                   ) : (
-                    <Button variant="ghost" size="sm" onClick={() => setConfirming(user.id)} disabled={pending}>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setConfirming(user.id)}
+                      disabled={pending}
+                    >
                       Löschen
                     </Button>
                   )}

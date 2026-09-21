@@ -90,7 +90,16 @@ export default async function AboutPage({ params }: { params: Promise<{ locale: 
       <section className="section" data-rise>
         <div className="page">
           <SectionHead title={t('values')} />
-          <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'grid', gap: 'var(--space-4)', maxInlineSize: 'var(--measure)' }}>
+          <ul
+            style={{
+              listStyle: 'none',
+              margin: 0,
+              padding: 0,
+              display: 'grid',
+              gap: 'var(--space-4)',
+              maxInlineSize: 'var(--measure)',
+            }}
+          >
             {values.map((item) => (
               <li key={item.id} data-rise>
                 <EditableEntry entity="values" id={item.id} isLast={values.length <= 1}>
@@ -134,7 +143,10 @@ export default async function AboutPage({ params }: { params: Promise<{ locale: 
             <tbody>
               {week.map((row) => (
                 <tr key={row.id}>
-                  <th scope="row" style={{ borderBlockEnd: 'var(--rule-hair) solid var(--color-rule)' }}>
+                  <th
+                    scope="row"
+                    style={{ borderBlockEnd: 'var(--rule-hair) solid var(--color-rule)' }}
+                  >
                     <EditableText
                       entity="week"
                       id={row.id}

@@ -56,11 +56,16 @@ export function ContactForm({ locale, defaultTopic }: { locale: Locale; defaultT
   }, []);
 
   /** Resolve a schema error key through the catalogue, or show it verbatim. */
-  const message = (key?: string) => (key && t.has(key.replace('form.', '')) ? t(key.replace('form.', '')) : key);
+  const message = (key?: string) =>
+    key && t.has(key.replace('form.', '')) ? t(key.replace('form.', '')) : key;
 
   if (state === 'sent') {
     return (
-      <div role="status" className="flex items-start gap-3" style={{ maxInlineSize: 'var(--measure)' }}>
+      <div
+        role="status"
+        className="flex items-start gap-3"
+        style={{ maxInlineSize: 'var(--measure)' }}
+      >
         <CheckCircle
           size={28}
           weight="duotone"
@@ -116,7 +121,13 @@ export function ContactForm({ locale, defaultTopic }: { locale: Locale; defaultT
       {/* Honeypot: off-screen and out of the tab order, but a bot fills it in. */}
       <div aria-hidden="true" className="visually-hidden">
         <label htmlFor="contact-website">Website</label>
-        <input id="contact-website" type="text" tabIndex={-1} autoComplete="off" {...register('website')} />
+        <input
+          id="contact-website"
+          type="text"
+          tabIndex={-1}
+          autoComplete="off"
+          {...register('website')}
+        />
       </div>
 
       <input type="hidden" {...register('locale')} value={locale} />
@@ -131,8 +142,14 @@ export function ContactForm({ locale, defaultTopic }: { locale: Locale; defaultT
         )}
       </Field>
 
-      <Field label={t('phone')} optionalLabel={t('optional')} error={message(errors.phone?.message)}>
-        {(props) => <Input type="tel" autoComplete="tel" dir="ltr" {...props} {...register('phone')} />}
+      <Field
+        label={t('phone')}
+        optionalLabel={t('optional')}
+        error={message(errors.phone?.message)}
+      >
+        {(props) => (
+          <Input type="tel" autoComplete="tel" dir="ltr" {...props} {...register('phone')} />
+        )}
       </Field>
 
       <Field label={tContact('topic')} required error={message(errors.topic?.message)}>

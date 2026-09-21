@@ -56,7 +56,10 @@ export function SettingsForm({ settings }: { settings: SiteSettings }) {
         )}
       </Field>
 
-      <Field label="Standarddarstellung" hint="Hell oder dunkel, solange niemand selbst umschaltet.">
+      <Field
+        label="Standarddarstellung"
+        hint="Hell oder dunkel, solange niemand selbst umschaltet."
+      >
         {(props) => (
           <Select
             {...props}
@@ -130,7 +133,10 @@ export function SettingsForm({ settings }: { settings: SiteSettings }) {
         )}
       </Field>
 
-      <Field label="Link zur Karte" hint="Eine vollständige Adresse, zum Beispiel zu OpenStreetMap.">
+      <Field
+        label="Link zur Karte"
+        hint="Eine vollständige Adresse, zum Beispiel zu OpenStreetMap."
+      >
         {(props) => (
           <Input
             {...props}

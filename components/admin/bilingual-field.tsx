@@ -64,7 +64,8 @@ export function BilingualField({
         style={{
           display: 'grid',
           gap: 'var(--space-3)',
-          gridTemplateColumns: view === 'both' ? 'repeat(auto-fit, minmax(min(16rem, 100%), 1fr))' : '1fr',
+          gridTemplateColumns:
+            view === 'both' ? 'repeat(auto-fit, minmax(min(16rem, 100%), 1fr))' : '1fr',
         }}
       >
         {showDe ? (

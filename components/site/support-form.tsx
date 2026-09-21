@@ -110,7 +110,13 @@ export function SupportForm({
     >
       <div aria-hidden="true" className="visually-hidden">
         <label htmlFor={`${mode}-website`}>Website</label>
-        <input id={`${mode}-website`} type="text" tabIndex={-1} autoComplete="off" {...register('website')} />
+        <input
+          id={`${mode}-website`}
+          type="text"
+          tabIndex={-1}
+          autoComplete="off"
+          {...register('website')}
+        />
       </div>
 
       <input type="hidden" {...register('locale')} value={locale} />
@@ -125,8 +131,14 @@ export function SupportForm({
         )}
       </Field>
 
-      <Field label={t('phone')} optionalLabel={t('optional')} error={message(errors.phone?.message)}>
-        {(props) => <Input type="tel" autoComplete="tel" dir="ltr" {...props} {...register('phone')} />}
+      <Field
+        label={t('phone')}
+        optionalLabel={t('optional')}
+        error={message(errors.phone?.message)}
+      >
+        {(props) => (
+          <Input type="tel" autoComplete="tel" dir="ltr" {...props} {...register('phone')} />
+        )}
       </Field>
 
       <Field
@@ -149,7 +161,11 @@ export function SupportForm({
         )}
       </Field>
 
-      <Field label={t('message')} optionalLabel={t('optional')} error={message(errors.message?.message)}>
+      <Field
+        label={t('message')}
+        optionalLabel={t('optional')}
+        error={message(errors.message?.message)}
+      >
         {(props) => <Textarea rows={compact ? 3 : 5} {...props} {...register('message')} />}
       </Field>
 

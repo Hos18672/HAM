@@ -1,7 +1,12 @@
 import Link from 'next/link';
 import { PencilSimple, ArrowSquareOut } from '@phosphor-icons/react/dist/ssr';
 import { auth } from '@/lib/auth';
-import { getAreaTiles, getSubmissions, getSubmissionCounts, getNextEvent } from '@/lib/db/queries/admin';
+import {
+  getAreaTiles,
+  getSubmissions,
+  getSubmissionCounts,
+  getNextEvent,
+} from '@/lib/db/queries/admin';
 import { getSettings } from '@/lib/db/queries/content';
 import { Card } from '@/components/ui/card';
 import { Tag } from '@/components/ui/tag';
@@ -49,7 +54,10 @@ export default async function AdminDashboard() {
       >
         <Card variant="soft">
           <p className="kicker">Neue Nachrichten</p>
-          <p style={{ fontSize: 'var(--text-4xl)', fontWeight: 'var(--weight-bold)' }} className="tabular">
+          <p
+            style={{ fontSize: 'var(--text-4xl)', fontWeight: 'var(--weight-bold)' }}
+            className="tabular"
+          >
             {counts.new ?? 0}
           </p>
           <p>
@@ -86,12 +94,18 @@ export default async function AdminDashboard() {
         <Card variant="soft">
           <p className="kicker">Website direkt bearbeiten</p>
           <p className="text-sm" style={{ color: 'var(--color-ink-muted)' }}>
-            Öffnet die öffentliche Seite mit aktiver Bearbeitung: Text anklicken, tippen,
-            fertig.
+            Öffnet die öffentliche Seite mit aktiver Bearbeitung: Text anklicken, tippen, fertig.
           </p>
-          <div style={{ marginBlockStart: 'auto', paddingBlockStart: 'var(--space-3)' }} className="flex flex-wrap gap-2">
+          <div
+            style={{ marginBlockStart: 'auto', paddingBlockStart: 'var(--space-3)' }}
+            className="flex flex-wrap gap-2"
+          >
             <EditModeButton locale={settings.defaultLocale} />
-            <Link href={`/${settings.defaultLocale}`} className="btn btn-secondary btn-sm" target="_blank">
+            <Link
+              href={`/${settings.defaultLocale}`}
+              className="btn btn-secondary btn-sm"
+              target="_blank"
+            >
               <ArrowSquareOut size={14} weight="bold" aria-hidden="true" />
               Website ansehen
             </Link>
@@ -175,7 +189,13 @@ export default async function AdminDashboard() {
                       timeZone: 'Europe/Vienna',
                     }).format(submission.createdAt)}
                   </td>
-                  <td>{submission.status === 'new' ? 'Neu' : submission.status === 'read' ? 'Gelesen' : 'Archiviert'}</td>
+                  <td>
+                    {submission.status === 'new'
+                      ? 'Neu'
+                      : submission.status === 'read'
+                        ? 'Gelesen'
+                        : 'Archiviert'}
+                  </td>
                 </tr>
               ))}
             </tbody>

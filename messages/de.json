@@ -197,15 +197,7 @@
     "legendOccasion": "Gedenktag",
     "occasions": "Gedenktage in diesem Monat",
     "occasionsNone": "In diesem Monat sind keine Gedenktage eingetragen.",
-    "weekdays": [
-      "So",
-      "Mo",
-      "Di",
-      "Mi",
-      "Do",
-      "Fr",
-      "Sa"
-    ],
+    "weekdays": ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"],
     "previousMonth": "Vorheriger Monat",
     "nextMonth": "Nächster Monat",
     "countdownLabel": "Verbleibende Zeit bis zum nächsten Gebet"

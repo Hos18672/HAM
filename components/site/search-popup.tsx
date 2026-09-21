@@ -52,11 +52,13 @@ export function SearchPopup({
   const listId = useId();
 
   const reduced = () =>
-    typeof window !== 'undefined' &&
-    window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   /** Geometry of the header button, to grow from and collapse back into. */
-  const anchorRect = useCallback(() => anchorRef.current?.getBoundingClientRect() ?? null, [anchorRef]);
+  const anchorRect = useCallback(
+    () => anchorRef.current?.getBoundingClientRect() ?? null,
+    [anchorRef],
+  );
 
   /* ── Open ─────────────────────────────────────────────────────────────── */
   useEffect(() => {
@@ -190,7 +192,9 @@ export function SearchPopup({
       }
       if (event.key !== 'Tab') return;
       const root = pillRef.current?.parentElement;
-      const focusable = root?.querySelectorAll<HTMLElement>('a[href], button:not(:disabled), input');
+      const focusable = root?.querySelectorAll<HTMLElement>(
+        'a[href], button:not(:disabled), input',
+      );
       if (!focusable || focusable.length === 0) return;
       const first = focusable[0]!;
       const last = focusable[focusable.length - 1]!;
@@ -285,7 +289,13 @@ export function SearchPopup({
               minInlineSize: 0,
             }}
           />
-          <Button variant="ghost" size="sm" iconOnly aria-label={tActions('closeSearch')} onClick={onClose}>
+          <Button
+            variant="ghost"
+            size="sm"
+            iconOnly
+            aria-label={tActions('closeSearch')}
+            onClick={onClose}
+          >
             <X size={18} weight="bold" aria-hidden="true" />
           </Button>
         </div>

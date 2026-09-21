@@ -34,7 +34,13 @@ async function guard(role?: 'admin') {
   }
 }
 
-async function audit(userId: string, action: string, entity: string, entityId: string, diff: Record<string, unknown>) {
+async function audit(
+  userId: string,
+  action: string,
+  entity: string,
+  entityId: string,
+  diff: Record<string, unknown>,
+) {
   try {
     await db.insert(s.auditLog).values({ userId, action, entity, entityId, diff });
   } catch (error) {
@@ -114,12 +120,19 @@ export async function pruneOldSubmissions(): Promise<AdminResult & { deleted?: n
     .where(and(lt(s.submissions.createdAt, cutoff), eq(s.submissions.status, 'archived')))
     .returning({ id: s.submissions.id });
 
-  await audit(user.id, 'prune', 'submission', '', { count: deleted.length, cutoff: cutoff.toISOString() });
+  await audit(user.id, 'prune', 'submission', '', {
+    count: deleted.length,
+    cutoff: cutoff.toISOString(),
+  });
   return { ok: true, deleted: deleted.length };
 }
 
 /** CSV export of the inbox. Quoting is RFC 4180. */
-export async function exportSubmissionsCsv(): Promise<{ ok: boolean; csv?: string; error?: string }> {
+export async function exportSubmissionsCsv(): Promise<{
+  ok: boolean;
+  csv?: string;
+  error?: string;
+}> {
   const user = await guard();
   if (!user) return { ok: false, error: 'unauthenticated' };
 
@@ -132,7 +145,17 @@ export async function exportSubmissionsCsv(): Promise<{ ok: boolean; csv?: strin
     return /["\n,;]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
   };
 
-  const header = ['Datum', 'Art', 'Name', 'E-Mail', 'Telefon', 'Anliegen', 'Nachricht', 'Sprache', 'Status'];
+  const header = [
+    'Datum',
+    'Art',
+    'Name',
+    'E-Mail',
+    'Telefon',
+    'Anliegen',
+    'Nachricht',
+    'Sprache',
+    'Status',
+  ];
   const lines = [
     header.join(','),
     ...rows.map((row) =>
@@ -162,10 +185,7 @@ export async function saveMediaMeta(input: unknown): Promise<AdminResult> {
   const user = await guard();
   if (!user) return fail('unauthenticated');
 
-  const parsed = z
-    .object({ id: z.string().uuid() })
-    .and(uploadMetaSchema)
-    .safeParse(input);
+  const parsed = z.object({ id: z.string().uuid() }).and(uploadMetaSchema).safeParse(input);
   if (!parsed.success) return fail('invalid');
 
   const { id, alt, caption, category } = parsed.data;
@@ -277,7 +297,10 @@ export async function updateUser(input: unknown): Promise<AdminResult> {
 
   // Never let the last admin demote themselves out of the system.
   if (role === 'editor') {
-    const admins = await db.select({ id: s.users.id }).from(s.users).where(eq(s.users.role, 'admin'));
+    const admins = await db
+      .select({ id: s.users.id })
+      .from(s.users)
+      .where(eq(s.users.role, 'admin'));
     if (admins.length <= 1 && admins[0]?.id === id) {
       return fail('Es muss mindestens ein Administrator übrig bleiben.');
     }
@@ -291,7 +314,11 @@ export async function updateUser(input: unknown): Promise<AdminResult> {
 
   await db.update(s.users).set(patch).where(eq(s.users.id, id));
   // The new password never reaches the audit log.
-  await audit(user.id, 'update', 'user', id, { name, role, passwordChanged: password !== undefined });
+  await audit(user.id, 'update', 'user', id, {
+    name,
+    role,
+    passwordChanged: password !== undefined,
+  });
   return { ok: true };
 }
 
@@ -379,7 +406,9 @@ export interface ImportDiff {
  * Read a backup file and report what it would change, without writing
  * anything. The admin sees this diff and confirms before `importBackup` runs.
  */
-export async function previewBackup(json: string): Promise<{ ok: boolean; diff?: ImportDiff[]; error?: string }> {
+export async function previewBackup(
+  json: string,
+): Promise<{ ok: boolean; diff?: ImportDiff[]; error?: string }> {
   const user = await guard('admin');
   if (!user) return { ok: false, error: 'forbidden' };
 

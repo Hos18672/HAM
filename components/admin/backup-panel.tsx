@@ -97,10 +97,15 @@ export function BackupPanel({ canImport }: { canImport: boolean }) {
               padding: 'var(--space-3)',
             }}
           >
-            <WarningCircle size={20} weight="duotone" aria-hidden="true" style={{ flexShrink: 0 }} />
+            <WarningCircle
+              size={20}
+              weight="duotone"
+              aria-hidden="true"
+              style={{ flexShrink: 0 }}
+            />
             <p className="text-sm">
-              Ein Import ersetzt <strong>alle</strong> Inhalte durch die der Datei. Laden Sie
-              vorher eine aktuelle Sicherung herunter.
+              Ein Import ersetzt <strong>alle</strong> Inhalte durch die der Datei. Laden Sie vorher
+              eine aktuelle Sicherung herunter.
             </p>
           </div>
 

@@ -34,11 +34,7 @@ export function FilterChips({
         {tActions('all')}
       </FilterTag>
       {categories.map((category) => (
-        <FilterTag
-          key={category}
-          pressed={active === category}
-          onClick={() => onChange(category)}
-        >
+        <FilterTag key={category} pressed={active === category} onClick={() => onChange(category)}>
           {labelFor(category)}
         </FilterTag>
       ))}

@@ -17,12 +17,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
     paths.map((path) => ({
       url: `${base}/${locale}${path}`,
       lastModified: now,
-      changeFrequency: path === '' || path === '/events' ? ('weekly' as const) : ('monthly' as const),
+      changeFrequency:
+        path === '' || path === '/events' ? ('weekly' as const) : ('monthly' as const),
       priority: path === '' ? 1 : 0.7,
       alternates: {
-        languages: Object.fromEntries(
-          locales.map((other) => [other, `${base}/${other}${path}`]),
-        ),
+        languages: Object.fromEntries(locales.map((other) => [other, `${base}/${other}${path}`])),
       },
     })),
   );

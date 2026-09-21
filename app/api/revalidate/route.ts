@@ -13,7 +13,10 @@ export async function POST(request: Request) {
     await requireUser('admin');
   } catch (error) {
     if (error instanceof AuthError) {
-      return NextResponse.json({ error: error.kind }, { status: error.kind === 'forbidden' ? 403 : 401 });
+      return NextResponse.json(
+        { error: error.kind },
+        { status: error.kind === 'forbidden' ? 403 : 401 },
+      );
     }
     throw error;
   }

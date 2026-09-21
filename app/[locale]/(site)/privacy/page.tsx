@@ -32,10 +32,7 @@ export default async function PrivacyPage({ params }: { params: Promise<{ locale
   setRequestLocale(locale);
   const typed = locale as Locale;
 
-  const [header, settings] = await Promise.all([
-    getPageHeader('privacy', typed),
-    getSettings(),
-  ]);
+  const [header, settings] = await Promise.all([getPageHeader('privacy', typed), getSettings()]);
   if (!header) notFound();
 
   const de = typed === 'de';

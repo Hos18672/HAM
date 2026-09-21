@@ -53,7 +53,12 @@ export type FieldUpdate = z.infer<typeof fieldUpdateSchema>;
 export const baseFieldUpdateSchema = z.object({
   entity: entityKindSchema,
   id: uuid,
-  field: z.string().trim().min(1).max(64).regex(/^[a-zA-Z][a-zA-Z0-9_]*$/),
+  field: z
+    .string()
+    .trim()
+    .min(1)
+    .max(64)
+    .regex(/^[a-zA-Z][a-zA-Z0-9_]*$/),
   value: z.union([z.string().max(2000), z.number(), z.boolean(), z.null()]),
 });
 

@@ -31,7 +31,13 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(function 
       ref={ref}
       type={props.type ?? 'button'}
       aria-busy={loading || undefined}
-      className={cn('btn', variantClass[variant], sizeClass[size], iconOnly && 'btn-icon', className)}
+      className={cn(
+        'btn',
+        variantClass[variant],
+        sizeClass[size],
+        iconOnly && 'btn-icon',
+        className,
+      )}
       {...props}
     >
       {children}
@@ -47,20 +53,21 @@ export interface LinkButtonProps extends React.AnchorHTMLAttributes<HTMLAnchorEl
 
 /** Same surface, rendered as an anchor. Used for navigation CTAs, which must
  *  stay real links so they can be opened in a new tab. */
-export const LinkButton = React.forwardRef<HTMLAnchorElement, LinkButtonProps>(
-  function LinkButton({ variant = 'primary', size = 'md', iconOnly, className, ...props }, ref) {
-    return (
-      <a
-        ref={ref}
-        className={cn(
-          'btn',
-          variantClass[variant],
-          sizeClass[size],
-          iconOnly && 'btn-icon',
-          className,
-        )}
-        {...props}
-      />
-    );
-  },
-);
+export const LinkButton = React.forwardRef<HTMLAnchorElement, LinkButtonProps>(function LinkButton(
+  { variant = 'primary', size = 'md', iconOnly, className, ...props },
+  ref,
+) {
+  return (
+    <a
+      ref={ref}
+      className={cn(
+        'btn',
+        variantClass[variant],
+        sizeClass[size],
+        iconOnly && 'btn-icon',
+        className,
+      )}
+      {...props}
+    />
+  );
+});

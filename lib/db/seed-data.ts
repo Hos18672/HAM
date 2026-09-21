@@ -395,14 +395,7 @@ export const BLOCKS: {
     sort: 2,
     fa: { items: ['شعر کلاسیک', 'شعر معاصر', 'موسیقی', 'نوروز', 'خوش‌نویسی', 'سینما'] },
     de: {
-      items: [
-        'Klassische Dichtung',
-        'Moderne Lyrik',
-        'Musik',
-        'Nouruz',
-        'Kalligrafie',
-        'Film',
-      ],
+      items: ['Klassische Dichtung', 'Moderne Lyrik', 'Musik', 'Nouruz', 'Kalligrafie', 'Film'],
     },
   },
   /* contact */
@@ -705,103 +698,224 @@ export const SPORTS: {
 }[] = [
   {
     sort: 0,
-    fa: { activity: 'والیبال (زنان)', audience: 'از ۱۶ سال به بالا', schedule: 'دوشنبه، ۱۹:۰۰ تا ۲۱:۰۰' },
-    de: { activity: 'Volleyball (Frauen)', audience: 'ab 16 Jahren', schedule: 'Montag, 19:00–21:00' },
+    fa: {
+      activity: 'والیبال (زنان)',
+      audience: 'از ۱۶ سال به بالا',
+      schedule: 'دوشنبه، ۱۹:۰۰ تا ۲۱:۰۰',
+    },
+    de: {
+      activity: 'Volleyball (Frauen)',
+      audience: 'ab 16 Jahren',
+      schedule: 'Montag, 19:00–21:00',
+    },
   },
   {
     sort: 1,
-    fa: { activity: 'والیبال (مردان)', audience: 'از ۱۶ سال به بالا', schedule: 'چهارشنبه، ۱۹:۰۰ تا ۲۱:۰۰' },
-    de: { activity: 'Volleyball (Männer)', audience: 'ab 16 Jahren', schedule: 'Mittwoch, 19:00–21:00' },
+    fa: {
+      activity: 'والیبال (مردان)',
+      audience: 'از ۱۶ سال به بالا',
+      schedule: 'چهارشنبه، ۱۹:۰۰ تا ۲۱:۰۰',
+    },
+    de: {
+      activity: 'Volleyball (Männer)',
+      audience: 'ab 16 Jahren',
+      schedule: 'Mittwoch, 19:00–21:00',
+    },
   },
   {
     sort: 2,
-    fa: { activity: 'فوتسال نوجوانان', audience: 'پسران و دختران ۱۰ تا ۱۵ سال', schedule: 'جمعه، ۱۶:۰۰ تا ۱۷:۳۰' },
-    de: { activity: 'Futsal Jugend', audience: 'Burschen und Mädchen von 10 bis 15', schedule: 'Freitag, 16:00–17:30' },
+    fa: {
+      activity: 'فوتسال نوجوانان',
+      audience: 'پسران و دختران ۱۰ تا ۱۵ سال',
+      schedule: 'جمعه، ۱۶:۰۰ تا ۱۷:۳۰',
+    },
+    de: {
+      activity: 'Futsal Jugend',
+      audience: 'Burschen und Mädchen von 10 bis 15',
+      schedule: 'Freitag, 16:00–17:30',
+    },
   },
   {
     sort: 3,
-    fa: { activity: 'ژیمناستیک سبک', audience: 'برای همه، به‌ویژه سالمندان', schedule: 'سه‌شنبه، ۱۰:۰۰ تا ۱۱:۰۰' },
-    de: { activity: 'Leichte Gymnastik', audience: 'Für alle, besonders für Ältere', schedule: 'Dienstag, 10:00–11:00' },
+    fa: {
+      activity: 'ژیمناستیک سبک',
+      audience: 'برای همه، به‌ویژه سالمندان',
+      schedule: 'سه‌شنبه، ۱۰:۰۰ تا ۱۱:۰۰',
+    },
+    de: {
+      activity: 'Leichte Gymnastik',
+      audience: 'Für alle, besonders für Ältere',
+      schedule: 'Dienstag, 10:00–11:00',
+    },
   },
   {
     sort: 4,
-    fa: { activity: 'ساعت ورزش خانوادگی', audience: 'خانواده‌ها با کودکان', schedule: 'یکشنبه، ۱۵:۰۰ تا ۱۷:۰۰' },
-    de: { activity: 'Familiensportstunde', audience: 'Familien mit Kindern', schedule: 'Sonntag, 15:00–17:00' },
+    fa: {
+      activity: 'ساعت ورزش خانوادگی',
+      audience: 'خانواده‌ها با کودکان',
+      schedule: 'یکشنبه، ۱۵:۰۰ تا ۱۷:۰۰',
+    },
+    de: {
+      activity: 'Familiensportstunde',
+      audience: 'Familien mit Kindern',
+      schedule: 'Sonntag, 15:00–17:00',
+    },
   },
 ];
 
 /* ─── Culture cards ──────────────────────────────────────────────────────── */
 
-export const CULTURE: { sort: number; fa: { title: string; body: string }; de: { title: string; body: string } }[] = [
+export const CULTURE: {
+  sort: number;
+  fa: { title: string; body: string };
+  de: { title: string; body: string };
+}[] = [
   {
     sort: 0,
-    fa: { title: 'شب شعر', body: 'یک شب در ماه، هر کس شعری می‌آورد — فارسی، آلمانی یا هر زبان دیگر. بدون داور و بدون میکروفن.' },
-    de: { title: 'Lyrikabend', body: 'Einen Abend im Monat bringt jede und jeder ein Gedicht mit — auf Persisch, Deutsch oder in einer anderen Sprache. Ohne Jury und ohne Mikrofon.' },
+    fa: {
+      title: 'شب شعر',
+      body: 'یک شب در ماه، هر کس شعری می‌آورد — فارسی، آلمانی یا هر زبان دیگر. بدون داور و بدون میکروفن.',
+    },
+    de: {
+      title: 'Lyrikabend',
+      body: 'Einen Abend im Monat bringt jede und jeder ein Gedicht mit — auf Persisch, Deutsch oder in einer anderen Sprache. Ohne Jury und ohne Mikrofon.',
+    },
   },
   {
     sort: 1,
-    fa: { title: 'نوروز و یلدا', body: 'دو جشن بزرگ سال با سفرهٔ هفت‌سین، موسیقی زنده و آشپزی مشترک. همسایه‌ها هم دعوت‌اند.' },
-    de: { title: 'Nouruz und Yalda', body: 'Die beiden großen Feste des Jahres, mit Haft-Sin-Tisch, Livemusik und gemeinsamem Kochen. Die Nachbarschaft ist eingeladen.' },
+    fa: {
+      title: 'نوروز و یلدا',
+      body: 'دو جشن بزرگ سال با سفرهٔ هفت‌سین، موسیقی زنده و آشپزی مشترک. همسایه‌ها هم دعوت‌اند.',
+    },
+    de: {
+      title: 'Nouruz und Yalda',
+      body: 'Die beiden großen Feste des Jahres, mit Haft-Sin-Tisch, Livemusik und gemeinsamem Kochen. Die Nachbarschaft ist eingeladen.',
+    },
   },
   {
     sort: 2,
-    fa: { title: 'موسیقی', body: 'تار، سه‌تار و دف — گاهی کنسرت کوچک، گاهی فقط تمرین که در آن هر که بخواهد می‌نشیند و گوش می‌دهد.' },
-    de: { title: 'Musik', body: 'Tar, Setar und Daf — manchmal ein kleines Konzert, manchmal nur eine Probe, bei der zuhören darf, wer mag.' },
+    fa: {
+      title: 'موسیقی',
+      body: 'تار، سه‌تار و دف — گاهی کنسرت کوچک، گاهی فقط تمرین که در آن هر که بخواهد می‌نشیند و گوش می‌دهد.',
+    },
+    de: {
+      title: 'Musik',
+      body: 'Tar, Setar und Daf — manchmal ein kleines Konzert, manchmal nur eine Probe, bei der zuhören darf, wer mag.',
+    },
   },
   {
     sort: 3,
-    fa: { title: 'سینما', body: 'نمایش فیلم ایرانی با زیرنویس آلمانی و گفت‌وگو پس از آن. ورود آزاد است.' },
-    de: { title: 'Filmabend', body: 'Iranischer Film mit deutschen Untertiteln und Gespräch danach. Der Eintritt ist frei.' },
+    fa: {
+      title: 'سینما',
+      body: 'نمایش فیلم ایرانی با زیرنویس آلمانی و گفت‌وگو پس از آن. ورود آزاد است.',
+    },
+    de: {
+      title: 'Filmabend',
+      body: 'Iranischer Film mit deutschen Untertiteln und Gespräch danach. Der Eintritt ist frei.',
+    },
   },
 ];
 
 /* ─── Community cards ────────────────────────────────────────────────────── */
 
-export const COMMUNITY: { sort: number; fa: { title: string; body: string }; de: { title: string; body: string } }[] = [
+export const COMMUNITY: {
+  sort: number;
+  fa: { title: string; body: string };
+  de: { title: string; body: string };
+}[] = [
   {
     sort: 0,
-    fa: { title: 'کمک به همسایه', body: 'خرید برای کسی که بیمار است، همراهی یک سالمند تا داروخانه، یا فقط زنگ زدن و پرسیدن حال. فهرست کوتاهی داریم و هر کس به اندازهٔ وقتش برمی‌دارد.' },
-    de: { title: 'Nachbarschaftshilfe', body: 'Einkaufen für jemanden, der krank ist, eine ältere Person zur Apotheke begleiten oder einfach anrufen und nachfragen. Wir führen eine kurze Liste, und jede nimmt so viel, wie ihre Zeit erlaubt.' },
+    fa: {
+      title: 'کمک به همسایه',
+      body: 'خرید برای کسی که بیمار است، همراهی یک سالمند تا داروخانه، یا فقط زنگ زدن و پرسیدن حال. فهرست کوتاهی داریم و هر کس به اندازهٔ وقتش برمی‌دارد.',
+    },
+    de: {
+      title: 'Nachbarschaftshilfe',
+      body: 'Einkaufen für jemanden, der krank ist, eine ältere Person zur Apotheke begleiten oder einfach anrufen und nachfragen. Wir führen eine kurze Liste, und jede nimmt so viel, wie ihre Zeit erlaubt.',
+    },
   },
   {
     sort: 1,
-    fa: { title: 'ترجمه و همراهی', body: 'برای مراجعه به اداره، مدرسه یا پزشک کسی همراهتان می‌آید و ترجمه می‌کند. رایگان، و بدون اینکه چیزی از شما پرسیده شود.' },
-    de: { title: 'Übersetzen & Begleiten', body: 'Zu Amt, Schule oder Arzt kommt jemand mit und übersetzt. Kostenlos — und ohne dass Sie etwas über sich erzählen müssen.' },
+    fa: {
+      title: 'ترجمه و همراهی',
+      body: 'برای مراجعه به اداره، مدرسه یا پزشک کسی همراهتان می‌آید و ترجمه می‌کند. رایگان، و بدون اینکه چیزی از شما پرسیده شود.',
+    },
+    de: {
+      title: 'Übersetzen & Begleiten',
+      body: 'Zu Amt, Schule oder Arzt kommt jemand mit und übersetzt. Kostenlos — und ohne dass Sie etwas über sich erzählen müssen.',
+    },
   },
   {
     sort: 2,
-    fa: { title: 'همکاری داوطلبانه', body: 'مربی کلاس، کمک در آشپزخانه، مسئول سالن یا تعمیر چیزهایی که خراب می‌شوند. دو ساعت در هفته هم کمک است.' },
-    de: { title: 'Ehrenamt', body: 'Kursleitung, Hilfe in der Küche, Saaldienst oder das Reparieren dessen, was kaputtgeht. Auch zwei Stunden in der Woche helfen.' },
+    fa: {
+      title: 'همکاری داوطلبانه',
+      body: 'مربی کلاس، کمک در آشپزخانه، مسئول سالن یا تعمیر چیزهایی که خراب می‌شوند. دو ساعت در هفته هم کمک است.',
+    },
+    de: {
+      title: 'Ehrenamt',
+      body: 'Kursleitung, Hilfe in der Küche, Saaldienst oder das Reparieren dessen, was kaputtgeht. Auch zwei Stunden in der Woche helfen.',
+    },
   },
 ];
 
 /* ─── Values ─────────────────────────────────────────────────────────────── */
 
-export const VALUES: { sort: number; fa: { title: string; body: string }; de: { title: string; body: string } }[] = [
+export const VALUES: {
+  sort: number;
+  fa: { title: string; body: string };
+  de: { title: string; body: string };
+}[] = [
   {
     sort: 0,
     fa: { title: 'در باز', body: 'هیچ برنامه‌ای در این خانه شرط اعتقادی، ملیتی یا زبانی ندارد.' },
-    de: { title: 'Offene Tür', body: 'Keine Veranstaltung in diesem Haus setzt ein Bekenntnis, eine Staatsbürgerschaft oder eine Sprache voraus.' },
+    de: {
+      title: 'Offene Tür',
+      body: 'Keine Veranstaltung in diesem Haus setzt ein Bekenntnis, eine Staatsbürgerschaft oder eine Sprache voraus.',
+    },
   },
   {
     sort: 1,
-    fa: { title: 'کار داوطلبانه', body: 'هیچ‌کس در انجمن حقوق نمی‌گیرد. هر یورویی که می‌رسد صرف خود خانه می‌شود.' },
-    de: { title: 'Ehrenamtlich', body: 'Niemand im Verein bezieht ein Gehalt. Jeder Euro, der hereinkommt, bleibt im Haus.' },
+    fa: {
+      title: 'کار داوطلبانه',
+      body: 'هیچ‌کس در انجمن حقوق نمی‌گیرد. هر یورویی که می‌رسد صرف خود خانه می‌شود.',
+    },
+    de: {
+      title: 'Ehrenamtlich',
+      body: 'Niemand im Verein bezieht ein Gehalt. Jeder Euro, der hereinkommt, bleibt im Haus.',
+    },
   },
   {
     sort: 2,
-    fa: { title: 'زبان مادری و زبان کشور', body: 'فارسی را نگه می‌داریم و آلمانی را جدی می‌گیریم. هیچ‌کدام جای دیگری را نمی‌گیرد.' },
-    de: { title: 'Muttersprache und Landessprache', body: 'Wir halten das Persische und nehmen das Deutsche ernst. Keines ersetzt das andere.' },
+    fa: {
+      title: 'زبان مادری و زبان کشور',
+      body: 'فارسی را نگه می‌داریم و آلمانی را جدی می‌گیریم. هیچ‌کدام جای دیگری را نمی‌گیرد.',
+    },
+    de: {
+      title: 'Muttersprache und Landessprache',
+      body: 'Wir halten das Persische und nehmen das Deutsche ernst. Keines ersetzt das andere.',
+    },
   },
   {
     sort: 3,
-    fa: { title: 'احترام میان نسل‌ها', body: 'در این خانه کودک شش‌ساله و پدربزرگ هشتادساله در یک اتاق می‌نشینند و این را یک دستاورد می‌دانیم.' },
-    de: { title: 'Respekt zwischen den Generationen', body: 'Hier sitzen ein sechsjähriges Kind und ein achtzigjähriger Großvater im selben Raum — das halten wir für eine Leistung.' },
+    fa: {
+      title: 'احترام میان نسل‌ها',
+      body: 'در این خانه کودک شش‌ساله و پدربزرگ هشتادساله در یک اتاق می‌نشینند و این را یک دستاورد می‌دانیم.',
+    },
+    de: {
+      title: 'Respekt zwischen den Generationen',
+      body: 'Hier sitzen ein sechsjähriges Kind und ein achtzigjähriger Großvater im selben Raum — das halten wir für eine Leistung.',
+    },
   },
   {
     sort: 4,
-    fa: { title: 'شفافیت', body: 'ترازنامهٔ سالانه در مجمع عمومی خوانده می‌شود و هر عضوی می‌تواند آن را ببیند.' },
-    de: { title: 'Transparenz', body: 'Die Jahresrechnung wird in der Generalversammlung verlesen, und jedes Mitglied kann sie einsehen.' },
+    fa: {
+      title: 'شفافیت',
+      body: 'ترازنامهٔ سالانه در مجمع عمومی خوانده می‌شود و هر عضوی می‌تواند آن را ببیند.',
+    },
+    de: {
+      title: 'Transparenz',
+      body: 'Die Jahresrechnung wird in der Generalversammlung verlesen, und jedes Mitglied kann sie einsehen.',
+    },
   },
 ];
 
@@ -813,13 +927,48 @@ export const WEEK: {
   fa: { label: string; detail: string };
   de: { label: string; detail: string };
 }[] = [
-  { weekday: 1, sort: 0, fa: { label: 'دوشنبه', detail: 'آلمانی A1 · والیبال زنان' }, de: { label: 'Montag', detail: 'Deutsch A1 · Volleyball Frauen' } },
-  { weekday: 2, sort: 1, fa: { label: 'سه‌شنبه', detail: 'ژیمناستیک سبک · آلمانی B1' }, de: { label: 'Dienstag', detail: 'Leichte Gymnastik · Deutsch B1' } },
-  { weekday: 3, sort: 2, fa: { label: 'چهارشنبه', detail: 'آلمانی A1 · والیبال مردان' }, de: { label: 'Mittwoch', detail: 'Deutsch A1 · Volleyball Männer' } },
-  { weekday: 4, sort: 3, fa: { label: 'پنجشنبه', detail: 'درس کمکی · دعای کمیل، ۲۰:۳۰' }, de: { label: 'Donnerstag', detail: 'Lernhilfe · Duʿa Kumail, 20:30' } },
-  { weekday: 5, sort: 4, fa: { label: 'جمعه', detail: 'فوتسال نوجوانان · خوش‌نویسی · نماز جمعه' }, de: { label: 'Freitag', detail: 'Futsal Jugend · Kalligrafie · Freitagsgebet' } },
-  { weekday: 6, sort: 5, fa: { label: 'شنبه', detail: 'فارسی کودکان · برنامهٔ بعدازظهر' }, de: { label: 'Samstag', detail: 'Persisch für Kinder · Nachmittagsprogramm' } },
-  { weekday: 0, sort: 6, fa: { label: 'یکشنبه', detail: 'قرآن و تجوید · ورزش خانوادگی' }, de: { label: 'Sonntag', detail: 'Koran & Tadschwid · Familiensport' } },
+  {
+    weekday: 1,
+    sort: 0,
+    fa: { label: 'دوشنبه', detail: 'آلمانی A1 · والیبال زنان' },
+    de: { label: 'Montag', detail: 'Deutsch A1 · Volleyball Frauen' },
+  },
+  {
+    weekday: 2,
+    sort: 1,
+    fa: { label: 'سه‌شنبه', detail: 'ژیمناستیک سبک · آلمانی B1' },
+    de: { label: 'Dienstag', detail: 'Leichte Gymnastik · Deutsch B1' },
+  },
+  {
+    weekday: 3,
+    sort: 2,
+    fa: { label: 'چهارشنبه', detail: 'آلمانی A1 · والیبال مردان' },
+    de: { label: 'Mittwoch', detail: 'Deutsch A1 · Volleyball Männer' },
+  },
+  {
+    weekday: 4,
+    sort: 3,
+    fa: { label: 'پنجشنبه', detail: 'درس کمکی · دعای کمیل، ۲۰:۳۰' },
+    de: { label: 'Donnerstag', detail: 'Lernhilfe · Duʿa Kumail, 20:30' },
+  },
+  {
+    weekday: 5,
+    sort: 4,
+    fa: { label: 'جمعه', detail: 'فوتسال نوجوانان · خوش‌نویسی · نماز جمعه' },
+    de: { label: 'Freitag', detail: 'Futsal Jugend · Kalligrafie · Freitagsgebet' },
+  },
+  {
+    weekday: 6,
+    sort: 5,
+    fa: { label: 'شنبه', detail: 'فارسی کودکان · برنامهٔ بعدازظهر' },
+    de: { label: 'Samstag', detail: 'Persisch für Kinder · Nachmittagsprogramm' },
+  },
+  {
+    weekday: 0,
+    sort: 6,
+    fa: { label: 'یکشنبه', detail: 'قرآن و تجوید · ورزش خانوادگی' },
+    de: { label: 'Sonntag', detail: 'Koran & Tadschwid · Familiensport' },
+  },
 ];
 
 /* ─── Membership tiers ───────────────────────────────────────────────────── */
@@ -841,7 +990,11 @@ export const MEMBERSHIPS: {
     de: {
       title: 'Fördernde Mitgliedschaft',
       priceLabel: '5 € im Monat',
-      benefits: ['Einladung zu allen Veranstaltungen', 'Monatlicher Newsletter', 'Ohne Stimmrecht in der Generalversammlung'],
+      benefits: [
+        'Einladung zu allen Veranstaltungen',
+        'Monatlicher Newsletter',
+        'Ohne Stimmrecht in der Generalversammlung',
+      ],
     },
   },
   {
@@ -850,12 +1003,20 @@ export const MEMBERSHIPS: {
     fa: {
       title: 'عضویت عادی',
       priceLabel: '۱۲ یورو در ماه',
-      benefits: ['حق رأی در مجمع عمومی', 'شرکت رایگان در همهٔ کلاس‌ها', 'استفاده از سالن برای تمرین گروهی'],
+      benefits: [
+        'حق رأی در مجمع عمومی',
+        'شرکت رایگان در همهٔ کلاس‌ها',
+        'استفاده از سالن برای تمرین گروهی',
+      ],
     },
     de: {
       title: 'Ordentliche Mitgliedschaft',
       priceLabel: '12 € im Monat',
-      benefits: ['Stimmrecht in der Generalversammlung', 'Kostenlose Teilnahme an allen Kursen', 'Nutzung des Saals für Gruppentrainings'],
+      benefits: [
+        'Stimmrecht in der Generalversammlung',
+        'Kostenlose Teilnahme an allen Kursen',
+        'Nutzung des Saals für Gruppentrainings',
+      ],
     },
   },
   {
@@ -869,7 +1030,11 @@ export const MEMBERSHIPS: {
     de: {
       title: 'Familienmitgliedschaft',
       priceLabel: '20 € im Monat',
-      benefits: ['Für alle Mitglieder eines Haushalts', 'Kinderkurse kostenfrei', 'Zwei Stimmen in der Generalversammlung'],
+      benefits: [
+        'Für alle Mitglieder eines Haushalts',
+        'Kinderkurse kostenfrei',
+        'Zwei Stimmen in der Generalversammlung',
+      ],
     },
   },
   {
@@ -878,12 +1043,20 @@ export const MEMBERSHIPS: {
     fa: {
       title: 'عضویت با تخفیف',
       priceLabel: '۴ یورو در ماه',
-      benefits: ['برای دانشجویان، بازنشستگان و پناه‌جویان', 'همان حقوق عضویت عادی', 'بدون نیاز به ارائهٔ مدرک'],
+      benefits: [
+        'برای دانشجویان، بازنشستگان و پناه‌جویان',
+        'همان حقوق عضویت عادی',
+        'بدون نیاز به ارائهٔ مدرک',
+      ],
     },
     de: {
       title: 'Ermäßigte Mitgliedschaft',
       priceLabel: '4 € im Monat',
-      benefits: ['Für Studierende, Pensionistinnen und Asylwerbende', 'Dieselben Rechte wie ordentliche Mitglieder', 'Ohne Nachweispflicht'],
+      benefits: [
+        'Für Studierende, Pensionistinnen und Asylwerbende',
+        'Dieselben Rechte wie ordentliche Mitglieder',
+        'Ohne Nachweispflicht',
+      ],
     },
   },
 ];
@@ -905,13 +1078,15 @@ export const DUAS: {
     sort: 0,
     fa: {
       title: 'دعای کمیل',
-      summary: 'دعایی که امیرالمؤمنین (ع) به کمیل بن زیاد آموخت؛ دعای آمرزش‌خواهی و اعتراف، با زبانی بی‌پرده.',
+      summary:
+        'دعایی که امیرالمؤمنین (ع) به کمیل بن زیاد آموخت؛ دعای آمرزش‌خواهی و اعتراف، با زبانی بی‌پرده.',
       whenToRead: 'شب‌های جمعه، و شب نیمهٔ شعبان',
       source: 'مصباح المتهجد، شیخ طوسی',
     },
     de: {
       title: 'Duʿa Kumail',
-      summary: 'Das Bittgebet, das Imam Ali (a.) seinem Gefährten Kumail ibn Ziyad lehrte — ein Gebet der Vergebung und des offenen Eingeständnisses.',
+      summary:
+        'Das Bittgebet, das Imam Ali (a.) seinem Gefährten Kumail ibn Ziyad lehrte — ein Gebet der Vergebung und des offenen Eingeständnisses.',
       whenToRead: 'In der Nacht auf Freitag und in der Nacht des 15. Schaban',
       source: 'Misbah al-Mutahaddschid, Schaich at-Tusi',
     },
@@ -929,7 +1104,8 @@ export const DUAS: {
     },
     de: {
       title: 'Duʿa Tawassul',
-      summary: 'Die Anrufung der vierzehn Unfehlbaren (a.), eine nach der anderen, um Fürsprache in einem Anliegen.',
+      summary:
+        'Die Anrufung der vierzehn Unfehlbaren (a.), eine nach der anderen, um Fürsprache in einem Anliegen.',
       whenToRead: 'Jederzeit, besonders in der Nacht auf Mittwoch',
       source: 'Mafatih al-Dschinan, nach Sayyid ibn Tawus',
     },
@@ -947,7 +1123,8 @@ export const DUAS: {
     },
     de: {
       title: 'Duʿa Nudba',
-      summary: 'Eine Klage in der Erwartung des Imam al-Mahdi (a.j.): der Gang durch die Geschichte der Propheten und der Ahl al-Bait und die Sehnsucht nach der Begegnung.',
+      summary:
+        'Eine Klage in der Erwartung des Imam al-Mahdi (a.j.): der Gang durch die Geschichte der Propheten und der Ahl al-Bait und die Sehnsucht nach der Begegnung.',
       whenToRead: 'Am Freitagmorgen sowie an den Festen Fitr, Adha und Ghadir',
       source: 'Al-Mazar al-qadim, überliefert in Mafatih al-Dschinan',
     },
@@ -965,7 +1142,8 @@ export const DUAS: {
     },
     de: {
       title: 'Duʿa al-Ahd',
-      summary: 'Die Erneuerung des Bundes mit dem Imam al-Mahdi (a.j.) — kurz, und für jeden Morgen gedacht.',
+      summary:
+        'Die Erneuerung des Bundes mit dem Imam al-Mahdi (a.j.) — kurz, und für jeden Morgen gedacht.',
       whenToRead: 'An vierzig aufeinanderfolgenden Morgen, nach dem Fadschr-Gebet',
       source: 'Misbah al-Mutahaddschid',
     },
@@ -983,7 +1161,8 @@ export const DUAS: {
     },
     de: {
       title: 'Duʿa al-Faradsch',
-      summary: 'Ein kurzes Gebet um Erleichterung — wenige Zeilen, die in der Bedrängnis über die Lippen kommen.',
+      summary:
+        'Ein kurzes Gebet um Erleichterung — wenige Zeilen, die in der Bedrängnis über die Lippen kommen.',
       whenToRead: 'Jederzeit, besonders in Notlagen',
       source: 'Mafatih al-Dschinan',
     },
@@ -1001,7 +1180,8 @@ export const DUAS: {
     },
     de: {
       title: 'Dschauschan Kabir',
-      summary: 'Tausend Namen und Eigenschaften Gottes in hundert Abschnitten — das Gebet, das der Prophet (s.) in der Schlacht empfing.',
+      summary:
+        'Tausend Namen und Eigenschaften Gottes in hundert Abschnitten — das Gebet, das der Prophet (s.) in der Schlacht empfing.',
       whenToRead: 'In den Nächten der Bestimmung (Qadr) und zu Beginn des Ramadan',
       source: 'Al-Balad al-amin, al-Kafami',
     },
@@ -1019,7 +1199,8 @@ export const DUAS: {
     },
     de: {
       title: 'Duʿa as-Simat',
-      summary: 'Das „Schabur“-Gebet: die Anrufung Gottes bei den Zeichen, die er seinen Propheten offenbarte.',
+      summary:
+        'Das „Schabur“-Gebet: die Anrufung Gottes bei den Zeichen, die er seinen Propheten offenbarte.',
       whenToRead: 'In der letzten Stunde des Freitags, vor Sonnenuntergang',
       source: 'Misbah al-Mutahaddschid',
     },
@@ -1037,7 +1218,8 @@ export const DUAS: {
     },
     de: {
       title: 'Ziyarat Aschura',
-      summary: 'Der Gruß an Imam Husain (a.) und seine Gefährten — mit hundert Grüßen, hundert Verwünschungen und dem Duʿa Alqama am Schluss.',
+      summary:
+        'Der Gruß an Imam Husain (a.) und seine Gefährten — mit hundert Grüßen, hundert Verwünschungen und dem Duʿa Alqama am Schluss.',
       whenToRead: 'Täglich, insbesondere am Tag von Aschura',
       source: 'Kamil az-Ziyarat, Ibn Quluwaih',
     },
@@ -1055,7 +1237,8 @@ export const DUAS: {
     },
     de: {
       title: 'Ziyarat Dschamiʿa Kabira',
-      summary: 'Die Ziyarat, die für alle Imame (a.) gelesen werden kann — überliefert von Imam al-Hadi (a.).',
+      summary:
+        'Die Ziyarat, die für alle Imame (a.) gelesen werden kann — überliefert von Imam al-Hadi (a.).',
       whenToRead: 'Bei der Ziyarat eines jeden Imams, vor Ort oder aus der Ferne',
       source: 'Man la yahduruhu l-faqih, Schaich as-Saduq',
     },
@@ -1073,7 +1256,8 @@ export const DUAS: {
     },
     de: {
       title: 'Ziyarat Warith',
-      summary: 'Der Gruß, der Imam Husain (a.) den Erben Adams, Noahs, Abrahams, Moses’ und Jesu (a.) nennt.',
+      summary:
+        'Der Gruß, der Imam Husain (a.) den Erben Adams, Noahs, Abrahams, Moses’ und Jesu (a.) nennt.',
       whenToRead: 'Bei der Ziyarat in Kerbala und an jedem Tag',
       source: 'Kamil az-Ziyarat',
     },
@@ -1091,7 +1275,8 @@ export const DUAS: {
     },
     de: {
       title: 'Ziyarat Al Yasin',
-      summary: 'Der Gruß an den Imam al-Mahdi (a.j.), Abschnitt für Abschnitt als Bekenntnis geformt.',
+      summary:
+        'Der Gruß an den Imam al-Mahdi (a.j.), Abschnitt für Abschnitt als Bekenntnis geformt.',
       whenToRead: 'An Freitagen und in der Nacht des 15. Schaban',
       source: 'Al-Ihtidschadsch, at-Tabarsi',
     },
@@ -1103,13 +1288,15 @@ export const DUAS: {
     sort: 11,
     fa: {
       title: 'تسبیح حضرت زهرا (س)',
-      summary: 'سی‌وچهار بار الله اکبر، سی‌وسه بار الحمد لله و سی‌وسه بار سبحان الله — هدیهٔ پیامبر (ص) به دخترش.',
+      summary:
+        'سی‌وچهار بار الله اکبر، سی‌وسه بار الحمد لله و سی‌وسه بار سبحان الله — هدیهٔ پیامبر (ص) به دخترش.',
       whenToRead: 'پس از هر نماز واجب، و پیش از خواب',
       source: 'وسائل الشیعه',
     },
     de: {
       title: 'Tasbih az-Zahra (s.)',
-      summary: 'Vierunddreißigmal Allahu akbar, dreiunddreißigmal al-hamdu li-llah, dreiunddreißigmal subhana llah — das Geschenk des Propheten (s.) an seine Tochter.',
+      summary:
+        'Vierunddreißigmal Allahu akbar, dreiunddreißigmal al-hamdu li-llah, dreiunddreißigmal subhana llah — das Geschenk des Propheten (s.) an seine Tochter.',
       whenToRead: 'Nach jedem Pflichtgebet und vor dem Schlafengehen',
       source: 'Wasaʾil asch-Schiʿa',
     },
@@ -1125,21 +1312,117 @@ export const OCCASIONS: {
   fa: { name: string; note: string };
   de: { name: string; note: string };
 }[] = [
-  { hijriMonth: 1, hijriDay: 9, sort: 0, fa: { name: 'تاسوعا', note: 'روز نهم محرم' }, de: { name: 'Tasuʿa', note: 'Der neunte Tag des Muharram' } },
-  { hijriMonth: 1, hijriDay: 10, sort: 1, fa: { name: 'عاشورا', note: 'شهادت امام حسین (ع) و یارانش در کربلا' }, de: { name: 'Aschura', note: 'Das Martyrium Imam Husains (a.) und seiner Gefährten in Kerbala' } },
-  { hijriMonth: 2, hijriDay: 20, sort: 2, fa: { name: 'اربعین', note: 'چهلمین روز پس از عاشورا' }, de: { name: 'Arbaʿin', note: 'Der vierzigste Tag nach Aschura' } },
-  { hijriMonth: 2, hijriDay: 28, sort: 3, fa: { name: 'رحلت پیامبر اکرم (ص)', note: 'و شهادت امام حسن مجتبی (ع)' }, de: { name: 'Hinscheiden des Propheten (s.)', note: 'Und das Martyrium Imam Hasans (a.)' } },
-  { hijriMonth: 3, hijriDay: 17, sort: 4, fa: { name: 'میلاد پیامبر اکرم (ص)', note: 'و میلاد امام صادق (ع)' }, de: { name: 'Geburtstag des Propheten (s.)', note: 'Und Geburtstag Imam Dschaʿfar as-Sadiqs (a.)' } },
-  { hijriMonth: 6, hijriDay: 3, sort: 5, fa: { name: 'شهادت حضرت فاطمه (س)', note: 'ایام فاطمیه' }, de: { name: 'Martyrium Fatimas (a.)', note: 'Die Fatimiyya-Tage' } },
-  { hijriMonth: 7, hijriDay: 13, sort: 6, fa: { name: 'میلاد امام علی (ع)', note: 'ولادت در کعبه' }, de: { name: 'Geburtstag Imam Alis (a.)', note: 'Geboren in der Kaaba' } },
-  { hijriMonth: 7, hijriDay: 27, sort: 7, fa: { name: 'مبعث', note: 'آغاز رسالت پیامبر اکرم (ص)' }, de: { name: 'Mabʿath', note: 'Der Beginn der Sendung des Propheten (s.)' } },
-  { hijriMonth: 8, hijriDay: 15, sort: 8, fa: { name: 'نیمهٔ شعبان', note: 'میلاد امام زمان (عج)' }, de: { name: 'Mitte Schaban', note: 'Geburtstag des Imam al-Mahdi (a.j.)' } },
-  { hijriMonth: 9, hijriDay: 19, sort: 9, fa: { name: 'ضربت خوردن امام علی (ع)', note: 'در محراب مسجد کوفه' }, de: { name: 'Attentat auf Imam Ali (a.)', note: 'Im Gebetsnische der Moschee von Kufa' } },
-  { hijriMonth: 9, hijriDay: 21, sort: 10, fa: { name: 'شهادت امام علی (ع)', note: '' }, de: { name: 'Martyrium Imam Alis (a.)', note: '' } },
-  { hijriMonth: 9, hijriDay: 23, sort: 11, fa: { name: 'شب قدر', note: 'شب بیست‌وسوم رمضان' }, de: { name: 'Lailat al-Qadr', note: 'Die dreiundzwanzigste Nacht des Ramadan' } },
-  { hijriMonth: 10, hijriDay: 1, sort: 12, fa: { name: 'عید فطر', note: 'پایان ماه رمضان' }, de: { name: 'Eid al-Fitr', note: 'Das Ende des Ramadan' } },
-  { hijriMonth: 12, hijriDay: 10, sort: 13, fa: { name: 'عید قربان', note: '' }, de: { name: 'Eid al-Adha', note: '' } },
-  { hijriMonth: 12, hijriDay: 18, sort: 14, fa: { name: 'عید غدیر', note: 'روز غدیر خم' }, de: { name: 'Eid al-Ghadir', note: 'Der Tag von Ghadir Chumm' } },
+  {
+    hijriMonth: 1,
+    hijriDay: 9,
+    sort: 0,
+    fa: { name: 'تاسوعا', note: 'روز نهم محرم' },
+    de: { name: 'Tasuʿa', note: 'Der neunte Tag des Muharram' },
+  },
+  {
+    hijriMonth: 1,
+    hijriDay: 10,
+    sort: 1,
+    fa: { name: 'عاشورا', note: 'شهادت امام حسین (ع) و یارانش در کربلا' },
+    de: {
+      name: 'Aschura',
+      note: 'Das Martyrium Imam Husains (a.) und seiner Gefährten in Kerbala',
+    },
+  },
+  {
+    hijriMonth: 2,
+    hijriDay: 20,
+    sort: 2,
+    fa: { name: 'اربعین', note: 'چهلمین روز پس از عاشورا' },
+    de: { name: 'Arbaʿin', note: 'Der vierzigste Tag nach Aschura' },
+  },
+  {
+    hijriMonth: 2,
+    hijriDay: 28,
+    sort: 3,
+    fa: { name: 'رحلت پیامبر اکرم (ص)', note: 'و شهادت امام حسن مجتبی (ع)' },
+    de: { name: 'Hinscheiden des Propheten (s.)', note: 'Und das Martyrium Imam Hasans (a.)' },
+  },
+  {
+    hijriMonth: 3,
+    hijriDay: 17,
+    sort: 4,
+    fa: { name: 'میلاد پیامبر اکرم (ص)', note: 'و میلاد امام صادق (ع)' },
+    de: {
+      name: 'Geburtstag des Propheten (s.)',
+      note: 'Und Geburtstag Imam Dschaʿfar as-Sadiqs (a.)',
+    },
+  },
+  {
+    hijriMonth: 6,
+    hijriDay: 3,
+    sort: 5,
+    fa: { name: 'شهادت حضرت فاطمه (س)', note: 'ایام فاطمیه' },
+    de: { name: 'Martyrium Fatimas (a.)', note: 'Die Fatimiyya-Tage' },
+  },
+  {
+    hijriMonth: 7,
+    hijriDay: 13,
+    sort: 6,
+    fa: { name: 'میلاد امام علی (ع)', note: 'ولادت در کعبه' },
+    de: { name: 'Geburtstag Imam Alis (a.)', note: 'Geboren in der Kaaba' },
+  },
+  {
+    hijriMonth: 7,
+    hijriDay: 27,
+    sort: 7,
+    fa: { name: 'مبعث', note: 'آغاز رسالت پیامبر اکرم (ص)' },
+    de: { name: 'Mabʿath', note: 'Der Beginn der Sendung des Propheten (s.)' },
+  },
+  {
+    hijriMonth: 8,
+    hijriDay: 15,
+    sort: 8,
+    fa: { name: 'نیمهٔ شعبان', note: 'میلاد امام زمان (عج)' },
+    de: { name: 'Mitte Schaban', note: 'Geburtstag des Imam al-Mahdi (a.j.)' },
+  },
+  {
+    hijriMonth: 9,
+    hijriDay: 19,
+    sort: 9,
+    fa: { name: 'ضربت خوردن امام علی (ع)', note: 'در محراب مسجد کوفه' },
+    de: { name: 'Attentat auf Imam Ali (a.)', note: 'Im Gebetsnische der Moschee von Kufa' },
+  },
+  {
+    hijriMonth: 9,
+    hijriDay: 21,
+    sort: 10,
+    fa: { name: 'شهادت امام علی (ع)', note: '' },
+    de: { name: 'Martyrium Imam Alis (a.)', note: '' },
+  },
+  {
+    hijriMonth: 9,
+    hijriDay: 23,
+    sort: 11,
+    fa: { name: 'شب قدر', note: 'شب بیست‌وسوم رمضان' },
+    de: { name: 'Lailat al-Qadr', note: 'Die dreiundzwanzigste Nacht des Ramadan' },
+  },
+  {
+    hijriMonth: 10,
+    hijriDay: 1,
+    sort: 12,
+    fa: { name: 'عید فطر', note: 'پایان ماه رمضان' },
+    de: { name: 'Eid al-Fitr', note: 'Das Ende des Ramadan' },
+  },
+  {
+    hijriMonth: 12,
+    hijriDay: 10,
+    sort: 13,
+    fa: { name: 'عید قربان', note: '' },
+    de: { name: 'Eid al-Adha', note: '' },
+  },
+  {
+    hijriMonth: 12,
+    hijriDay: 18,
+    sort: 14,
+    fa: { name: 'عید غدیر', note: 'روز غدیر خم' },
+    de: { name: 'Eid al-Ghadir', note: 'Der Tag von Ghadir Chumm' },
+  },
 ];
 
 /* ─── Events ─────────────────────────────────────────────────────────────── */
@@ -1173,12 +1456,30 @@ export function eventSeed(now = new Date()) {
         location: 'Sautergasse 34–38, 1170 Wien — Saal im Erdgeschoß',
       },
       programme: [
-        { fa: { timeLabel: '۱۶:۰۰', title: 'خوش‌آمدگویی و افتتاح' }, de: { timeLabel: '16:00', title: 'Begrüßung und Eröffnung' } },
-        { fa: { timeLabel: '۱۶:۳۰', title: 'گشت در ساختمان' }, de: { timeLabel: '16:30', title: 'Führung durch das Haus' } },
-        { fa: { timeLabel: '۱۷:۳۰', title: 'موسیقی زنده — تار و دف' }, de: { timeLabel: '17:30', title: 'Livemusik — Tar und Daf' } },
-        { fa: { timeLabel: '۱۸:۳۰', title: 'شام مشترک' }, de: { timeLabel: '18:30', title: 'Gemeinsames Abendessen' } },
-        { fa: { timeLabel: '۱۹:۳۰', title: 'شب شعر — حافظ و ریلکه' }, de: { timeLabel: '19:30', title: 'Lyrikabend — Hafis und Rilke' } },
-        { fa: { timeLabel: '۲۰:۳۰', title: 'گفت‌وگوی آزاد و چای' }, de: { timeLabel: '20:30', title: 'Offenes Gespräch bei Tee' } },
+        {
+          fa: { timeLabel: '۱۶:۰۰', title: 'خوش‌آمدگویی و افتتاح' },
+          de: { timeLabel: '16:00', title: 'Begrüßung und Eröffnung' },
+        },
+        {
+          fa: { timeLabel: '۱۶:۳۰', title: 'گشت در ساختمان' },
+          de: { timeLabel: '16:30', title: 'Führung durch das Haus' },
+        },
+        {
+          fa: { timeLabel: '۱۷:۳۰', title: 'موسیقی زنده — تار و دف' },
+          de: { timeLabel: '17:30', title: 'Livemusik — Tar und Daf' },
+        },
+        {
+          fa: { timeLabel: '۱۸:۳۰', title: 'شام مشترک' },
+          de: { timeLabel: '18:30', title: 'Gemeinsames Abendessen' },
+        },
+        {
+          fa: { timeLabel: '۱۹:۳۰', title: 'شب شعر — حافظ و ریلکه' },
+          de: { timeLabel: '19:30', title: 'Lyrikabend — Hafis und Rilke' },
+        },
+        {
+          fa: { timeLabel: '۲۰:۳۰', title: 'گفت‌وگوی آزاد و چای' },
+          de: { timeLabel: '20:30', title: 'Offenes Gespräch bei Tee' },
+        },
       ],
     },
     {

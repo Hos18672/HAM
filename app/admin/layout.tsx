@@ -45,7 +45,10 @@ export default async function AdminLayout({ children }: { children: ReactNode })
               borderBlockEnd: 'var(--rule-hair) solid var(--color-rule)',
             }}
           >
-            <div className="page flex flex-wrap items-center gap-3" style={{ paddingBlock: 'var(--space-2)' }}>
+            <div
+              className="page flex flex-wrap items-center gap-3"
+              style={{ paddingBlock: 'var(--space-2)' }}
+            >
               <Link
                 href="/admin"
                 style={{ textDecoration: 'none', color: 'var(--color-ink)', lineHeight: 1.1 }}
@@ -58,7 +61,10 @@ export default async function AdminLayout({ children }: { children: ReactNode })
                 </span>
               </Link>
 
-              <AdminNav role={session.user.role} userName={session.user.name ?? session.user.email ?? ''} />
+              <AdminNav
+                role={session.user.role}
+                userName={session.user.name ?? session.user.email ?? ''}
+              />
             </div>
           </header>
 

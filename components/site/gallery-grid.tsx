@@ -190,7 +190,9 @@ export function GalleryGrid({ items }: { items: GalleryEntry[] }) {
             if (event.target === event.currentTarget) close();
           }}
         >
-          <div style={{ display: 'grid', gap: 'var(--space-3)', maxInlineSize: 'min(64rem, 100%)' }}>
+          <div
+            style={{ display: 'grid', gap: 'var(--space-3)', maxInlineSize: 'min(64rem, 100%)' }}
+          >
             <div className="flex items-center gap-2">
               <span className="kicker" style={{ color: 'var(--color-bg)' }} aria-live="polite">
                 {t('counter', { index: openIndex! + 1, total: visible.length })}
@@ -204,7 +206,12 @@ export function GalleryGrid({ items }: { items: GalleryEntry[] }) {
                   onClick={() => step(-1)}
                   style={{ color: 'var(--color-bg)' }}
                 >
-                  <CaretLeft size={20} weight="bold" aria-hidden="true" className="rtl:rotate-180" />
+                  <CaretLeft
+                    size={20}
+                    weight="bold"
+                    aria-hidden="true"
+                    className="rtl:rotate-180"
+                  />
                 </Button>
                 <Button
                   variant="ghost"
@@ -214,7 +221,12 @@ export function GalleryGrid({ items }: { items: GalleryEntry[] }) {
                   onClick={() => step(1)}
                   style={{ color: 'var(--color-bg)' }}
                 >
-                  <CaretRight size={20} weight="bold" aria-hidden="true" className="rtl:rotate-180" />
+                  <CaretRight
+                    size={20}
+                    weight="bold"
+                    aria-hidden="true"
+                    className="rtl:rotate-180"
+                  />
                 </Button>
                 <Button
                   variant="ghost"

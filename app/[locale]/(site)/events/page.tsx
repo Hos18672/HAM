@@ -1,7 +1,12 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
-import { getPageHeader, getUpcomingEvents, getPastEvents, getSettings } from '@/lib/db/queries/content';
+import {
+  getPageHeader,
+  getUpcomingEvents,
+  getPastEvents,
+  getSettings,
+} from '@/lib/db/queries/content';
 import { PageHead, SectionHead } from '@/components/site/page-head';
 import { EventCard } from '@/components/site/event-card';
 import { EditableEntry, EditableAdd } from '@/components/editable/editable-list';
@@ -55,7 +60,11 @@ export default async function EventsPage({ params }: { params: Promise<{ locale:
             <ul className="columns-feature" style={{ listStyle: 'none', margin: 0, padding: 0 }}>
               {upcoming.map((event) => (
                 <li key={event.id} data-rise>
-                  <EditableEntry entity="event" id={event.id} isLast={upcoming.length + past.length <= 1}>
+                  <EditableEntry
+                    entity="event"
+                    id={event.id}
+                    isLast={upcoming.length + past.length <= 1}
+                  >
                     <EventCard event={event} locale={typed} />
                   </EditableEntry>
                 </li>

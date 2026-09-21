@@ -2,7 +2,11 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { Compass as CompassIcon, MapPin, ArrowCounterClockwise } from '@phosphor-icons/react/dist/ssr';
+import {
+  Compass as CompassIcon,
+  MapPin,
+  ArrowCounterClockwise,
+} from '@phosphor-icons/react/dist/ssr';
 import { qiblaFrom, HOUSE, type QiblaResult } from '@/lib/qibla';
 import { formatBearing, formatDistanceKm } from '@/lib/i18n/format';
 import { Button } from '../ui/button';
@@ -183,21 +187,30 @@ export function Compass({ locale }: { locale: Locale }) {
                     style={{ fontSize: 'var(--text-2xl)', fontWeight: 'var(--weight-bold)' }}
                   >
                     {formatDistanceKm(qibla.distanceKm, locale)}{' '}
-                    <span style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-regular)' }}>
+                    <span
+                      style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-regular)' }}
+                    >
                       <span className="ltr-island">{t('kilometres')}</span>
                     </span>
                   </span>
                 }
               />
             </div>
-            <p className="text-sm" style={{ color: 'var(--color-ink-muted)', marginBlockStart: 'var(--space-2)' }}>
+            <p
+              className="text-sm"
+              style={{ color: 'var(--color-ink-muted)', marginBlockStart: 'var(--space-2)' }}
+            >
               {t(`cardinalLong.${qibla.cardinal}`)} ·{' '}
               {geo === 'located' ? t('fromYourLocation') : t('fromHouse')}
             </p>
           </Card>
 
           <div className="flex flex-wrap gap-2">
-            <Button onClick={useMyLocation} loading={geo === 'locating'} disabled={geo === 'locating'}>
+            <Button
+              onClick={useMyLocation}
+              loading={geo === 'locating'}
+              disabled={geo === 'locating'}
+            >
               <MapPin size={18} weight="duotone" aria-hidden="true" />
               {t('useMyLocation')}
             </Button>
@@ -234,7 +247,15 @@ export function Compass({ locale }: { locale: Locale }) {
         <p className="kicker" style={{ marginBlockEnd: 'var(--space-2)' }}>
           {t('howTo')}
         </p>
-        <ol style={{ margin: 0, paddingInlineStart: '1.25em', display: 'grid', gap: 'var(--space-1)', maxInlineSize: 'var(--measure)' }}>
+        <ol
+          style={{
+            margin: 0,
+            paddingInlineStart: '1.25em',
+            display: 'grid',
+            gap: 'var(--space-1)',
+            maxInlineSize: 'var(--measure)',
+          }}
+        >
           <li>{t('step1')}</li>
           <li>{t('step2')}</li>
           <li>{t('step3')}</li>
@@ -289,14 +310,7 @@ function CompassRose({
         </defs>
 
         <circle cx="200" cy="200" r="186" fill="none" stroke="url(#ham-gold)" strokeWidth="3" />
-        <circle
-          cx="200"
-          cy="200"
-          r="160"
-          fill="none"
-          stroke="var(--color-rule)"
-          strokeWidth="1"
-        />
+        <circle cx="200" cy="200" r="160" fill="none" stroke="var(--color-rule)" strokeWidth="1" />
 
         {ticks.map((angle) => {
           const major = angle % 45 === 0;
@@ -357,10 +371,7 @@ function CompassRose({
         <g transform={`rotate(${bearing} 200 200)`}>
           <title>{needleLabel}</title>
           <path d="M200 44 L216 200 L200 186 L184 200 Z" fill="url(#ham-gold)" />
-          <path
-            d="M200 356 L184 200 L200 214 L216 200 Z"
-            fill="var(--color-neutral-400)"
-          />
+          <path d="M200 356 L184 200 L200 214 L216 200 Z" fill="var(--color-neutral-400)" />
           {/* The Kaaba mark at the needle's head. */}
           <rect
             x="188"

@@ -69,9 +69,11 @@ export async function POST(request: Request) {
   // An alt row per locale from the start, so the caption editor always has a
   // row to write into and the two languages stay in step.
   const altFromFilename = file.name.replace(/\.[^.]+$/, '').replace(/[-_]+/g, ' ');
-  await db.insert(mediaTranslations).values(
-    locales.map((locale) => ({ mediaId: row.id, locale, alt: altFromFilename, caption: '' })),
-  );
+  await db
+    .insert(mediaTranslations)
+    .values(
+      locales.map((locale) => ({ mediaId: row.id, locale, alt: altFromFilename, caption: '' })),
+    );
 
   // When the upload came from the gallery page, list it straight away.
   const addToGallery = form.get('gallery') === 'true';

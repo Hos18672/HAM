@@ -56,6 +56,53 @@ export async function checkRateLimit(
   }
 }
 
+/**
+ * Read a counter *without* consuming it.
+ *
+ * Login throttling needs this: a successful sign-in must not eat into the
+ * allowance, or a staff member who logs in five times in an afternoon locks
+ * themselves out. So the login path peeks, and only a failure records.
+ */
+export async function peekRateLimit(
+  key: string,
+  limit: number,
+  windowSeconds: number,
+): Promise<RateLimitResult> {
+  try {
+    const rows = await sql<{ count: number; window_start: Date }[]>`
+      SELECT count, window_start FROM rate_limits
+      WHERE key = ${key}
+        AND window_start >= now() - make_interval(secs => ${windowSeconds})
+    `;
+    const row = rows[0];
+    if (!row) return { allowed: true, remaining: limit, resetIn: windowSeconds };
+
+    const elapsed = (Date.now() - new Date(row.window_start).getTime()) / 1000;
+    return {
+      allowed: row.count < limit,
+      remaining: Math.max(0, limit - row.count),
+      resetIn: Math.max(0, Math.ceil(windowSeconds - elapsed)),
+    };
+  } catch (error) {
+    console.error('[rate-limit] peek failed', { key, error });
+    return { allowed: true, remaining: limit, resetIn: windowSeconds };
+  }
+}
+
+/** Record one failed attempt against a counter. */
+export async function recordAttempt(key: string, windowSeconds: number): Promise<void> {
+  await checkRateLimit(key, Number.MAX_SAFE_INTEGER, windowSeconds);
+}
+
+/** Clear a counter — called when an attempt finally succeeds. */
+export async function clearRateLimit(key: string): Promise<void> {
+  try {
+    await sql`DELETE FROM rate_limits WHERE key = ${key}`;
+  } catch (error) {
+    console.error('[rate-limit] clear failed', { key, error });
+  }
+}
+
 /** Housekeeping: drop windows nothing can still be counting against. */
 export async function pruneRateLimits(olderThanSeconds = 86_400): Promise<void> {
   await sql`DELETE FROM rate_limits WHERE window_start < now() - make_interval(secs => ${olderThanSeconds})`;

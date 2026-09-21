@@ -51,6 +51,7 @@ export async function generateMetadata({
       url: `/${locale}`,
     },
     robots: { index: true, follow: true },
+    icons: { icon: '/icon.svg' },
   };
 }
 

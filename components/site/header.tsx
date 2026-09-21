@@ -105,7 +105,7 @@ export function Header({ theme, locale }: { theme: ThemeValue; locale: Locale })
       </a>
 
       <header
-        className="sticky top-0 z-40 border-b border-rule"
+        className="border-rule sticky top-0 z-40 border-b"
         style={{
           background: 'var(--color-bg)',
           borderBlockEndWidth: condensed ? 'var(--rule-hair)' : '0',
@@ -199,11 +199,7 @@ export function Header({ theme, locale }: { theme: ThemeValue; locale: Locale })
             <ThemeToggle theme={theme} />
             <LocaleSwitch className="hidden sm:flex" />
 
-            <LinkButton
-              href={`/${locale}/support`}
-              size="sm"
-              className="hidden sm:inline-flex"
-            >
+            <LinkButton href={`/${locale}/support`} size="sm" className="hidden sm:inline-flex">
               {t('support')}
             </LinkButton>
 
@@ -253,7 +249,11 @@ export function Header({ theme, locale }: { theme: ThemeValue; locale: Locale })
           <nav
             className="page flex flex-col overflow-y-auto"
             aria-label={t('primary')}
-            style={{ gap: 'var(--space-1)', paddingBlock: 'var(--space-4)', maxBlockSize: 'calc(100dvh - var(--header-height))' }}
+            style={{
+              gap: 'var(--space-1)',
+              paddingBlock: 'var(--space-4)',
+              maxBlockSize: 'calc(100dvh - var(--header-height))',
+            }}
           >
             {NAV.map((entry) => (
               <Link

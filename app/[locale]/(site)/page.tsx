@@ -24,7 +24,7 @@ import { Icon } from '@/components/site/icon';
 import { ViennaSkyline, PatternMotif } from '@/components/site/ornaments';
 import { formatDate, formatTime } from '@/lib/i18n/format';
 import { organizationJsonLd, eventJsonLd, JsonLd } from '@/lib/seo';
-import { locales, type Locale } from '@/lib/i18n/config';
+import { isLocale, locales, type Locale } from '@/lib/i18n/config';
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -36,7 +36,10 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
   const { locale } = await params;
-  const header = await getPageHeader('home', locale as Locale);
+  // See lib/page-meta.ts: metadata runs before the layout can 404.
+  if (!isLocale(locale)) return {};
+
+  const header = await getPageHeader('home', locale);
   return {
     title: header?.title,
     description: header?.lead,
@@ -143,7 +146,12 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
               {chips.length > 0 ? (
                 <ul
                   className="flex flex-wrap gap-2"
-                  style={{ listStyle: 'none', margin: 0, padding: 0, marginBlockStart: 'var(--space-2)' }}
+                  style={{
+                    listStyle: 'none',
+                    margin: 0,
+                    padding: 0,
+                    marginBlockStart: 'var(--space-2)',
+                  }}
                 >
                   {chips.map((chip) => (
                     <li key={chip}>
@@ -199,10 +207,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
       <section className="section" data-rise>
         <div className="page">
           <SectionHead kicker={t('offers')} title={tNav('activities')} />
-          <ul
-            className="columns-feature"
-            style={{ listStyle: 'none', margin: 0, padding: 0 }}
-          >
+          <ul className="columns-feature" style={{ listStyle: 'none', margin: 0, padding: 0 }}>
             {offers.map((offer) => (
               <li key={offer.id} data-rise>
                 <EditableEntry entity="offer" id={offer.id} isLast={offers.length <= 1}>
@@ -361,7 +366,11 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
               ))}
             </ul>
             <p style={{ marginBlockStart: 'var(--space-4)' }}>
-              <Link href="/events" className="flex items-center gap-1" style={{ width: 'fit-content' }}>
+              <Link
+                href="/events"
+                className="flex items-center gap-1"
+                style={{ width: 'fit-content' }}
+              >
                 {tActions('allEvents')}
                 <ArrowRight size={16} weight="bold" aria-hidden="true" className="rtl:rotate-180" />
               </Link>
@@ -389,7 +398,11 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
               ))}
             </ul>
             <p style={{ marginBlockStart: 'var(--space-4)' }}>
-              <Link href="/courses" className="flex items-center gap-1" style={{ width: 'fit-content' }}>
+              <Link
+                href="/courses"
+                className="flex items-center gap-1"
+                style={{ width: 'fit-content' }}
+              >
                 {tActions('allCourses')}
                 <ArrowRight size={16} weight="bold" aria-hidden="true" className="rtl:rotate-180" />
               </Link>

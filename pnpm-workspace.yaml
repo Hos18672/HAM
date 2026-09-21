@@ -1,5 +1,5 @@
 onlyBuiltDependencies:
   - esbuild
-  - "@swc/core"
-  - "@parcel/watcher"
+  - '@swc/core'
+  - '@parcel/watcher'
   - unrs-resolver

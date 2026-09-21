@@ -76,26 +76,30 @@ export const FALLBACK_SETTINGS: SiteSettings = {
   mapUrl: '',
 };
 
-export const getSettings = cached(['settings'], CACHE_TAGS.settings, async (): Promise<SiteSettings> => {
-  try {
-    const [row] = await db.select().from(s.siteSettings).limit(1);
-    if (!row) return FALLBACK_SETTINGS;
-    return {
-      defaultLocale: row.defaultLocale,
-      defaultTheme: row.defaultTheme,
-      showOpeningEvent: row.showOpeningEvent,
-      contactEmail: row.contactEmail,
-      phone: row.phone,
-      address: row.address,
-      iban: row.iban,
-      mapUrl: row.mapUrl,
-    };
-  } catch {
-    // The site must render before the database exists — the first `next build`
-    // runs against an empty environment.
-    return FALLBACK_SETTINGS;
-  }
-});
+export const getSettings = cached(
+  ['settings'],
+  CACHE_TAGS.settings,
+  async (): Promise<SiteSettings> => {
+    try {
+      const [row] = await db.select().from(s.siteSettings).limit(1);
+      if (!row) return FALLBACK_SETTINGS;
+      return {
+        defaultLocale: row.defaultLocale,
+        defaultTheme: row.defaultTheme,
+        showOpeningEvent: row.showOpeningEvent,
+        contactEmail: row.contactEmail,
+        phone: row.phone,
+        address: row.address,
+        iban: row.iban,
+        mapUrl: row.mapUrl,
+      };
+    } catch {
+      // The site must render before the database exists — the first `next build`
+      // runs against an empty environment.
+      return FALLBACK_SETTINGS;
+    }
+  },
+);
 
 /* ─── Pages & blocks ─────────────────────────────────────────────────────── */
 
@@ -606,10 +610,7 @@ export const getWeekSchedule = cached(
       .from(s.weekSchedule)
       .leftJoin(
         s.weekTranslations,
-        and(
-          eq(s.weekTranslations.rowId, s.weekSchedule.id),
-          eq(s.weekTranslations.locale, locale),
-        ),
+        and(eq(s.weekTranslations.rowId, s.weekSchedule.id), eq(s.weekTranslations.locale, locale)),
       )
       .orderBy(asc(s.weekSchedule.sort));
     return rows.map((r) => ({

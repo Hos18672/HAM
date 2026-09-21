@@ -1,7 +1,13 @@
 'use client';
 
-import { useTransition } from 'react';
-import { PencilSimple, ArrowSquareOut, CheckCircle, WarningCircle } from '@phosphor-icons/react/dist/ssr';
+import { useFormStatus } from 'react-dom';
+
+import {
+  PencilSimple,
+  ArrowSquareOut,
+  CheckCircle,
+  WarningCircle,
+} from '@phosphor-icons/react/dist/ssr';
 import { endEditMode } from '@/app/actions/edit-mode';
 import type { Locale } from '@/lib/i18n/config';
 import { Button, LinkButton } from '../ui/button';
@@ -21,7 +27,6 @@ export interface EditBarLabels {
 
 export function EditBarClient({ locale, labels }: { locale: Locale; labels: EditBarLabels }) {
   const status = useEditStatus();
-  const [pending, startTransition] = useTransition();
 
   const stateLabel =
     status.state === 'saving'
@@ -75,19 +80,31 @@ export function EditBarClient({ locale, labels }: { locale: Locale; labels: Edit
         </span>
 
         <div className="ms-auto flex items-center gap-2">
-          <LinkButton href={`/admin`} variant="secondary" size="sm" style={{ color: 'var(--color-bg)', borderColor: 'var(--color-bg)' }}>
+          <LinkButton
+            href={`/admin`}
+            variant="secondary"
+            size="sm"
+            style={{ color: 'var(--color-bg)', borderColor: 'var(--color-bg)' }}
+          >
             <ArrowSquareOut size={14} weight="bold" aria-hidden="true" />
             {labels.toAdmin}
           </LinkButton>
-          <Button
-            size="sm"
-            loading={pending}
-            onClick={() => startTransition(() => void endEditMode(locale))}
-          >
-            {labels.exit}
-          </Button>
+          {/* A form action, so Next owns the redirect the action ends in. */}
+          <form action={endEditMode}>
+            <input type="hidden" name="locale" value={locale} />
+            <ExitButton label={labels.exit} />
+          </form>
         </div>
       </div>
     </div>
+  );
+}
+
+function ExitButton({ label }: { label: string }) {
+  const { pending } = useFormStatus();
+  return (
+    <Button type="submit" size="sm" loading={pending} disabled={pending}>
+      {label}
+    </Button>
   );
 }

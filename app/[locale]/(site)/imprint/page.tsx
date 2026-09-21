@@ -31,10 +31,7 @@ export default async function ImprintPage({ params }: { params: Promise<{ locale
   setRequestLocale(locale);
   const typed = locale as Locale;
 
-  const [header, settings] = await Promise.all([
-    getPageHeader('imprint', typed),
-    getSettings(),
-  ]);
+  const [header, settings] = await Promise.all([getPageHeader('imprint', typed), getSettings()]);
   if (!header) notFound();
 
   const t = await getTranslations({ locale, namespace: 'footer' });
@@ -45,8 +42,18 @@ export default async function ImprintPage({ params }: { params: Promise<{ locale
       de ? 'Medieninhaber und Herausgeber' : 'صاحب امتیاز و ناشر',
       de ? ASSOCIATION.nameDe : ASSOCIATION.nameFa,
     ],
-    [de ? 'Rechtsform' : 'شکل حقوقی', de ? 'Verein nach dem Vereinsgesetz 2002' : 'انجمن ثبت‌شده بر پایهٔ قانون انجمن‌های اتریش ۲۰۰۲'],
-    [t('zvr'), <span key="zvr" className="ltr-island">{ASSOCIATION.zvr}</span>],
+    [
+      de ? 'Rechtsform' : 'شکل حقوقی',
+      de
+        ? 'Verein nach dem Vereinsgesetz 2002'
+        : 'انجمن ثبت‌شده بر پایهٔ قانون انجمن‌های اتریش ۲۰۰۲',
+    ],
+    [
+      t('zvr'),
+      <span key="zvr" className="ltr-island">
+        {ASSOCIATION.zvr}
+      </span>,
+    ],
     [
       de ? 'Sitz' : 'نشانی',
       <span key="seat" className="ltr-island">
@@ -55,7 +62,9 @@ export default async function ImprintPage({ params }: { params: Promise<{ locale
     ],
     [
       de ? 'Vertretungsbefugtes Organ' : 'نمایندهٔ قانونی',
-      de ? 'Der Vorstand, vertreten durch die Obfrau bzw. den Obmann' : 'هیئت مدیره، به نمایندگی رئیس انجمن',
+      de
+        ? 'Der Vorstand, vertreten durch die Obfrau bzw. den Obmann'
+        : 'هیئت مدیره، به نمایندگی رئیس انجمن',
     ],
     [
       de ? 'Kontakt' : 'تماس',
@@ -72,7 +81,9 @@ export default async function ImprintPage({ params }: { params: Promise<{ locale
     ],
     [
       de ? 'Aufsichtsbehörde' : 'مرجع نظارتی',
-      de ? 'Vereinsbehörde: Landespolizeidirektion Wien' : 'ادارهٔ انجمن‌ها: ادارهٔ کل پلیس ایالتی وین',
+      de
+        ? 'Vereinsbehörde: Landespolizeidirektion Wien'
+        : 'ادارهٔ انجمن‌ها: ادارهٔ کل پلیس ایالتی وین',
     ],
   ];
 
@@ -81,13 +92,23 @@ export default async function ImprintPage({ params }: { params: Promise<{ locale
       <PageHead header={header} locale={typed} />
       <section className="section">
         <div className="page">
-          <dl style={{ display: 'grid', gap: 'var(--space-4)', maxInlineSize: 'var(--measure)', margin: 0 }}>
+          <dl
+            style={{
+              display: 'grid',
+              gap: 'var(--space-4)',
+              maxInlineSize: 'var(--measure)',
+              margin: 0,
+            }}
+          >
             {rows.map(([label, value]) => (
               <FactPair key={label} label={label} value={value} />
             ))}
           </dl>
 
-          <div className="prose" style={{ marginBlockStart: 'var(--space-6)', maxInlineSize: 'var(--measure)' }}>
+          <div
+            className="prose"
+            style={{ marginBlockStart: 'var(--space-6)', maxInlineSize: 'var(--measure)' }}
+          >
             <h2 style={{ fontSize: 'var(--text-xl)' }}>
               {de ? 'Online-Streitbeilegung' : 'حل اختلاف آنلاین'}
             </h2>

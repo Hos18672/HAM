@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Haus aller Menschen">
+  <!-- Paper ground, ink rule, and the eight-point girih star of the association's motif. -->
+  <rect width="64" height="64" rx="6" fill="#f3f2f2"/>
+  <rect x="8" y="8" width="48" height="4" fill="#201e1d"/>
+  <rect x="8" y="14" width="48" height="1" fill="#201e1d"/>
+  <g fill="none" stroke="#0088b0" stroke-width="2.5">
+    <rect x="20" y="26" width="24" height="24"/>
+    <rect x="20" y="26" width="24" height="24" transform="rotate(45 32 38)"/>
+  </g>
+  <circle cx="32" cy="38" r="3" fill="#d6006c"/>
+</svg>

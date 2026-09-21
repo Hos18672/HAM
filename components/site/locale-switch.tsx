@@ -30,7 +30,11 @@ export function LocaleSwitch({ className }: { className?: string }) {
             lang={locale}
             className="nav-link"
             aria-current={isCurrent ? 'true' : undefined}
-            style={isCurrent ? { fontWeight: 'var(--weight-bold)', color: 'var(--color-ink)' } : undefined}
+            style={
+              isCurrent
+                ? { fontWeight: 'var(--weight-bold)', color: 'var(--color-ink)' }
+                : undefined
+            }
           >
             {localeLabel[locale]}
           </Link>

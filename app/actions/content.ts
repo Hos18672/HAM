@@ -94,7 +94,12 @@ export async function updateField(input: unknown): Promise<ActionResult> {
       // surface serves a paragraph and a list.
       const payload =
         field === 'items'
-          ? { items: value.split('\n').map((line) => line.trim()).filter(Boolean) }
+          ? {
+              items: value
+                .split('\n')
+                .map((line) => line.trim())
+                .filter(Boolean),
+            }
           : { text: value };
 
       await sql`
@@ -171,7 +176,8 @@ export async function listOperation(input: unknown): Promise<ActionResult> {
   try {
     switch (op) {
       case 'add': {
-        const scope = definition.parentColumn && parentId ? { [definition.parentColumn]: parentId } : {};
+        const scope =
+          definition.parentColumn && parentId ? { [definition.parentColumn]: parentId } : {};
         const defaults = { ...(definition.defaults ?? {}), ...scope };
 
         // New entries land at the end of the list.
@@ -245,9 +251,10 @@ export async function listOperation(input: unknown): Promise<ActionResult> {
 
         // Never leave a list empty: the page would have nothing to render and
         // no handle to add a new entry from.
-        const [countRow] = definition.parentColumn && parentId
-          ? await sql`SELECT COUNT(*)::int AS count FROM ${sql(definition.base)} WHERE ${sql(definition.parentColumn)} = ${parentId}`
-          : await sql`SELECT COUNT(*)::int AS count FROM ${sql(definition.base)}`;
+        const [countRow] =
+          definition.parentColumn && parentId
+            ? await sql`SELECT COUNT(*)::int AS count FROM ${sql(definition.base)} WHERE ${sql(definition.parentColumn)} = ${parentId}`
+            : await sql`SELECT COUNT(*)::int AS count FROM ${sql(definition.base)}`;
         if ((countRow?.count ?? 0) <= 1) return fail('last-entry');
 
         // The translations go with it: every FK is ON DELETE CASCADE.
@@ -263,21 +270,21 @@ export async function listOperation(input: unknown): Promise<ActionResult> {
         if (!definition.sortable) return fail('not-sortable');
 
         const direction = op === 'moveUp' ? -1 : 1;
-        const [current] =
-          await sql`SELECT id, sort FROM ${sql(definition.base)} WHERE id = ${id}`;
+        const [current] = await sql`SELECT id, sort FROM ${sql(definition.base)} WHERE id = ${id}`;
         if (!current) return fail('not-found');
 
         // The neighbour in the chosen direction, scoped to the parent when the
         // list is nested.
-        const neighbours = definition.parentColumn && parentId
-          ? await sql`
+        const neighbours =
+          definition.parentColumn && parentId
+            ? await sql`
               SELECT id, sort FROM ${sql(definition.base)}
               WHERE ${sql(definition.parentColumn)} = ${parentId}
                 AND sort ${direction < 0 ? sql`<` : sql`>`} ${current.sort}
               ORDER BY sort ${direction < 0 ? sql`DESC` : sql`ASC`}
               LIMIT 1
             `
-          : await sql`
+            : await sql`
               SELECT id, sort FROM ${sql(definition.base)}
               WHERE sort ${direction < 0 ? sql`<` : sql`>`} ${current.sort}
               ORDER BY sort ${direction < 0 ? sql`DESC` : sql`ASC`}

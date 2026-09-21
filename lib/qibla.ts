@@ -58,8 +58,7 @@ export function greatCircleDistanceKm(from: Coordinates, to: Coordinates = KAABA
   const dPhi = (to.latitude - from.latitude) * DEG;
   const dLambda = (to.longitude - from.longitude) * DEG;
 
-  const a =
-    Math.sin(dPhi / 2) ** 2 + Math.cos(phi1) * Math.cos(phi2) * Math.sin(dLambda / 2) ** 2;
+  const a = Math.sin(dPhi / 2) ** 2 + Math.cos(phi1) * Math.cos(phi2) * Math.sin(dLambda / 2) ** 2;
   return 2 * EARTH_RADIUS_KM * Math.asin(Math.min(1, Math.sqrt(a)));
 }
 

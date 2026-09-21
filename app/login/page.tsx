@@ -40,7 +40,10 @@ export default async function LoginPage({
           </p>
 
           <div style={{ marginBlockStart: 'var(--space-6)' }}>
-            <LoginForm redirectTo={from && from.startsWith('/admin') ? from : '/admin'} initialError={error} />
+            <LoginForm
+              redirectTo={from && from.startsWith('/admin') ? from : '/admin'}
+              initialError={error}
+            />
           </div>
         </main>
       </body>

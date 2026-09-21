@@ -31,7 +31,15 @@ export function PatternMotif() {
       <defs>
         <pattern id="ham-girih" width="80" height="80" patternUnits="userSpaceOnUse">
           {/* Two squares at 45° to each other make the eight-point star. */}
-          <rect x="16" y="16" width="48" height="48" fill="none" stroke="currentColor" strokeWidth="1.5" />
+          <rect
+            x="16"
+            y="16"
+            width="48"
+            height="48"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+          />
           <rect
             x="16"
             y="16"
@@ -44,7 +52,11 @@ export function PatternMotif() {
           />
           <circle cx="40" cy="40" r="4" fill="currentColor" />
           {/* The connecting strapwork between neighbouring stars. */}
-          <path d="M40 0 L40 16 M40 64 L40 80 M0 40 L16 40 M64 40 L80 40" stroke="currentColor" strokeWidth="1" />
+          <path
+            d="M40 0 L40 16 M40 64 L40 80 M0 40 L16 40 M64 40 L80 40"
+            stroke="currentColor"
+            strokeWidth="1"
+          />
         </pattern>
       </defs>
       <rect width="400" height="400" fill="url(#ham-girih)" />

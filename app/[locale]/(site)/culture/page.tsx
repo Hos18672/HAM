@@ -44,7 +44,10 @@ export default async function CulturePage({ params }: { params: Promise<{ locale
       {chips.length > 0 ? (
         <section className="section-tight">
           <div className="page">
-            <ul className="flex flex-wrap gap-2" style={{ listStyle: 'none', margin: 0, padding: 0 }}>
+            <ul
+              className="flex flex-wrap gap-2"
+              style={{ listStyle: 'none', margin: 0, padding: 0 }}
+            >
               {chips.map((chip) => (
                 <li key={chip}>
                   <Tag>{chip}</Tag>

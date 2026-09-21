@@ -436,8 +436,7 @@ export async function seed() {
 }
 
 // Run when invoked directly (`pnpm db:seed`), not when imported by a test.
-const invokedDirectly =
-  process.argv[1] !== undefined && process.argv[1].includes('seed');
+const invokedDirectly = process.argv[1] !== undefined && process.argv[1].includes('seed');
 
 if (invokedDirectly) {
   seed()

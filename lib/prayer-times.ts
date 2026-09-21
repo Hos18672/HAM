@@ -75,9 +75,7 @@ export function julianDay(year: number, month: number, day: number): number {
   }
   const a = Math.floor(y / 100);
   const b = 2 - a + Math.floor(a / 4);
-  return (
-    Math.floor(365.25 * (y + 4716)) + Math.floor(30.6001 * (m + 1)) + day + b - 1524.5
-  );
+  return Math.floor(365.25 * (y + 4716)) + Math.floor(30.6001 * (m + 1)) + day + b - 1524.5;
 }
 
 export interface SunPosition {
@@ -211,7 +209,15 @@ function computeDayHours(
   day: number,
   coords: Coordinates,
   offset: number,
-): { fajr: number | null; sunrise: number | null; dhuhr: number; asr: number | null; sunset: number | null; maghrib: number | null; isha: number | null } {
+): {
+  fajr: number | null;
+  sunrise: number | null;
+  dhuhr: number;
+  asr: number | null;
+  sunset: number | null;
+  maghrib: number | null;
+  isha: number | null;
+} {
   // Evaluate the sun at local noon rather than 00:00 UT: the declination moves
   // over a day, and noon is the centre of the interval we are solving in.
   const jd = julianDay(year, month, day) + (12 - coords.longitude / 15 - offset) / 24;

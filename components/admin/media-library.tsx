@@ -20,7 +20,13 @@ const CATEGORIES = [
   { value: 'house', label: 'Haus' },
 ];
 
-export function MediaLibrary({ items, storageReady }: { items: MediaRow[]; storageReady: boolean }) {
+export function MediaLibrary({
+  items,
+  storageReady,
+}: {
+  items: MediaRow[];
+  storageReady: boolean;
+}) {
   const router = useRouter();
   const toast = useToast();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -227,7 +233,10 @@ function MediaCard({
     setSaving(true);
     const result = await saveMediaMeta({ id: item.id, alt, caption, category });
     setSaving(false);
-    toast.show(result.ok ? 'Gespeichert.' : 'Das hat nicht geklappt.', result.ok ? 'success' : 'error');
+    toast.show(
+      result.ok ? 'Gespeichert.' : 'Das hat nicht geklappt.',
+      result.ok ? 'success' : 'error',
+    );
     if (result.ok) router.refresh();
   }
 
@@ -249,9 +258,7 @@ function MediaCard({
 
       <p className="text-xs" style={{ color: 'var(--color-ink-faint)' }}>
         {item.width}×{item.height} · {item.mime.replace('image/', '').toUpperCase()} ·{' '}
-        {item.usageCount === 0
-          ? 'nirgends verwendet'
-          : `${item.usageCount}× verwendet`}
+        {item.usageCount === 0 ? 'nirgends verwendet' : `${item.usageCount}× verwendet`}
       </p>
 
       <Field label="Alternativtext (Deutsch)" hint="Beschreibt das Bild für blinde Besucher.">
@@ -303,7 +310,11 @@ function MediaCard({
       {item.galleryItemId ? (
         <Field label="Kategorie in der Galerie">
           {(props) => (
-            <Select {...props} value={category} onChange={(event) => setCategory(event.target.value)}>
+            <Select
+              {...props}
+              value={category}
+              onChange={(event) => setCategory(event.target.value)}
+            >
               {CATEGORIES.map((option) => (
                 <option key={option.value} value={option.value}>
                   {option.label}
@@ -326,13 +337,26 @@ function MediaCard({
         ) : null}
 
         {confirming ? (
-          <Button variant="danger" size="sm" onClick={onDelete} onBlur={onCancelConfirm} disabled={pending}>
+          <Button
+            variant="danger"
+            size="sm"
+            onClick={onDelete}
+            onBlur={onCancelConfirm}
+            disabled={pending}
+          >
             {item.usageCount > 0
               ? `Trotz ${item.usageCount} Verwendung${item.usageCount === 1 ? '' : 'en'} löschen?`
               : 'Wirklich löschen?'}
           </Button>
         ) : (
-          <Button variant="ghost" size="sm" iconOnly aria-label="Löschen" onClick={onConfirm} disabled={pending}>
+          <Button
+            variant="ghost"
+            size="sm"
+            iconOnly
+            aria-label="Löschen"
+            onClick={onConfirm}
+            disabled={pending}
+          >
             <Trash size={14} weight="bold" aria-hidden="true" />
           </Button>
         )}

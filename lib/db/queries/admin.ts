@@ -26,7 +26,10 @@ export interface AreaTile {
 }
 
 /** Count rows in a base table and multiply by its translatable fields. */
-async function tally(table: string, fieldsPerEntry: number): Promise<{ entries: number; fields: number }> {
+async function tally(
+  table: string,
+  fieldsPerEntry: number,
+): Promise<{ entries: number; fields: number }> {
   try {
     const [row] = await sql<{ n: number }[]>`SELECT COUNT(*)::int AS n FROM ${sql(table)}`;
     const entries = row?.n ?? 0;
@@ -38,39 +41,131 @@ async function tally(table: string, fieldsPerEntry: number): Promise<{ entries: 
 }
 
 export async function getAreaTiles(): Promise<AreaTile[]> {
-  const [pages, blocks, offers, courses, events, sports, culture, community, values, week, duas, occasions, gallery, memberships] =
-    await Promise.all([
-      tally('pages', 3),
-      tally('content_blocks', 1),
-      tally('offers', 2),
-      tally('courses', 5),
-      tally('events', 3),
-      tally('sports', 3),
-      tally('culture_cards', 2),
-      tally('community_cards', 2),
-      tally('values_items', 2),
-      tally('week_schedule', 2),
-      tally('duas', 4),
-      tally('occasions', 2),
-      tally('gallery_items', 2),
-      tally('memberships', 2),
-    ]);
+  const [
+    pages,
+    blocks,
+    offers,
+    courses,
+    events,
+    sports,
+    culture,
+    community,
+    values,
+    week,
+    duas,
+    occasions,
+    gallery,
+    memberships,
+  ] = await Promise.all([
+    tally('pages', 3),
+    tally('content_blocks', 1),
+    tally('offers', 2),
+    tally('courses', 5),
+    tally('events', 3),
+    tally('sports', 3),
+    tally('culture_cards', 2),
+    tally('community_cards', 2),
+    tally('values_items', 2),
+    tally('week_schedule', 2),
+    tally('duas', 4),
+    tally('occasions', 2),
+    tally('gallery_items', 2),
+    tally('memberships', 2),
+  ]);
 
   return [
-    { key: 'pages', label: 'Seitenköpfe', group: 'Website', href: '/admin/content/pages', ...pick(pages) },
-    { key: 'blocks', label: 'Textbausteine', group: 'Startseite', href: '/admin/content/blocks', ...pick(blocks) },
-    { key: 'offers', label: 'Angebote', group: 'Startseite', href: '/admin/content/offers', ...pick(offers) },
-    { key: 'courses', label: 'Kurse', group: 'Programm', href: '/admin/content/courses', ...pick(courses) },
-    { key: 'events', label: 'Termine', group: 'Programm', href: '/admin/content/events', ...pick(events) },
-    { key: 'sports', label: 'Sport', group: 'Programm', href: '/admin/content/sports', ...pick(sports) },
-    { key: 'culture', label: 'Kultur', group: 'Programm', href: '/admin/content/culture', ...pick(culture) },
-    { key: 'duas', label: 'Bittgebete', group: 'Programm', href: '/admin/content/duas', ...pick(duas) },
-    { key: 'occasions', label: 'Gedenktage', group: 'Programm', href: '/admin/content/occasions', ...pick(occasions) },
+    {
+      key: 'pages',
+      label: 'Seitenköpfe',
+      group: 'Website',
+      href: '/admin/content/pages',
+      ...pick(pages),
+    },
+    {
+      key: 'blocks',
+      label: 'Textbausteine',
+      group: 'Startseite',
+      href: '/admin/content/blocks',
+      ...pick(blocks),
+    },
+    {
+      key: 'offers',
+      label: 'Angebote',
+      group: 'Startseite',
+      href: '/admin/content/offers',
+      ...pick(offers),
+    },
+    {
+      key: 'courses',
+      label: 'Kurse',
+      group: 'Programm',
+      href: '/admin/content/courses',
+      ...pick(courses),
+    },
+    {
+      key: 'events',
+      label: 'Termine',
+      group: 'Programm',
+      href: '/admin/content/events',
+      ...pick(events),
+    },
+    {
+      key: 'sports',
+      label: 'Sport',
+      group: 'Programm',
+      href: '/admin/content/sports',
+      ...pick(sports),
+    },
+    {
+      key: 'culture',
+      label: 'Kultur',
+      group: 'Programm',
+      href: '/admin/content/culture',
+      ...pick(culture),
+    },
+    {
+      key: 'duas',
+      label: 'Bittgebete',
+      group: 'Programm',
+      href: '/admin/content/duas',
+      ...pick(duas),
+    },
+    {
+      key: 'occasions',
+      label: 'Gedenktage',
+      group: 'Programm',
+      href: '/admin/content/occasions',
+      ...pick(occasions),
+    },
     { key: 'gallery', label: 'Galerie', group: 'Programm', href: '/admin/media', ...pick(gallery) },
-    { key: 'community', label: 'Gemeinschaft', group: 'Verein', href: '/admin/content/community', ...pick(community) },
-    { key: 'values', label: 'Werte', group: 'Verein', href: '/admin/content/values', ...pick(values) },
-    { key: 'week', label: 'Wochenplan', group: 'Verein', href: '/admin/content/week', ...pick(week) },
-    { key: 'memberships', label: 'Mitgliedsbeiträge', group: 'Verein', href: '/admin/content/memberships', ...pick(memberships) },
+    {
+      key: 'community',
+      label: 'Gemeinschaft',
+      group: 'Verein',
+      href: '/admin/content/community',
+      ...pick(community),
+    },
+    {
+      key: 'values',
+      label: 'Werte',
+      group: 'Verein',
+      href: '/admin/content/values',
+      ...pick(values),
+    },
+    {
+      key: 'week',
+      label: 'Wochenplan',
+      group: 'Verein',
+      href: '/admin/content/week',
+      ...pick(week),
+    },
+    {
+      key: 'memberships',
+      label: 'Mitgliedsbeiträge',
+      group: 'Verein',
+      href: '/admin/content/memberships',
+      ...pick(memberships),
+    },
   ];
 }
 
@@ -192,7 +287,10 @@ export async function getMediaLibrary(): Promise<MediaRow[]> {
   if (rows.length === 0) return [];
 
   const translations = await db.select().from(s.mediaTranslations);
-  const byMedia = new Map<string, { alt: Record<string, string>; caption: Record<string, string> }>();
+  const byMedia = new Map<
+    string,
+    { alt: Record<string, string>; caption: Record<string, string> }
+  >();
   for (const translation of translations) {
     const entry = byMedia.get(translation.mediaId) ?? { alt: {}, caption: {} };
     entry.alt[translation.locale] = translation.alt;
@@ -241,7 +339,9 @@ export async function adminSearch(term: string, limit = 50): Promise<AdminHit[]>
   if (trimmed.length < 2) return [];
   const pattern = `%${trimmed}%`;
 
-  const rows = await sql<{ entity: string; id: string; locale: string; field: string; value: string }[]>`
+  const rows = await sql<
+    { entity: string; id: string; locale: string; field: string; value: string }[]
+  >`
     SELECT 'page' AS entity, page_id::text AS id, locale::text, 'title' AS field, title AS value
       FROM page_translations WHERE title ILIKE ${pattern}
     UNION ALL

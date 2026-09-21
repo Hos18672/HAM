@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { getPageHeader } from './db/queries/content';
-import type { Locale } from './i18n/config';
+import { isLocale } from './i18n/config';
 
 /**
  * Per-page metadata, read from the same page row the heading renders — so the
@@ -8,7 +8,13 @@ import type { Locale } from './i18n/config';
  * editor changing one changes both.
  */
 export async function pageMetadata(key: string, locale: string, path: string): Promise<Metadata> {
-  const header = await getPageHeader(key, locale as Locale);
+  // `generateMetadata` runs before the layout's `notFound()`, and Next routes
+  // stray requests such as /favicon.ico through the [locale] segment — so the
+  // segment value has to be checked here too, before it reaches a query that
+  // binds it to a Postgres enum.
+  if (!isLocale(locale)) return {};
+
+  const header = await getPageHeader(key, locale);
   const canonical = `/${locale}${path}`;
 
   return {

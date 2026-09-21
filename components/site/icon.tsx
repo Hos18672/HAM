@@ -6,11 +6,7 @@ import type { IconProps } from '@phosphor-icons/react';
  * having to import the whole Phosphor set eagerly. Duotone is the weight the
  * design system specifies.
  */
-export function Icon({
-  name,
-  size = 28,
-  ...props
-}: { name: string } & Omit<IconProps, 'ref'>) {
+export function Icon({ name, size = 28, ...props }: { name: string } & Omit<IconProps, 'ref'>) {
   const registry = Icons as unknown as Record<string, React.ComponentType<IconProps>>;
   const Component = registry[name] ?? registry.Sparkle;
   if (!Component) return null;

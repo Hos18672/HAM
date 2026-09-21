@@ -5,7 +5,7 @@ import { eq, sql as raw } from 'drizzle-orm';
 import { db } from './db';
 import { users } from './db/schema';
 import { credentialsSchema } from './validation/auth';
-import { checkRateLimit } from './rate-limit';
+import { peekRateLimit, recordAttempt, clearRateLimit } from './rate-limit';
 
 export type { UserRole } from '@/types/next-auth';
 import type { UserRole } from '@/types/next-auth';
@@ -13,6 +13,9 @@ import type { UserRole } from '@/types/next-auth';
 /** Eight hours: a working day. Staff edit during opening hours; an overnight
  *  session left open on a shared machine is a liability, not a convenience. */
 const SESSION_MAX_AGE = 8 * 60 * 60;
+
+/** Failed logins are counted over a fifteen-minute window. */
+const LOGIN_WINDOW_SECONDS = 15 * 60;
 
 /** Cost 12. Roughly 250 ms on the hosting tier — slow enough to make offline
  *  cracking expensive, fast enough that a login does not feel broken. */
@@ -37,10 +40,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         if (!parsed.success) return null;
         const { email, password } = parsed.data;
 
-        // Rate-limit by address: five failed attempts in fifteen minutes.
-        // Keyed on the account rather than the IP so a shared office NAT does
-        // not lock everyone out when one person mistypes.
-        const limit = await checkRateLimit(`login:${email.toLowerCase()}`, 5, 15 * 60);
+        // Five *failed* attempts in fifteen minutes. Keyed on the account
+        // rather than the IP, so a shared office NAT does not lock everyone
+        // out when one person mistypes — and peeked rather than consumed, so
+        // a successful sign-in never eats into the allowance.
+        const limitKey = `login:${email.toLowerCase()}`;
+        const limit = await peekRateLimit(limitKey, 5, LOGIN_WINDOW_SECONDS);
         if (!limit.allowed) return null;
 
         const [user] = await db
@@ -51,10 +56,17 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
         // Compare against a dummy hash when the account does not exist, so a
         // missing address and a wrong password take the same time to answer.
-        const hash = user?.passwordHash ?? '$2a$12$invalidinvalidinvalidinvalidinvalidinvalidinvalidinvalidxx';
+        const hash =
+          user?.passwordHash ?? '$2a$12$invalidinvalidinvalidinvalidinvalidinvalidinvalidinvalidxx';
         const ok = await bcrypt.compare(password, hash);
-        if (!ok || !user) return null;
+        if (!ok || !user) {
+          await recordAttempt(limitKey, LOGIN_WINDOW_SECONDS);
+          return null;
+        }
 
+        // A success wipes the slate, so a mistyped password earlier in the
+        // afternoon cannot accumulate towards a lockout.
+        await clearRateLimit(limitKey);
         return { id: user.id, email: user.email, name: user.name, role: user.role };
       },
     }),

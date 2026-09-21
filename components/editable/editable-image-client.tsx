@@ -27,7 +27,10 @@ export function EditableImageClient({
   const [over, setOver] = useState(false);
 
   async function upload(file: File) {
-    if (file.size > MAX_UPLOAD_BYTES || !(ALLOWED_UPLOAD_MIME as readonly string[]).includes(file.type)) {
+    if (
+      file.size > MAX_UPLOAD_BYTES ||
+      !(ALLOWED_UPLOAD_MIME as readonly string[]).includes(file.type)
+    ) {
       status.setFailed('bad-file');
       return;
     }

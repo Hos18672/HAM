@@ -73,7 +73,12 @@ export default async function ContactPage({
                 </p>
                 {settings.phone ? (
                   <p className="flex items-center gap-2">
-                    <Phone size={20} weight="duotone" aria-hidden="true" style={{ flexShrink: 0 }} />
+                    <Phone
+                      size={20}
+                      weight="duotone"
+                      aria-hidden="true"
+                      style={{ flexShrink: 0 }}
+                    />
                     <a href={`tel:${settings.phone.replace(/\s/g, '')}`}>
                       <span className="ltr-island">{settings.phone}</span>
                     </a>
@@ -81,7 +86,12 @@ export default async function ContactPage({
                 ) : null}
                 {settings.contactEmail ? (
                   <p className="flex items-center gap-2">
-                    <EnvelopeSimple size={20} weight="duotone" aria-hidden="true" style={{ flexShrink: 0 }} />
+                    <EnvelopeSimple
+                      size={20}
+                      weight="duotone"
+                      aria-hidden="true"
+                      style={{ flexShrink: 0 }}
+                    />
                     <a href={`mailto:${settings.contactEmail}`}>
                       <span className="ltr-island">{settings.contactEmail}</span>
                     </a>
@@ -107,7 +117,15 @@ export default async function ContactPage({
               {hours.length > 0 ? (
                 <div style={{ display: 'grid', gap: 'var(--space-1)' }}>
                   <p className="kicker">{t('openingHours')}</p>
-                  <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'grid', gap: '2px' }}>
+                  <ul
+                    style={{
+                      listStyle: 'none',
+                      margin: 0,
+                      padding: 0,
+                      display: 'grid',
+                      gap: '2px',
+                    }}
+                  >
                     {hours.map((line) => (
                       <li key={line}>{line}</li>
                     ))}

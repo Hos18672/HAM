@@ -78,14 +78,26 @@ export default async function SupportPage({ params }: { params: Promise<{ locale
                         fontWeight: 'var(--weight-bold)',
                       }}
                     />
-                    <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'grid', gap: 'var(--space-1)' }}>
+                    <ul
+                      style={{
+                        listStyle: 'none',
+                        margin: 0,
+                        padding: 0,
+                        display: 'grid',
+                        gap: 'var(--space-1)',
+                      }}
+                    >
                       {tier.benefits.map((benefit) => (
                         <li key={benefit} className="flex items-start gap-2 text-sm">
                           <Check
                             size={16}
                             weight="bold"
                             aria-hidden="true"
-                            style={{ color: 'var(--color-accent)', flexShrink: 0, marginBlockStart: '0.25em' }}
+                            style={{
+                              color: 'var(--color-accent)',
+                              flexShrink: 0,
+                              marginBlockStart: '0.25em',
+                            }}
                           />
                           {benefit}
                         </li>

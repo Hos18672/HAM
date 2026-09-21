@@ -44,12 +44,14 @@ export default async function PrayerPage({
   const day = await getPrayerDay(now);
 
   // Fall back to the current month for anything that is not a sane year/month.
-  const year = Number.isInteger(Number(y)) && Number(y) > 1900 && Number(y) < 2200
-    ? Number(y)
-    : now.getFullYear();
-  const month = Number.isInteger(Number(m)) && Number(m) >= 1 && Number(m) <= 12
-    ? Number(m)
-    : now.getMonth() + 1;
+  const year =
+    Number.isInteger(Number(y)) && Number(y) > 1900 && Number(y) < 2200
+      ? Number(y)
+      : now.getFullYear();
+  const month =
+    Number.isInteger(Number(m)) && Number(m) >= 1 && Number(m) <= 12
+      ? Number(m)
+      : now.getMonth() + 1;
 
   const calendar = await getCalendarMonth(year, month, typed, now);
 

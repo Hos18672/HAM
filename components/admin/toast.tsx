@@ -70,9 +70,19 @@ export function ToastProvider({ children }: { children: ReactNode }) {
             }}
           >
             {toast.tone === 'success' ? (
-              <CheckCircle size={18} weight="duotone" aria-hidden="true" style={{ color: 'var(--color-accent)', flexShrink: 0 }} />
+              <CheckCircle
+                size={18}
+                weight="duotone"
+                aria-hidden="true"
+                style={{ color: 'var(--color-accent)', flexShrink: 0 }}
+              />
             ) : toast.tone === 'error' ? (
-              <WarningCircle size={18} weight="duotone" aria-hidden="true" style={{ color: 'var(--color-accent-2)', flexShrink: 0 }} />
+              <WarningCircle
+                size={18}
+                weight="duotone"
+                aria-hidden="true"
+                style={{ color: 'var(--color-accent-2)', flexShrink: 0 }}
+              />
             ) : (
               <Info size={18} weight="duotone" aria-hidden="true" style={{ flexShrink: 0 }} />
             )}

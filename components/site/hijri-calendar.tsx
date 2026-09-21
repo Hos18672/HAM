@@ -27,8 +27,10 @@ export async function HijriCalendar({
   const t = await getTranslations({ locale, namespace: 'prayer' });
   const weekdays = t.raw('weekdays') as string[];
 
-  const previous = month.month === 1 ? { y: month.year - 1, m: 12 } : { y: month.year, m: month.month - 1 };
-  const next = month.month === 12 ? { y: month.year + 1, m: 1 } : { y: month.year, m: month.month + 1 };
+  const previous =
+    month.month === 1 ? { y: month.year - 1, m: 12 } : { y: month.year, m: month.month - 1 };
+  const next =
+    month.month === 12 ? { y: month.year + 1, m: 1 } : { y: month.year, m: month.month + 1 };
 
   const monthLabel = formatDate(new Date(Date.UTC(month.year, month.month - 1, 15, 12)), locale, {
     month: 'long',
@@ -189,7 +191,15 @@ export async function HijriCalendar({
             {t('occasionsNone')}
           </p>
         ) : (
-          <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'grid', gap: 'var(--space-2)' }}>
+          <ul
+            style={{
+              listStyle: 'none',
+              margin: 0,
+              padding: 0,
+              display: 'grid',
+              gap: 'var(--space-2)',
+            }}
+          >
             {month.occasions.map((occasion) => (
               <li key={`${occasion.id}-${occasion.iso}`} className="flex items-baseline gap-3">
                 <span

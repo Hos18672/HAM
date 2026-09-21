@@ -78,13 +78,16 @@ export function LoginForm({
         error={errors.password ? 'Bitte geben Sie Ihr Passwort ein.' : undefined}
       >
         {(props) => (
-          <Input type="password" autoComplete="current-password" {...props} {...register('password')} />
+          <Input
+            type="password"
+            autoComplete="current-password"
+            {...props}
+            {...register('password')}
+          />
         )}
       </Field>
 
-      <div aria-live="polite">
-        {formError ? <p className="field-error">{formError}</p> : null}
-      </div>
+      <div aria-live="polite">{formError ? <p className="field-error">{formError}</p> : null}</div>
 
       <div>
         <Button type="submit" size="lg" loading={isSubmitting} disabled={isSubmitting}>

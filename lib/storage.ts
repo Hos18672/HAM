@@ -43,7 +43,12 @@ const bucket = () => process.env.SUPABASE_STORAGE_BUCKET ?? 'media';
 
 /** Slug-safe object key: a date prefix keeps the bucket browsable by hand. */
 function objectKey(filename: string): string {
-  const extension = filename.split('.').pop()?.toLowerCase().replace(/[^a-z0-9]/g, '') ?? 'bin';
+  const extension =
+    filename
+      .split('.')
+      .pop()
+      ?.toLowerCase()
+      .replace(/[^a-z0-9]/g, '') ?? 'bin';
   const stem = filename
     .replace(/\.[^.]+$/, '')
     .toLowerCase()
@@ -118,7 +123,13 @@ export function readImageSize(buffer: Buffer): { width: number; height: number }
       }
       const marker = buffer[offset + 1]!;
       // SOF0–SOF15, excluding the non-frame markers in that range.
-      if (marker >= 0xc0 && marker <= 0xcf && marker !== 0xc4 && marker !== 0xc8 && marker !== 0xcc) {
+      if (
+        marker >= 0xc0 &&
+        marker <= 0xcf &&
+        marker !== 0xc4 &&
+        marker !== 0xc8 &&
+        marker !== 0xcc
+      ) {
         return { height: buffer.readUInt16BE(offset + 5), width: buffer.readUInt16BE(offset + 7) };
       }
       offset += 2 + buffer.readUInt16BE(offset + 2);

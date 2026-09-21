@@ -51,7 +51,16 @@ export default async function SportPage({ params }: { params: Promise<{ locale: 
             <tbody>
               {sports.map((sport) => (
                 <tr key={sport.id}>
-                  <th scope="row" style={{ borderBlockEnd: 'var(--rule-hair) solid var(--color-rule)', textTransform: 'none', letterSpacing: 0, fontSize: 'var(--text-base)', color: 'var(--color-ink)' }}>
+                  <th
+                    scope="row"
+                    style={{
+                      borderBlockEnd: 'var(--rule-hair) solid var(--color-rule)',
+                      textTransform: 'none',
+                      letterSpacing: 0,
+                      fontSize: 'var(--text-base)',
+                      color: 'var(--color-ink)',
+                    }}
+                  >
                     <EditableEntry entity="sport" id={sport.id} isLast={sports.length <= 1}>
                       <EditableText
                         entity="sport"

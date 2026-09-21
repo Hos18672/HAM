@@ -42,7 +42,13 @@ export async function CourseCard({ course, locale }: { course: Course; locale: L
         multiline
       />
 
-      <CardFoot style={{ display: 'grid', gap: 'var(--space-2)', gridTemplateColumns: 'repeat(auto-fit, minmax(8rem, 1fr))' }}>
+      <CardFoot
+        style={{
+          display: 'grid',
+          gap: 'var(--space-2)',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(8rem, 1fr))',
+        }}
+      >
         <FactPair
           label={t('targetGroup')}
           value={

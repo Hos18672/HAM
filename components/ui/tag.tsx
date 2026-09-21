@@ -7,7 +7,9 @@ export interface TagProps extends React.HTMLAttributes<HTMLSpanElement> {
 
 /** A static label. Use `FilterTag` when it is a control. */
 export function Tag({ tone = 'default', className, ...props }: TagProps) {
-  return <span className={cn('tag', tone === 'accent-2' && 'tag-accent-2', className)} {...props} />;
+  return (
+    <span className={cn('tag', tone === 'accent-2' && 'tag-accent-2', className)} {...props} />
+  );
 }
 
 export interface FilterTagProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
@@ -16,5 +18,7 @@ export interface FilterTagProps extends React.ButtonHTMLAttributes<HTMLButtonEle
 }
 
 export function FilterTag({ pressed, className, ...props }: FilterTagProps) {
-  return <button type="button" aria-pressed={pressed} className={cn('tag', className)} {...props} />;
+  return (
+    <button type="button" aria-pressed={pressed} className={cn('tag', className)} {...props} />
+  );
 }

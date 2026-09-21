@@ -3,7 +3,6 @@ import { notFound } from 'next/navigation';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { getPageHeader, getSettings } from '@/lib/db/queries/content';
 import { PageHead } from '@/components/site/page-head';
-import { FactPair } from '@/components/ui/card';
 import { pageMetadata } from '@/lib/page-meta';
 import { ASSOCIATION } from '@/lib/db/seed-data';
 import { locales, type Locale } from '@/lib/i18n/config';
@@ -101,7 +100,10 @@ export default async function ImprintPage({ params }: { params: Promise<{ locale
             }}
           >
             {rows.map(([label, value]) => (
-              <FactPair key={label} label={label} value={value} />
+              <div key={label} style={{ display: 'grid', gap: 'var(--space-1)' }}>
+                <dt className="kicker">{label}</dt>
+                <dd style={{ margin: 0, fontSize: 'var(--text-sm)' }}>{value}</dd>
+              </div>
             ))}
           </dl>
 

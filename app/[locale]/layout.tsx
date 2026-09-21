@@ -75,6 +75,24 @@ export default async function LocaleLayout({
 
   return (
     <html lang={typed} dir={localeDirection[typed]} data-theme={theme} suppressHydrationWarning>
+      <head>
+        {/*
+          Preload only the face this locale actually renders body text in.
+          Preloading both would push ~140 KB the reader does not need onto the
+          critical path, which is worse than the swap it would avoid.
+        */}
+        <link
+          rel="preload"
+          as="font"
+          type="font/woff2"
+          crossOrigin="anonymous"
+          href={
+            typed === 'fa'
+              ? '/fonts/noto-naskh-arabic-arabic-wght-normal.woff2'
+              : '/fonts/source-serif-4-latin-wght-normal.woff2'
+          }
+        />
+      </head>
       <body>
         <NextIntlClientProvider>
           <PrintPlates />

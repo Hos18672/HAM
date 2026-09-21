@@ -90,6 +90,7 @@ export function EditableImageClient({
       <input
         ref={inputRef}
         type="file"
+        aria-label={t('dropImage')}
         accept={ALLOWED_UPLOAD_MIME.join(',')}
         className="visually-hidden"
         onChange={(event) => {

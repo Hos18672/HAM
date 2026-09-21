@@ -82,7 +82,11 @@ export function EditableTextClient({
       data-saving={saving || undefined}
       contentEditable="plaintext-only"
       suppressContentEditableWarning
-      role="textbox"
+      // Deliberately no role="textbox": an explicit role would override the
+      // element's own, so an editable <h1> would stop being a heading and the
+      // page would lose its outline for exactly the person editing it.
+      // `contenteditable` already exposes the element as editable; the label
+      // says which field it is.
       aria-label={`${field} (${locale})`}
       aria-multiline={multiline ? true : undefined}
       tabIndex={0}

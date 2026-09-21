@@ -17,7 +17,9 @@ const SAVED = { fa: 'ذخیره شد', de: 'Gespeichert' } as const;
 /** The edit bar — a live region, so assertions scope to it rather than to
  *  loose text that also appears in the page body. */
 function editBar(page: Page) {
-  return page.getByRole('status').filter({ hasText: new RegExp(`${BAR.fa}|${BAR.de}|${SAVED.fa}|${SAVED.de}`) });
+  return page
+    .getByRole('status')
+    .filter({ hasText: new RegExp(`${BAR.fa}|${BAR.de}|${SAVED.fa}|${SAVED.de}`) });
 }
 
 /** Sign in and open the public site with an edit session active. */

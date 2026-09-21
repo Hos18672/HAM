@@ -93,8 +93,11 @@ export function EditableListToolbar({
         size="sm"
         iconOnly={!confirming}
         disabled={pending || isLast}
-        aria-label={isLast ? t('lastEntry') : t('delete')}
-        title={isLast ? t('lastEntry') : t('delete')}
+        // While confirming, the button shows its label as text — so it must
+        // not carry a different aria-label, or the accessible name and the
+        // visible one disagree (WCAG 2.5.3, Label in Name).
+        aria-label={confirming ? undefined : isLast ? t('lastEntry') : t('delete')}
+        title={confirming ? t('confirmDelete') : isLast ? t('lastEntry') : t('delete')}
         onClick={() => {
           // Delete always confirms — one click reveals the confirmation, the
           // second carries it out.

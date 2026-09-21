@@ -81,7 +81,7 @@
   --color-neutral-300: oklch(0.888 0.0017 48.57);
   --color-neutral-400: oklch(0.812 0.0027 48.57);
   --color-neutral-500: oklch(0.64 0.0036 48.57);
-  --color-neutral-600: oklch(0.548 0.0036 48.57);
+  --color-neutral-600: oklch(0.512 0.0036 48.57);
   --color-neutral-700: oklch(0.452 0.0033 48.57);
   --color-neutral-800: oklch(0.348 0.0028 48.57);
   --color-neutral-900: oklch(0.2369 0.0036 48.57);
@@ -119,6 +119,12 @@
   --color-rule-strong: var(--color-neutral-900);
   /* Accent at paper size clears 3:1 only; paragraph-size accent text must use
      this step instead of --color-accent. */
+  /* The accent at full strength carries white text at only 4.08:1, so a
+     filled control fills one step down instead. `--color-accent` stays the
+     border, focus-ring and rule colour, where 3:1 is the bar. */
+  --color-accent-fill: var(--color-accent-600);
+  --color-accent-fill-hover: var(--color-accent-700);
+  --color-accent-fill-active: var(--color-accent-800);
   --color-accent-text: var(--color-accent-700);
   --color-accent-tint: var(--color-accent-100);
   --color-accent-tint-strong: var(--color-accent-200);
@@ -261,6 +267,11 @@
   --color-rule-strong: var(--color-neutral-800);
   --color-ink-muted: var(--color-neutral-700);
   --color-ink-faint: var(--color-neutral-600);
+  /* Inverted ramp: in dark mode the accent steps run light, so the readable
+     fill is the base step and the hovers go lighter still. */
+  --color-accent-fill: var(--color-accent-500);
+  --color-accent-fill-hover: var(--color-accent-600);
+  --color-accent-fill-active: var(--color-accent-700);
   --color-accent-text: var(--color-accent-700);
   --color-accent-2-text: var(--color-accent-2-700);
   --color-on-accent: #06211a;
@@ -283,6 +294,7 @@
   --color-rule: var(--color-rule);
   --color-rule-strong: var(--color-rule-strong);
   --color-accent: var(--color-accent);
+  --color-accent-fill: var(--color-accent-fill);
   --color-accent-text: var(--color-accent-text);
   --color-accent-tint: var(--color-accent-tint);
   --color-accent-tint-strong: var(--color-accent-tint-strong);
@@ -651,9 +663,9 @@ table,
    States:   hover tint from the ramp, pressed one step past base, focus ring,
              :disabled, [aria-busy]. Never a browser default. */
 .btn {
-  --btn-bg: var(--color-accent);
+  --btn-bg: var(--color-accent-fill);
   --btn-fg: var(--color-on-accent);
-  --btn-bd: var(--color-accent);
+  --btn-bd: var(--color-accent-fill);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -678,20 +690,21 @@ table,
   white-space: nowrap;
 }
 .btn:hover:not(:disabled) {
-  --btn-bg: var(--color-accent-600);
-  --btn-bd: var(--color-accent-600);
+  --btn-bg: var(--color-accent-fill-hover);
+  --btn-bd: var(--color-accent-fill-hover);
   color: var(--btn-fg);
 }
 .btn:active:not(:disabled) {
-  --btn-bg: var(--color-accent-700);
-  --btn-bd: var(--color-accent-700);
+  --btn-bg: var(--color-accent-fill-active);
+  --btn-bd: var(--color-accent-fill-active);
   transform: translateY(1px);
 }
 .btn:disabled,
 .btn[aria-disabled='true'] {
-  --btn-bg: var(--color-neutral-300);
-  --btn-bd: var(--color-neutral-300);
-  --btn-fg: var(--color-neutral-600);
+  --btn-bg: var(--color-neutral-200);
+  --btn-bd: var(--color-neutral-400);
+  /* A disabled control still has to be readable — it says what it would do. */
+  --btn-fg: var(--color-neutral-700);
   cursor: not-allowed;
 }
 .btn[aria-busy='true'] {
@@ -800,13 +813,13 @@ button.tag:active {
   background: var(--color-accent-200);
 }
 .tag[aria-pressed='true'] {
-  background: var(--color-accent);
-  border-color: var(--color-accent);
+  background: var(--color-accent-fill);
+  border-color: var(--color-accent-fill);
   color: var(--color-on-accent);
 }
 .tag[aria-pressed='true']:hover {
-  background: var(--color-accent-600);
-  border-color: var(--color-accent-600);
+  background: var(--color-accent-fill-hover);
+  border-color: var(--color-accent-fill-hover);
   color: var(--color-on-accent);
 }
 .tag-accent-2 {

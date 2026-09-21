@@ -137,6 +137,9 @@ export function MediaLibrary({
           ref={inputRef}
           type="file"
           multiple
+          // Visually hidden but still a real control, so it carries a real
+          // name rather than relying on the drop zone's label.
+          aria-label="Bilddateien auswählen"
           accept={ALLOWED_UPLOAD_MIME.join(',')}
           className="visually-hidden"
           disabled={!storageReady}

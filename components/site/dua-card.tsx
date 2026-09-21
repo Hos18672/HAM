@@ -20,26 +20,44 @@ export async function DuaCard({ dua, locale }: { dua: DuaEntry; locale: Locale }
       className="h-full"
       style={{ position: 'relative', overflow: 'hidden', isolation: 'isolate' }}
     >
-      {/* The ghosted Arabic title. Presentational: the same words are already
-          in the heading below, so a screen reader should not read them twice. */}
-      <span
+      {/*
+        The ghosted Arabic title.
+        Drawn as SVG rather than as a text node on purpose: it is decoration —
+        the same words are the heading right below it — and a 6%-opacity text
+        node is indistinguishable from unreadably low-contrast body copy to
+        anything inspecting the page, including a contrast checker. As SVG it
+        is unambiguously a picture, and screen readers skip it.
+      */}
+      <svg
         aria-hidden="true"
+        focusable="false"
+        viewBox="0 0 400 80"
+        preserveAspectRatio="xMaxYMin meet"
         style={{
           position: 'absolute',
           insetInlineEnd: 'var(--space-2)',
           insetBlockStart: 'var(--space-1)',
-          fontFamily: 'var(--font-naskh)',
-          fontSize: 'clamp(var(--text-4xl), 9vw, var(--text-6xl))',
-          lineHeight: 1,
-          color: 'var(--color-ink)',
-          opacity: 0.06,
-          whiteSpace: 'nowrap',
+          inlineSize: '90%',
+          blockSize: 'auto',
+          opacity: 0.07,
           pointerEvents: 'none',
           zIndex: -1,
         }}
       >
-        {dua.arabicTitle}
-      </span>
+        <text
+          x="400"
+          y="62"
+          textAnchor="end"
+          direction="rtl"
+          style={{
+            fontFamily: 'var(--font-naskh)',
+            fontSize: '64px',
+            fill: 'var(--color-ink)',
+          }}
+        >
+          {dua.arabicTitle}
+        </text>
+      </svg>
 
       <p className="kicker">{t(`category.${dua.category}`)}</p>
 

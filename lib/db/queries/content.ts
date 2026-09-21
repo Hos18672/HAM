@@ -1,5 +1,5 @@
 import 'server-only';
-import { and, asc, desc, eq, gte, lt, sql as raw } from 'drizzle-orm';
+import { and, asc, desc, eq, gte, inArray, lt } from 'drizzle-orm';
 import { unstable_cache } from 'next/cache';
 import { db } from '../index';
 import type { Locale } from '../../i18n/config';
@@ -35,13 +35,21 @@ export const CACHE_TAGS = {
 
 export type CacheTag = (typeof CACHE_TAGS)[keyof typeof CACHE_TAGS];
 
-/** Wrap a query so it is cached under one tag and keyed by its arguments. */
-function cached<A extends unknown[], R>(
+/**
+ * Wrap a query so it is cached under one tag and keyed by its arguments.
+ *
+ * The signature is deliberately pass-through: the wrapped function keeps its
+ * own parameter and return types. Inferring them through a generic tuple would
+ * contextually type the callback's own annotations away, which is how `limit`
+ * ends up `unknown`.
+ */
+/* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+function cached<T extends (...args: any[]) => Promise<unknown>>(
   keyParts: string[],
   tag: CacheTag,
-  fn: (...args: A) => Promise<R>,
-) {
-  return unstable_cache(fn, keyParts, { tags: [tag], revalidate: 3600 });
+  fn: T,
+): T {
+  return unstable_cache(fn, keyParts, { tags: [tag], revalidate: 3600 }) as T;
 }
 
 /* ─── Settings ───────────────────────────────────────────────────────────── */
@@ -272,6 +280,14 @@ export interface ProgrammeItem {
   title: string;
 }
 
+/**
+ * An event as a page renders it.
+ *
+ * Note the dates: `unstable_cache` stores its result as JSON, so a `Date`
+ * that goes into the cache comes back out as a string. Rather than let that
+ * surprise a component at render time, the cached layer below deals in ISO
+ * strings (`CachedEvent`) and a thin uncached wrapper revives them here.
+ */
 export interface EventEntry {
   id: string;
   slug: string;
@@ -308,7 +324,7 @@ async function loadProgramme(
         eq(s.programmeTranslations.locale, locale),
       ),
     )
-    .where(raw`${s.programmeItems.eventId} = ANY(${eventIds})`)
+    .where(inArray(s.programmeItems.eventId, eventIds))
     .orderBy(asc(s.programmeItems.sort));
 
   for (const row of rows) {
@@ -350,9 +366,41 @@ function joinEvent<T extends ReturnType<typeof baseEventSelect>>(q: T, locale: L
     );
 }
 
-type RawEventRow = Awaited<ReturnType<typeof baseEventSelect>>[number];
+/** The same event, as it survives a trip through the JSON cache. */
+export type CachedEvent = Omit<EventEntry, 'startsAt' | 'endsAt'> & {
+  startsAt: string;
+  endsAt: string | null;
+};
 
-async function hydrateEvents(rows: RawEventRow[], locale: Locale): Promise<EventEntry[]> {
+/** Revive the ISO strings the cache hands back into real Dates. */
+function reviveEvent(event: CachedEvent): EventEntry {
+  return {
+    ...event,
+    startsAt: new Date(event.startsAt),
+    endsAt: event.endsAt ? new Date(event.endsAt) : null,
+  };
+}
+
+/**
+ * The shape one event row comes back in. Written out rather than derived from
+ * the select builder: before the left joins are applied the joined columns are
+ * typed `never`, which is not what the query actually returns.
+ */
+interface RawEventRow {
+  id: string;
+  slug: string;
+  startsAt: Date;
+  endsAt: Date | null;
+  category: string;
+  featured: boolean;
+  title: string | null;
+  body: string | null;
+  location: string | null;
+  imageUrl: string | null;
+  imageAlt: string | null;
+}
+
+async function hydrateEvents(rows: RawEventRow[], locale: Locale): Promise<CachedEvent[]> {
   const programme = await loadProgramme(
     rows.map((r) => r.id),
     locale,
@@ -360,8 +408,8 @@ async function hydrateEvents(rows: RawEventRow[], locale: Locale): Promise<Event
   return rows.map((r) => ({
     id: r.id,
     slug: r.slug,
-    startsAt: r.startsAt,
-    endsAt: r.endsAt,
+    startsAt: r.startsAt.toISOString(),
+    endsAt: r.endsAt ? r.endsAt.toISOString() : null,
     category: r.category,
     featured: r.featured,
     title: r.title ?? '',
@@ -373,10 +421,10 @@ async function hydrateEvents(rows: RawEventRow[], locale: Locale): Promise<Event
   }));
 }
 
-export const getUpcomingEvents = cached(
+const getUpcomingEventsCached = cached(
   ['events-upcoming'],
   CACHE_TAGS.events,
-  async (locale: Locale, limit = 20): Promise<EventEntry[]> => {
+  async (locale: Locale, limit: number = 20): Promise<CachedEvent[]> => {
     const rows = await joinEvent(baseEventSelect(), locale)
       .where(and(eq(s.events.published, true), gte(s.events.startsAt, new Date())))
       .orderBy(asc(s.events.startsAt))
@@ -385,10 +433,10 @@ export const getUpcomingEvents = cached(
   },
 );
 
-export const getPastEvents = cached(
+const getPastEventsCached = cached(
   ['events-past'],
   CACHE_TAGS.events,
-  async (locale: Locale, limit = 20): Promise<EventEntry[]> => {
+  async (locale: Locale, limit: number = 20): Promise<CachedEvent[]> => {
     const rows = await joinEvent(baseEventSelect(), locale)
       .where(and(eq(s.events.published, true), lt(s.events.startsAt, new Date())))
       .orderBy(desc(s.events.startsAt))
@@ -397,11 +445,10 @@ export const getPastEvents = cached(
   },
 );
 
-/** The highlighted opening event, if the admin has one marked and visible. */
-export const getFeaturedEvent = cached(
+const getFeaturedEventCached = cached(
   ['event-featured'],
   CACHE_TAGS.events,
-  async (locale: Locale): Promise<EventEntry | null> => {
+  async (locale: Locale): Promise<CachedEvent | null> => {
     const rows = await joinEvent(baseEventSelect(), locale)
       .where(and(eq(s.events.published, true), eq(s.events.featured, true)))
       .orderBy(asc(s.events.startsAt))
@@ -410,6 +457,20 @@ export const getFeaturedEvent = cached(
     return hydrated[0] ?? null;
   },
 );
+
+export async function getUpcomingEvents(locale: Locale, limit = 20): Promise<EventEntry[]> {
+  return (await getUpcomingEventsCached(locale, limit)).map(reviveEvent);
+}
+
+export async function getPastEvents(locale: Locale, limit = 20): Promise<EventEntry[]> {
+  return (await getPastEventsCached(locale, limit)).map(reviveEvent);
+}
+
+/** The highlighted opening event, if the admin has one marked and visible. */
+export async function getFeaturedEvent(locale: Locale): Promise<EventEntry | null> {
+  const event = await getFeaturedEventCached(locale);
+  return event ? reviveEvent(event) : null;
+}
 
 /* ─── Simple card collections ────────────────────────────────────────────── */
 

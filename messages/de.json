@@ -144,10 +144,25 @@
     "step1": "Handy flach in die Hand nehmen, Display nach oben.",
     "step2": "„Kompass aktivieren“ antippen und die Abfrage bestätigen.",
     "step3": "Drehen Sie sich, bis die Nadel nach oben zeigt — das ist die Qibla.",
-    "cardinal": { "n": "N", "ne": "NO", "e": "O", "se": "SO", "s": "S", "sw": "SW", "w": "W", "nw": "NW" },
+    "cardinal": {
+      "n": "N",
+      "ne": "NO",
+      "e": "O",
+      "se": "SO",
+      "s": "S",
+      "sw": "SW",
+      "w": "W",
+      "nw": "NW"
+    },
     "cardinalLong": {
-      "n": "Norden", "ne": "Nordosten", "e": "Osten", "se": "Südosten",
-      "s": "Süden", "sw": "Südwesten", "w": "Westen", "nw": "Nordwesten"
+      "n": "Norden",
+      "ne": "Nordosten",
+      "e": "Osten",
+      "se": "Südosten",
+      "s": "Süden",
+      "sw": "Südwesten",
+      "w": "Westen",
+      "nw": "Nordwesten"
     },
     "error": {
       "unsupported": "Dieses Gerät stellt keinen Kompass zur Verfügung. Die Richtung oben gilt trotzdem.",
@@ -182,7 +197,15 @@
     "legendOccasion": "Gedenktag",
     "occasions": "Gedenktage in diesem Monat",
     "occasionsNone": "In diesem Monat sind keine Gedenktage eingetragen.",
-    "weekdays": ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"],
+    "weekdays": [
+      "So",
+      "Mo",
+      "Di",
+      "Mi",
+      "Do",
+      "Fr",
+      "Sa"
+    ],
     "previousMonth": "Vorheriger Monat",
     "nextMonth": "Nächster Monat",
     "countdownLabel": "Verbleibende Zeit bis zum nächsten Gebet"
@@ -192,7 +215,11 @@
     "whenToRead": "Wann zu lesen",
     "source": "Quelle",
     "none": "In dieser Kategorie ist noch nichts eingetragen.",
-    "category": { "dua": "Bittgebet", "ziyara": "Ziyarat", "taqib": "Taʿqibat" }
+    "category": {
+      "dua": "Bittgebet",
+      "ziyara": "Ziyarat",
+      "taqib": "Taʿqibat"
+    }
   },
   "support": {
     "membership": "Mitgliedschaft",
@@ -245,7 +272,10 @@
       "tierRequired": "Bitte wählen Sie einen Beitrag."
     }
   },
-  "about": { "values": "Was uns wichtig ist", "schedule": "Wochenplan" },
+  "about": {
+    "values": "Was uns wichtig ist",
+    "schedule": "Wochenplan"
+  },
   "footer": {
     "mission": "Über uns",
     "contact": "Kontakt",
@@ -281,6 +311,9 @@
     "deleteConfirm": "Diesen Eintrag in beiden Sprachen löschen?",
     "lastEntry": "Der letzte Eintrag kann nicht gelöscht werden.",
     "dropImage": "Bild hierher ziehen oder klicken zum Hochladen",
-    "editing": "Sie bearbeiten die {locale}-Fassung."
+    "editing": "Sie bearbeiten die {locale}-Fassung.",
+    "confirmDelete": "Wirklich löschen?",
+    "moveUp": "Nach oben",
+    "moveDown": "Nach unten"
   }
 }

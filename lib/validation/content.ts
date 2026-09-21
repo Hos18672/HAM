@@ -71,7 +71,7 @@ export const settingsSchema = z.object({
   defaultLocale: localeField,
   defaultTheme: z.enum(['light', 'dark']),
   showOpeningEvent: z.boolean(),
-  contactEmail: z.string().trim().email().or(z.literal('')).max(255),
+  contactEmail: z.string().trim().max(255).email().or(z.literal('')),
   phone: z.string().trim().max(64),
   address: z.string().trim().max(500),
   iban: z
@@ -80,7 +80,7 @@ export const settingsSchema = z.object({
     .max(64)
     // Loose IBAN shape — the bank validates properly, we only guard the field.
     .regex(/^$|^[A-Z]{2}[0-9A-Z\s]{8,40}$/i, 'Diese IBAN sieht nicht richtig aus.'),
-  mapUrl: z.string().trim().url().or(z.literal('')).max(1000),
+  mapUrl: z.string().trim().max(1000).url().or(z.literal('')),
 });
 export type SettingsInput = z.infer<typeof settingsSchema>;
 

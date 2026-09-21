@@ -1,4 +1,4 @@
-import NextAuth, { type DefaultSession } from 'next-auth';
+import NextAuth from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
 import bcrypt from 'bcryptjs';
 import { eq, sql as raw } from 'drizzle-orm';
@@ -7,23 +7,8 @@ import { users } from './db/schema';
 import { credentialsSchema } from './validation/auth';
 import { checkRateLimit } from './rate-limit';
 
-export type UserRole = 'admin' | 'editor';
-
-declare module 'next-auth' {
-  interface Session {
-    user: { id: string; role: UserRole } & DefaultSession['user'];
-  }
-  interface User {
-    role: UserRole;
-  }
-}
-
-declare module 'next-auth/jwt' {
-  interface JWT {
-    role?: UserRole;
-    uid?: string;
-  }
-}
+export type { UserRole } from '@/types/next-auth';
+import type { UserRole } from '@/types/next-auth';
 
 /** Eight hours: a working day. Staff edit during opening hours; an overnight
  *  session left open on a shared machine is a liability, not a convenience. */

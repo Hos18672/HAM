@@ -13,3 +13,7 @@ playwright-report
 blob-report
 .playwright
 .DS_Store
+
+# Transient worktrees the agent harness creates for background agents.
+# These are working copies of this same repository, not project content.
+.claude/worktrees/

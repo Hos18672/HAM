@@ -1,0 +1,286 @@
+{
+  "brand": {
+    "name": "Haus aller Menschen",
+    "sub": "Ansar al-Mahdi (a.j.)",
+    "city": "Wien 1170 · Hernals"
+  },
+  "nav": {
+    "home": "Startseite",
+    "about": "Über uns",
+    "activities": "Angebote",
+    "courses": "Kurse",
+    "culture": "Kultur",
+    "sport": "Sport",
+    "events": "Termine",
+    "community": "Gemeinschaft",
+    "gallery": "Galerie",
+    "qibla": "Qibla",
+    "prayer": "Gebetszeiten",
+    "duas": "Bittgebete",
+    "support": "Mitglied werden",
+    "contact": "Kontakt",
+    "privacy": "Datenschutz",
+    "imprint": "Impressum",
+    "more": "Mehr",
+    "menu": "Menü",
+    "closeMenu": "Menü schließen",
+    "openMenu": "Menü öffnen",
+    "skipToContent": "Zum Inhalt springen",
+    "primary": "Hauptnavigation",
+    "footer": "Fußzeilennavigation"
+  },
+  "actions": {
+    "readMore": "Mehr erfahren",
+    "allEvents": "Alle Termine",
+    "allCourses": "Zum Kursangebot",
+    "join": "Mitglied werden",
+    "volunteer": "Mitmachen",
+    "contact": "Kontakt aufnehmen",
+    "send": "Absenden",
+    "sending": "Wird gesendet …",
+    "close": "Schließen",
+    "back": "Zurück",
+    "next": "Weiter",
+    "previous": "Zurück",
+    "today": "Heute",
+    "search": "Suchen",
+    "openSearch": "Suche öffnen",
+    "closeSearch": "Suche schließen",
+    "filter": "Filtern",
+    "all": "Alle",
+    "cancel": "Abbrechen",
+    "confirm": "Bestätigen",
+    "save": "Speichern",
+    "discard": "Verwerfen",
+    "retry": "Erneut versuchen"
+  },
+  "theme": {
+    "toggle": "Darstellung wechseln",
+    "light": "Hell",
+    "dark": "Dunkel"
+  },
+  "locale": {
+    "switch": "Sprache wechseln",
+    "fa": "فارسی",
+    "de": "Deutsch"
+  },
+  "search": {
+    "label": "Website durchsuchen",
+    "placeholder": "Suchen …",
+    "hint": "Mit Enter zum ersten Treffer",
+    "empty": "Keine Treffer",
+    "emptyHint": "Andere Schreibweise oder ein kürzeres Wort versuchen.",
+    "results": "{count, plural, =0 {Keine Treffer} one {Ein Treffer} other {# Treffer}}",
+    "typeToSearch": "Suchbegriff eingeben"
+  },
+  "home": {
+    "upcoming": "Kommende Termine",
+    "coursesPreview": "Aus dem Kursangebot",
+    "offers": "Unsere Bereiche",
+    "openingEvent": "Eröffnung",
+    "programme": "Programm",
+    "vienna": "Wien & Standort"
+  },
+  "events": {
+    "upcoming": "Kommende Termine",
+    "past": "Vergangene Termine",
+    "none": "Zurzeit sind keine Termine geplant.",
+    "location": "Ort",
+    "time": "Zeit",
+    "addToCalendar": "In den Kalender"
+  },
+  "courses": {
+    "filterByCategory": "Nach Bereich filtern",
+    "targetGroup": "Zielgruppe",
+    "schedule": "Zeiten",
+    "languages": "Sprachen",
+    "level": "Niveau",
+    "none": "Für diesen Bereich sind derzeit keine Kurse eingetragen.",
+    "category": {
+      "language": "Sprache",
+      "religion": "Religion",
+      "children": "Kinder",
+      "adults": "Erwachsene",
+      "integration": "Integration",
+      "art": "Kunst"
+    }
+  },
+  "sport": {
+    "activity": "Aktivität",
+    "audience": "Für wen",
+    "schedule": "Trainingszeiten"
+  },
+  "gallery": {
+    "filterByCategory": "Nach Kategorie filtern",
+    "none": "In dieser Kategorie sind noch keine Bilder vorhanden.",
+    "open": "Bild vergrößern",
+    "lightbox": "Bildansicht",
+    "previous": "Vorheriges Bild",
+    "next": "Nächstes Bild",
+    "counter": "{index} von {total}",
+    "category": {
+      "general": "Allgemein",
+      "events": "Veranstaltungen",
+      "courses": "Kurse",
+      "sport": "Sport",
+      "culture": "Kultur",
+      "house": "Haus"
+    }
+  },
+  "qibla": {
+    "title": "Gebetsrichtung",
+    "bearing": "Richtung",
+    "distance": "Entfernung",
+    "degrees": "Grad",
+    "kilometres": "km",
+    "useMyLocation": "Meinen Standort verwenden",
+    "activateCompass": "Kompass aktivieren",
+    "compassActive": "Kompass aktiv",
+    "backToHouse": "Zurück zum Vereinshaus",
+    "fromHouse": "Vom Vereinshaus aus",
+    "fromYourLocation": "Von Ihrem Standort aus",
+    "locating": "Standort wird ermittelt …",
+    "howTo": "So funktioniert es",
+    "step1": "Handy flach in die Hand nehmen, Display nach oben.",
+    "step2": "„Kompass aktivieren“ antippen und die Abfrage bestätigen.",
+    "step3": "Drehen Sie sich, bis die Nadel nach oben zeigt — das ist die Qibla.",
+    "cardinal": { "n": "N", "ne": "NO", "e": "O", "se": "SO", "s": "S", "sw": "SW", "w": "W", "nw": "NW" },
+    "cardinalLong": {
+      "n": "Norden", "ne": "Nordosten", "e": "Osten", "se": "Südosten",
+      "s": "Süden", "sw": "Südwesten", "w": "Westen", "nw": "Nordwesten"
+    },
+    "error": {
+      "unsupported": "Dieses Gerät stellt keinen Kompass zur Verfügung. Die Richtung oben gilt trotzdem.",
+      "denied": "Ohne Freigabe kann der Kompass nicht gelesen werden. Sie können die Richtung auch mit einem gewöhnlichen Kompass einstellen.",
+      "geoUnsupported": "Dieser Browser kennt keine Standortbestimmung.",
+      "geoDenied": "Der Standort wurde nicht freigegeben. Angezeigt wird weiterhin die Richtung ab dem Vereinshaus.",
+      "geoFailed": "Der Standort konnte nicht ermittelt werden."
+    },
+    "needle": "Nadel zur Kaaba",
+    "rose": "Kompassrose"
+  },
+  "prayer": {
+    "title": "Gebetszeiten",
+    "nextPrayer": "Nächstes Gebet",
+    "in": "in",
+    "today": "Heute",
+    "hijriDate": "Hidschri",
+    "gregorianDate": "Gregorianisch",
+    "method": "Berechnung nach der dschaʿfaritischen Methode · Wien",
+    "names": {
+      "fajr": "Fadschr",
+      "sunrise": "Sonnenaufgang",
+      "dhuhr": "Dhuhr",
+      "asr": "Asr",
+      "maghrib": "Maghrib",
+      "isha": "Ischa",
+      "midnight": "Schariatische Mitternacht"
+    },
+    "calendar": "Monatskalender",
+    "legend": "Legende",
+    "legendToday": "Heute",
+    "legendOccasion": "Gedenktag",
+    "occasions": "Gedenktage in diesem Monat",
+    "occasionsNone": "In diesem Monat sind keine Gedenktage eingetragen.",
+    "weekdays": ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"],
+    "previousMonth": "Vorheriger Monat",
+    "nextMonth": "Nächster Monat",
+    "countdownLabel": "Verbleibende Zeit bis zum nächsten Gebet"
+  },
+  "duas": {
+    "filterByCategory": "Nach Art filtern",
+    "whenToRead": "Wann zu lesen",
+    "source": "Quelle",
+    "none": "In dieser Kategorie ist noch nichts eingetragen.",
+    "category": { "dua": "Bittgebet", "ziyara": "Ziyarat", "taqib": "Taʿqibat" }
+  },
+  "support": {
+    "membership": "Mitgliedschaft",
+    "donation": "Spenden",
+    "bankDetails": "Bankverbindung",
+    "iban": "IBAN",
+    "accountHolder": "Kontoinhaber",
+    "purpose": "Verwendungszweck",
+    "tier": "Beitrag",
+    "chooseTier": "Beitrag wählen",
+    "choosePurpose": "Zweck wählen"
+  },
+  "contact": {
+    "openingHours": "Öffnungszeiten",
+    "address": "Adresse",
+    "phone": "Telefon",
+    "email": "E-Mail",
+    "showOnMap": "Auf der Karte ansehen",
+    "topic": "Anliegen",
+    "chooseTopic": "Bitte wählen",
+    "topics": {
+      "general": "Allgemeine Frage",
+      "courses": "Kurse",
+      "events": "Veranstaltungen",
+      "membership": "Mitgliedschaft",
+      "volunteer": "Mitarbeit",
+      "other": "Sonstiges"
+    }
+  },
+  "form": {
+    "name": "Name",
+    "email": "E-Mail",
+    "phone": "Telefon",
+    "message": "Nachricht",
+    "optional": "optional",
+    "required": "Pflichtfeld",
+    "success": "Danke! Ihre Nachricht ist bei uns angekommen. Wir melden uns.",
+    "successMembership": "Danke für Ihr Interesse! Wir melden uns mit den nächsten Schritten.",
+    "error": "Das hat leider nicht geklappt. Bitte versuchen Sie es noch einmal.",
+    "rateLimited": "Es wurden zu viele Nachrichten gesendet. Bitte versuchen Sie es später erneut.",
+    "errors": {
+      "nameRequired": "Bitte geben Sie Ihren Namen an.",
+      "nameTooLong": "Der Name ist zu lang.",
+      "emailRequired": "Bitte geben Sie eine E-Mail-Adresse an.",
+      "emailInvalid": "Diese E-Mail-Adresse sieht nicht richtig aus.",
+      "phoneInvalid": "Diese Telefonnummer sieht nicht richtig aus.",
+      "messageRequired": "Bitte schreiben Sie uns ein paar Zeilen.",
+      "messageTooLong": "Die Nachricht ist zu lang.",
+      "topicRequired": "Bitte wählen Sie ein Anliegen.",
+      "tierRequired": "Bitte wählen Sie einen Beitrag."
+    }
+  },
+  "about": { "values": "Was uns wichtig ist", "schedule": "Wochenplan" },
+  "footer": {
+    "mission": "Über uns",
+    "contact": "Kontakt",
+    "participate": "Mitmachen",
+    "legal": "Rechtliches",
+    "rights": "Alle Rechte vorbehalten.",
+    "zvr": "ZVR"
+  },
+  "error": {
+    "notFoundTitle": "Diese Seite gibt es nicht",
+    "notFoundBody": "Vielleicht hat sich die Adresse geändert. Von der Startseite aus finden Sie alles.",
+    "errorTitle": "Da ist etwas schiefgelaufen",
+    "errorBody": "Wir konnten die Seite nicht laden. Bitte versuchen Sie es noch einmal.",
+    "backHome": "Zur Startseite"
+  },
+  "a11y": {
+    "loading": "Wird geladen",
+    "externalLink": "Öffnet in einem neuen Fenster",
+    "currentPage": "Aktuelle Seite"
+  },
+  "edit": {
+    "mode": "Bearbeitungsmodus",
+    "lastSaved": "Zuletzt gespeichert",
+    "never": "noch nicht gespeichert",
+    "saving": "Wird gespeichert …",
+    "saved": "Gespeichert",
+    "failed": "Nicht gespeichert",
+    "toAdmin": "Zur Verwaltung",
+    "exit": "Beenden",
+    "add": "Eintrag hinzufügen",
+    "duplicate": "Eintrag duplizieren",
+    "delete": "Eintrag löschen",
+    "deleteConfirm": "Diesen Eintrag in beiden Sprachen löschen?",
+    "lastEntry": "Der letzte Eintrag kann nicht gelöscht werden.",
+    "dropImage": "Bild hierher ziehen oder klicken zum Hochladen",
+    "editing": "Sie bearbeiten die {locale}-Fassung."
+  }
+}

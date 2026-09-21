@@ -1,0 +1,1248 @@
+@import 'tailwindcss';
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   BROADSHEET — newsprint set for the web
+   Token sheet. Every value in the application resolves to one of these
+   variables; a hard-coded hex, font name or px value anywhere else is a bug.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Self-hosted faces. No font CDN: the files ship from /node_modules into
+      the bundle, so nothing leaves the visitor's browser (DSGVO). ─────────── */
+@font-face {
+  font-family: 'Source Serif 4';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 200 900;
+  src: url('@fontsource-variable/source-serif-4/files/source-serif-4-latin-wght-normal.woff2')
+    format('woff2-variations');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC,
+    U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215,
+    U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Source Serif 4';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 200 900;
+  src: url('@fontsource-variable/source-serif-4/files/source-serif-4-latin-ext-wght-normal.woff2')
+    format('woff2-variations');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304,
+    U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0,
+    U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* True italic at body weight — the pull quotes and poem blocks depend on it. */
+@font-face {
+  font-family: 'Source Serif 4';
+  font-style: italic;
+  font-display: swap;
+  font-weight: 200 900;
+  src: url('@fontsource-variable/source-serif-4/files/source-serif-4-latin-wght-italic.woff2')
+    format('woff2-variations');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC,
+    U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215,
+    U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Source Serif 4';
+  font-style: italic;
+  font-display: swap;
+  font-weight: 200 900;
+  src: url('@fontsource-variable/source-serif-4/files/source-serif-4-latin-ext-wght-italic.woff2')
+    format('woff2-variations');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304,
+    U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0,
+    U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* Persian / Arabic companion. Naskh is the serif of the Arabic script — it
+   carries the same editorial weight as Source Serif does for Latin. */
+@font-face {
+  font-family: 'Noto Naskh Arabic';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400 700;
+  src: url('@fontsource-variable/noto-naskh-arabic/files/noto-naskh-arabic-arabic-wght-normal.woff2')
+    format('woff2-variations');
+  unicode-range: U+0600-06FF, U+0750-077F, U+0870-088E, U+0890-0891, U+0898-08E1,
+    U+08E3-08FF, U+200C-200E, U+2010-2011, U+204F, U+2E41, U+FB50-FDFF, U+FE70-FE74,
+    U+FE76-FEFC;
+}
+
+:root {
+  /* ── Colour roles ─────────────────────────────────────────────────────── */
+  --color-bg: #f3f2f2; /* paper   */
+  --color-text: #201e1d; /* ink     */
+  --color-accent: #0088b0; /* process cyan — interactive */
+  --color-accent-2: #d6006c; /* process magenta — rare second spot */
+
+  /* ── Ramps. One shared perceptual lightness scale across all three roles.
+        100–300 tinted fills and hovers · 500 base · 700–900 text on tints and
+        pressed states. Never color-mix() when a ramp step exists. ─────────── */
+
+  /* neutral — anchor #201e1d = oklch(0.2369 0.0036 48.57) */
+  --color-neutral-100: oklch(0.972 0.0006 48.57);
+  --color-neutral-200: oklch(0.938 0.0011 48.57);
+  --color-neutral-300: oklch(0.888 0.0017 48.57);
+  --color-neutral-400: oklch(0.812 0.0027 48.57);
+  --color-neutral-500: oklch(0.64 0.0036 48.57);
+  --color-neutral-600: oklch(0.548 0.0036 48.57);
+  --color-neutral-700: oklch(0.452 0.0033 48.57);
+  --color-neutral-800: oklch(0.348 0.0028 48.57);
+  --color-neutral-900: oklch(0.2369 0.0036 48.57);
+
+  /* accent — anchor #0088b0 = oklch(0.5849 0.1135 227.53) */
+  --color-accent-100: oklch(0.972 0.0182 227.53);
+  --color-accent-200: oklch(0.938 0.0341 227.53);
+  --color-accent-300: oklch(0.888 0.0545 227.53);
+  --color-accent-400: oklch(0.812 0.084 227.53);
+  --color-accent-500: oklch(0.5849 0.1135 227.53);
+  --color-accent-600: oklch(0.528 0.1135 227.53);
+  --color-accent-700: oklch(0.452 0.1044 227.53);
+  --color-accent-800: oklch(0.348 0.0863 227.53);
+  --color-accent-900: oklch(0.248 0.0636 227.53);
+
+  /* accent-2 — anchor #d6006c = oklch(0.5659 0.2285 1.86) */
+  --color-accent-2-100: oklch(0.972 0.0366 1.86);
+  --color-accent-2-200: oklch(0.938 0.0686 1.86);
+  --color-accent-2-300: oklch(0.888 0.1097 1.86);
+  --color-accent-2-400: oklch(0.812 0.1691 1.86);
+  --color-accent-2-500: oklch(0.5659 0.2285 1.86);
+  --color-accent-2-600: oklch(0.518 0.2285 1.86);
+  --color-accent-2-700: oklch(0.452 0.2103 1.86);
+  --color-accent-2-800: oklch(0.348 0.1737 1.86);
+  --color-accent-2-900: oklch(0.248 0.128 1.86);
+
+  /* ── Derived surfaces. Named so components never reach for a ramp step
+        directly when the role is what they mean. ───────────────────────────── */
+  --color-paper: var(--color-bg);
+  --color-paper-sunk: var(--color-neutral-200);
+  --color-ink: var(--color-text);
+  --color-ink-muted: var(--color-neutral-700);
+  --color-ink-faint: var(--color-neutral-600);
+  --color-rule: var(--color-neutral-300);
+  --color-rule-strong: var(--color-neutral-900);
+  /* Accent at paper size clears 3:1 only; paragraph-size accent text must use
+     this step instead of --color-accent. */
+  --color-accent-text: var(--color-accent-700);
+  --color-accent-tint: var(--color-accent-100);
+  --color-accent-tint-strong: var(--color-accent-200);
+  --color-accent-2-text: var(--color-accent-2-700);
+  --color-accent-2-tint: var(--color-accent-2-100);
+  --color-focus: var(--color-accent);
+  --color-on-accent: #ffffff;
+
+  /* ── Type ─────────────────────────────────────────────────────────────── */
+  --font-serif: 'Source Serif 4', 'Noto Naskh Arabic', Georgia, 'Times New Roman', serif;
+  --font-naskh: 'Noto Naskh Arabic', 'Source Serif 4', serif;
+  /* There is no sans in this set. The serif is the UI chrome too. */
+  --font-body: var(--font-serif);
+  --font-display: var(--font-serif);
+
+  --text-kicker: 0.75rem;
+  --text-xs: 0.8125rem;
+  --text-sm: 0.9375rem;
+  --text-base: 1.0625rem;
+  --text-lg: 1.1875rem;
+  --text-xl: 1.375rem;
+  --text-2xl: 1.6875rem;
+  --text-3xl: 2.125rem;
+  --text-4xl: 2.75rem;
+  --text-5xl: 3.5rem;
+  --text-6xl: 4.5rem;
+  --text-7xl: 5.75rem;
+
+  --leading-tight: 1.06;
+  --leading-snug: 1.2;
+  --leading-normal: 1.55;
+  --leading-relaxed: 1.75;
+  --leading-poem: 2.1;
+
+  --tracking-kicker: 0.16em;
+  --tracking-tight: -0.018em;
+  --tracking-normal: 0;
+
+  --weight-regular: 400;
+  --weight-medium: 550;
+  --weight-semibold: 620;
+  --weight-bold: 700;
+
+  /* ── Space. Baseline scale at density 1.25×. ──────────────────────────── */
+  --space-0: 0;
+  --space-1: 0.3125rem;
+  --space-2: 0.625rem;
+  --space-3: 0.9375rem;
+  --space-4: 1.25rem;
+  --space-5: 1.875rem;
+  --space-6: 2.5rem;
+  --space-7: 3.75rem;
+  --space-8: 5rem;
+  --space-9: 6.875rem;
+  --space-10: 8.75rem;
+
+  /* ── Radius. 2px baseline. The rounded surfaces of the prayer / du'a /
+        gallery pages are a documented variant, not the default. ───────────── */
+  --radius-none: 0;
+  --radius-baseline: 2px;
+  --radius-soft: 14px;
+  --radius-softer: 18px;
+  --radius-pill: 999px;
+
+  /* ── Shadow. Newsprint barely lifts; these are ink-toned, not grey. ────── */
+  --shadow-none: none;
+  --shadow-sm: 0 1px 2px oklch(0.2369 0.0036 48.57 / 0.07);
+  --shadow-md: 0 2px 10px oklch(0.2369 0.0036 48.57 / 0.08);
+  --shadow-lg: 0 8px 34px oklch(0.2369 0.0036 48.57 / 0.11);
+  --shadow-inset-rule: inset 0 -1px 0 var(--color-rule);
+
+  /* ── Rules. The thick–thin head pair is a fixture of the set. ─────────── */
+  --rule-hair: 1px;
+  --rule-thick: 4px;
+
+  /* ── Layout ───────────────────────────────────────────────────────────── */
+  --measure: 62ch;
+  --measure-narrow: 44ch;
+  --page-max: 78rem;
+  --page-gutter: var(--space-4);
+  --header-height: 4.5rem;
+
+  /* ── Motion ───────────────────────────────────────────────────────────── */
+  --ease-out-expressive: cubic-bezier(0.22, 1, 0.3, 1);
+  --ease-standard: cubic-bezier(0.32, 0.72, 0, 1);
+  --duration-fast: 140ms;
+  --duration-base: 240ms;
+  --duration-slow: 520ms;
+  --duration-theme: 720ms;
+
+  --z-header: 40;
+  --z-drawer: 60;
+  --z-search: 70;
+  --z-editbar: 80;
+  --z-dialog: 90;
+  --z-toast: 100;
+}
+
+/* ── Dark mode: deep green-black paper, same spot colours. A full second
+      token set, not a filter. Applied from a cookie on the server so the
+      first paint is already correct. ──────────────────────────────────────── */
+:root[data-theme='dark'] {
+  --color-bg: #06211a;
+  --color-text: #eef3f0;
+  --color-accent: #35c6ea;
+  --color-accent-2: #ff5fa2;
+
+  --color-neutral-100: oklch(0.2 0.022 172);
+  --color-neutral-200: oklch(0.248 0.024 172);
+  --color-neutral-300: oklch(0.31 0.024 172);
+  --color-neutral-400: oklch(0.392 0.022 172);
+  --color-neutral-500: oklch(0.52 0.018 172);
+  --color-neutral-600: oklch(0.64 0.014 172);
+  --color-neutral-700: oklch(0.762 0.012 172);
+  --color-neutral-800: oklch(0.868 0.01 172);
+  --color-neutral-900: oklch(0.948 0.008 172);
+
+  --color-accent-100: oklch(0.242 0.048 227.53);
+  --color-accent-200: oklch(0.292 0.062 227.53);
+  --color-accent-300: oklch(0.362 0.078 227.53);
+  --color-accent-400: oklch(0.47 0.096 227.53);
+  --color-accent-500: oklch(0.762 0.112 227.53);
+  --color-accent-600: oklch(0.808 0.108 227.53);
+  --color-accent-700: oklch(0.858 0.092 227.53);
+  --color-accent-800: oklch(0.902 0.072 227.53);
+  --color-accent-900: oklch(0.948 0.05 227.53);
+
+  --color-accent-2-100: oklch(0.252 0.086 1.86);
+  --color-accent-2-200: oklch(0.302 0.112 1.86);
+  --color-accent-2-300: oklch(0.372 0.142 1.86);
+  --color-accent-2-400: oklch(0.48 0.176 1.86);
+  --color-accent-2-500: oklch(0.732 0.166 1.86);
+  --color-accent-2-600: oklch(0.782 0.152 1.86);
+  --color-accent-2-700: oklch(0.842 0.124 1.86);
+  --color-accent-2-800: oklch(0.896 0.094 1.86);
+  --color-accent-2-900: oklch(0.946 0.062 1.86);
+
+  --color-paper-sunk: var(--color-neutral-200);
+  --color-rule: var(--color-neutral-300);
+  --color-rule-strong: var(--color-neutral-800);
+  --color-ink-muted: var(--color-neutral-700);
+  --color-ink-faint: var(--color-neutral-600);
+  --color-accent-text: var(--color-accent-700);
+  --color-accent-2-text: var(--color-accent-2-700);
+  --color-on-accent: #06211a;
+
+  --shadow-sm: 0 1px 2px oklch(0 0 0 / 0.4);
+  --shadow-md: 0 2px 10px oklch(0 0 0 / 0.45);
+  --shadow-lg: 0 8px 34px oklch(0 0 0 / 0.5);
+}
+
+/* ── Expose every token to Tailwind v4 so `bg-paper`, `text-accent-700`,
+      `p-4`, `rounded-soft` and friends all resolve to the same variables. ─── */
+@theme inline {
+  --color-bg: var(--color-bg);
+  --color-paper: var(--color-paper);
+  --color-paper-sunk: var(--color-paper-sunk);
+  --color-text: var(--color-text);
+  --color-ink: var(--color-ink);
+  --color-ink-muted: var(--color-ink-muted);
+  --color-ink-faint: var(--color-ink-faint);
+  --color-rule: var(--color-rule);
+  --color-rule-strong: var(--color-rule-strong);
+  --color-accent: var(--color-accent);
+  --color-accent-text: var(--color-accent-text);
+  --color-accent-tint: var(--color-accent-tint);
+  --color-accent-tint-strong: var(--color-accent-tint-strong);
+  --color-accent-2: var(--color-accent-2);
+  --color-accent-2-text: var(--color-accent-2-text);
+  --color-accent-2-tint: var(--color-accent-2-tint);
+  --color-on-accent: var(--color-on-accent);
+  --color-focus: var(--color-focus);
+
+  --color-neutral-100: var(--color-neutral-100);
+  --color-neutral-200: var(--color-neutral-200);
+  --color-neutral-300: var(--color-neutral-300);
+  --color-neutral-400: var(--color-neutral-400);
+  --color-neutral-500: var(--color-neutral-500);
+  --color-neutral-600: var(--color-neutral-600);
+  --color-neutral-700: var(--color-neutral-700);
+  --color-neutral-800: var(--color-neutral-800);
+  --color-neutral-900: var(--color-neutral-900);
+  --color-accent-100: var(--color-accent-100);
+  --color-accent-200: var(--color-accent-200);
+  --color-accent-300: var(--color-accent-300);
+  --color-accent-400: var(--color-accent-400);
+  --color-accent-500: var(--color-accent-500);
+  --color-accent-600: var(--color-accent-600);
+  --color-accent-700: var(--color-accent-700);
+  --color-accent-800: var(--color-accent-800);
+  --color-accent-900: var(--color-accent-900);
+  --color-accent-2-100: var(--color-accent-2-100);
+  --color-accent-2-200: var(--color-accent-2-200);
+  --color-accent-2-300: var(--color-accent-2-300);
+  --color-accent-2-400: var(--color-accent-2-400);
+  --color-accent-2-500: var(--color-accent-2-500);
+  --color-accent-2-600: var(--color-accent-2-600);
+  --color-accent-2-700: var(--color-accent-2-700);
+  --color-accent-2-800: var(--color-accent-2-800);
+  --color-accent-2-900: var(--color-accent-2-900);
+
+  --font-serif: var(--font-serif);
+  --font-naskh: var(--font-naskh);
+  --font-body: var(--font-body);
+  --font-display: var(--font-display);
+
+  --text-kicker: var(--text-kicker);
+  --text-xs: var(--text-xs);
+  --text-sm: var(--text-sm);
+  --text-base: var(--text-base);
+  --text-lg: var(--text-lg);
+  --text-xl: var(--text-xl);
+  --text-2xl: var(--text-2xl);
+  --text-3xl: var(--text-3xl);
+  --text-4xl: var(--text-4xl);
+  --text-5xl: var(--text-5xl);
+  --text-6xl: var(--text-6xl);
+  --text-7xl: var(--text-7xl);
+
+  --leading-tight: var(--leading-tight);
+  --leading-snug: var(--leading-snug);
+  --leading-normal: var(--leading-normal);
+  --leading-relaxed: var(--leading-relaxed);
+  --leading-poem: var(--leading-poem);
+
+  --tracking-kicker: var(--tracking-kicker);
+  --tracking-tight: var(--tracking-tight);
+
+  --font-weight-regular: var(--weight-regular);
+  --font-weight-medium: var(--weight-medium);
+  --font-weight-semibold: var(--weight-semibold);
+  --font-weight-bold: var(--weight-bold);
+
+  --spacing-0: var(--space-0);
+  --spacing-1: var(--space-1);
+  --spacing-2: var(--space-2);
+  --spacing-3: var(--space-3);
+  --spacing-4: var(--space-4);
+  --spacing-5: var(--space-5);
+  --spacing-6: var(--space-6);
+  --spacing-7: var(--space-7);
+  --spacing-8: var(--space-8);
+  --spacing-9: var(--space-9);
+  --spacing-10: var(--space-10);
+
+  --radius-none: var(--radius-none);
+  --radius-baseline: var(--radius-baseline);
+  --radius-soft: var(--radius-soft);
+  --radius-softer: var(--radius-softer);
+  --radius-pill: var(--radius-pill);
+
+  --shadow-sm: var(--shadow-sm);
+  --shadow-md: var(--shadow-md);
+  --shadow-lg: var(--shadow-lg);
+
+  --ease-out-expressive: var(--ease-out-expressive);
+  --ease-standard: var(--ease-standard);
+
+  --container-page: var(--page-max);
+  --container-measure: var(--measure);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   BASE
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  scroll-behavior: smooth;
+  color-scheme: light;
+}
+:root[data-theme='dark'] html,
+html[data-theme='dark'] {
+  color-scheme: dark;
+}
+
+body {
+  margin: 0;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  line-height: var(--leading-normal);
+  font-weight: var(--weight-regular);
+  font-synthesis-weight: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  /* The set is flush-left and asymmetric; never centre the page body. */
+  overflow-x: hidden;
+}
+
+/* The Arabic script needs a touch more room than the Latin serif. */
+[lang='fa'],
+[lang='ar'],
+:root[dir='rtl'] body {
+  font-family: var(--font-naskh);
+  line-height: var(--leading-relaxed);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-display);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-tight);
+  line-height: var(--leading-tight);
+  margin: 0;
+  text-wrap: balance;
+}
+
+p {
+  margin: 0;
+  max-width: var(--measure);
+  text-wrap: pretty;
+}
+
+a {
+  color: var(--color-accent-text);
+  text-decoration-thickness: from-font;
+  text-underline-offset: 0.18em;
+}
+a:hover {
+  color: var(--color-accent-800);
+}
+
+/* Never a browser default. One rule, everywhere. */
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+  border-radius: var(--radius-baseline);
+}
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+::selection {
+  background: var(--color-accent-200);
+  color: var(--color-accent-900);
+}
+
+hr {
+  border: 0;
+  border-block-start: var(--rule-hair) solid var(--color-rule);
+  margin: 0;
+}
+
+img,
+svg,
+video {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* Digits: Persian pages render Persian-Indic numerals; the font's own
+   numeral forms are selected per-locale in lib/i18n/format.ts, this only
+   keeps figures aligned in tables. */
+table,
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   LAYOUT PRIMITIVES
+   Sections are separated by whitespace, never by rules, borders or cards.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.page {
+  max-width: var(--page-max);
+  margin-inline: 0 auto; /* flush left, whitespace collects on the right */
+  padding-inline: var(--page-gutter);
+  width: 100%;
+}
+@media (min-width: 80rem) {
+  .page {
+    padding-inline-start: var(--space-7);
+  }
+}
+
+/* Vertical rhythm between sections. Whitespace is the separator. */
+.section {
+  padding-block: var(--space-8);
+}
+.section-tight {
+  padding-block: var(--space-6);
+}
+.section-loose {
+  padding-block: var(--space-9);
+}
+
+/* The dateline rail: a narrow kicker column running beside the content. */
+.rail {
+  display: grid;
+  gap: var(--space-4);
+  grid-template-columns: 1fr;
+}
+@media (min-width: 60rem) {
+  .rail {
+    grid-template-columns: 12rem minmax(0, 1fr);
+    gap: var(--space-6);
+  }
+}
+
+.kicker {
+  font-size: var(--text-kicker);
+  letter-spacing: var(--tracking-kicker);
+  text-transform: uppercase;
+  font-weight: var(--weight-semibold);
+  color: var(--color-ink-faint);
+  margin: 0;
+}
+:root[dir='rtl'] .kicker {
+  /* Uppercasing and wide tracking are meaningless in the Arabic script. */
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+/* Thick–thin head pair — the masthead device of the set. */
+.head-rule {
+  border-block-start: var(--rule-thick) solid var(--color-rule-strong);
+  padding-block-start: var(--space-1);
+  position: relative;
+}
+.head-rule::after {
+  content: '';
+  position: absolute;
+  inset-inline: 0;
+  inset-block-start: 2px;
+  border-block-start: var(--rule-hair) solid var(--color-rule-strong);
+}
+
+.lead {
+  font-size: var(--text-lg);
+  line-height: var(--leading-relaxed);
+  color: var(--color-ink-muted);
+  max-width: var(--measure);
+}
+
+.prose > * + * {
+  margin-block-start: var(--space-3);
+}
+
+/* Feature columns — the multi-column body of a broadsheet front. */
+.columns-feature {
+  display: grid;
+  gap: var(--space-5) var(--space-6);
+  grid-template-columns: 1fr;
+}
+@media (min-width: 48rem) {
+  .columns-feature {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (min-width: 72rem) {
+  .columns-feature {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.pull-quote {
+  font-style: italic;
+  font-size: var(--text-2xl);
+  line-height: var(--leading-snug);
+  color: var(--color-ink);
+  max-width: var(--measure-narrow);
+  padding-inline-start: var(--space-4);
+  border-inline-start: var(--rule-thick) solid var(--color-accent);
+  margin: 0;
+}
+
+.poem {
+  font-style: italic;
+  font-size: var(--text-xl);
+  line-height: var(--leading-poem);
+  white-space: pre-line;
+  max-width: var(--measure-narrow);
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+.skip-link {
+  position: absolute;
+  inset-inline-start: var(--space-2);
+  inset-block-start: calc(var(--space-2) * -1);
+  transform: translateY(-140%);
+  z-index: var(--z-toast);
+  background: var(--color-ink);
+  color: var(--color-bg);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-baseline);
+  font-weight: var(--weight-semibold);
+}
+.skip-link:focus {
+  transform: translateY(calc(var(--space-2) * 2));
+}
+
+/* Latin strings inside Persian text — addresses, IBAN, "km", emails. */
+.ltr-island {
+  direction: ltr;
+  unicode-bidi: isolate;
+  display: inline-block;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   COMPONENT LAYER
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── .btn ─────────────────────────────────────────────────────────────────
+   Variants: (default = primary) .btn-secondary .btn-ghost .btn-danger
+   Sizes:    .btn-sm  (default = md)  .btn-lg
+   States:   hover tint from the ramp, pressed one step past base, focus ring,
+             :disabled, [aria-busy]. Never a browser default. */
+.btn {
+  --btn-bg: var(--color-accent);
+  --btn-fg: var(--color-on-accent);
+  --btn-bd: var(--color-accent);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  line-height: 1.1;
+  padding: var(--space-2) var(--space-4);
+  min-height: 2.75rem;
+  border: var(--rule-hair) solid var(--btn-bd);
+  border-radius: var(--radius-baseline);
+  background: var(--btn-bg);
+  color: var(--btn-fg);
+  cursor: pointer;
+  text-decoration: none;
+  transition:
+    background-color var(--duration-fast) var(--ease-standard),
+    border-color var(--duration-fast) var(--ease-standard),
+    color var(--duration-fast) var(--ease-standard),
+    transform var(--duration-fast) var(--ease-standard);
+  white-space: nowrap;
+}
+.btn:hover:not(:disabled) {
+  --btn-bg: var(--color-accent-600);
+  --btn-bd: var(--color-accent-600);
+  color: var(--btn-fg);
+}
+.btn:active:not(:disabled) {
+  --btn-bg: var(--color-accent-700);
+  --btn-bd: var(--color-accent-700);
+  transform: translateY(1px);
+}
+.btn:disabled,
+.btn[aria-disabled='true'] {
+  --btn-bg: var(--color-neutral-300);
+  --btn-bd: var(--color-neutral-300);
+  --btn-fg: var(--color-neutral-600);
+  cursor: not-allowed;
+}
+.btn[aria-busy='true'] {
+  cursor: progress;
+  opacity: 0.75;
+}
+
+.btn-secondary {
+  --btn-bg: transparent;
+  --btn-fg: var(--color-ink);
+  --btn-bd: var(--color-rule-strong);
+}
+.btn-secondary:hover:not(:disabled) {
+  --btn-bg: var(--color-accent-100);
+  --btn-bd: var(--color-accent-500);
+  --btn-fg: var(--color-accent-800);
+}
+.btn-secondary:active:not(:disabled) {
+  --btn-bg: var(--color-accent-200);
+  --btn-fg: var(--color-accent-900);
+}
+
+.btn-ghost {
+  --btn-bg: transparent;
+  --btn-fg: var(--color-ink-muted);
+  --btn-bd: transparent;
+}
+.btn-ghost:hover:not(:disabled) {
+  --btn-bg: var(--color-accent-100);
+  --btn-fg: var(--color-accent-800);
+  --btn-bd: transparent;
+}
+.btn-ghost:active:not(:disabled) {
+  --btn-bg: var(--color-accent-200);
+}
+
+.btn-danger {
+  --btn-bg: transparent;
+  --btn-fg: var(--color-accent-2-text);
+  --btn-bd: var(--color-accent-2-400);
+}
+.btn-danger:hover:not(:disabled) {
+  --btn-bg: var(--color-accent-2-100);
+  --btn-bd: var(--color-accent-2-500);
+  --btn-fg: var(--color-accent-2-800);
+}
+.btn-danger:active:not(:disabled) {
+  --btn-bg: var(--color-accent-2-200);
+}
+
+.btn-sm {
+  font-size: var(--text-xs);
+  padding: var(--space-1) var(--space-3);
+  min-height: 2.125rem;
+}
+.btn-lg {
+  font-size: var(--text-base);
+  padding: var(--space-3) var(--space-5);
+  min-height: 3.25rem;
+}
+.btn-icon {
+  padding: var(--space-2);
+  min-width: 2.75rem;
+}
+.btn-icon.btn-sm {
+  padding: var(--space-1);
+  min-width: 2.125rem;
+}
+
+/* ── .tag ─────────────────────────────────────────────────────────────────
+   Static label, or a filter chip when it carries [aria-pressed]. */
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
+  letter-spacing: var(--tracking-kicker);
+  text-transform: uppercase;
+  padding: var(--space-1) var(--space-3);
+  border: var(--rule-hair) solid var(--color-rule);
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--color-ink-muted);
+  cursor: default;
+  transition:
+    background-color var(--duration-fast) var(--ease-standard),
+    border-color var(--duration-fast) var(--ease-standard),
+    color var(--duration-fast) var(--ease-standard);
+}
+:root[dir='rtl'] .tag {
+  text-transform: none;
+  letter-spacing: 0;
+}
+button.tag,
+a.tag {
+  cursor: pointer;
+}
+button.tag:hover,
+a.tag:hover {
+  background: var(--color-accent-100);
+  border-color: var(--color-accent-400);
+  color: var(--color-accent-800);
+}
+button.tag:active {
+  background: var(--color-accent-200);
+}
+.tag[aria-pressed='true'] {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: var(--color-on-accent);
+}
+.tag[aria-pressed='true']:hover {
+  background: var(--color-accent-600);
+  border-color: var(--color-accent-600);
+  color: var(--color-on-accent);
+}
+.tag-accent-2 {
+  border-color: var(--color-accent-2-400);
+  color: var(--color-accent-2-text);
+}
+
+/* ── .field / .input ──────────────────────────────────────────────────────
+   A .field wraps label + control + hint/error. Errors are wired with
+   aria-describedby by the React component, never by colour alone. */
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+.field-label {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  color: var(--color-ink);
+}
+.field-required {
+  color: var(--color-accent-2-text);
+  margin-inline-start: 0.2em;
+}
+.field-hint {
+  font-size: var(--text-xs);
+  color: var(--color-ink-faint);
+}
+.field-error {
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
+  color: var(--color-accent-2-text);
+}
+
+.input {
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  line-height: 1.4;
+  color: var(--color-ink);
+  background: var(--color-bg);
+  border: var(--rule-hair) solid var(--color-neutral-400);
+  border-block-end-width: 2px;
+  border-radius: var(--radius-baseline);
+  padding: var(--space-2) var(--space-3);
+  min-height: 2.75rem;
+  width: 100%;
+  transition:
+    border-color var(--duration-fast) var(--ease-standard),
+    background-color var(--duration-fast) var(--ease-standard);
+}
+.input:hover:not(:disabled):not(:focus) {
+  border-color: var(--color-accent-400);
+  background: var(--color-accent-100);
+}
+.input:focus {
+  border-color: var(--color-accent);
+  background: var(--color-bg);
+}
+.input::placeholder {
+  color: var(--color-ink-faint);
+  opacity: 1;
+}
+.input:disabled {
+  background: var(--color-neutral-200);
+  color: var(--color-ink-faint);
+  cursor: not-allowed;
+}
+.input[aria-invalid='true'] {
+  border-color: var(--color-accent-2-500);
+}
+textarea.input {
+  min-height: 7rem;
+  resize: vertical;
+}
+select.input {
+  appearance: none;
+  padding-inline-end: var(--space-6);
+  background-image: linear-gradient(45deg, transparent 50%, currentColor 50%),
+    linear-gradient(135deg, currentColor 50%, transparent 50%);
+  background-position:
+    right calc(var(--space-4) - 1px) center,
+    right calc(var(--space-3) - 1px) center;
+  background-size:
+    5px 5px,
+    5px 5px;
+  background-repeat: no-repeat;
+}
+:root[dir='rtl'] select.input {
+  background-position:
+    left calc(var(--space-3) - 1px) center,
+    left calc(var(--space-4) - 1px) center;
+  background-image: linear-gradient(-45deg, transparent 50%, currentColor 50%),
+    linear-gradient(-135deg, currentColor 50%, transparent 50%);
+}
+
+/* ── .card ────────────────────────────────────────────────────────────────
+   Reserved for genuinely discrete listings — a course, an event, a du'a.
+   Never for page layout. */
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  background: var(--color-bg);
+  border: var(--rule-hair) solid var(--color-rule);
+  border-radius: var(--radius-baseline);
+  transition:
+    border-color var(--duration-base) var(--ease-standard),
+    background-color var(--duration-base) var(--ease-standard),
+    box-shadow var(--duration-base) var(--ease-standard);
+}
+.card-interactive:hover,
+a.card:hover {
+  border-color: var(--color-accent-400);
+  background: var(--color-accent-100);
+}
+.card-title {
+  font-size: var(--text-xl);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-snug);
+}
+.card-body {
+  color: var(--color-ink-muted);
+  font-size: var(--text-sm);
+}
+.card-foot {
+  margin-block-start: auto;
+  padding-block-start: var(--space-2);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  align-items: center;
+}
+
+/* Documented variant: the softer, rounder surfaces of the prayer, du'a and
+   gallery pages. Same tokens, larger radius and a tinted ground. */
+.card-soft {
+  border-radius: var(--radius-soft);
+  background: var(--color-neutral-100);
+  border-color: transparent;
+  padding: var(--space-4) var(--space-5);
+}
+.card-softer {
+  border-radius: var(--radius-softer);
+}
+.card-soft.card-interactive:hover {
+  background: var(--color-accent-100);
+  border-color: var(--color-accent-300);
+}
+/* The highlighted member of a soft set — next prayer, today, an occasion. */
+.card-marked {
+  border: 2px solid var(--color-accent);
+  background: var(--color-accent-100);
+}
+
+/* ── .nav ─────────────────────────────────────────────────────────────────── */
+.nav {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+.nav-link {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  color: var(--color-ink-muted);
+  text-decoration: none;
+  border-radius: var(--radius-baseline);
+  position: relative;
+  transition:
+    color var(--duration-fast) var(--ease-standard),
+    background-color var(--duration-fast) var(--ease-standard);
+  white-space: nowrap;
+}
+.nav-link:hover {
+  color: var(--color-accent-800);
+  background: var(--color-accent-100);
+}
+.nav-link:active {
+  background: var(--color-accent-200);
+}
+.nav-link[aria-current='page'] {
+  color: var(--color-ink);
+  font-weight: var(--weight-bold);
+}
+.nav-link[aria-current='page']::after {
+  content: '';
+  position: absolute;
+  inset-inline: var(--space-3);
+  inset-block-end: calc(var(--space-1) * -1);
+  border-block-end: 2px solid var(--color-accent);
+}
+
+/* ── .table ───────────────────────────────────────────────────────────────
+   Rules only where a table genuinely needs them — this is the one place the
+   set permits horizontal lines. */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--text-sm);
+  text-align: start;
+}
+.table caption {
+  text-align: start;
+  font-size: var(--text-kicker);
+  letter-spacing: var(--tracking-kicker);
+  text-transform: uppercase;
+  color: var(--color-ink-faint);
+  padding-block-end: var(--space-2);
+}
+.table th {
+  text-align: start;
+  font-weight: var(--weight-semibold);
+  font-size: var(--text-xs);
+  letter-spacing: var(--tracking-kicker);
+  text-transform: uppercase;
+  color: var(--color-ink-faint);
+  padding: var(--space-2) var(--space-3);
+  border-block-end: var(--rule-thick) solid var(--color-rule-strong);
+}
+:root[dir='rtl'] .table th,
+:root[dir='rtl'] .table caption {
+  text-transform: none;
+  letter-spacing: 0;
+}
+.table td {
+  padding: var(--space-2) var(--space-3);
+  border-block-end: var(--rule-hair) solid var(--color-rule);
+  vertical-align: baseline;
+}
+.table tbody tr:hover td {
+  background: var(--color-accent-100);
+}
+.table td:first-child,
+.table th:first-child {
+  padding-inline-start: 0;
+}
+
+/* ── .dialog ──────────────────────────────────────────────────────────────── */
+.dialog {
+  border: var(--rule-hair) solid var(--color-rule-strong);
+  border-radius: var(--radius-baseline);
+  background: var(--color-bg);
+  color: var(--color-text);
+  padding: var(--space-5);
+  max-width: 34rem;
+  width: calc(100vw - var(--space-6));
+  box-shadow: var(--shadow-lg);
+}
+.dialog::backdrop {
+  background: oklch(0.2369 0.0036 48.57 / 0.45);
+  backdrop-filter: blur(2px);
+}
+.dialog-title {
+  font-size: var(--text-2xl);
+  margin-block-end: var(--space-2);
+}
+.dialog-foot {
+  display: flex;
+  gap: var(--space-2);
+  justify-content: flex-end;
+  margin-block-start: var(--space-5);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   PRINT PLATES — photographs print as process separations
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Four misregistered separations. The filter defs are mounted once in the
+   root layout (components/site/print-plates.tsx). */
+.cmyk {
+  filter: url('#bs-plate-cmyk');
+}
+.cmyk-wrap {
+  position: relative;
+  isolation: isolate;
+}
+/* Misregistration: the plates do not line up perfectly, as on press. */
+.cmyk-wrap::before,
+.cmyk-wrap::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  mix-blend-mode: multiply;
+  opacity: 0.16;
+}
+.cmyk-wrap::before {
+  background: var(--color-accent);
+  transform: translate(1.5px, -1.5px);
+}
+.cmyk-wrap::after {
+  background: var(--color-accent-2);
+  transform: translate(-1.5px, 1.5px);
+}
+:root[data-theme='dark'] .cmyk-wrap::before,
+:root[data-theme='dark'] .cmyk-wrap::after {
+  mix-blend-mode: screen;
+  opacity: 0.12;
+}
+
+/* The simpler newsprint dot screen, for interface imagery. */
+.halftone {
+  filter: url('#bs-plate-halftone');
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   MOTION
+   Everything collapses to an instant state change under reduced motion.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Staggered reveal on section entry. Elements start hidden only once the
+   observer has claimed them, so a no-JS visitor sees everything. */
+[data-rise] {
+  opacity: 1;
+}
+[data-rise][data-rise-armed='true'] {
+  opacity: 0;
+  transform: translateY(var(--space-3));
+}
+[data-rise][data-rise-in='true'] {
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity var(--duration-slow) var(--ease-out-expressive),
+    transform var(--duration-slow) var(--ease-out-expressive);
+  transition-delay: var(--rise-delay, 0ms);
+}
+
+/* Page transition: a short rise-and-fade on the entering content. */
+@keyframes bs-enter {
+  from {
+    opacity: 0;
+    transform: translateY(var(--space-2));
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.page-enter {
+  animation: bs-enter var(--duration-base) var(--ease-out-expressive) both;
+}
+
+/* Theme switch: a soft circular wash expanding from the toggle, then fading.
+   Transform and opacity only — no layout thrash. */
+@keyframes bs-theme-wash {
+  from {
+    transform: scale(0);
+    opacity: 0.5;
+  }
+  70% {
+    opacity: 0.22;
+  }
+  to {
+    transform: scale(1);
+    opacity: 0;
+  }
+}
+.theme-wash {
+  position: fixed;
+  z-index: var(--z-toast);
+  pointer-events: none;
+  border-radius: var(--radius-pill);
+  background: radial-gradient(circle, var(--color-accent-300) 0%, transparent 72%);
+  animation: bs-theme-wash var(--duration-theme) var(--ease-out-expressive) forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  [data-rise][data-rise-armed='true'] {
+    opacity: 1;
+    transform: none;
+  }
+  .theme-wash {
+    display: none;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   IN-PLACE EDIT MODE
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.editable {
+  outline: 1px dashed var(--color-accent);
+  outline-offset: 3px;
+  border-radius: var(--radius-baseline);
+  transition: background-color var(--duration-fast) var(--ease-standard);
+  cursor: text;
+}
+.editable:hover {
+  background: var(--color-accent-100);
+}
+.editable:focus {
+  outline: 2px solid var(--color-accent);
+  background: var(--color-accent-100);
+}
+.editable[data-saving='true'] {
+  outline-color: var(--color-accent-2);
+}
+.editable-region {
+  position: relative;
+}
+.editable-toolbar {
+  position: absolute;
+  inset-block-start: calc(var(--space-4) * -1);
+  inset-inline-end: 0;
+  display: flex;
+  gap: var(--space-1);
+  opacity: 0;
+  transition: opacity var(--duration-fast) var(--ease-standard);
+  z-index: 2;
+}
+.editable-region:hover > .editable-toolbar,
+.editable-region:focus-within > .editable-toolbar {
+  opacity: 1;
+}
+.editable-drop {
+  outline: 2px dashed var(--color-accent);
+  outline-offset: -4px;
+}
+.editable-drop[data-over='true'] {
+  background: var(--color-accent-200);
+}

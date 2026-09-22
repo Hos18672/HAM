@@ -13,6 +13,18 @@ async function audit(page: import('@playwright/test').Page) {
 }
 
 test.describe('accessibility', () => {
+  /**
+   * Audit the settled page, not one mid-entrance.
+   *
+   * The scroll reveals fade in over 1.25s. Without this, axe samples elements
+   * part-way through that fade, and a half-transparent text colour blended
+   * against the paper reads as a contrast failure that no visitor ever sees —
+   * the same element in five slightly different greys, one per stagger step.
+   * Reduced motion settles every reveal at once, which is both deterministic
+   * and exactly what a visitor who asks for less motion gets.
+   */
+  test.use({ reducedMotion: 'reduce' });
+
   for (const locale of ['fa', 'de'] as const) {
     for (const path of PUBLIC_PATHS) {
       test(`${locale}${path || '/'} has no axe violations`, async ({ page }) => {

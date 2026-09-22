@@ -81,10 +81,12 @@ export default async function EventsPage({ params }: { params: Promise<{ locale:
         <section className="section" data-rise>
           <div className="page">
             <SectionHead kicker={t('past')} />
-            <ul
-              className="columns-feature"
-              style={{ listStyle: 'none', margin: 0, padding: 0, opacity: 0.75 }}
-            >
+            {/* No opacity here. Dimming the whole list was how this said
+                "already happened", and against the cream paper it dragged
+                every label in it under 4.5:1 — 0.75 turns the faint ink into
+                #918f85, which is 2.7:1. The heading above already says these
+                are past, so the meaning does not depend on the dimming. */}
+            <ul className="columns-feature" style={{ listStyle: 'none', margin: 0, padding: 0 }}>
               {past.map((event) => (
                 <li key={event.id} data-rise>
                   <EditableEntry entity="event" id={event.id} isLast={false}>

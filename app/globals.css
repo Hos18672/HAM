@@ -64,100 +64,172 @@
     U+2010-2011, U+204F, U+2E41, U+FB50-FDFF, U+FE70-FE74, U+FE76-FEFC;
 }
 
+/* Manrope carries the running text; the design pairs it with the serif rather
+   than setting everything in one family. */
+@font-face {
+  font-family: 'Manrope';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 200 800;
+  src: url('/fonts/manrope-latin-wght-normal.woff2') format('woff2-variations');
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329,
+    U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Manrope';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 200 800;
+  src: url('/fonts/manrope-latin-ext-wght-normal.woff2') format('woff2-variations');
+  unicode-range:
+    U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329,
+    U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F,
+    U+A720-A7FF;
+}
+
+/* Vazirmatn is the design's Persian face. Noto Naskh Arabic stays behind it
+   as the fallback. */
+@font-face {
+  font-family: 'Vazirmatn';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url('/fonts/vazirmatn-arabic-wght-normal.woff2') format('woff2-variations');
+  unicode-range:
+    U+0600-06FF, U+0750-077F, U+0870-088E, U+0890-0891, U+0898-08E1, U+08E3-08FF, U+200C-200E,
+    U+2010-2011, U+204F, U+2E41, U+FB50-FDFF, U+FE70-FE74, U+FE76-FEFC;
+}
+
 :root {
-  /* ── Colour roles ─────────────────────────────────────────────────────── */
-  --color-bg: #f3f2f2; /* paper   */
-  --color-text: #201e1d; /* ink     */
-  --color-accent: #0088b0; /* process cyan — interactive */
-  --color-accent-2: #d6006c; /* process magenta — rare second spot */
+  /* ── Colour ───────────────────────────────────────────────────────────────
+        Taken from design-system/site.css. Broadsheet's own cyan and magenta
+        are the system underneath; this association's skin overrides them
+        wholesale — deep green, gold, and a cream paper ground.
 
-  /* ── Ramps. One shared perceptual lightness scale across all three roles.
-        100–300 tinted fills and hovers · 500 base · 700–900 text on tints and
-        pressed states. Never color-mix() when a ramp step exists. ─────────── */
+        The design's variable names are kept exactly as it authored them
+        (--ink2, --goldInk, --btnBg, --card2 …) so its component rules carry
+        across without translation. The --color-* names are aliases onto
+        those, because that is what this app's components already read.
+        Values marked "design" are verbatim; the few marked "between" are
+        interpolated between two of the design's own stops, because the app
+        uses a ramp step the design never needed. ──────────────────────────── */
+  --color-bg: #f7f3e8;
+  --color-text: #14261d;
+  --color-accent: #0b5d3b;
+  --color-accent-2: #c8a45d;
 
-  /* neutral — anchor #201e1d = oklch(0.2369 0.0036 48.57) */
-  --color-neutral-100: oklch(0.972 0.0006 48.57);
-  --color-neutral-200: oklch(0.938 0.0011 48.57);
-  --color-neutral-300: oklch(0.888 0.0017 48.57);
-  --color-neutral-400: oklch(0.812 0.0027 48.57);
-  --color-neutral-500: oklch(0.64 0.0036 48.57);
-  --color-neutral-600: oklch(0.512 0.0036 48.57);
-  --color-neutral-700: oklch(0.452 0.0033 48.57);
-  --color-neutral-800: oklch(0.348 0.0028 48.57);
-  --color-neutral-900: oklch(0.2369 0.0036 48.57);
+  /* The design's semantic layer — verbatim, [data-t="light"]. */
+  --paper: #f7f3e8;
+  --paper2: #ffffff;
+  --card: #ffffff;
+  --card2: #fbf8f1;
+  --ink: #14261d;
+  --ink2: #5c5548;
+  --head: #073b29;
+  --line: rgba(11, 93, 59, 0.15);
+  --line2: rgba(11, 93, 59, 0.09);
+  --green: #0b5d3b;
+  --greenD: #073b29;
+  --gold: #c8a45d;
+  --goldInk: #86692c;
+  --goldHi: #e8c98a;
+  --goldLo: #a9823f;
+  --band: #073b29;
+  --bandInk: #f7f3e8;
+  --bandDim: rgba(247, 243, 232, 0.82);
+  --bandHead: #fbf6ea;
+  --pat: rgba(11, 93, 59, 0.14);
+  --patBand: rgba(200, 164, 93, 0.3);
+  --glass: rgba(247, 243, 232, 0.88);
+  --micro: #052a1d;
+  --microInk: rgba(247, 243, 232, 0.78);
+  --btnBg: #0b5d3b;
+  --btnFg: #f7f3e8;
+  --btnBgH: #073b29;
+  --starFill: rgba(11, 93, 59, 0.06);
+  --chip: #edf5f0;
+  --chipInk: #0b5d3b;
+  --shadow: 0 26px 60px -36px rgba(7, 59, 41, 0.5);
+  --shadowS: 0 10px 26px -18px rgba(7, 59, 41, 0.4);
 
-  /* accent — anchor #0088b0 = oklch(0.5849 0.1135 227.53) */
-  --color-accent-100: oklch(0.972 0.0182 227.53);
-  --color-accent-200: oklch(0.938 0.0341 227.53);
-  --color-accent-300: oklch(0.888 0.0545 227.53);
-  --color-accent-400: oklch(0.812 0.084 227.53);
-  --color-accent-500: oklch(0.5849 0.1135 227.53);
-  --color-accent-600: oklch(0.528 0.1135 227.53);
-  --color-accent-700: oklch(0.452 0.1044 227.53);
-  --color-accent-800: oklch(0.348 0.0863 227.53);
-  --color-accent-900: oklch(0.248 0.0636 227.53);
+  /* Ramps. The green steps the design publishes, plus the gaps filled by
+     interpolating between its own stops. */
+  --color-accent-100: #edf5f0; /* design */
+  --color-accent-200: #d6e8de; /* design */
+  --color-accent-300: #afd1c0; /* design */
+  --color-accent-400: #6ea98c; /* between 300 and 600 */
+  --color-accent-500: #2f7f5a; /* between 300 and 600 */
+  --color-accent-600: #0b5d3b; /* design */
+  --color-accent-700: #08492f; /* design */
+  --color-accent-800: #073b29; /* design — greenD */
+  --color-accent-900: #052a1d; /* design — micro */
 
-  /* accent-2 — anchor #d6006c = oklch(0.5659 0.2285 1.86) */
-  --color-accent-2-100: oklch(0.972 0.0366 1.86);
-  --color-accent-2-200: oklch(0.938 0.0686 1.86);
-  --color-accent-2-300: oklch(0.888 0.1097 1.86);
-  --color-accent-2-400: oklch(0.812 0.1691 1.86);
-  --color-accent-2-500: oklch(0.5659 0.2285 1.86);
-  --color-accent-2-600: oklch(0.518 0.2285 1.86);
-  --color-accent-2-700: oklch(0.452 0.2103 1.86);
-  --color-accent-2-800: oklch(0.348 0.1737 1.86);
-  --color-accent-2-900: oklch(0.248 0.128 1.86);
+  --color-accent-2-100: #fbf4e6; /* between paper and goldHi */
+  --color-accent-2-200: #f2e3c4; /* between paper and goldHi */
+  --color-accent-2-300: #e8c98a; /* design — goldHi */
+  --color-accent-2-400: #d9b671; /* between goldHi and gold */
+  --color-accent-2-500: #c8a45d; /* design — gold */
+  --color-accent-2-600: #a9823f; /* design — goldLo */
+  --color-accent-2-700: #86692c; /* design — goldInk */
+  --color-accent-2-800: #6a5322; /* between goldInk and ink */
+  --color-accent-2-900: #4a3a18; /* between goldInk and ink */
 
-  /* gold — anchor #c9a227 = oklch(0.728 0.138 89.73). The only purely
-     decorative role in the set: the qibla dial's metal and the calendar's
-     day markers. It never carries interactive meaning, so it has no hover or
-     pressed step — but it does need a second set for dark mode, because a
-     gold tint mixed for paper is a light-mode assumption. */
-  --color-gold-100: oklch(0.94 0.055 90);
-  --color-gold-300: oklch(0.8432 0.1199 91.63);
-  --color-gold-500: oklch(0.728 0.138 89.73);
-  --color-gold-700: oklch(0.5484 0.1055 88.82);
-  --color-gold-text: oklch(0.42 0.09 80);
-  --color-on-gold: oklch(0.32 0.06 80);
+  /* Gold is the second spot colour here, so these mirror the accent-2 ramp. */
+  --color-gold-100: #fbf4e6;
+  --color-gold-300: #e8c98a;
+  --color-gold-500: #c8a45d;
+  --color-gold-700: #86692c;
+  --color-gold-text: #86692c;
+  --color-on-gold: #04180f;
 
-  /* ── Derived surfaces. Named so components never reach for a ramp step
-        directly when the role is what they mean. ───────────────────────────── */
-  --color-paper: var(--color-bg);
-  --color-paper-sunk: var(--color-neutral-200);
-  --color-ink: var(--color-text);
-  --color-ink-muted: var(--color-neutral-700);
+  /* Neutrals. The design carries no neutral ramp — it works in paper, card
+     and two inks — so these run between its paper and its ink, keeping the
+     green cast rather than going flat grey. */
+  --color-neutral-100: #fbf8f1;
+  --color-neutral-200: #f0ece0;
+  --color-neutral-300: #ded8c9;
+  --color-neutral-400: #bdb8a9;
+  --color-neutral-500: #97948a;
+  --color-neutral-600: #6f6d64;
+  --color-neutral-700: #5c5548;
+  --color-neutral-800: #38423a;
+  --color-neutral-900: #14261d;
+
+  /* Aliases — the names the app's own components read. */
+  --color-paper: var(--paper);
+  --color-paper-sunk: var(--card2);
+  --color-surface: var(--card);
+  --color-ink: var(--ink);
+  --color-ink-muted: var(--ink2);
   --color-ink-faint: var(--color-neutral-600);
-  --color-rule: var(--color-neutral-300);
-  --color-rule-strong: var(--color-neutral-900);
-  /* Accent at paper size clears 3:1 only; paragraph-size accent text must use
-     this step instead of --color-accent. */
-  /* The accent at full strength carries white text at only 4.08:1, so a
-     filled control fills one step down instead. `--color-accent` stays the
-     border, focus-ring and rule colour, where 3:1 is the bar. */
-  --color-accent-fill: var(--color-accent-600);
-  --color-accent-fill-hover: var(--color-accent-700);
-  --color-accent-fill-active: var(--color-accent-800);
-  --color-accent-text: var(--color-accent-700);
-  --color-accent-tint: var(--color-accent-100);
+  --color-heading: var(--head);
+  --color-rule: var(--line);
+  --color-rule-strong: var(--green);
+  --color-accent-fill: var(--btnBg);
+  --color-accent-fill-hover: var(--btnBgH);
+  --color-accent-fill-active: var(--micro);
+  --color-accent-text: var(--head);
+  --color-accent-tint: var(--chip);
   --color-accent-tint-strong: var(--color-accent-200);
-  --color-accent-2-text: var(--color-accent-2-700);
+  --color-accent-2-text: var(--goldInk);
   --color-accent-2-tint: var(--color-accent-2-100);
-  --color-focus: var(--color-accent);
-  --color-on-accent: #ffffff;
-  /* A scrim is a hole punched in the page, not a surface of it: it stays ink
-     in both themes, and text laid over it uses --color-on-scrim rather than
-     --color-bg, which inverts with the theme and would vanish. */
-  --color-scrim: oklch(0.2369 0.0036 48.57 / 0.92);
-  --color-scrim-veil: oklch(0.2369 0.0036 48.57 / 0.45);
-  --color-on-scrim: #f3f2f2;
-  --color-on-scrim-tint: oklch(1 0 0 / 0.16);
-  --color-on-scrim-tint-strong: oklch(1 0 0 / 0.28);
+  --color-focus: var(--gold);
+  --color-on-accent: var(--btnFg);
+  --color-scrim: rgba(10, 24, 20, 0.5);
+  --color-scrim-veil: rgba(10, 24, 20, 0.28);
+  --color-on-scrim: var(--bandInk);
+  --color-on-scrim-tint: rgba(255, 255, 255, 0.16);
+  --color-on-scrim-tint-strong: rgba(255, 255, 255, 0.28);
 
   /* ── Type ─────────────────────────────────────────────────────────────── */
-  --font-serif: 'Source Serif 4', 'Noto Naskh Arabic', Georgia, 'Times New Roman', serif;
-  --font-naskh: 'Noto Naskh Arabic', 'Source Serif 4', serif;
-  /* There is no sans in this set. The serif is the UI chrome too. */
-  --font-body: var(--font-serif);
+  /* Manrope sets the running text, Source Serif 4 the headings, Vazirmatn
+     the Persian. The design is explicit about this: a serif display over a
+     sans body, not the serif throughout that I had assumed. */
+  --font-serif: 'Source Serif 4', Georgia, 'Times New Roman', serif;
+  --font-sans: 'Manrope', system-ui, sans-serif;
+  --font-naskh: 'Vazirmatn', 'Noto Naskh Arabic', sans-serif;
+  --font-body: var(--font-sans);
   --font-display: var(--font-serif);
 
   --text-kicker: 0.75rem;
@@ -204,9 +276,9 @@
   /* ── Radius. 2px baseline. The rounded surfaces of the prayer / du'a /
         gallery pages are a documented variant, not the default. ───────────── */
   --radius-none: 0;
-  --radius-baseline: 2px;
-  --radius-soft: 14px;
-  --radius-softer: 18px;
+  --radius-baseline: 10px; /* inputs, per the design */
+  --radius-soft: 16px; /* cards and surfaces */
+  --radius-softer: 18px; /* the hero frame */
   --radius-pill: 999px;
 
   /* ── Shadow. Newsprint barely lifts; these are ink-toned, not grey. ────── */
@@ -228,11 +300,12 @@
   --header-height: 4.5rem;
 
   /* ── Motion ───────────────────────────────────────────────────────────── */
-  --ease-out-expressive: cubic-bezier(0.22, 1, 0.3, 1);
-  --ease-standard: cubic-bezier(0.32, 0.72, 0, 1);
-  --duration-fast: 140ms;
-  --duration-base: 240ms;
-  --duration-slow: 520ms;
+  --ease-out-expressive: cubic-bezier(0.16, 1, 0.3, 1); /* the design's signature */
+  --ease-rise: cubic-bezier(0.22, 0.9, 0.24, 1); /* the long scroll reveals */
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --duration-fast: 350ms;
+  --duration-base: 500ms;
+  --duration-slow: 1250ms;
   --duration-theme: 720ms;
 
   --z-header: 40;
@@ -243,72 +316,110 @@
   --z-toast: 100;
 }
 
-/* ── Dark mode: deep green-black paper, same spot colours. A full second
-      token set, not a filter. Applied from a cookie on the server so the
-      first paint is already correct. ──────────────────────────────────────── */
+/* ── Dark mode. The design's own [data-t="dark"] set, verbatim: the paper
+      goes to a deep green-black, the gold warms and takes over as the button
+      fill, and the green lightens to stay readable as a text colour. A full
+      second token set, not a filter. Applied from a cookie on the server so
+      the first paint is already correct. ─────────────────────────────────── */
 :root[data-theme='dark'] {
   --color-bg: #06211a;
-  --color-text: #eef3f0;
-  --color-accent: #35c6ea;
-  --color-accent-2: #ff5fa2;
+  --color-text: #efe8d8;
+  --color-accent: #7fcba3;
+  --color-accent-2: #dcbb7b;
 
-  --color-neutral-100: oklch(0.2 0.022 172);
-  --color-neutral-200: oklch(0.248 0.024 172);
-  --color-neutral-300: oklch(0.31 0.024 172);
-  --color-neutral-400: oklch(0.392 0.022 172);
-  --color-neutral-500: oklch(0.52 0.018 172);
-  --color-neutral-600: oklch(0.64 0.014 172);
-  --color-neutral-700: oklch(0.762 0.012 172);
-  --color-neutral-800: oklch(0.868 0.01 172);
-  --color-neutral-900: oklch(0.948 0.008 172);
+  /* Verbatim, [data-t="dark"]. */
+  --paper: #06211a;
+  --paper2: #082a20;
+  --card: #0b3125;
+  --card2: #092a20;
+  --ink: #efe8d8;
+  --ink2: #9fb6a8;
+  --head: #fbf6ea;
+  --line: rgba(200, 164, 93, 0.22);
+  --line2: rgba(200, 164, 93, 0.12);
+  --green: #7fcba3;
+  --greenD: #04180f;
+  --gold: #dcbb7b;
+  --goldInk: #dcbb7b;
+  --goldHi: #f2dca9;
+  --goldLo: #be9550;
+  --band: #04180f;
+  --bandInk: #efe8d8;
+  --bandDim: rgba(239, 232, 216, 0.78);
+  --bandHead: #fbf6ea;
+  --pat: rgba(220, 187, 123, 0.16);
+  --patBand: rgba(220, 187, 123, 0.22);
+  --glass: rgba(6, 33, 26, 0.86);
+  --micro: #04180f;
+  --microInk: rgba(239, 232, 216, 0.72);
+  --btnBg: #dcbb7b;
+  --btnFg: #04180f;
+  --btnBgH: #ebd09a;
+  --starFill: rgba(220, 187, 123, 0.07);
+  --chip: rgba(127, 203, 163, 0.12);
+  --chipInk: #7fcba3;
+  --shadow: 0 26px 60px -34px rgba(0, 0, 0, 0.8);
+  --shadowS: 0 10px 26px -16px rgba(0, 0, 0, 0.7);
 
-  --color-accent-100: oklch(0.242 0.048 227.53);
-  --color-accent-200: oklch(0.292 0.062 227.53);
-  --color-accent-300: oklch(0.362 0.078 227.53);
-  --color-accent-400: oklch(0.47 0.096 227.53);
-  --color-accent-500: oklch(0.762 0.112 227.53);
-  --color-accent-600: oklch(0.808 0.108 227.53);
-  --color-accent-700: oklch(0.858 0.092 227.53);
-  --color-accent-800: oklch(0.902 0.072 227.53);
-  --color-accent-900: oklch(0.948 0.05 227.53);
+  /* Ramps invert: the steps run light so the readable end is the high one. */
+  --color-accent-100: #08281c;
+  --color-accent-200: #0c3a28;
+  --color-accent-300: #14503a;
+  --color-accent-400: #2f7f5a;
+  --color-accent-500: #4ea37b;
+  --color-accent-600: #7fcba3;
+  --color-accent-700: #a5dcc0;
+  --color-accent-800: #c6ead7;
+  --color-accent-900: #e4f5ec;
 
-  --color-accent-2-100: oklch(0.252 0.086 1.86);
-  --color-accent-2-200: oklch(0.302 0.112 1.86);
-  --color-accent-2-300: oklch(0.372 0.142 1.86);
-  --color-accent-2-400: oklch(0.48 0.176 1.86);
-  --color-accent-2-500: oklch(0.732 0.166 1.86);
-  --color-accent-2-600: oklch(0.782 0.152 1.86);
-  --color-accent-2-700: oklch(0.842 0.124 1.86);
-  --color-accent-2-800: oklch(0.896 0.094 1.86);
-  --color-accent-2-900: oklch(0.946 0.062 1.86);
+  --color-accent-2-100: #2a2114;
+  --color-accent-2-200: #3d301d;
+  --color-accent-2-300: #5b4728;
+  --color-accent-2-400: #8c6d38;
+  --color-accent-2-500: #be9550;
+  --color-accent-2-600: #dcbb7b;
+  --color-accent-2-700: #ecd3a2;
+  --color-accent-2-800: #f4e4c4;
+  --color-accent-2-900: #fbf3e4;
 
-  /* Gold inverts like the other ramps: the tint sinks into the dark paper and
-     the metal and its text run light, so a marked day reads as gold rather
-     than as a hole cut in the page. */
-  --color-gold-100: oklch(0.262 0.042 88);
-  --color-gold-300: oklch(0.6 0.108 90);
-  --color-gold-500: oklch(0.808 0.128 90);
-  --color-gold-700: oklch(0.882 0.096 90);
-  --color-gold-text: oklch(0.868 0.104 88);
-  --color-on-gold: oklch(0.92 0.07 90);
+  --color-gold-100: #2a2114;
+  --color-gold-300: #8c6d38;
+  --color-gold-500: #dcbb7b;
+  --color-gold-700: #f2dca9;
+  --color-gold-text: #dcbb7b;
+  --color-on-gold: #04180f;
 
-  --color-paper-sunk: var(--color-neutral-200);
-  --color-rule: var(--color-neutral-300);
-  --color-rule-strong: var(--color-neutral-800);
-  --color-ink-muted: var(--color-neutral-700);
+  --color-neutral-100: #082a20;
+  --color-neutral-200: #0b3125;
+  --color-neutral-300: #17402f;
+  --color-neutral-400: #2e5344;
+  --color-neutral-500: #4e7061;
+  --color-neutral-600: #7d9488;
+  --color-neutral-700: #9fb6a8;
+  --color-neutral-800: #c8d6cd;
+  --color-neutral-900: #efe8d8;
+
+  --color-paper-sunk: var(--card2);
+  --color-rule: var(--line);
+  --color-rule-strong: var(--gold);
+  --color-ink-muted: var(--ink2);
   --color-ink-faint: var(--color-neutral-600);
-  /* Inverted ramp: in dark mode the accent steps run light, so the readable
-     fill is the base step and the hovers go lighter still. */
-  --color-accent-fill: var(--color-accent-500);
-  --color-accent-fill-hover: var(--color-accent-600);
-  --color-accent-fill-active: var(--color-accent-700);
-  --color-accent-text: var(--color-accent-700);
-  --color-accent-2-text: var(--color-accent-2-700);
-  --color-on-accent: #06211a;
+  /* Gold carries the buttons in the dark theme, so the readable text on a
+     filled control is the near-black paper, not white. */
+  --color-accent-fill: var(--btnBg);
+  --color-accent-fill-hover: var(--btnBgH);
+  --color-accent-fill-active: var(--goldLo);
+  --color-accent-text: var(--green);
+  --color-accent-2-text: var(--goldInk);
+  --color-on-accent: var(--btnFg);
+  --color-focus: var(--gold);
+  --color-accent-tint: var(--chip);
+  --color-accent-tint-strong: var(--color-accent-200);
+  --color-accent-2-tint: var(--color-accent-2-100);
 
-  --shadow-sm: 0 1px 2px oklch(0 0 0 / 0.4);
-  --shadow-md: 0 2px 10px oklch(0 0 0 / 0.45);
-  --shadow-lg: 0 8px 34px oklch(0 0 0 / 0.5);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 2px 10px rgba(0, 0, 0, 0.45);
+  --shadow-lg: 0 8px 34px rgba(0, 0, 0, 0.5);
 }
 
 /* ── Expose every token to Tailwind v4 so `bg-paper`, `text-accent-700`,
@@ -374,6 +485,7 @@
   --color-accent-2-900: var(--color-accent-2-900);
 
   --font-serif: var(--font-serif);
+  --font-sans: var(--font-sans);
   --font-naskh: var(--font-naskh);
   --font-body: var(--font-body);
   --font-display: var(--font-display);
@@ -429,6 +541,7 @@
 
   --ease-out-expressive: var(--ease-out-expressive);
   --ease-standard: var(--ease-standard);
+  --ease-rise: var(--ease-rise);
 
   --container-page: var(--page-max);
   --container-measure: var(--measure);

@@ -220,7 +220,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
       </section>
 
       {/* ── Intro statement ──────────────────────────────────────────────── */}
-      <section className="section" data-rise>
+      <section className="section section-alt" data-rise>
         <div className="page">
           <div className="rail">
             <div />
@@ -300,7 +300,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
 
       {/* ── Featured opening event ───────────────────────────────────────── */}
       {showFeatured ? (
-        <section className="section" data-rise>
+        <section className="section section-alt" data-rise>
           <div className="page">
             <div className="rail">
               <div className="head-rule" style={{ paddingBlockStart: 'var(--space-2)' }}>
@@ -442,7 +442,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
 
       {/* ── Courses preview ──────────────────────────────────────────────── */}
       {courses.length > 0 ? (
-        <section className="section" data-rise>
+        <section className="section section-alt" data-rise>
           <div className="page">
             <SectionHead kicker={t('coursesPreview')} title={tNav('courses')} />
             <ul className="columns-feature" style={{ listStyle: 'none', margin: 0, padding: 0 }}>
@@ -467,7 +467,8 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
       ) : null}
 
       {/* ── Vienna & location ────────────────────────────────────────────── */}
-      <section className="section-loose" data-rise>
+      <section className="section-loose section-band" data-rise>
+        <PatternPlate drift opacity={0.6} />
         <div className="page">
           <div className="rail">
             <div className="head-rule" style={{ paddingBlockStart: 'var(--space-2)' }}>

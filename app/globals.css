@@ -702,14 +702,42 @@
   }
 
   /* Vertical rhythm between sections. Whitespace is the separator. */
+  /* The design's section rhythm. It breathes far wider than mine did —
+     clamp(60px, 7vw, 120px) rather than a fixed step — and alternates a white
+     --paper2 ground ruled with hairlines against the paper itself, with the
+     occasional band to break the run. */
   .section {
-    padding-block: var(--space-8);
+    padding-block: clamp(60px, 7vw, 120px);
   }
   .section-tight {
-    padding-block: var(--space-6);
+    padding-block: clamp(40px, 5vw, 72px);
   }
   .section-loose {
-    padding-block: var(--space-9);
+    padding-block: clamp(60px, 7vw, 120px);
+  }
+  /* The ruled white ground. */
+  .section-alt {
+    background: var(--paper2);
+    border-block: var(--rule-hair) solid var(--line2);
+  }
+  /* A band: the page goes to ink and the ground comes up behind it. */
+  .section-band {
+    position: relative;
+    background: var(--band);
+    color: var(--bandInk);
+    overflow: hidden;
+    padding-block: clamp(52px, 6vw, 96px);
+  }
+  .section-band h1,
+  .section-band h2,
+  .section-band h3 {
+    color: var(--bandHead);
+  }
+  .section-band .kicker {
+    color: var(--gold);
+  }
+  .section-band > .page {
+    position: relative;
   }
 
   /* The dateline rail: a narrow kicker column running beside the content. */

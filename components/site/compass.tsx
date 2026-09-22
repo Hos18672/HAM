@@ -259,6 +259,7 @@ export function Compass({ locale }: { locale: Locale }) {
           {t('howTo')}
         </p>
         <ol
+          className="steps"
           style={{
             margin: 0,
             paddingInlineStart: '1.25em',

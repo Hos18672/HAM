@@ -53,6 +53,7 @@ export function PageHead({
               value={header.lead}
               className="lead"
               multiline
+              words="lines"
             />
           </div>
         </div>

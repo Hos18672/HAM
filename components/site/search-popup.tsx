@@ -228,8 +228,8 @@ export function SearchPopup({
         style={{
           position: 'absolute',
           inset: 0,
-          background: 'var(--color-scrim-veil)',
-          backdropFilter: 'blur(2px)',
+          background: 'rgba(10, 24, 20, 0.5)',
+          backdropFilter: 'blur(7px)',
         }}
       />
 
@@ -288,16 +288,9 @@ export function SearchPopup({
         <div
           ref={panelRef}
           id={listId}
+          className="search-panel"
           style={{
             inlineSize: 'min(38rem, 100%)',
-            marginBlockStart: 'var(--space-3)',
-            background: 'var(--color-bg)',
-            border: 'var(--rule-hair) solid var(--color-rule)',
-            borderRadius: 'var(--radius-soft)',
-            boxShadow: 'var(--shadow-lg)',
-            overflow: 'hidden',
-            maxBlockSize: '60vh',
-            overflowY: 'auto',
             opacity: showResults ? 1 : 0,
             transition: `opacity var(--duration-base) ${EASE}`,
             pointerEvents: showResults ? 'auto' : 'none',
@@ -323,18 +316,7 @@ export function SearchPopup({
           <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
             {hits.map((hit) => (
               <li key={hit.id}>
-                <a
-                  href={hit.href}
-                  onClick={onClose}
-                  style={{
-                    display: 'grid',
-                    gap: '2px',
-                    padding: 'var(--space-3) var(--space-4)',
-                    textDecoration: 'none',
-                    color: 'var(--color-ink)',
-                    borderBlockEnd: 'var(--rule-hair) solid var(--color-rule)',
-                  }}
-                >
+                <a href={hit.href} onClick={onClose} className="search-hit">
                   <span className="kicker">{hit.kind}</span>
                   <span style={{ fontWeight: 'var(--weight-bold)' }}>{hit.title}</span>
                   {hit.excerpt ? (

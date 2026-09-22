@@ -16,14 +16,19 @@ export interface EditableTextProps {
   /** Multi-line content keeps its newlines and edits as a block. */
   multiline?: boolean;
   /**
-   * Reveal the text a word at a time.
+   * Reveal the text a word — or a character — at a time.
+   *
+   * `lines` is running text, `hero` the opening headline that assembles
+   * itself, `tight` metadata and list items where the stagger has to close
+   * up. `chars` rights each glyph individually and suits a short line only.
    *
    * Only outside edit mode: while editing, the element has to hold plain text
    * or every keystroke would be fighting a pile of spans. The split is purely
-   * presentational either way — the words carry no semantics and the element's
-   * text content reads identically to assistive technology.
+   * presentational either way — the pieces carry no semantics and the
+   * element's text content reads identically to assistive technology.
    */
-  words?: boolean;
+  words?: boolean | 'lines' | 'hero' | 'tight';
+  chars?: boolean;
 }
 
 /**
@@ -49,10 +54,34 @@ export async function EditableText({
   style,
   multiline,
   words,
+  chars,
 }: EditableTextProps) {
   const editing = await isEditing();
 
   if (!editing) {
+    if (chars) {
+      const glyphs = [...value];
+      let index = -1;
+      return (
+        <Tag
+          className={className}
+          style={style}
+          data-field={`${entity}.${id}.${field}`}
+          data-rise
+          data-chars
+        >
+          {glyphs.map((glyph, i) => {
+            if (glyph === ' ') return ' ';
+            index += 1;
+            return (
+              <span key={i} className="ch" style={{ '--ci': index } as CSSProperties}>
+                {glyph}
+              </span>
+            );
+          })}
+        </Tag>
+      );
+    }
     if (words) {
       const parts = value.split(/(\s+)/);
       let index = -1;
@@ -62,7 +91,7 @@ export async function EditableText({
           style={style}
           data-field={`${entity}.${id}.${field}`}
           data-rise
-          data-words
+          data-words={words === true ? 'lines' : words}
         >
           {parts.map((part, i) => {
             if (/^\s+$/.test(part)) return part;

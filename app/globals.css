@@ -1323,9 +1323,12 @@
     border-color: var(--color-accent-300);
   }
   /* The highlighted member of a soft set — next prayer, today, an occasion. */
+  /* The marked card — the next prayer, a today cell. The design lifts it onto
+     the sunk card colour and rings it in gold rather than tinting it green. */
   .card-marked {
-    border: 2px solid var(--color-accent);
-    background: var(--color-accent-100);
+    border-color: var(--gold);
+    background: var(--card2);
+    box-shadow: 0 10px 26px -18px rgba(0, 0, 0, 0.5);
   }
 
   /* ── .tile ────────────────────────────────────────────────────────────────
@@ -1727,6 +1730,254 @@
     transform: translateY(-6.1px) rotate(-45deg);
   }
 
+  /* ── The design's remaining component treatments ──────────────────────────
+     Carried over from design-system/site.css, mapped onto this app's own
+     class names where it already had one for the same thing. */
+
+  /* Anything that should lift a little under the pointer. */
+  .lift {
+    transition:
+      transform 0.4s cubic-bezier(0.2, 0.75, 0.25, 1),
+      color var(--duration-fast) var(--ease-standard);
+  }
+  .lift:hover {
+    transform: translateY(-3px);
+  }
+
+  /* A list row that settles onto the sunk card and draws its own margins in. */
+  .row-hover {
+    transition:
+      background-color var(--duration-fast) var(--ease-standard),
+      padding-inline var(--duration-fast) var(--ease-standard);
+  }
+  .row-hover:hover {
+    background: var(--card2);
+    padding-inline: 14px;
+  }
+
+  /* An icon that points along the reading direction and must turn round with
+     it — a chevron, an arrow in a list. */
+  :root[dir='rtl'] .mirror {
+    transform: scaleX(-1);
+  }
+
+  /* The gold fill: a diagonal gradient that slides across as it is pressed. */
+  .btn-gold {
+    --btn-bg: transparent;
+    --btn-fg: #04180f;
+    background: linear-gradient(135deg, var(--goldHi) 0%, var(--gold) 46%, var(--goldLo) 100%);
+    background-size: 180% 180%;
+    background-position: 0% 50%;
+    color: #04180f;
+    transition:
+      transform var(--duration-base) var(--ease-out-expressive),
+      box-shadow var(--duration-base) var(--ease-out-expressive),
+      background-position 0.7s var(--ease-out-expressive),
+      letter-spacing var(--duration-base) var(--ease-out-expressive);
+  }
+  .btn-gold:hover:not(:disabled) {
+    background-position: 100% 50%;
+    box-shadow: 0 16px 36px -16px rgba(200, 164, 93, 0.8);
+  }
+
+  /* On a dark band the outline button takes the band's own ink. */
+  .btn-on-scrim {
+    --btn-bg: transparent;
+    --btn-fg: var(--bandInk);
+    box-shadow: inset 0 0 0 1px var(--patBand);
+  }
+  .btn-on-scrim:hover:not(:disabled) {
+    background: rgba(200, 164, 93, 0.1);
+    box-shadow: inset 0 0 0 1px var(--gold);
+  }
+
+  /* The masthead: the mark grows a touch and a gold ring settles around it. */
+  .brand {
+    position: relative;
+    transition: opacity var(--duration-fast) var(--ease-standard);
+  }
+  .brand-mark {
+    transition: transform 1s var(--ease-out-expressive);
+  }
+  .brand:hover .brand-mark {
+    transform: scale(1.05);
+  }
+  .brand-ring {
+    position: absolute;
+    inset: -8px;
+    border-radius: 50%;
+    border: var(--rule-hair) solid var(--gold);
+    opacity: 0;
+    transform: scale(0.9);
+    transition:
+      opacity var(--duration-base) var(--ease-standard),
+      transform 0.7s var(--ease-out-expressive);
+    pointer-events: none;
+  }
+  .brand:hover .brand-ring {
+    opacity: 0.7;
+    transform: none;
+  }
+
+  /* The hero frame, and the outline that breathes outward behind it. */
+  .frame {
+    position: relative;
+    border-radius: var(--radius-softer);
+    overflow: hidden;
+    background: var(--greenD);
+    box-shadow: 0 40px 90px -50px rgba(0, 0, 0, 0.85);
+  }
+  .frame::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    box-shadow: inset 0 0 0 1px rgba(200, 164, 93, 0.35);
+    pointer-events: none;
+  }
+  .frame-wrap {
+    position: relative;
+  }
+  .frame-wrap::before {
+    content: '';
+    position: absolute;
+    inset-block: 22px;
+    inset-inline-start: -18px;
+    inset-inline-end: 26px;
+    border: var(--rule-hair) solid var(--patBand);
+    border-radius: var(--radius-softer);
+    pointer-events: none;
+    transition: inset 0.8s var(--ease-out-expressive);
+  }
+  .frame-wrap:hover::before {
+    inset-inline-start: -24px;
+    inset-inline-end: 20px;
+  }
+
+  /* The overflow menu: a caret that turns over, and a panel that drops from
+     its own corner rather than fading in place. */
+  .caret {
+    transition: transform 0.4s var(--ease-out-expressive);
+  }
+  [aria-expanded='true'] .caret {
+    transform: rotate(180deg);
+  }
+  .pop {
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-8px) scale(0.97);
+    transform-origin: top right;
+    transition:
+      opacity var(--duration-fast) var(--ease-standard),
+      transform 0.4s var(--ease-out-expressive),
+      visibility var(--duration-fast);
+  }
+  :root[dir='rtl'] .pop {
+    transform-origin: top left;
+  }
+  .pop[data-open='true'] {
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+  }
+  .pop-item {
+    transition:
+      background-color var(--duration-fast) var(--ease-standard),
+      color var(--duration-fast) var(--ease-standard),
+      padding-inline-start var(--duration-fast) var(--ease-out-expressive);
+  }
+  .pop-item:hover {
+    background: var(--card2);
+    color: var(--head);
+    padding-inline-start: 19px;
+  }
+
+  /* The mobile drawer: the scrim blurs what is behind it, each row arrives in
+     sequence, and a gold bar grows down the side of the one under the
+     pointer. */
+  @keyframes ham-rise {
+    from {
+      opacity: 0;
+      transform: translateY(26px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  .drawer-scrim {
+    animation: ham-fade 0.35s ease both;
+    backdrop-filter: blur(2px);
+  }
+  .drawer a,
+  .drawer button {
+    animation: ham-rise 0.5s var(--ease-out-expressive) both;
+  }
+  .drawer-item {
+    position: relative;
+    transition:
+      background-color var(--duration-fast) var(--ease-standard),
+      color var(--duration-fast) var(--ease-standard),
+      padding-inline-start var(--duration-fast) var(--ease-out-expressive);
+  }
+  .drawer-item::after {
+    content: '';
+    position: absolute;
+    inset-inline-start: 0;
+    top: 12%;
+    bottom: 12%;
+    width: 2px;
+    border-radius: 2px;
+    background: var(--gold);
+    transform: scaleY(0);
+    transform-origin: center;
+    transition: transform 0.45s var(--ease-out-expressive);
+  }
+  .drawer-item:hover::after,
+  .drawer-item[aria-current='page']::after {
+    transform: scaleY(1);
+  }
+  .drawer-item:hover {
+    background: var(--card2);
+    color: var(--head);
+    padding-inline-start: 18px;
+  }
+  .drawer-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-block-end: 14px;
+    font-size: 10.5px;
+    font-weight: var(--weight-bold);
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: var(--goldInk);
+  }
+  .drawer-head span {
+    flex: 1 1 auto;
+    height: 1px;
+    background: linear-gradient(90deg, var(--gold), transparent);
+  }
+  :root[dir='rtl'] .drawer-head span {
+    background: linear-gradient(270deg, var(--gold), transparent);
+  }
+  :root[dir='rtl'] .drawer-head {
+    letter-spacing: 0;
+    text-transform: none;
+  }
+
+  /* Numbered steps count in gold, and in Persian numerals under RTL. */
+  .steps {
+    list-style: decimal;
+  }
+  .steps li::marker {
+    color: var(--goldInk);
+    font-weight: var(--weight-bold);
+  }
+  :root[dir='rtl'] .steps {
+    list-style: persian;
+  }
+
   /* ── .search-pill ─────────────────────────────────────────────────────────
      The search field is chromeless inside its pill, so the focus ring has to
      be drawn by the pill: without this the only visible focus state is the
@@ -1734,19 +1985,75 @@
   .search-pill {
     display: flex;
     align-items: center;
-    gap: var(--space-2);
-    background: var(--color-bg);
-    border: var(--rule-hair) solid var(--color-rule-strong);
+    gap: 12px;
+    block-size: 60px;
+    background: var(--card);
+    border: var(--rule-hair) solid var(--gold);
     border-radius: var(--radius-pill);
-    padding-inline: var(--space-4);
-    padding-block: var(--space-2);
-    box-shadow: var(--shadow-lg);
+    padding-inline: 20px;
+    overflow: hidden;
+    box-shadow: 0 22px 50px -30px rgba(0, 0, 0, 0.6);
     transform-origin: center;
+    will-change: transform, border-radius;
   }
   .search-pill:focus-within {
-    border-color: var(--color-accent);
-    outline: 2px solid var(--color-accent);
+    outline: 2px solid var(--gold);
     outline-offset: 2px;
+  }
+  /* The pill's contents ink in behind it, a beat apart, rather than arriving
+     with the frame. */
+  @keyframes ham-s-ink {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  .search-pill > svg {
+    animation: ham-s-ink 0.3s ease-out 0.16s both;
+  }
+  .search-pill input {
+    animation: ham-s-ink 0.3s ease-out 0.2s both;
+  }
+  .search-pill button {
+    animation: ham-s-ink 0.3s ease-out 0.24s both;
+  }
+
+  /* The results panel drops in under the pill once the pill has settled. */
+  @keyframes ham-s-panel {
+    from {
+      opacity: 0;
+      transform: translateY(-12px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  .search-panel {
+    margin-block-start: 12px;
+    max-block-size: min(58vh, 430px);
+    overflow: auto;
+    background: var(--card);
+    border: var(--rule-hair) solid var(--line);
+    border-radius: var(--radius-soft);
+    box-shadow: 0 30px 64px -38px rgba(0, 0, 0, 0.6);
+    animation: ham-s-panel 0.42s cubic-bezier(0.22, 1, 0.3, 1) 0.22s both;
+  }
+  .search-hit {
+    display: grid;
+    gap: 3px;
+    inline-size: 100%;
+    text-align: start;
+    padding: 14px 22px;
+    text-decoration: none;
+    color: var(--color-ink);
+    border-block-end: var(--rule-hair) solid var(--line);
+    transition: background-color var(--duration-fast) var(--ease-standard);
+  }
+  .search-hit:hover {
+    background: var(--card2);
   }
 
   /* ── .dialog ──────────────────────────────────────────────────────────────── */
@@ -1880,18 +2187,34 @@
     transition-delay: var(--rise-delay, 0ms);
   }
 
-  /* The design's headline reveal: the words arrive one after another, each
-     rising half a line out of a 4px blur. Driven by the same armed/in
-     attributes as the element reveal, so it needs no second observer and is
-     equally invisible without JavaScript. */
+  /* The text reveals, at the design's three scales.
+     
+     `lines` is running text: the words rise half a line out of a 4px blur on
+     a 42ms stagger. `hero` is the opening headline, and it is a different
+     animal — a flex row of words, each travelling a full line out of a 6px
+     blur over 1.5s on a 200ms stagger, so the line assembles itself rather
+     than sliding in. `tight` is for metadata, dates, times and list items,
+     where the stagger closes to 34ms so a row of them does not take all day.
+     All three ride the observer's armed/in attributes. */
   [data-words] .word {
     display: inline-block;
   }
+  [data-words='hero'] {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.32em;
+  }
+
   [data-words][data-rise-armed='true'] .word {
     opacity: 0;
     transform: translateY(0.55em);
     filter: blur(4px);
   }
+  [data-words='hero'][data-rise-armed='true'] .word {
+    transform: translateY(1.1em);
+    filter: blur(6px);
+  }
+
   [data-words][data-rise-in='true'] .word {
     opacity: 1;
     transform: none;
@@ -1901,6 +2224,47 @@
       transform 1s var(--ease-rise),
       filter 0.8s var(--ease-rise);
     transition-delay: calc(240ms + var(--ci, 0) * 42ms);
+  }
+  [data-words='hero'][data-rise-in='true'] .word {
+    transition:
+      opacity 1.5s var(--ease-rise),
+      transform 1.6s var(--ease-rise),
+      filter 1.4s var(--ease-rise);
+    transition-delay: calc(var(--ci, 0) * 200ms);
+  }
+  [data-words='tight'][data-rise-in='true'] .word {
+    transition-delay: calc(120ms + var(--ci, 0) * 34ms);
+  }
+
+  /* Per-character, for a short line that should feel typeset rather than
+     flown in: each glyph rights itself from four degrees over 16ms steps. */
+  [data-chars] .ch {
+    display: inline-block;
+  }
+  [data-chars][data-rise-armed='true'] .ch {
+    opacity: 0;
+    transform: translateY(0.4em) rotate(4deg);
+  }
+  [data-chars][data-rise-in='true'] .ch {
+    opacity: 1;
+    transform: none;
+    transition:
+      opacity 0.5s var(--ease-out-expressive),
+      transform 0.6s var(--ease-out-expressive);
+    transition-delay: calc(var(--ci, 0) * 16ms);
+  }
+
+  /* A plain fade, for anything that should simply arrive. */
+  @keyframes ham-fade {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  .fade-in {
+    animation: ham-fade 1s ease both;
   }
 
   /* Page transition, from the design's hamPageIn. */
@@ -2049,14 +2413,24 @@
       transform: none;
       filter: none;
     }
-    [data-words][data-rise-armed='true'] .word {
+    [data-words][data-rise-armed='true'] .word,
+    [data-chars][data-rise-armed='true'] .ch {
       opacity: 1;
       transform: none;
       filter: none;
     }
+    .fade-in {
+      animation: none;
+    }
     .theme-wash,
     .wipe {
       display: none;
+    }
+    .search-pill > svg,
+    .search-pill input,
+    .search-pill button,
+    .search-panel {
+      animation: none;
     }
   }
 

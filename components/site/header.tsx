@@ -161,40 +161,37 @@ export function Header({ theme, locale }: { theme: ThemeValue; locale: Locale })
                   size={14}
                   weight="bold"
                   aria-hidden="true"
-                  style={{
-                    marginInlineStart: 'var(--space-1)',
-                    transform: moreOpen ? 'rotate(180deg)' : undefined,
-                    transition: 'transform var(--duration-fast) var(--ease-standard)',
-                  }}
+                  className="caret"
+                  style={{ marginInlineStart: 'var(--space-1)' }}
                 />
               </button>
-              {moreOpen ? (
-                <div
-                  className="absolute"
-                  style={{
-                    insetInlineEnd: 0,
-                    insetBlockStart: 'calc(100% + var(--space-1))',
-                    minInlineSize: '14rem',
-                    background: 'var(--color-bg)',
-                    border: 'var(--rule-hair) solid var(--color-rule-strong)',
-                    borderRadius: 'var(--radius-baseline)',
-                    boxShadow: 'var(--shadow-lg)',
-                    padding: 'var(--space-1)',
-                    display: 'grid',
-                  }}
-                >
-                  {overflow.map((entry) => (
-                    <Link
-                      key={entry.href}
-                      href={entry.href}
-                      className="nav-link"
-                      aria-current={isCurrent(entry.href) ? 'page' : undefined}
-                    >
-                      {t(entry.key)}
-                    </Link>
-                  ))}
-                </div>
-              ) : null}
+              <div
+                className="pop absolute"
+                data-open={moreOpen ? 'true' : 'false'}
+                style={{
+                  insetInlineEnd: 0,
+                  insetBlockStart: 'calc(100% + var(--space-1))',
+                  minInlineSize: '14rem',
+                  background: 'var(--card)',
+                  border: 'var(--rule-hair) solid var(--line)',
+                  borderRadius: 'var(--radius-soft)',
+                  boxShadow: 'var(--shadow)',
+                  padding: 'var(--space-1)',
+                  display: 'grid',
+                  zIndex: 'var(--z-header)',
+                }}
+              >
+                {overflow.map((entry) => (
+                  <Link
+                    key={entry.href}
+                    href={entry.href}
+                    className="nav-link pop-item"
+                    aria-current={isCurrent(entry.href) ? 'page' : undefined}
+                  >
+                    {t(entry.key)}
+                  </Link>
+                ))}
+              </div>
             </div>
           </nav>
 
@@ -241,7 +238,7 @@ export function Header({ theme, locale }: { theme: ThemeValue; locale: Locale })
         <div
           ref={drawerRef}
           id="mobile-drawer"
-          className="fixed inset-0 lg:hidden"
+          className="drawer fixed inset-0 lg:hidden"
           style={{ zIndex: 'var(--z-drawer)', background: 'var(--color-bg)' }}
           role="dialog"
           aria-modal="true"
@@ -274,7 +271,7 @@ export function Header({ theme, locale }: { theme: ThemeValue; locale: Locale })
               <Link
                 key={entry.href}
                 href={entry.href}
-                className="nav-link"
+                className="nav-link drawer-item"
                 aria-current={isCurrent(entry.href) ? 'page' : undefined}
                 style={{ fontSize: 'var(--text-xl)', paddingBlock: 'var(--space-2)' }}
               >
@@ -285,7 +282,7 @@ export function Header({ theme, locale }: { theme: ThemeValue; locale: Locale })
             <hr style={{ marginBlock: 'var(--space-3)' }} />
 
             {LEGAL_NAV.map((entry) => (
-              <Link key={entry.href} href={entry.href} className="nav-link">
+              <Link key={entry.href} href={entry.href} className="nav-link drawer-item">
                 {t(entry.key)}
               </Link>
             ))}
@@ -320,7 +317,7 @@ function Brand({ condensed }: { condensed: boolean }) {
   return (
     <Link
       href="/"
-      className="flex flex-col"
+      className="brand flex flex-col"
       style={{ textDecoration: 'none', color: 'var(--color-ink)', lineHeight: 1.1 }}
     >
       <span

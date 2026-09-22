@@ -120,6 +120,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
                 locale={typed}
                 value={header.title}
                 style={{ fontSize: 'clamp(var(--text-4xl), 7vw, var(--text-6xl))' }}
+                words="hero"
               />
 
               <EditableText
@@ -132,6 +133,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
                 className="lead"
                 multiline
                 style={{ fontSize: 'var(--text-xl)' }}
+                words="lines"
               />
 
               <div className="flex flex-wrap items-center gap-2">

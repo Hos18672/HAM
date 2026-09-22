@@ -58,9 +58,13 @@ export const contactSchema = antiSpamSchema.extend({
   name,
   email,
   phone,
-  topic: z
-    .enum(['general', 'courses', 'events', 'membership', 'volunteer', 'other'])
-    .describe('form.errors.topicRequired'),
+  // The key has to be the enum's *error*, not its description: a description
+  // is metadata and never reaches an issue, so a bad topic would report Zod's
+  // own English default straight into the reader's language.
+  topic: z.enum(
+    ['general', 'courses', 'events', 'membership', 'volunteer', 'other'],
+    'form.errors.topicRequired',
+  ),
   message,
   locale: localeField,
 });

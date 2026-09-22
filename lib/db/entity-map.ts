@@ -25,10 +25,29 @@ export interface EntityDefinition {
   parentColumn?: string;
   /** Whether the base table has a `sort` column to reorder by. */
   sortable: boolean;
+  /**
+   * How to order the rows a list editor shows, for tables without `sort`.
+   * Without it the admin falls back to the physical row order, which is the
+   * random order of the primary keys.
+   */
+  order?: string;
   /** Defaults used when adding a blank row. */
   defaults?: Record<string, unknown>;
+  /**
+   * Columns a blank row must carry because the table demands them — a NOT NULL
+   * slug, a tier key, a start date. Called once per insert, so every new row
+   * gets its own value and two additions in a row cannot collide on a unique
+   * index. Without these, "Neuer Eintrag" fails on exactly the areas whose
+   * tables have a required key.
+   */
+  required?: () => Record<string, unknown>;
   /** The cache tag to revalidate after a write. */
   tag: string;
+}
+
+/** A short, URL-safe suffix, so a generated key is unique without being ugly. */
+function suffix(): string {
+  return Math.random().toString(36).slice(2, 8);
 }
 
 export const ENTITIES: Record<EntityKind, EntityDefinition> = {
@@ -76,6 +95,7 @@ export const ENTITIES: Record<EntityKind, EntityDefinition> = {
     baseFields: { category: 'category', level: 'level', published: 'published', slug: 'slug' },
     sortable: true,
     defaults: { category: 'language', level: '' },
+    required: () => ({ slug: `neuer-kurs-${suffix()}` }),
     tag: 'courses',
   },
   event: {
@@ -94,7 +114,18 @@ export const ENTITIES: Record<EntityKind, EntityDefinition> = {
     },
     // Events are ordered by date, not by a sort column.
     sortable: false,
+    order: 'starts_at DESC',
     defaults: { category: 'general' },
+    // A new date starts tomorrow at 18:00 rather than at the epoch, so it
+    // lands in the upcoming list where the editor is looking for it.
+    required: () => {
+      const start = new Date();
+      start.setDate(start.getDate() + 1);
+      start.setHours(18, 0, 0, 0);
+      // An ISO string, not a Date: postgres.js's column-object helper does not
+      // serialise a Date in this position and throws on it.
+      return { slug: `neuer-termin-${suffix()}`, starts_at: start.toISOString() };
+    },
     tag: 'events',
   },
   programme: {
@@ -173,6 +204,7 @@ export const ENTITIES: Record<EntityKind, EntityDefinition> = {
     },
     sortable: true,
     defaults: { category: 'dua', arabic_title: '' },
+    required: () => ({ slug: `neues-bittgebet-${suffix()}` }),
     tag: 'duas',
   },
   occasion: {
@@ -202,6 +234,7 @@ export const ENTITIES: Record<EntityKind, EntityDefinition> = {
     fields: { alt: 'alt', caption: 'caption' },
     baseFields: {},
     sortable: false,
+    order: 'created_at DESC',
     tag: 'gallery',
   },
   membership: {
@@ -211,6 +244,7 @@ export const ENTITIES: Record<EntityKind, EntityDefinition> = {
     fields: { title: 'title', priceLabel: 'price_label' },
     baseFields: { tierKey: 'tier_key' },
     sortable: true,
+    required: () => ({ tier_key: `neue-stufe-${suffix()}` }),
     tag: 'memberships',
   },
 };

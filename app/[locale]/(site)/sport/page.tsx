@@ -38,61 +38,65 @@ export default async function SportPage({ params }: { params: Promise<{ locale: 
       <section className="section">
         <div className="page">
           {/* A table is the honest shape here: three parallel facts per row.
-              This is one of the few places the set permits horizontal rules. */}
-          <table className="table" style={{ maxInlineSize: '56rem' }}>
-            <caption className="visually-hidden">{header.title}</caption>
-            <thead>
-              <tr>
-                <th scope="col">{t('activity')}</th>
-                <th scope="col">{t('audience')}</th>
-                <th scope="col">{t('schedule')}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {sports.map((sport) => (
-                <tr key={sport.id}>
-                  <th
-                    scope="row"
-                    style={{
-                      borderBlockEnd: 'var(--rule-hair) solid var(--color-rule)',
-                      textTransform: 'none',
-                      letterSpacing: 0,
-                      fontSize: 'var(--text-base)',
-                      color: 'var(--color-ink)',
-                    }}
-                  >
-                    <EditableEntry entity="sport" id={sport.id} isLast={sports.length <= 1}>
+              This is one of the few places the set permits horizontal rules.
+              Below its own minimum width it scrolls inside its frame rather
+              than pushing the page sideways. */}
+          <div className="table-scroll" style={{ maxInlineSize: '56rem' }}>
+            <table className="table">
+              <caption className="visually-hidden">{header.title}</caption>
+              <thead>
+                <tr>
+                  <th scope="col">{t('activity')}</th>
+                  <th scope="col">{t('audience')}</th>
+                  <th scope="col">{t('schedule')}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {sports.map((sport) => (
+                  <tr key={sport.id}>
+                    <th
+                      scope="row"
+                      style={{
+                        borderBlockEnd: 'var(--rule-hair) solid var(--color-rule)',
+                        textTransform: 'none',
+                        letterSpacing: 0,
+                        fontSize: 'var(--text-base)',
+                        color: 'var(--color-ink)',
+                      }}
+                    >
+                      <EditableEntry entity="sport" id={sport.id} isLast={sports.length <= 1}>
+                        <EditableText
+                          entity="sport"
+                          id={sport.id}
+                          field="activity"
+                          locale={typed}
+                          value={sport.activity}
+                        />
+                      </EditableEntry>
+                    </th>
+                    <td>
                       <EditableText
                         entity="sport"
                         id={sport.id}
-                        field="activity"
+                        field="audience"
                         locale={typed}
-                        value={sport.activity}
+                        value={sport.audience}
                       />
-                    </EditableEntry>
-                  </th>
-                  <td>
-                    <EditableText
-                      entity="sport"
-                      id={sport.id}
-                      field="audience"
-                      locale={typed}
-                      value={sport.audience}
-                    />
-                  </td>
-                  <td>
-                    <EditableText
-                      entity="sport"
-                      id={sport.id}
-                      field="schedule"
-                      locale={typed}
-                      value={sport.schedule}
-                    />
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                    </td>
+                    <td>
+                      <EditableText
+                        entity="sport"
+                        id={sport.id}
+                        field="schedule"
+                        locale={typed}
+                        value={sport.schedule}
+                      />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
           <div style={{ marginBlockStart: 'var(--space-5)' }}>
             <EditableAdd entity="sport" />
           </div>

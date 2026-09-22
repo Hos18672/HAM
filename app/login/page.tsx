@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { auth } from '@/lib/auth';
+import { readTheme } from '@/lib/preferences';
 import { LoginForm } from './login-form';
 import '../globals.css';
 
@@ -25,8 +26,12 @@ export default async function LoginPage({
   const session = await auth();
   if (session?.user) redirect(from && from.startsWith('/admin') ? from : '/admin');
 
+  // This route owns its own <html>, so it has to read the theme cookie itself
+  // — without it the login screen is the one surface that ignores dark mode.
+  const theme = await readTheme('light');
+
   return (
-    <html lang="de" dir="ltr">
+    <html lang="de" dir="ltr" data-theme={theme} suppressHydrationWarning>
       <body>
         <main className="page section-loose" id="main" style={{ maxInlineSize: '34rem' }}>
           <div className="head-rule" style={{ paddingBlockStart: 'var(--space-2)' }}>

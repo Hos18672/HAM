@@ -24,7 +24,9 @@ export function Header({ theme, locale }: { theme: ThemeValue; locale: Locale })
 
   const searchButtonRef = useRef<HTMLButtonElement>(null);
   const moreRef = useRef<HTMLDivElement>(null);
+  const moreButtonRef = useRef<HTMLButtonElement>(null);
   const drawerRef = useRef<HTMLDivElement>(null);
+  const drawerButtonRef = useRef<HTMLButtonElement>(null);
 
   // Condense on scroll. Passive listener, and only a boolean changes, so this
   // never costs a layout pass.
@@ -45,6 +47,9 @@ export function Header({ theme, locale }: { theme: ThemeValue; locale: Locale })
   useEffect(() => {
     if (!drawerOpen) return;
     const previous = document.body.style.overflow;
+    // Captured here rather than read in cleanup: by the time cleanup runs the
+    // ref may already point somewhere else.
+    const opener = drawerButtonRef.current;
     document.body.style.overflow = 'hidden';
     const first = drawerRef.current?.querySelector<HTMLElement>('a, button');
     first?.focus();
@@ -74,6 +79,10 @@ export function Header({ theme, locale }: { theme: ThemeValue; locale: Locale })
     return () => {
       document.body.style.overflow = previous;
       document.removeEventListener('keydown', onKeyDown);
+      // Focus goes back to the control that opened the drawer. Without this a
+      // keyboard user closing it lands at the top of the document and has to
+      // tab all the way back to where they were.
+      opener?.focus();
     };
   }, [drawerOpen]);
 
@@ -86,11 +95,16 @@ export function Header({ theme, locale }: { theme: ThemeValue; locale: Locale })
     function onKey(event: KeyboardEvent) {
       if (event.key === 'Escape') setMoreOpen(false);
     }
+    const opener = moreButtonRef.current;
+    const menu = moreRef.current;
     document.addEventListener('mousedown', onDown);
     document.addEventListener('keydown', onKey);
     return () => {
       document.removeEventListener('mousedown', onDown);
       document.removeEventListener('keydown', onKey);
+      // Only pull focus back if it is still inside the menu — a click on a
+      // link elsewhere on the page must not be yanked back to the button.
+      if (opener && menu?.contains(document.activeElement)) opener.focus();
     };
   }, [moreOpen]);
 
@@ -136,6 +150,7 @@ export function Header({ theme, locale }: { theme: ThemeValue; locale: Locale })
             <div className="relative" ref={moreRef}>
               <button
                 type="button"
+                ref={moreButtonRef}
                 className="nav-link"
                 aria-expanded={moreOpen}
                 aria-haspopup="true"
@@ -208,6 +223,7 @@ export function Header({ theme, locale }: { theme: ThemeValue; locale: Locale })
               size="sm"
               iconOnly
               className="lg:hidden"
+              ref={drawerButtonRef}
               aria-label={drawerOpen ? t('closeMenu') : t('openMenu')}
               aria-expanded={drawerOpen}
               onClick={() => setDrawerOpen((open) => !open)}

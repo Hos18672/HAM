@@ -45,10 +45,16 @@ export function PrayerList({ day, locale }: { day: PrayerDay; locale: Locale }) 
   useEffect(() => {
     if (!day.next) return;
 
-    const computedAt = new Date(day.computedAtIso).getTime();
-    const target = computedAt + (day.next.minutes - day.nowMinutes) * 60_000;
+    // The server says how much of the interval was left at the moment it
+    // rendered. From there only *differences* in the local clock are used, so
+    // a device whose clock is wrong still sees the right remaining time
+    // relative to the times printed above it — comparing the server's absolute
+    // instant against `Date.now()` would inherit the device's error in full.
+    const totalMs = (day.next.minutes - day.nowMinutes) * 60_000;
+    const startedAt = Date.now();
 
-    const tick = () => setRemaining(Math.max(0, Math.round((target - Date.now()) / 1000)));
+    const tick = () =>
+      setRemaining(Math.max(0, Math.round((totalMs - (Date.now() - startedAt)) / 1000)));
     tick();
     // Every thirty seconds: the page shows minutes, so a faster tick would be
     // work nobody can see.
@@ -70,7 +76,10 @@ export function PrayerList({ day, locale }: { day: PrayerDay; locale: Locale }) 
               className="tabular"
               style={{ fontSize: 'var(--text-3xl)', fontWeight: 'var(--weight-bold)' }}
             >
-              {formatClock(day.times[day.next.key] ?? day.next.minutes, locale)}
+              {/* `next.minutes` rather than today's entry for that key: after
+                  Isha this is tomorrow's Fajr, which is a minute or two off
+                  today's and is the time the countdown is actually running to. */}
+              {formatClock(day.next.minutes, locale)}
             </p>
           </div>
 

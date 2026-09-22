@@ -435,9 +435,16 @@ export async function getEditableRows(
   fk: string,
   fields: Record<string, string>,
   sortable: boolean,
+  /** For tables without a `sort` column — events order by date, media by
+   *  upload time. Comes from the entity map, never from a request. */
+  order?: string,
 ): Promise<EditableRow[]> {
+  // `ORDER BY 1` sorts by the first column, which is the random primary key,
+  // so a table without `sort` needs an explicit order or the editor sees its
+  // entries reshuffled on every load.
+  const orderBy = sortable ? sql`sort ASC` : order ? sql.unsafe(order) : sql`1`;
   const baseRows = await sql<Record<string, unknown>[]>`
-    SELECT * FROM ${sql(base)} ORDER BY ${sortable ? sql`sort ASC` : sql`1`}
+    SELECT * FROM ${sql(base)} ORDER BY ${orderBy}
   `;
   if (baseRows.length === 0) return [];
 

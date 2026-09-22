@@ -14,6 +14,15 @@ export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
 }
 
+/**
+ * Anything that is not one of the two locales is not a page. Without this the
+ * segment still renders for, say, `/favicon.ico` — the layout calls
+ * `notFound()`, but the page underneath has already started its queries and
+ * asks Postgres for the locale "favicon.ico", which logs an error on every
+ * such request. Refusing the param up front 404s before any of that runs.
+ */
+export const dynamicParams = false;
+
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,

@@ -1,6 +1,6 @@
 'use client';
 
-import { useTransition } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { Sun, Moon } from '@phosphor-icons/react/dist/ssr';
 import { Button } from '../ui/button';
@@ -16,10 +16,16 @@ import { THEME_COOKIE, type ThemeValue } from './theme';
  */
 export function ThemeToggle({ theme }: { theme: ThemeValue }) {
   const t = useTranslations('theme');
-  const [, startTransition] = useTransition();
+
+  // The prop is the server's reading of the cookie, which only changes on the
+  // next server render. Toggling has to move a piece of client state as well,
+  // or the second click computes the same "next" theme as the first and the
+  // switch appears to be stuck.
+  const [current, setCurrent] = useState<ThemeValue>(theme);
+  useEffect(() => setCurrent(theme), [theme]);
 
   function toggle(event: React.MouseEvent<HTMLButtonElement>) {
-    const next: ThemeValue = theme === 'dark' ? 'light' : 'dark';
+    const next: ThemeValue = current === 'dark' ? 'light' : 'dark';
 
     // Persist first so a reload — and every server render after this one —
     // already carries the right token set. A year is long enough that the
@@ -48,11 +54,10 @@ export function ThemeToggle({ theme }: { theme: ThemeValue }) {
     }
 
     document.documentElement.dataset.theme = next;
-    // Keep the server's idea of the theme in step for the next navigation.
-    startTransition(() => {});
+    setCurrent(next);
   }
 
-  const isDark = theme === 'dark';
+  const isDark = current === 'dark';
 
   return (
     <Button

@@ -102,10 +102,12 @@ export function sunPosition(jd: number): SunPosition {
   const declination = asin(sin(e) * sin(L));
 
   // Right ascension, brought into the same revolution as the mean longitude so
-  // the difference below never jumps by 24 h.
-  let ra = atan2(cos(e) * sin(L), cos(L)) / 15;
-  ra = fixHour(ra);
-  const equationOfTime = q / 15 - ra;
+  // the difference below never jumps by 24 h. `fixHour` alone is not enough:
+  // around the March equinox q wraps through 360° a day or two before RA does,
+  // and the raw difference then comes out as ±24 h. The equation of time is
+  // only ever a few minutes, so fold the result back into (-12, +12].
+  const ra = fixHour(atan2(cos(e) * sin(L), cos(L)) / 15);
+  const equationOfTime = fixHour(q / 15 - ra + 12) - 12;
 
   return { declination, equationOfTime };
 }
@@ -273,8 +275,10 @@ export function getPrayerTimes(date: Date, options: ComputeOptions = {}): Prayer
   let midnight: number | null = null;
   if (today.sunset !== null && tomorrow.fajr !== null) {
     // Add a day to tomorrow's Fajr so the midpoint lands in the night, and
-    // correct for a DST shift across the night.
-    const nextFajr = tomorrow.fajr + 24 + (tomorrowOffset - offset);
+    // correct for a DST shift across the night. Tomorrow's Fajr is a clock
+    // reading in *tomorrow's* offset; re-expressed as hours elapsed since
+    // today's midnight it loses the hour the clocks gained, hence the minus.
+    const nextFajr = tomorrow.fajr + 24 - (tomorrowOffset - offset);
     midnight = today.sunset + (nextFajr - today.sunset) / 2;
   }
 

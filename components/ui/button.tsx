@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { cn } from './cn';
 
-export type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger';
+export type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger' | 'on-scrim';
 export type ButtonSize = 'sm' | 'md' | 'lg';
 
 const variantClass: Record<ButtonVariant, string> = {
@@ -9,6 +9,8 @@ const variantClass: Record<ButtonVariant, string> = {
   secondary: 'btn-secondary',
   ghost: 'btn-ghost',
   danger: 'btn-danger',
+  /** For a control sitting on a scrim — the lightbox chrome. */
+  'on-scrim': 'btn-on-scrim',
 };
 
 const sizeClass: Record<ButtonSize, string> = { sm: 'btn-sm', md: '', lg: 'btn-lg' };

@@ -70,6 +70,17 @@ describe('astronomical primitives', () => {
     }
   });
 
+  it('keeps the equation of time sane across the March equinox', () => {
+    // `q` (mean longitude) wraps through 360° a day or two before the right
+    // ascension does, so a naive difference reads ±24 h for about two days
+    // every March. Sampled every ten minutes so the window cannot be missed.
+    for (let jd = julianDay(2026, 3, 15); jd < julianDay(2026, 3, 28); jd += 1 / 144) {
+      const asMinutes = sunPosition(jd).equationOfTime * 60;
+      expect(asMinutes, `equation of time at jd ${jd}`).toBeGreaterThan(-20);
+      expect(asMinutes, `equation of time at jd ${jd}`).toBeLessThan(20);
+    }
+  });
+
   it('returns null from the hour angle when the sun never reaches the depression', () => {
     // Tromsø in midsummer: the sun does not set, let alone reach 16° below.
     const midsummer = sunPosition(julianDay(2024, 6, 21) + 0.5);
@@ -205,6 +216,46 @@ describe("Ja'fari prayer times for Vienna", () => {
     // intentional: the value stays monotonic for the countdown.
     expect(times.midnight!).toBeGreaterThan(times.maghrib!);
     expect(times.midnight!).toBeLessThan(times.maghrib! + 12 * 60);
+  });
+
+  /**
+   * Shar'i midnight is the midpoint of the real interval from sunset to the
+   * next Fajr. Checking it against the clock reading alone hides an hour-sized
+   * error on the two nights the clocks move, so this converts both ends to
+   * absolute instants and compares there.
+   */
+  describe("shar'i midnight is the true midpoint of the night", () => {
+    /** The UTC instant `minutes` after local midnight on a Vienna civil day. */
+    function instant(year: number, month: number, day: number, minutes: number): number {
+      const offset = utcOffsetHours(VIENNA.timeZone, year, month, day);
+      return Date.UTC(year, month - 1, day) - offset * 3_600_000 + minutes * 60_000;
+    }
+
+    const NIGHTS: [string, [number, number, number], [number, number, number]][] = [
+      ['an ordinary summer night', [2026, 6, 15], [2026, 6, 16]],
+      ['an ordinary winter night', [2026, 1, 1], [2026, 1, 2]],
+      ['the night the clocks go forward', [2026, 3, 28], [2026, 3, 29]],
+      ['the night the clocks go back', [2026, 10, 24], [2026, 10, 25]],
+    ];
+
+    for (const [label, today, tomorrow] of NIGHTS) {
+      it(label, () => {
+        const times = getPrayerTimes(new Date(Date.UTC(today[0], today[1] - 1, today[2], 10)));
+        const next = getPrayerTimes(
+          new Date(Date.UTC(tomorrow[0], tomorrow[1] - 1, tomorrow[2], 10)),
+        );
+
+        // Sunset is symmetric with sunrise about solar noon.
+        const sunset = times.dhuhr! + (times.dhuhr! - times.sunrise!);
+        const sunsetAt = instant(...today, sunset);
+        const fajrAt = instant(...tomorrow, next.fajr!);
+        const expected = (sunsetAt + fajrAt) / 2;
+        const actual = instant(...today, times.midnight!);
+
+        const driftMinutes = Math.abs(actual - expected) / 60_000;
+        expect(driftMinutes, `${label}: off by ${driftMinutes.toFixed(1)} min`).toBeLessThan(1);
+      });
+    }
   });
 
   it('returns null rather than crashing at high latitude', () => {

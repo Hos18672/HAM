@@ -57,7 +57,9 @@
   "theme": {
     "toggle": "تغییر نمایش",
     "light": "روشن",
-    "dark": "تیره"
+    "dark": "تیره",
+    "toLight": "تغییر به نمایش روشن",
+    "toDark": "تغییر به نمایش تیره"
   },
   "locale": {
     "switch": "تغییر زبان",
@@ -87,7 +89,14 @@
     "none": "در حال حاضر برنامه‌ای ثبت نشده است.",
     "location": "مکان",
     "time": "زمان",
-    "addToCalendar": "افزودن به تقویم"
+    "addToCalendar": "افزودن به تقویم",
+    "category": {
+      "opening": "افتتاحیه",
+      "culture": "فرهنگ",
+      "community": "همیاری",
+      "courses": "کلاس‌ها",
+      "sport": "ورزش"
+    }
   },
   "courses": {
     "filterByCategory": "فیلتر بر اساس زمینه",
@@ -117,7 +126,7 @@
     "lightbox": "نمایش تصویر",
     "previous": "تصویر قبلی",
     "next": "تصویر بعدی",
-    "counter": "{index} از {total}",
+    "counter": "{index, number} از {total, number}",
     "category": {
       "general": "عمومی",
       "events": "برنامه‌ها",
@@ -286,7 +295,8 @@
   "a11y": {
     "loading": "در حال بارگذاری",
     "externalLink": "در پنجرهٔ تازه باز می‌شود",
-    "currentPage": "صفحهٔ کنونی"
+    "currentPage": "صفحهٔ کنونی",
+    "listCount": "{count, plural, =0 {موردی یافت نشد} other {# مورد}}"
   },
   "edit": {
     "mode": "حالت ویرایش",

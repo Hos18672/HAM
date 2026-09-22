@@ -46,8 +46,16 @@ export async function EventCard({
     <Card as="article" id={`event-${event.slug}`} className="h-full">
       <div className="flex items-start gap-3">
         <DayPlate date={event.startsAt} locale={locale} />
-        <div style={{ display: 'grid', gap: '2px', minInlineSize: 0 }}>
-          <Tag>{event.category}</Tag>
+        {/* `justifyItems: start` keeps the category chip hugging its label —
+            a grid item stretches to the track by default, which turned the
+            tag into a pill the full width of the card. */}
+        <div style={{ display: 'grid', gap: '2px', justifyItems: 'start', minInlineSize: 0 }}>
+          {/* An admin can type any category, so fall back to the raw key
+              rather than rendering a missing-message error — but label the
+              known ones, so a reader sees "Eröffnung" and not "opening". */}
+          <Tag>
+            {t.has(`category.${event.category}`) ? t(`category.${event.category}`) : event.category}
+          </Tag>
           <EditableText
             as="h3"
             entity="event"

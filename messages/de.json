@@ -57,7 +57,9 @@
   "theme": {
     "toggle": "Darstellung wechseln",
     "light": "Hell",
-    "dark": "Dunkel"
+    "dark": "Dunkel",
+    "toLight": "Auf helle Darstellung wechseln",
+    "toDark": "Auf dunkle Darstellung wechseln"
   },
   "locale": {
     "switch": "Sprache wechseln",
@@ -87,7 +89,14 @@
     "none": "Zurzeit sind keine Termine geplant.",
     "location": "Ort",
     "time": "Zeit",
-    "addToCalendar": "In den Kalender"
+    "addToCalendar": "In den Kalender",
+    "category": {
+      "opening": "Eröffnung",
+      "culture": "Kultur",
+      "community": "Gemeinschaft",
+      "courses": "Kurse",
+      "sport": "Sport"
+    }
   },
   "courses": {
     "filterByCategory": "Nach Bereich filtern",
@@ -117,7 +126,7 @@
     "lightbox": "Bildansicht",
     "previous": "Vorheriges Bild",
     "next": "Nächstes Bild",
-    "counter": "{index} von {total}",
+    "counter": "{index, number} von {total, number}",
     "category": {
       "general": "Allgemein",
       "events": "Veranstaltungen",
@@ -286,7 +295,8 @@
   "a11y": {
     "loading": "Wird geladen",
     "externalLink": "Öffnet in einem neuen Fenster",
-    "currentPage": "Aktuelle Seite"
+    "currentPage": "Aktuelle Seite",
+    "listCount": "{count, plural, =0 {Keine Einträge} one {Ein Eintrag} other {# Einträge}}"
   },
   "edit": {
     "mode": "Bearbeitungsmodus",

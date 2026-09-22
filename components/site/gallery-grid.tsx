@@ -127,18 +127,9 @@ export function GalleryGrid({ items }: { items: GalleryEntry[] }) {
                   setOpenIndex(index);
                 }}
                 aria-label={`${t('open')}: ${item.alt || item.caption}`}
-                style={{
-                  display: 'block',
-                  inlineSize: '100%',
-                  padding: 0,
-                  border: 0,
-                  background: 'none',
-                  cursor: 'zoom-in',
-                  borderRadius: 'var(--radius-soft)',
-                  overflow: 'hidden',
-                }}
+                className="tile"
               >
-                <span className="cmyk-wrap" style={{ display: 'block' }}>
+                <span className="cmyk-wrap tile-media">
                   <Image
                     src={item.url}
                     alt={item.alt}
@@ -181,7 +172,7 @@ export function GalleryGrid({ items }: { items: GalleryEntry[] }) {
           className="fixed inset-0"
           style={{
             zIndex: 'var(--z-dialog)',
-            background: 'oklch(0.2369 0.0036 48.57 / 0.92)',
+            background: 'var(--color-scrim)',
             display: 'grid',
             placeItems: 'center',
             padding: 'var(--space-4)',
@@ -194,17 +185,20 @@ export function GalleryGrid({ items }: { items: GalleryEntry[] }) {
             style={{ display: 'grid', gap: 'var(--space-3)', maxInlineSize: 'min(64rem, 100%)' }}
           >
             <div className="flex items-center gap-2">
-              <span className="kicker" style={{ color: 'var(--color-bg)' }} aria-live="polite">
+              <span
+                className="kicker"
+                style={{ color: 'var(--color-on-scrim)' }}
+                aria-live="polite"
+              >
                 {t('counter', { index: openIndex! + 1, total: visible.length })}
               </span>
               <div className="ms-auto flex gap-1">
                 <Button
-                  variant="ghost"
+                  variant="on-scrim"
                   size="sm"
                   iconOnly
                   aria-label={t('previous')}
                   onClick={() => step(-1)}
-                  style={{ color: 'var(--color-bg)' }}
                 >
                   <CaretLeft
                     size={20}
@@ -214,12 +208,11 @@ export function GalleryGrid({ items }: { items: GalleryEntry[] }) {
                   />
                 </Button>
                 <Button
-                  variant="ghost"
+                  variant="on-scrim"
                   size="sm"
                   iconOnly
                   aria-label={t('next')}
                   onClick={() => step(1)}
-                  style={{ color: 'var(--color-bg)' }}
                 >
                   <CaretRight
                     size={20}
@@ -229,12 +222,11 @@ export function GalleryGrid({ items }: { items: GalleryEntry[] }) {
                   />
                 </Button>
                 <Button
-                  variant="ghost"
+                  variant="on-scrim"
                   size="sm"
                   iconOnly
                   aria-label={t('close')}
                   onClick={close}
-                  style={{ color: 'var(--color-bg)' }}
                 >
                   <X size={20} weight="bold" aria-hidden="true" />
                 </Button>
@@ -257,7 +249,7 @@ export function GalleryGrid({ items }: { items: GalleryEntry[] }) {
             />
 
             {current.caption ? (
-              <p style={{ color: 'var(--color-bg)', fontSize: 'var(--text-sm)' }}>
+              <p style={{ color: 'var(--color-on-scrim)', fontSize: 'var(--text-sm)' }}>
                 {current.caption}
               </p>
             ) : null}

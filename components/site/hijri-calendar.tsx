@@ -111,12 +111,12 @@ export async function HijriCalendar({
                         paddingBlock: 'var(--space-1)',
                         borderRadius: 'var(--radius-soft)',
                         border: cell.isToday
-                          ? '3px solid #c9a227'
+                          ? 'var(--rule-thick) solid var(--color-gold-500)'
                           : hasOccasion
-                            ? '2px solid #c9a227'
+                            ? '2px solid var(--color-gold-500)'
                             : '2px solid transparent',
-                        background: hasOccasion ? 'oklch(0.94 0.055 90)' : 'transparent',
-                        color: hasOccasion ? 'oklch(0.32 0.06 80)' : undefined,
+                        background: hasOccasion ? 'var(--color-gold-100)' : 'transparent',
+                        color: hasOccasion ? 'var(--color-on-gold)' : undefined,
                       }}
                     >
                       <span
@@ -162,8 +162,8 @@ export async function HijriCalendar({
             style={{
               inlineSize: '1.25rem',
               blockSize: '1.25rem',
-              borderRadius: '4px',
-              border: '3px solid #c9a227',
+              borderRadius: 'var(--radius-baseline)',
+              border: 'var(--rule-thick) solid var(--color-gold-500)',
             }}
           />
           {t('legendToday')}
@@ -174,9 +174,9 @@ export async function HijriCalendar({
             style={{
               inlineSize: '1.25rem',
               blockSize: '1.25rem',
-              borderRadius: '4px',
-              border: '2px solid #c9a227',
-              background: 'oklch(0.94 0.055 90)',
+              borderRadius: 'var(--radius-baseline)',
+              border: '2px solid var(--color-gold-500)',
+              background: 'var(--color-gold-100)',
             }}
           />
           {t('legendOccasion')}
@@ -208,7 +208,7 @@ export async function HijriCalendar({
                     inlineSize: '3rem',
                     flexShrink: 0,
                     fontWeight: 'var(--weight-bold)',
-                    color: 'oklch(0.42 0.09 80)',
+                    color: 'var(--color-gold-text)',
                   }}
                 >
                   {digits(occasion.gregorianDay, locale)}.

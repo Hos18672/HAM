@@ -39,8 +39,20 @@ export async function getPrayerDay(now = new Date()): Promise<PrayerDay> {
   const times = getPrayerTimes(now, { timeZone: VIENNA.timeZone });
 
   // Tomorrow's Fajr, so the countdown can roll over after Isha rather than
-  // showing nothing for the rest of the night.
-  const tomorrow = new Date(now.getTime() + 24 * 3600 * 1000);
+  // showing nothing for the rest of the night. Anchored at noon of the next
+  // civil day in Vienna rather than "now plus 24 hours": on the night the
+  // clocks go forward the latter lands on the day *after* tomorrow when it is
+  // read late in the evening.
+  const [y, m, d] = new Intl.DateTimeFormat('en-CA', {
+    timeZone: VIENNA.timeZone,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  })
+    .format(now)
+    .split('-')
+    .map(Number) as [number, number, number];
+  const tomorrow = new Date(Date.UTC(y, m - 1, d + 1, 12));
   const tomorrowTimes = getPrayerTimes(tomorrow, { timeZone: VIENNA.timeZone });
 
   const nowMinutes = localMinutes(now, VIENNA.timeZone);

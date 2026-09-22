@@ -50,6 +50,17 @@ test.describe('public site', () => {
     await expect(page).toHaveURL(/\/de\/courses$/);
   });
 
+  test('language switch keeps the query string too', async ({ page }) => {
+    // The prayer calendar's month lives in ?y=&m=. Dropping it on a language
+    // switch throws the reader silently back to the current month.
+    await page.goto('/de/prayer?y=2026&m=3');
+    await expect(page.getByRole('heading', { name: /März 2026/ })).toBeVisible();
+
+    await page.getByRole('link', { name: 'فارسی' }).first().click();
+    await expect(page).toHaveURL(/\/fa\/prayer\?y=2026&m=3$/);
+    await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
+  });
+
   test('theme toggle switches and survives a reload', async ({ page }) => {
     await page.goto('/de');
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
@@ -61,6 +72,24 @@ test.describe('public site', () => {
     // which is what prevents a flash of the wrong theme.
     await page.reload();
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+  });
+
+  test('theme toggle switches back again without a reload', async ({ page }) => {
+    // The server-rendered prop only changes on the next server render, so the
+    // toggle has to carry its own state or the second click is a no-op.
+    await page.goto('/de');
+    const html = page.locator('html');
+    const toggle = page.getByRole('button', { name: /Darstellung wechseln/i });
+
+    await toggle.click();
+    await expect(html).toHaveAttribute('data-theme', 'dark');
+    await toggle.click();
+    await expect(html).toHaveAttribute('data-theme', 'light');
+    await toggle.click();
+    await expect(html).toHaveAttribute('data-theme', 'dark');
+
+    await page.reload();
+    await expect(html).toHaveAttribute('data-theme', 'dark');
   });
 
   test('has a working skip link', async ({ page }) => {

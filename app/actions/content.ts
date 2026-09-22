@@ -89,11 +89,18 @@ export async function updateField(input: unknown): Promise<ActionResult> {
 
   try {
     if (entity === 'block') {
-      // Blocks hold a jsonb document. `text` writes { text }, `items` writes
-      // { items: [...] } from newline-separated input, so the same editor
-      // surface serves a paragraph and a list.
+      // Blocks hold a jsonb document whose shape follows the block's `kind`:
+      // a list block holds { items: [...] }, everything else { text }. The
+      // kind is read from the row rather than inferred from the field name,
+      // so the admin's single "Text" field — one item per line, as its hint
+      // says — cannot flatten a list into a paragraph.
+      const [block] = await sql<{ kind: string }[]>`
+        SELECT kind FROM content_blocks WHERE id = ${id}
+      `;
+      if (!block) return fail('not-found');
+
       const payload =
-        field === 'items'
+        field === 'items' || block.kind === 'list'
           ? {
               items: value
                 .split('\n')
@@ -178,7 +185,16 @@ export async function listOperation(input: unknown): Promise<ActionResult> {
       case 'add': {
         const scope =
           definition.parentColumn && parentId ? { [definition.parentColumn]: parentId } : {};
-        const defaults = { ...(definition.defaults ?? {}), ...scope };
+        // `required()` is called per insert, not shared, so two additions in a
+        // row each get their own generated key and cannot collide on a unique
+        // index. Without it an insert into a table with a NOT NULL slug or
+        // tier_key simply fails — which is what "Neuer Eintrag" did on
+        // courses, events, du'as and memberships.
+        const defaults = {
+          ...(definition.defaults ?? {}),
+          ...(definition.required?.() ?? {}),
+          ...scope,
+        };
 
         // New entries land at the end of the list.
         const nextSort = definition.sortable

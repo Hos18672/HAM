@@ -284,6 +284,56 @@ describe('entity map', () => {
     }
   });
 
+  it('supplies every NOT NULL key a blank row needs', () => {
+    // "Neuer Eintrag" inserts a row with only the entity map's defaults. Any
+    // table with a NOT NULL column that has no database default must therefore
+    // declare a `required()` generator, or the button fails outright — which
+    // it did, on four of the areas, until this was caught.
+    const needsKey: Record<string, string[]> = {
+      course: ['slug'],
+      event: ['slug', 'starts_at'],
+      dua: ['slug'],
+      membership: ['tier_key'],
+    };
+
+    for (const [kind, columns] of Object.entries(needsKey)) {
+      const definition = ENTITIES[kind as keyof typeof ENTITIES];
+      expect(definition.required, `${kind} must declare required()`).toBeDefined();
+      const row = definition.required!();
+      for (const column of columns) {
+        expect(row[column], `${kind}.${column}`).toBeDefined();
+        expect(String(row[column]).length).toBeGreaterThan(0);
+      }
+    }
+  });
+
+  it('generates a fresh key per call, so two additions cannot collide', () => {
+    for (const kind of ['course', 'event', 'dua', 'membership'] as const) {
+      const make = ENTITIES[kind].required!;
+      const keys = new Set(Array.from({ length: 50 }, () => JSON.stringify(make())));
+      expect(keys.size, `${kind} generated a duplicate`).toBe(50);
+    }
+  });
+
+  it('passes a date as an ISO string, not a Date object', () => {
+    // postgres.js's column-object helper does not serialise a Date in this
+    // position and throws on it.
+    const row = ENTITIES.event.required!();
+    expect(typeof row.starts_at).toBe('string');
+    expect(() => new Date(row.starts_at as string).toISOString()).not.toThrow();
+  });
+
+  it('orders every list the editor shows', () => {
+    // Without `sort` or an explicit order the query falls back to ORDER BY 1 —
+    // the primary key — and the editor sees its entries reshuffled each load.
+    for (const [kind, definition] of Object.entries(ENTITIES)) {
+      expect(
+        definition.sortable || definition.order,
+        `${kind} has neither a sort column nor an explicit order`,
+      ).toBeTruthy();
+    }
+  });
+
   it('never exposes a table or column name that came from a request', () => {
     // Table and column identifiers are only ever read out of this map, so an
     // entity or field the map does not list simply cannot be addressed.

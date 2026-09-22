@@ -34,6 +34,40 @@ test.describe('prayer times', () => {
     await page.goto('/de/prayer');
     await expect(page.getByText('Gedenktage in diesem Monat')).toBeVisible();
   });
+
+  test('falls back to this month for junk in ?y= and ?m=', async ({ page }) => {
+    for (const query of [
+      '?y=abc',
+      '?m=99',
+      '?m=0',
+      '?m=-1',
+      '?y=99999999999999999999&m=-5',
+      '?y=&m=',
+      '?m=1.5',
+      '?y[]=1&m[]=2',
+    ]) {
+      const response = await page.goto(`/de/prayer${query}`);
+      expect(response?.status(), `/de/prayer${query}`).toBe(200);
+      await expect(page.getByText('Legende')).toBeVisible();
+    }
+  });
+
+  test('puts a commemoration on the Gregorian day its Hijri date falls on', async ({ page }) => {
+    // 13 Rajab 1448 — Imam Ali's birthday — is 22 December 2026.
+    await page.goto('/de/prayer?y=2026&m=12');
+    const cell = page.getByRole('cell').filter({ hasText: 'Geburtstag Imam Alis' }).first();
+    await expect(cell).toContainText('22');
+    // …and the Hijri day number printed beneath it.
+    await expect(cell).toContainText('13');
+  });
+
+  test('shows the first and last day of a month, and a leap day', async ({ page }) => {
+    await page.goto('/de/prayer?y=2024&m=2');
+    const days = page.locator('tbody td').filter({ hasText: /\d/ });
+    await expect(days).toHaveCount(29);
+    await expect(days.first()).toContainText('1');
+    await expect(days.last()).toContainText('29');
+  });
 });
 
 test.describe('qibla', () => {
@@ -78,6 +112,43 @@ test.describe('qibla', () => {
     const activeButton = page.getByRole('button', { name: 'Kompass aktiv' });
     const explanation = page.getByText('stellt keinen Kompass zur Verfügung');
     await expect(activeButton.or(explanation).first()).toBeVisible();
+  });
+
+  test('turns the rose only on an absolute heading', async ({ page }) => {
+    await page.goto('/de/qibla');
+    await page.getByRole('button', { name: 'Kompass aktivieren' }).click();
+    await expect(page.getByRole('button', { name: 'Kompass aktiv' })).toBeVisible();
+
+    const rose = page.getByRole('img', { name: /Kompassrose/ });
+    const rotation = async () =>
+      (await rose.getAttribute('style'))?.match(/rotate\((-?[\d.]+)deg\)/)?.[1];
+
+    // An absolute reading is a real compass heading: the rose counter-rotates.
+    await page.evaluate(() => {
+      const event = new Event('deviceorientationabsolute') as Event & {
+        alpha?: number;
+        absolute?: boolean;
+      };
+      Object.defineProperty(event, 'alpha', { value: 90 });
+      Object.defineProperty(event, 'absolute', { value: true });
+      window.dispatchEvent(event);
+    });
+    await expect.poll(rotation).toBe('-270');
+
+    // Chrome on Android also fires a *relative* `deviceorientation`, whose
+    // alpha is zeroed wherever the device happened to be pointing. Acting on
+    // it would swing the needle to an arbitrary bearing.
+    await page.evaluate(() => {
+      const event = new Event('deviceorientation') as Event & {
+        alpha?: number;
+        absolute?: boolean;
+      };
+      Object.defineProperty(event, 'alpha', { value: 200 });
+      Object.defineProperty(event, 'absolute', { value: false });
+      window.dispatchEvent(event);
+    });
+    await page.waitForTimeout(300);
+    expect(await rotation()).toBe('-270');
   });
 });
 

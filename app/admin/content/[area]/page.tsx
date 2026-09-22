@@ -38,6 +38,7 @@ export default async function ContentAreaPage({ params }: { params: Promise<{ ar
     definition.fk,
     fieldColumns,
     definition.sortable,
+    definition.order,
   );
 
   return (

@@ -46,7 +46,14 @@ export function Compass({ locale }: { locale: Locale }) {
     // rotation about the z-axis, which runs the other way.
     if (typeof event.webkitCompassHeading === 'number') {
       setHeading(event.webkitCompassHeading);
-    } else if (typeof event.alpha === 'number') {
+      return;
+    }
+    // Only an *absolute* alpha is a compass heading. Chrome on Android fires
+    // both `deviceorientationabsolute` (absolute) and `deviceorientation`
+    // (relative, zeroed wherever the device happened to be pointing); taking
+    // whichever arrived last would swing the needle between a true bearing
+    // and an arbitrary one.
+    if (event.absolute && typeof event.alpha === 'number') {
       setHeading(360 - event.alpha);
     }
   }, []);
@@ -297,15 +304,15 @@ function CompassRose({
           inlineSize: 'min(22rem, 100%)',
           blockSize: 'auto',
           transform: `rotate(${roseRotation}deg)`,
-          transition: 'transform 220ms linear',
+          transition: 'transform var(--duration-base) linear',
         }}
       >
         {/* Gold: the second spot colour, used here as the dial's own metal. */}
         <defs>
           <linearGradient id="ham-gold" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="#e8c96a" />
-            <stop offset="45%" stopColor="#c9a227" />
-            <stop offset="100%" stopColor="#8a6d14" />
+            <stop offset="0%" stopColor="var(--color-gold-300)" />
+            <stop offset="45%" stopColor="var(--color-gold-500)" />
+            <stop offset="100%" stopColor="var(--color-gold-700)" />
           </linearGradient>
         </defs>
 

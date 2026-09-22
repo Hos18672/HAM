@@ -7,6 +7,7 @@ import { PageHead } from '@/components/site/page-head';
 import { PrayerList } from '@/components/site/prayer-list';
 import { HijriCalendar } from '@/components/site/hijri-calendar';
 import { pageMetadata } from '@/lib/page-meta';
+import { VIENNA } from '@/lib/prayer-times';
 import { type Locale } from '@/lib/i18n/config';
 
 /**
@@ -44,14 +45,22 @@ export default async function PrayerPage({
   const day = await getPrayerDay(now);
 
   // Fall back to the current month for anything that is not a sane year/month.
+  // "Current" is read in Vienna, not in whatever timezone the server runs in:
+  // otherwise, for the first hour or two of the 1st of a month, the calendar
+  // opens on the previous month while the cell marked "today" is in this one.
+  const [viennaYear, viennaMonth] = new Intl.DateTimeFormat('en-CA', {
+    timeZone: VIENNA.timeZone,
+    year: 'numeric',
+    month: '2-digit',
+  })
+    .format(now)
+    .split('-')
+    .map(Number) as [number, number];
+
   const year =
-    Number.isInteger(Number(y)) && Number(y) > 1900 && Number(y) < 2200
-      ? Number(y)
-      : now.getFullYear();
+    Number.isInteger(Number(y)) && Number(y) > 1900 && Number(y) < 2200 ? Number(y) : viennaYear;
   const month =
-    Number.isInteger(Number(m)) && Number(m) >= 1 && Number(m) <= 12
-      ? Number(m)
-      : now.getMonth() + 1;
+    Number.isInteger(Number(m)) && Number(m) >= 1 && Number(m) <= 12 ? Number(m) : viennaMonth;
 
   const calendar = await getCalendarMonth(year, month, typed, now);
 

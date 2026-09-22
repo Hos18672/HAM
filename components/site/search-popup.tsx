@@ -228,7 +228,7 @@ export function SearchPopup({
         style={{
           position: 'absolute',
           inset: 0,
-          background: 'oklch(0.2369 0.0036 48.57 / 0.35)',
+          background: 'var(--color-scrim-veil)',
           backdropFilter: 'blur(2px)',
         }}
       />
@@ -242,22 +242,7 @@ export function SearchPopup({
           justifyItems: 'center',
         }}
       >
-        <div
-          ref={pillRef}
-          style={{
-            inlineSize: 'min(38rem, 100%)',
-            display: 'flex',
-            alignItems: 'center',
-            gap: 'var(--space-2)',
-            background: 'var(--color-bg)',
-            border: 'var(--rule-hair) solid var(--color-rule-strong)',
-            borderRadius: 'var(--radius-pill)',
-            paddingInline: 'var(--space-4)',
-            paddingBlock: 'var(--space-2)',
-            boxShadow: 'var(--shadow-lg)',
-            transformOrigin: 'center',
-          }}
-        >
+        <div ref={pillRef} className="search-pill" style={{ inlineSize: 'min(38rem, 100%)' }}>
           <MagnifyingGlass size={20} weight="duotone" aria-hidden="true" />
           <input
             ref={inputRef}

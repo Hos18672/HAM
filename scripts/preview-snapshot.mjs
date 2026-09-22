@@ -120,7 +120,13 @@ async function main() {
   // The build's own static assets and everything in public/. Copied rather
   // than crawled: the build already knows exactly what it emitted.
   await cp('.next/static', join(OUT, '_next', 'static'), { recursive: true });
-  await cp('public', OUT, { recursive: true });
+  // public/ may not exist at all: the fonts moved into the bundle, and git does
+  // not carry an empty directory, so a fresh clone has none.
+  try {
+    await cp('public', OUT, { recursive: true });
+  } catch (error) {
+    if (error?.code !== 'ENOENT') throw error;
+  }
 
   let pages = 0;
   for (const locale of locales) {

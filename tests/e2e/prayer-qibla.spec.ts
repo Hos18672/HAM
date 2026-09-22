@@ -124,53 +124,55 @@ test.describe('qibla', () => {
       (await rose.getAttribute('style'))?.match(/rotate\((-?[\d.]+)deg\)/)?.[1];
 
     /**
-     * Fire one orientation reading at the window and report what the page
-     * itself saw.
+     * Fire one orientation reading at the window and report everything the
+     * page saw: whether the dispatch reached a window listener at all, the
+     * values the browser's own accessors return, and where the rose ended up.
      *
-     * Two deliberate choices here. The event is built with the real
-     * `DeviceOrientationEvent` constructor rather than a bare `Event` carrying
-     * bolted-on properties, because that is what a browser delivers and it is
-     * the browser's own accessors the component reads. And a probe listener
-     * rides along, so a failure says which link broke — dispatch never reaching
-     * a listener at all, or reaching one while the rose stays put — instead of
-     * only reporting a rotation of zero.
+     * The event is built with the real `DeviceOrientationEvent` constructor
+     * rather than a bare `Event` carrying bolted-on properties, because that
+     * is what a browser delivers and it is the browser's accessors the
+     * component reads. Everything the page saw is polled as one object so a
+     * failure names which link broke instead of only reporting a rotation.
      */
-    const fire = async (type: string, alpha: number, absolute: boolean) =>
-      page.evaluate(
-        ({ type, alpha, absolute }) => {
-          let reachedAListener = false;
-          const probe = () => {
-            reachedAListener = true;
-          };
-          window.addEventListener(type, probe, true);
-          const event = new DeviceOrientationEvent(type, { alpha, absolute });
-          window.dispatchEvent(event);
-          window.removeEventListener(type, probe, true);
-          return { reachedAListener, alpha: event.alpha, absolute: event.absolute };
-        },
-        { type, alpha, absolute },
-      );
+    const observe = async (type: string, alpha: number, absolute: boolean) =>
+      page
+        .evaluate(
+          ({ type, alpha, absolute }) => {
+            let reachedAListener = false;
+            const probe = () => {
+              reachedAListener = true;
+            };
+            window.addEventListener(type, probe, true);
+            const event = new DeviceOrientationEvent(type, { alpha, absolute });
+            window.dispatchEvent(event);
+            window.removeEventListener(type, probe, true);
+            return {
+              reachedAListener,
+              alpha: event.alpha,
+              absolute: event.absolute,
+              // Not idle curiosity: if a browser defines this, it is a second
+              // heading source competing with the absolute one.
+              webkitCompassHeading: (event as { webkitCompassHeading?: number })
+                .webkitCompassHeading,
+            };
+          },
+          { type, alpha, absolute },
+        )
+        .then(async (seen) => ({ ...seen, rotation: await rotation() }));
 
     // An absolute reading is a real compass heading: the rose counter-rotates.
     //
     // The dispatch happens *inside* the poll on purpose. The listener is
     // attached by an effect that runs after the button flips to "Kompass
     // aktiv", so firing once and then polling races hydration.
-    const fireAbsolute = async () => {
-      const seen = await fire('deviceorientationabsolute', 90, true);
-      expect(seen, 'the dispatched reading must reach a window listener intact').toEqual({
-        reachedAListener: true,
-        alpha: 90,
-        absolute: true,
-      });
-      return rotation();
-    };
-    await expect.poll(fireAbsolute).toBe('-270');
+    await expect
+      .poll(() => observe('deviceorientationabsolute', 90, true))
+      .toMatchObject({ reachedAListener: true, alpha: 90, absolute: true, rotation: '-270' });
 
     // Chrome on Android also fires a *relative* `deviceorientation`, whose
     // alpha is zeroed wherever the device happened to be pointing. Acting on
     // it would swing the needle to an arbitrary bearing.
-    await fire('deviceorientation', 200, false);
+    await observe('deviceorientation', 200, false);
     await page.waitForTimeout(300);
     expect(await rotation()).toBe('-270');
   });

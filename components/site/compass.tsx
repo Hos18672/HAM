@@ -42,19 +42,23 @@ export function Compass({ locale }: { locale: Locale }) {
 
   /* ── Live heading ─────────────────────────────────────────────────────── */
   const onOrientation = useCallback((event: CompassEvent) => {
-    // iOS reports a true compass heading directly; elsewhere `alpha` is the
-    // rotation about the z-axis, which runs the other way.
-    if (typeof event.webkitCompassHeading === 'number') {
-      setHeading(event.webkitCompassHeading);
-      return;
-    }
-    // Only an *absolute* alpha is a compass heading. Chrome on Android fires
-    // both `deviceorientationabsolute` (absolute) and `deviceorientation`
+    // An *absolute* alpha is, by definition, a true compass heading, so it is
+    // read first wherever a browser offers one — `alpha` being the rotation
+    // about the z-axis, which runs the other way. Chrome on Android fires both
+    // `deviceorientationabsolute` (absolute) and `deviceorientation`
     // (relative, zeroed wherever the device happened to be pointing); taking
-    // whichever arrived last would swing the needle between a true bearing
-    // and an arbitrary one.
+    // whichever arrived last would swing the needle between a true bearing and
+    // an arbitrary one.
     if (event.absolute && typeof event.alpha === 'number') {
       setHeading(360 - event.alpha);
+      return;
+    }
+    // Safari on iOS publishes no absolute reading at all and puts the true
+    // heading in a property of its own. Reading it only as the fallback
+    // matters: a browser that defines it *and* sends absolute readings would
+    // otherwise have the fallback shadow the better source.
+    if (typeof event.webkitCompassHeading === 'number') {
+      setHeading(event.webkitCompassHeading);
     }
   }, []);
 

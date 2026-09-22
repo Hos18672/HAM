@@ -1781,8 +1781,26 @@
 
   /* Four misregistered separations. The filter defs are mounted once in the
      root layout (components/site/print-plates.tsx). */
+  /* The separation. The design builds this from five copies of the picture,
+     one per plate, nudged out of register and multiplied onto the paper; that
+     needs a markup contract the gallery can only emit once there are
+     photographs to emit it for. Until then the separation is the single
+     filter below, under the design's own container rules and its dot screen,
+     so the treatment reads as print either way. */
   .cmyk {
+    position: relative;
+    overflow: hidden;
+    background: var(--paper);
     filter: url('#bs-plate-cmyk');
+  }
+  .cmyk::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-image: radial-gradient(circle, rgba(0, 0, 0, 0.22) 30%, transparent 32%);
+    background-size: 3px 3px;
+    mix-blend-mode: multiply;
   }
   .cmyk-wrap {
     position: relative;
@@ -1813,8 +1831,23 @@
   }
 
   /* The simpler newsprint dot screen, for interface imagery. */
+  /* The design's halftone, exactly: the picture pulled towards grey and
+     contrast, with a dot screen multiplied over it. A CSS filter and a
+     pseudo-element rather than an SVG filter — cheaper, and it is what the
+     design does. */
   .halftone {
-    filter: url('#bs-plate-halftone');
+    position: relative;
+    overflow: hidden;
+    filter: grayscale(0.35) contrast(1.15);
+  }
+  .halftone::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-image: radial-gradient(circle, rgba(0, 0, 0, 0.22) 30%, transparent 32%);
+    background-size: 3px 3px;
+    mix-blend-mode: multiply;
   }
 
   /* ═══════════════════════════════════════════════════════════════════════════

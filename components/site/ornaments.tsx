@@ -18,20 +18,17 @@
  * past it. The plate is masked so it fades out down the page instead of
  * ending on a hard edge, and `drift` sets it slowly moving.
  */
-export function PatternPlate({
-  tiling = 'khatam',
-  drift = false,
-}: {
-  tiling?: 'khatam' | 'shesh' | 'tumar';
-  drift?: boolean;
-}) {
+/**
+ * The pattern definitions, once per document.
+ *
+ * A `fill="url(#ham-khatam)"` only resolves against a definition that is in
+ * the same document, so these live in one hidden SVG mounted by the layout
+ * rather than inside whichever element happens to use them first. The card
+ * corner plates and the ground plate both draw from here.
+ */
+export function PatternDefs() {
   return (
-    <svg
-      aria-hidden="true"
-      focusable="false"
-      role="presentation"
-      className={drift ? 'plate ham-drift' : 'plate'}
-    >
+    <svg width="0" height="0" style={{ position: 'absolute' }} aria-hidden="true" focusable="false">
       <defs>
         <pattern id="ham-khatam" width="100" height="100" patternUnits="userSpaceOnUse">
           <g fill="none" stroke="var(--pat)" strokeLinejoin="round">
@@ -68,6 +65,24 @@ export function PatternPlate({
           </g>
         </pattern>
       </defs>
+    </svg>
+  );
+}
+
+export function PatternPlate({
+  tiling = 'khatam',
+  drift = false,
+}: {
+  tiling?: 'khatam' | 'shesh' | 'tumar';
+  drift?: boolean;
+}) {
+  return (
+    <svg
+      aria-hidden="true"
+      focusable="false"
+      role="presentation"
+      className={drift ? 'plate ham-drift' : 'plate'}
+    >
       <rect width="100%" height="100%" fill={`url(#ham-${tiling})`} />
     </svg>
   );

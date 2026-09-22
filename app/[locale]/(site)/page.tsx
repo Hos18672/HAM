@@ -17,7 +17,7 @@ import { EventCard, DayPlate } from '@/components/site/event-card';
 import { CourseCard } from '@/components/site/course-card';
 import { EditableText } from '@/components/editable/editable-text';
 import { EditableEntry, EditableAdd } from '@/components/editable/editable-list';
-import { Card } from '@/components/ui/card';
+import { Card, CardStar } from '@/components/ui/card';
 import { Tag } from '@/components/ui/tag';
 import { LinkButton } from '@/components/ui/button';
 import { Icon } from '@/components/site/icon';
@@ -213,8 +213,10 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
             {offers.map((offer) => (
               <li key={offer.id} data-rise>
                 <EditableEntry entity="offer" id={offer.id} isLast={offers.length <= 1}>
-                  <Card as="article" className="h-full">
-                    <Icon name={offer.icon} size={32} />
+                  <Card as="article" className="h-full" plate>
+                    <CardStar>
+                      <Icon name={offer.icon} size={26} />
+                    </CardStar>
                     <EditableText
                       as="h3"
                       entity="offer"

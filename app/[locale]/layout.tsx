@@ -7,6 +7,7 @@ import { locales, localeDirection, type Locale } from '@/lib/i18n/config';
 import { readTheme } from '@/lib/preferences';
 import { getSettings } from '@/lib/db/queries/content';
 import { PrintPlates } from '@/components/site/print-plates';
+import { PatternDefs } from '@/components/site/ornaments';
 import { RiseObserver } from '@/components/site/rise';
 import { PageWipe } from '@/components/site/page-wipe';
 import '../globals.css';
@@ -106,6 +107,7 @@ export default async function LocaleLayout({
       <body>
         <NextIntlClientProvider>
           <PrintPlates />
+          <PatternDefs />
           {children}
           <RiseObserver />
           <PageWipe />

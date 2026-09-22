@@ -8,6 +8,13 @@ export interface CardProps extends React.HTMLAttributes<HTMLElement> {
   interactive?: boolean;
   /** The highlighted member of a set: next prayer, today, an occasion. */
   marked?: boolean;
+  /**
+   * The design's corner plate: a square of the girih tiling in the top corner,
+   * which deepens and rights itself as the card is hovered. Purely
+   * decorative, and rotated per position by the stylesheet so no two
+   * neighbouring cards carry the same plate.
+   */
+  plate?: boolean;
   as?: 'div' | 'article' | 'li' | 'section';
 }
 
@@ -19,8 +26,10 @@ export function Card({
   variant = 'default',
   interactive,
   marked,
+  plate,
   as: Tag = 'div',
   className,
+  children,
   ...props
 }: CardProps) {
   // `Tag` is one of a handful of block elements; widening the prop type to
@@ -37,7 +46,40 @@ export function Card({
         className,
       )}
       {...props}
-    />
+    >
+      {plate ? (
+        <svg className="card-plate" width="96" height="96" aria-hidden="true" focusable="false">
+          <rect className="pA" width="96" height="96" fill="url(#ham-khatam)" />
+          <rect className="pB" width="96" height="96" fill="url(#ham-shesh)" />
+        </svg>
+      ) : null}
+      {children}
+    </Element>
+  );
+}
+
+/**
+ * The rounded frame the design sets behind a card's icon — a 54px square with
+ * an 18.4px radius, tinted and ringed in gold, which grows a little with the
+ * card.
+ */
+export function CardStar({ children }: { children: React.ReactNode }) {
+  return (
+    <span className="card-star-wrap">
+      <svg className="card-star" viewBox="0 0 56 56" aria-hidden="true" focusable="false">
+        <rect
+          x="1"
+          y="1"
+          width="54"
+          height="54"
+          rx="18.4"
+          fill="var(--starFill)"
+          stroke="var(--gold)"
+          strokeWidth="1"
+        />
+      </svg>
+      <span className="card-star-icon">{children}</span>
+    </span>
   );
 }
 

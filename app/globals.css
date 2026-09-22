@@ -1730,6 +1730,81 @@
     transform: translateY(-6.1px) rotate(-45deg);
   }
 
+  /* The card's corner plate and its star, from the design.
+
+     The plate is rotated and swapped by position so a grid of cards never
+     shows the same corner twice running — the design's own nth-child set,
+     carried over as it stands. */
+  .card-plate {
+    position: absolute;
+    inset-inline-end: 0;
+    top: 0;
+    inline-size: 96px;
+    block-size: 96px;
+    transform-origin: center;
+    opacity: 0.3;
+    pointer-events: none;
+    z-index: 1;
+    transition:
+      opacity 0.55s var(--ease-standard),
+      transform 0.9s var(--ease-out-expressive);
+    -webkit-mask: radial-gradient(70% 70% at 70% 30%, #000 18%, transparent 74%);
+    mask: radial-gradient(70% 70% at 70% 30%, #000 18%, transparent 74%);
+  }
+  .card-plate .pB {
+    opacity: 0;
+  }
+  .card:nth-child(3n + 2) .card-plate .pA,
+  .card:nth-child(4n + 3) .card-plate .pA {
+    opacity: 0;
+  }
+  .card:nth-child(3n + 2) .card-plate .pB,
+  .card:nth-child(4n + 3) .card-plate .pB {
+    opacity: 1;
+  }
+  .card:nth-child(2n) .card-plate {
+    transform: rotate(90deg) scale(1.12);
+  }
+  .card:nth-child(3n) .card-plate {
+    transform: rotate(180deg) scale(0.92);
+  }
+  .card:nth-child(5n + 1) .card-plate {
+    transform: rotate(-90deg) scale(1.05);
+  }
+  .card:nth-child(7n + 4) .card-plate {
+    transform: rotate(45deg) scale(1.25);
+  }
+  .card:hover .card-plate {
+    opacity: 0.75;
+    transform: rotate(0deg) scale(1.1);
+  }
+
+  .card-star-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    inline-size: 56px;
+    block-size: 56px;
+  }
+  .card-star {
+    position: absolute;
+    inset: 0;
+    inline-size: 56px;
+    block-size: 56px;
+    transition:
+      transform 0.7s var(--ease-out-expressive),
+      opacity var(--duration-fast) var(--ease-standard);
+  }
+  .card:hover .card-star {
+    transform: scale(1.1);
+  }
+  .card-star-icon {
+    position: relative;
+    display: flex;
+    color: var(--green);
+  }
+
   /* ── The design's remaining component treatments ──────────────────────────
      Carried over from design-system/site.css, mapped onto this app's own
      class names where it already had one for the same thing. */

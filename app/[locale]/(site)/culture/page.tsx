@@ -97,7 +97,7 @@ export default async function CulturePage({ params }: { params: Promise<{ locale
 
       {/* The poem block: serif italic, generous leading, poet attribution. */}
       {blocks.poem_text ? (
-        <section className="section-loose" data-rise>
+        <section className="section-loose section-alt" data-rise>
           <div className="page">
             <figure style={{ margin: 0, display: 'grid', gap: 'var(--space-3)' }}>
               <blockquote className="poem" style={{ margin: 0 }}>

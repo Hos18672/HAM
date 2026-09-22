@@ -87,7 +87,7 @@ export default async function AboutPage({ params }: { params: Promise<{ locale: 
       </section>
 
       {/* Values */}
-      <section className="section" data-rise>
+      <section className="section section-alt" data-rise>
         <div className="page">
           <SectionHead title={t('values')} />
           <ul

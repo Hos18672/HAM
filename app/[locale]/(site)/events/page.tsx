@@ -78,7 +78,7 @@ export default async function EventsPage({ params }: { params: Promise<{ locale:
       </section>
 
       {past.length > 0 ? (
-        <section className="section" data-rise>
+        <section className="section section-alt" data-rise>
           <div className="page">
             <SectionHead kicker={t('past')} />
             {/* No opacity here. Dimming the whole list was how this said

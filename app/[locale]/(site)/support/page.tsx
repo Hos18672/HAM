@@ -125,7 +125,7 @@ export default async function SupportPage({ params }: { params: Promise<{ locale
 
       {/* Donation */}
       {purposeOptions.length > 0 ? (
-        <section className="section" data-rise>
+        <section className="section section-alt" data-rise>
           <div className="page">
             <div className="rail">
               <div className="head-rule" style={{ paddingBlockStart: 'var(--space-2)' }}>

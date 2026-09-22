@@ -80,7 +80,7 @@ export default async function CommunityPage({ params }: { params: Promise<{ loca
       </section>
 
       {/* The two calls to action. */}
-      <section className="section-loose" data-rise>
+      <section className="section-loose section-alt" data-rise>
         <div className="page">
           <div style={{ display: 'grid', gap: 'var(--space-4)', maxInlineSize: 'var(--measure)' }}>
             {blocks.cta_note ? (

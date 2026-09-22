@@ -5,3 +5,8 @@ drizzle
 public
 test-results
 playwright-report
+
+# Vendored design source — kept byte-for-byte as authored.
+design-system/broadsheet.css
+design-system/site.css
+design-system/prototype.html

@@ -27,9 +27,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # No `version:` here on purpose. The action refuses to start when the
+      # version is declared both here and as `packageManager` in package.json,
+      # which is what made every run fail before installing anything. The
+      # package.json field is the single source of truth, so the local and CI
+      # toolchains cannot drift.
       - uses: pnpm/action-setup@v4
-        with:
-          version: 10
 
       - uses: actions/setup-node@v4
         with:
@@ -72,9 +75,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # No `version:` here on purpose. The action refuses to start when the
+      # version is declared both here and as `packageManager` in package.json,
+      # which is what made every run fail before installing anything. The
+      # package.json field is the single source of truth, so the local and CI
+      # toolchains cannot drift.
       - uses: pnpm/action-setup@v4
-        with:
-          version: 10
 
       - uses: actions/setup-node@v4
         with:

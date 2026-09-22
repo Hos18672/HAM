@@ -21,7 +21,7 @@ import { Card, CardStar } from '@/components/ui/card';
 import { Tag } from '@/components/ui/tag';
 import { LinkButton } from '@/components/ui/button';
 import { Icon } from '@/components/site/icon';
-import { ViennaSkyline, PatternMotif } from '@/components/site/ornaments';
+import { ViennaSkyline, PatternPlate } from '@/components/site/ornaments';
 import { formatDate, formatTime } from '@/lib/i18n/format';
 import { organizationJsonLd, eventJsonLd, JsonLd } from '@/lib/seo';
 import { isLocale, locales, type Locale } from '@/lib/i18n/config';
@@ -78,26 +78,57 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
       <JsonLd data={organizationJsonLd(typed, settings)} />
       {showFeatured ? <JsonLd data={eventJsonLd(featured, typed, settings)} /> : null}
 
-      {/* ── Hero ─────────────────────────────────────────────────────────── */}
+      {/* ── Hero ─────────────────────────────────────────────────────────────
+          The design opens on a band, not on paper: deep green under cream,
+          the girih ground drifting across it, and a 460px circle hung off the
+          top corner. The text sits beside a portrait frame rather than under
+          a rail. */}
       <section
-        className="section"
-        style={{ position: 'relative', overflow: 'hidden', paddingBlockStart: 'var(--space-6)' }}
+        style={{
+          position: 'relative',
+          background: 'var(--band)',
+          color: 'var(--bandInk)',
+          overflow: 'hidden',
+          paddingBlock: 'clamp(var(--space-6), 6vw, var(--space-9))',
+        }}
       >
-        <PatternMotif />
+        <PatternPlate drift opacity={0.75} />
+        <div
+          aria-hidden="true"
+          style={{
+            position: 'absolute',
+            insetInlineEnd: '-140px',
+            insetBlockStart: '-160px',
+            inlineSize: '460px',
+            blockSize: '460px',
+            border: 'var(--rule-hair) solid var(--patBand)',
+            borderRadius: '50%',
+            pointerEvents: 'none',
+          }}
+        />
+
         <div className="page" style={{ position: 'relative' }}>
-          <div className="rail">
-            <div className="head-rule" style={{ paddingBlockStart: 'var(--space-2)' }}>
-              <EditableText
-                as="p"
-                entity="page"
-                id={header.id}
-                field="kicker"
-                locale={typed}
-                value={header.kicker}
-                className="kicker"
-              />
-              {blocks.hero_badge?.text ? (
-                <p style={{ marginBlockStart: 'var(--space-3)' }}>
+          <div
+            style={{
+              display: 'grid',
+              gap: 'clamp(var(--space-5), 5vw, var(--space-8))',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 22rem), 1fr))',
+              alignItems: 'center',
+            }}
+          >
+            <div style={{ display: 'grid', gap: 'var(--space-4)' }}>
+              <div className="fade-in flex flex-wrap items-center gap-3">
+                <EditableText
+                  as="p"
+                  entity="page"
+                  id={header.id}
+                  field="kicker"
+                  locale={typed}
+                  value={header.kicker}
+                  className="kicker"
+                  style={{ color: 'var(--gold)' }}
+                />
+                {blocks.hero_badge?.text ? (
                   <Tag tone="accent-2">
                     <EditableText
                       entity="block"
@@ -107,11 +138,9 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
                       value={blocks.hero_badge.text}
                     />
                   </Tag>
-                </p>
-              ) : null}
-            </div>
+                ) : null}
+              </div>
 
-            <div style={{ display: 'grid', gap: 'var(--space-4)' }}>
               <EditableText
                 as="h1"
                 entity="page"
@@ -119,7 +148,11 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
                 field="title"
                 locale={typed}
                 value={header.title}
-                style={{ fontSize: 'clamp(var(--text-4xl), 7vw, var(--text-6xl))' }}
+                style={{
+                  fontSize: 'clamp(35px, 5.2vw, 64px)',
+                  lineHeight: 1.08,
+                  color: 'var(--bandHead)',
+                }}
                 words="hero"
               />
 
@@ -132,16 +165,23 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
                 value={header.lead}
                 className="lead"
                 multiline
-                style={{ fontSize: 'var(--text-xl)' }}
+                style={{ fontSize: 'var(--text-xl)', color: 'var(--bandDim)' }}
                 words="lines"
               />
 
               <div className="flex flex-wrap items-center gap-2">
-                <LinkButton href={`/${locale}/support`} size="lg">
+                <LinkButton href={`/${locale}/support`} size="lg" className="btn-gold">
                   {tNav('support')}
+                  <ArrowRight size={17} weight="bold" aria-hidden="true" className="mirror" />
                 </LinkButton>
-                <LinkButton href={`/${locale}/activities`} variant="secondary" size="lg">
+                <LinkButton
+                  href={`/${locale}/activities`}
+                  size="lg"
+                  variant="secondary"
+                  className="btn-on-scrim"
+                >
                   {tActions('readMore')}
+                  <ArrowRight size={17} weight="bold" aria-hidden="true" className="mirror" />
                 </LinkButton>
               </div>
 
@@ -163,9 +203,20 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
                 </ul>
               ) : null}
             </div>
+
+            {/* The portrait frame. The design fills it with a photograph of the
+                house; until the association has uploaded one, it carries the
+                site's own skyline rather than a grey placeholder. */}
+            <div className="fade-in frame-wrap">
+              <div
+                className="frame tile"
+                style={{ aspectRatio: '4 / 5', maxBlockSize: '640px', display: 'grid' }}
+              >
+                <ViennaSkyline />
+              </div>
+            </div>
           </div>
         </div>
-        <ViennaSkyline />
       </section>
 
       {/* ── Intro statement ──────────────────────────────────────────────── */}

@@ -1486,6 +1486,161 @@
     padding-inline-start: 0;
   }
 
+  /* ── .seg — the segmented switch ────────────────────────────────────────
+     The design's language control: two options in a pill with a thumb that
+     slides between them. The thumb is a sibling rather than a background on
+     the active option, so it travels instead of appearing, and it travels the
+     other way in RTL. */
+  .seg {
+    position: relative;
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 1fr;
+    align-items: center;
+    padding: 4px;
+    gap: 2px;
+    border: var(--rule-hair) solid var(--line);
+    border-radius: var(--radius-pill);
+    background: var(--card2);
+    box-shadow: inset 0 1px 2px rgba(7, 59, 41, 0.06);
+  }
+  .seg-thumb {
+    position: absolute;
+    z-index: 0;
+    top: 4px;
+    bottom: 4px;
+    inset-inline-start: 4px;
+    width: calc(50% - 4px);
+    border-radius: var(--radius-pill);
+    background: var(--btnBg);
+    box-shadow: 0 4px 12px -6px rgba(7, 59, 41, 0.6);
+    transition:
+      transform var(--duration-base) var(--ease-out-expressive),
+      background-color var(--duration-fast) var(--ease-standard);
+  }
+  .seg[data-pos='1'] .seg-thumb {
+    transform: translateX(100%);
+  }
+  :root[dir='rtl'] .seg[data-pos='1'] .seg-thumb {
+    transform: translateX(-100%);
+  }
+  .seg-option {
+    position: relative;
+    z-index: 1;
+    padding: 8px 15px;
+    font-size: 12.5px;
+    font-weight: var(--weight-bold);
+    white-space: nowrap;
+    text-align: center;
+    text-decoration: none;
+    color: var(--ink2);
+    border-radius: var(--radius-pill);
+    transition: color var(--duration-fast) var(--ease-standard);
+  }
+  .seg-option[data-on='true'] {
+    color: var(--btnFg);
+  }
+  .seg-option:hover {
+    color: var(--head);
+  }
+  .seg-option[data-on='true']:hover {
+    color: var(--btnFg);
+  }
+
+  /* ── .burger — the menu control ──────────────────────────────────────────
+     Three bars of deliberately unequal width that square up on hover and fold
+     into a cross when the drawer opens. The bars are decorative; the button
+     carries the label and the expanded state. */
+  .burger {
+    position: relative;
+    flex: 0 0 auto;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    border-radius: var(--radius-pill);
+    background: var(--card);
+    box-shadow: inset 0 0 0 1px var(--line);
+    cursor: pointer;
+    transition:
+      box-shadow var(--duration-fast) var(--ease-standard),
+      background-color var(--duration-fast) var(--ease-standard),
+      transform var(--duration-fast) var(--ease-out-expressive);
+  }
+  .burger:hover {
+    background: var(--card2);
+    box-shadow: inset 0 0 0 1px var(--gold);
+  }
+  .burger:active {
+    transform: scale(0.94);
+  }
+  .burger-ring {
+    position: absolute;
+    inset: 3px;
+    border-radius: var(--radius-pill);
+    border: var(--rule-hair) solid var(--gold);
+    opacity: 0;
+    transform: scale(1.08);
+    transition:
+      opacity var(--duration-fast) var(--ease-standard),
+      transform var(--duration-base) var(--ease-out-expressive);
+    pointer-events: none;
+  }
+  .burger:hover .burger-ring,
+  .burger[aria-expanded='true'] .burger-ring {
+    opacity: 0.55;
+    transform: none;
+  }
+  .bars {
+    position: relative;
+    display: block;
+    width: 20px;
+    height: 14px;
+  }
+  .bars i {
+    position: absolute;
+    inset-inline: 0;
+    height: 1.8px;
+    border-radius: 2px;
+    background: var(--head);
+    transition:
+      transform var(--duration-base) var(--ease-out-expressive),
+      opacity var(--duration-fast) var(--ease-standard),
+      width var(--duration-fast) var(--ease-out-expressive),
+      background-color var(--duration-fast) var(--ease-standard);
+  }
+  .bars i:nth-child(1) {
+    top: 0;
+  }
+  .bars i:nth-child(2) {
+    top: 6.1px;
+    width: 70%;
+  }
+  .bars i:nth-child(3) {
+    top: 12.2px;
+    width: 85%;
+  }
+  .burger:hover .bars i {
+    background: var(--gold);
+  }
+  .burger:hover .bars i:nth-child(2),
+  .burger:hover .bars i:nth-child(3) {
+    width: 100%;
+  }
+  .burger[aria-expanded='true'] .bars i:nth-child(1) {
+    transform: translateY(6.1px) rotate(45deg);
+  }
+  .burger[aria-expanded='true'] .bars i:nth-child(2) {
+    opacity: 0;
+    transform: scaleX(0.2);
+  }
+  .burger[aria-expanded='true'] .bars i:nth-child(3) {
+    width: 100%;
+    transform: translateY(-6.1px) rotate(-45deg);
+  }
+
   /* ── .search-pill ─────────────────────────────────────────────────────────
      The search field is chromeless inside its pill, so the focus ring has to
      be drawn by the pill: without this the only visible focus state is the
@@ -1606,6 +1761,29 @@
     transition-delay: var(--rise-delay, 0ms);
   }
 
+  /* The design's headline reveal: the words arrive one after another, each
+     rising half a line out of a 4px blur. Driven by the same armed/in
+     attributes as the element reveal, so it needs no second observer and is
+     equally invisible without JavaScript. */
+  [data-words] .word {
+    display: inline-block;
+  }
+  [data-words][data-rise-armed='true'] .word {
+    opacity: 0;
+    transform: translateY(0.55em);
+    filter: blur(4px);
+  }
+  [data-words][data-rise-in='true'] .word {
+    opacity: 1;
+    transform: none;
+    filter: blur(0);
+    transition:
+      opacity 0.9s var(--ease-rise),
+      transform 1s var(--ease-rise),
+      filter 0.8s var(--ease-rise);
+    transition-delay: calc(240ms + var(--ci, 0) * 42ms);
+  }
+
   /* Page transition, from the design's hamPageIn. */
   @keyframes ham-page-in {
     from {
@@ -1691,6 +1869,11 @@
       scroll-behavior: auto !important;
     }
     [data-rise][data-rise-armed='true'] {
+      opacity: 1;
+      transform: none;
+      filter: none;
+    }
+    [data-words][data-rise-armed='true'] .word {
       opacity: 1;
       transform: none;
       filter: none;

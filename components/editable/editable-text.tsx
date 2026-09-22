@@ -15,6 +15,15 @@ export interface EditableTextProps {
   style?: CSSProperties;
   /** Multi-line content keeps its newlines and edits as a block. */
   multiline?: boolean;
+  /**
+   * Reveal the text a word at a time.
+   *
+   * Only outside edit mode: while editing, the element has to hold plain text
+   * or every keystroke would be fighting a pile of spans. The split is purely
+   * presentational either way — the words carry no semantics and the element's
+   * text content reads identically to assistive technology.
+   */
+  words?: boolean;
 }
 
 /**
@@ -39,10 +48,34 @@ export async function EditableText({
   className,
   style,
   multiline,
+  words,
 }: EditableTextProps) {
   const editing = await isEditing();
 
   if (!editing) {
+    if (words) {
+      const parts = value.split(/(\s+)/);
+      let index = -1;
+      return (
+        <Tag
+          className={className}
+          style={style}
+          data-field={`${entity}.${id}.${field}`}
+          data-rise
+          data-words
+        >
+          {parts.map((part, i) => {
+            if (/^\s+$/.test(part)) return part;
+            index += 1;
+            return (
+              <span key={i} className="word" style={{ '--ci': index } as CSSProperties}>
+                {part}
+              </span>
+            );
+          })}
+        </Tag>
+      );
+    }
     return (
       <Tag className={className} style={style} data-field={`${entity}.${id}.${field}`}>
         {value}

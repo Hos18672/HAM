@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { List, X, MagnifyingGlass, CaretDown } from '@phosphor-icons/react/dist/ssr';
+import { X, MagnifyingGlass, CaretDown } from '@phosphor-icons/react/dist/ssr';
 import { Link, usePathname } from '@/lib/i18n/navigation';
 import { NAV, LEGAL_NAV } from './nav-links';
 import { ThemeToggle } from './theme-toggle';
@@ -218,22 +218,21 @@ export function Header({ theme, locale }: { theme: ThemeValue; locale: Locale })
               {t('support')}
             </LinkButton>
 
-            <Button
-              variant="ghost"
-              size="sm"
-              iconOnly
-              className="lg:hidden"
+            <button
+              type="button"
+              className="burger lg:hidden"
               ref={drawerButtonRef}
               aria-label={drawerOpen ? t('closeMenu') : t('openMenu')}
               aria-expanded={drawerOpen}
               onClick={() => setDrawerOpen((open) => !open)}
             >
-              {drawerOpen ? (
-                <X size={22} weight="bold" aria-hidden="true" />
-              ) : (
-                <List size={22} weight="bold" aria-hidden="true" />
-              )}
-            </Button>
+              <span className="burger-ring" aria-hidden="true" />
+              <span className="bars" aria-hidden="true">
+                <i />
+                <i />
+                <i />
+              </span>
+            </button>
           </div>
         </div>
       </header>

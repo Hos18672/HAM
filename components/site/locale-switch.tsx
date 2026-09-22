@@ -39,8 +39,18 @@ function Switch({ className, search }: { className?: string; search: string }) {
   const params = useParams();
   const current = (params.locale as Locale | undefined) ?? 'fa';
 
+  const position = locales.indexOf(current);
+
   return (
-    <div className={cn('nav', className)} role="group" aria-label={t('switch')}>
+    <div
+      className={cn('seg', className)}
+      role="group"
+      aria-label={t('switch')}
+      data-pos={position < 0 ? 0 : position}
+    >
+      {/* Decorative: the moving fill behind the active option. What is active
+          is announced by aria-current on the link itself. */}
+      <span className="seg-thumb" aria-hidden="true" />
       {locales.map((locale) => {
         const isCurrent = locale === current;
         return (
@@ -50,13 +60,9 @@ function Switch({ className, search }: { className?: string; search: string }) {
             locale={locale}
             hrefLang={locale}
             lang={locale}
-            className="nav-link"
+            className="seg-option"
+            data-on={isCurrent ? 'true' : 'false'}
             aria-current={isCurrent ? 'true' : undefined}
-            style={
-              isCurrent
-                ? { fontWeight: 'var(--weight-bold)', color: 'var(--color-ink)' }
-                : undefined
-            }
           >
             {localeLabel[locale]}
           </Link>

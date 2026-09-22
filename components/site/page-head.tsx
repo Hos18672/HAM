@@ -42,6 +42,7 @@ export function PageHead({
               locale={locale}
               value={header.title}
               style={{ fontSize: 'var(--text-4xl)' }}
+              words
             />
             <EditableText
               as="p"

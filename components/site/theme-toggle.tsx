@@ -43,8 +43,15 @@ export function ThemeToggle({ theme }: { theme: ThemeValue }) {
         Math.max(y, window.innerHeight - y),
       );
 
+      // The sheet paints the theme being *left*, and the new one is revealed
+      // underneath as it expands — the design's own reading of the wipe. Read
+      // the paper colour before the attribute flips, or it paints the colour
+      // it is supposed to be uncovering.
+      const leaving = getComputedStyle(document.documentElement).getPropertyValue('--paper').trim();
+
       const wash = document.createElement('div');
       wash.className = 'theme-wash';
+      if (leaving) wash.style.setProperty('--theme-wash-from', leaving);
       wash.style.inlineSize = `${radius * 2}px`;
       wash.style.blockSize = `${radius * 2}px`;
       wash.style.insetInlineStart = `${x - radius}px`;

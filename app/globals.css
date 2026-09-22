@@ -626,33 +626,38 @@
     overflow-wrap: break-word;
   }
 
+  /* The design's link colour is the dark gold, resolving to green on hover.
+     The underline stays: the design drops it, but a link in running text told
+     apart from the body only by colour fails WCAG 1.4.1, and gold against the
+     ink does not clear 3:1. Colour from the design, underline kept. */
   a {
-    color: var(--color-accent-text);
+    color: var(--goldInk);
     text-decoration-thickness: from-font;
     text-underline-offset: 0.18em;
+    transition: color var(--duration-fast) var(--ease-standard);
   }
   a:hover {
-    color: var(--color-accent-800);
+    color: var(--green);
   }
   /* Pressed is one step past the hover step, the same contract every other
      control in the set keeps. */
   a:active {
-    color: var(--color-accent-900);
+    color: var(--color-accent-800);
   }
 
   /* Never a browser default. One rule, everywhere. */
   :focus-visible {
-    outline: 2px solid var(--color-accent);
-    outline-offset: 2px;
-    border-radius: var(--radius-baseline);
+    outline: 2px solid var(--gold);
+    outline-offset: 3px;
+    border-radius: 2px;
   }
   :focus:not(:focus-visible) {
     outline: none;
   }
 
   ::selection {
-    background: var(--color-accent-200);
-    color: var(--color-accent-900);
+    background: var(--gold);
+    color: #04180f;
   }
 
   hr {
@@ -854,30 +859,95 @@
     font-size: var(--text-sm);
     font-weight: var(--weight-semibold);
     line-height: 1.1;
-    padding: var(--space-2) var(--space-4);
+    /* The design's pill: 16/34 padding, a hairline ring that settles inward on
+       hover, a sheen that crosses once, and the label opening up very slightly
+       as the whole control lifts. */
+    padding: 16px 34px;
     min-height: 2.75rem;
-    border: var(--rule-hair) solid var(--btn-bd);
-    border-radius: var(--radius-baseline);
+    letter-spacing: 0.015em;
+    border: 0;
+    border-radius: var(--radius-pill);
     background: var(--btn-bg);
     color: var(--btn-fg);
     cursor: pointer;
     text-decoration: none;
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+    box-shadow: 0 1px 2px rgba(7, 59, 41, 0.16);
     transition:
+      transform var(--duration-base) var(--ease-out-expressive),
+      box-shadow var(--duration-base) var(--ease-out-expressive),
       background-color var(--duration-fast) var(--ease-standard),
-      border-color var(--duration-fast) var(--ease-standard),
       color var(--duration-fast) var(--ease-standard),
-      transform var(--duration-fast) var(--ease-standard);
+      letter-spacing var(--duration-base) var(--ease-out-expressive);
     white-space: nowrap;
+  }
+  .btn > * {
+    position: relative;
+    z-index: 3;
+  }
+  .btn::before {
+    content: '';
+    position: absolute;
+    z-index: 2;
+    inset: 4px;
+    border-radius: var(--radius-pill);
+    border: var(--rule-hair) solid currentColor;
+    opacity: 0;
+    transform: scale(1.06);
+    transition:
+      opacity var(--duration-fast) var(--ease-standard),
+      transform var(--duration-base) var(--ease-out-expressive);
+    pointer-events: none;
+  }
+  .btn:hover:not(:disabled)::before {
+    opacity: 0.3;
+    transform: none;
+  }
+  .btn::after {
+    content: '';
+    position: absolute;
+    z-index: 1;
+    inset: -40% -10%;
+    background: linear-gradient(
+      115deg,
+      transparent 38%,
+      rgba(255, 255, 255, 0.3) 50%,
+      transparent 62%
+    );
+    transform: translateX(-70%);
+    opacity: 0;
+    transition: opacity var(--duration-fast) var(--ease-standard);
+    pointer-events: none;
+  }
+  .btn:hover:not(:disabled)::after {
+    opacity: 1;
+    animation: ham-sheen 1.05s var(--ease-out-expressive);
+  }
+  /* The trailing icon leans the way the button sends you, mirrored in RTL. */
+  .btn > svg {
+    transition: transform var(--duration-base) var(--ease-out-expressive);
+  }
+  .btn:hover:not(:disabled) > svg:last-child {
+    transform: translateX(5px);
+  }
+  :root[dir='rtl'] .btn:hover:not(:disabled) > svg:last-child {
+    transform: translateX(-5px);
   }
   .btn:hover:not(:disabled) {
     --btn-bg: var(--color-accent-fill-hover);
     --btn-bd: var(--color-accent-fill-hover);
     color: var(--btn-fg);
+    transform: translateY(-2px);
+    letter-spacing: 0.03em;
+    box-shadow: 0 16px 34px -16px rgba(7, 59, 41, 0.6);
   }
   .btn:active:not(:disabled) {
     --btn-bg: var(--color-accent-fill-active);
     --btn-bd: var(--color-accent-fill-active);
-    transform: translateY(1px);
+    transform: translateY(0) scale(0.985);
+    transition-duration: 0.12s;
   }
   .btn:disabled,
   .btn[aria-disabled='true'] {
@@ -894,8 +964,12 @@
 
   .btn-secondary {
     --btn-bg: transparent;
-    --btn-fg: var(--color-ink);
-    --btn-bd: var(--color-rule-strong);
+    --btn-fg: var(--head);
+    --btn-bd: transparent;
+    box-shadow: inset 0 0 0 1px var(--line);
+  }
+  .btn-secondary:hover:not(:disabled) {
+    box-shadow: inset 0 0 0 1px var(--gold);
   }
   .btn-secondary:hover:not(:disabled) {
     --btn-bg: var(--color-accent-100);
@@ -955,8 +1029,16 @@
 
   .btn-sm {
     font-size: var(--text-xs);
-    padding: var(--space-1) var(--space-3);
+    padding: 11px 22px;
+    gap: 8px;
     min-height: 2.125rem;
+  }
+  .btn-sm::before {
+    inset: 3px;
+  }
+  /* An icon-only control is round, and has no label to open up. */
+  .btn-icon:hover:not(:disabled) {
+    letter-spacing: normal;
   }
   .btn-lg {
     font-size: var(--text-base);
@@ -983,15 +1065,21 @@
     letter-spacing: var(--tracking-kicker);
     text-transform: uppercase;
     padding: var(--space-1) var(--space-3);
-    border: var(--rule-hair) solid var(--color-rule);
+    border: var(--rule-hair) solid var(--line);
     border-radius: var(--radius-pill);
-    background: transparent;
-    color: var(--color-ink-muted);
+    background: var(--chip);
+    color: var(--chipInk);
     cursor: default;
     transition:
       background-color var(--duration-fast) var(--ease-standard),
       border-color var(--duration-fast) var(--ease-standard),
-      color var(--duration-fast) var(--ease-standard);
+      color var(--duration-fast) var(--ease-standard),
+      transform var(--duration-fast) var(--ease-standard);
+  }
+  a.tag:hover,
+  button.tag:hover {
+    transform: translateY(-2px);
+    border-color: var(--gold);
   }
   :root[dir='rtl'] .tag {
     text-transform: none;
@@ -1065,7 +1153,7 @@
     line-height: 1.4;
     color: var(--color-ink);
     background: var(--color-bg);
-    border: var(--rule-hair) solid var(--color-neutral-400);
+    border: var(--rule-hair) solid var(--line);
     border-block-end-width: 2px;
     border-radius: var(--radius-baseline);
     padding: var(--space-2) var(--space-3);
@@ -1080,8 +1168,8 @@
     background: var(--color-accent-100);
   }
   .input:focus {
-    border-color: var(--color-accent);
-    background: var(--color-bg);
+    border-color: var(--gold);
+    background: var(--card);
   }
   .input::placeholder {
     color: var(--color-ink-faint);
@@ -1125,23 +1213,77 @@
   /* ── .card ────────────────────────────────────────────────────────────────
      Reserved for genuinely discrete listings — a course, an event, a du'a.
      Never for page layout. */
+  /* The design's card: a quiet surface that warms from the top corner and
+     draws a gold hairline as it lifts. The tint and the hairline are the two
+     pseudo-elements, so the card's own content sits above them. */
   .card {
     display: flex;
     flex-direction: column;
     gap: var(--space-2);
     padding: var(--space-4);
-    background: var(--color-bg);
-    border: var(--rule-hair) solid var(--color-rule);
-    border-radius: var(--radius-baseline);
+    position: relative;
+    background: var(--card);
+    border: var(--rule-hair) solid var(--line);
+    border-radius: var(--radius-soft);
+    overflow: hidden;
+    box-shadow: 0 0 0 0 rgba(7, 59, 41, 0);
     transition:
-      border-color var(--duration-base) var(--ease-standard),
-      background-color var(--duration-base) var(--ease-standard),
-      box-shadow var(--duration-base) var(--ease-standard);
+      transform 0.4s cubic-bezier(0.33, 1, 0.68, 1),
+      box-shadow 0.16s ease-out,
+      border-color var(--duration-fast) var(--ease-standard),
+      background-color var(--duration-fast) var(--ease-standard);
+  }
+  .card::before {
+    content: '';
+    position: absolute;
+    z-index: 1;
+    inset: 0;
+    border-radius: inherit;
+    background: radial-gradient(120% 90% at 100% 0%, rgba(200, 164, 93, 0.22), transparent 58%);
+    opacity: 0;
+    transition: opacity var(--duration-base) var(--ease-standard);
+    pointer-events: none;
+  }
+  .card::after {
+    content: '';
+    position: absolute;
+    z-index: 1;
+    inset: 0;
+    border-radius: inherit;
+    box-shadow: inset 0 0 0 1px var(--gold);
+    opacity: 0;
+    transition: opacity var(--duration-base) var(--ease-standard);
+    pointer-events: none;
+  }
+  .card > * {
+    position: relative;
+    z-index: 2;
   }
   .card-interactive:hover,
   a.card:hover {
-    border-color: var(--color-accent-400);
-    background: var(--color-accent-100);
+    transform: translateY(-6px);
+    border-color: var(--gold);
+    box-shadow:
+      0 20px 44px -26px rgba(7, 59, 41, 0.55),
+      0 4px 14px -8px rgba(7, 59, 41, 0.32);
+    transition:
+      transform var(--duration-base) var(--ease-out-expressive),
+      box-shadow var(--duration-base) var(--ease-out-expressive),
+      border-color var(--duration-fast) var(--ease-standard);
+  }
+  .card-interactive:hover::before,
+  a.card:hover::before {
+    opacity: 1;
+  }
+  .card-interactive:hover::after,
+  a.card:hover::after {
+    opacity: 0.55;
+  }
+  :root[data-theme='dark'] .card-interactive:hover,
+  :root[data-theme='dark'] a.card:hover {
+    box-shadow:
+      0 20px 44px -24px rgba(0, 0, 0, 0.85),
+      0 4px 14px -8px rgba(0, 0, 0, 0.6);
   }
   .card-title {
     font-size: var(--text-xl);
@@ -1229,25 +1371,58 @@
     padding: var(--space-2) var(--space-3);
     font-size: var(--text-sm);
     font-weight: var(--weight-medium);
-    color: var(--color-ink-muted);
+    color: var(--ink2);
     text-decoration: none;
-    border-radius: var(--radius-baseline);
+    border-radius: var(--radius-pill);
     position: relative;
-    transition:
-      color var(--duration-fast) var(--ease-standard),
-      background-color var(--duration-fast) var(--ease-standard);
+    transition: color var(--duration-fast) var(--ease-standard);
     white-space: nowrap;
   }
-  .nav-link:hover {
-    color: var(--color-accent-800);
-    background: var(--color-accent-100);
+  /* The chip grows in behind the label; the gold rule underlines the page
+     you are on. Both are the design's, and both are pseudo-elements so the
+     label itself never moves. */
+  .nav-link::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: var(--radius-pill);
+    background: var(--chip);
+    opacity: 0;
+    transform: scale(0.88);
+    transition:
+      opacity var(--duration-fast) var(--ease-standard),
+      transform var(--duration-base) var(--ease-out-expressive);
   }
-  .nav-link:active {
-    background: var(--color-accent-200);
+  .nav-link:hover::before {
+    opacity: 1;
+    transform: none;
+  }
+  .nav-link::after {
+    content: '';
+    position: absolute;
+    inset-inline-start: 50%;
+    bottom: 5px;
+    width: 0;
+    height: 2px;
+    border-radius: 2px;
+    background: var(--gold);
+    transition:
+      width var(--duration-base) var(--ease-out-expressive),
+      inset-inline-start var(--duration-base) var(--ease-out-expressive);
+  }
+  .nav-link > * {
+    position: relative;
+  }
+  .nav-link:hover {
+    color: var(--head);
   }
   .nav-link[aria-current='page'] {
-    color: var(--color-ink);
+    color: var(--head);
     font-weight: var(--weight-bold);
+  }
+  .nav-link[aria-current='page']::after {
+    inset-inline-start: 22%;
+    width: 56%;
   }
   .nav-link[aria-current='page']::after {
     content: '';
@@ -1411,24 +1586,31 @@
   [data-rise] {
     opacity: 1;
   }
+  /* The design's reveal: a long rise out of a blur, not a short fade. It
+     travels 46px, comes up from 0.968 scale and 7px of blur, and each of the
+     three properties has its own duration so the blur clears before the
+     movement finishes. */
   [data-rise][data-rise-armed='true'] {
     opacity: 0;
-    transform: translateY(var(--space-3));
+    transform: translateY(46px) scale(0.968);
+    filter: blur(7px);
   }
   [data-rise][data-rise-in='true'] {
     opacity: 1;
     transform: none;
+    filter: blur(0);
     transition:
-      opacity var(--duration-slow) var(--ease-out-expressive),
-      transform var(--duration-slow) var(--ease-out-expressive);
+      opacity 1.25s var(--ease-rise),
+      transform 1.35s var(--ease-rise),
+      filter 1.1s var(--ease-rise);
     transition-delay: var(--rise-delay, 0ms);
   }
 
-  /* Page transition: a short rise-and-fade on the entering content. */
-  @keyframes bs-enter {
+  /* Page transition, from the design's hamPageIn. */
+  @keyframes ham-page-in {
     from {
       opacity: 0;
-      transform: translateY(var(--space-2));
+      transform: translateY(34px) scale(0.985);
     }
     to {
       opacity: 1;
@@ -1436,20 +1618,53 @@
     }
   }
   .page-enter {
-    animation: bs-enter var(--duration-base) var(--ease-out-expressive) both;
+    animation: ham-page-in 0.8s var(--ease-out-expressive) both;
   }
 
-  /* Theme switch: a soft circular wash expanding from the toggle, then fading.
-     Transform and opacity only — no layout thrash. */
-  @keyframes bs-theme-wash {
+  /* The sheen that crosses a button once on hover. */
+  @keyframes ham-sheen {
     from {
-      transform: scale(0);
-      opacity: 0.5;
-    }
-    70% {
-      opacity: 0.22;
+      transform: translateX(-70%);
     }
     to {
+      transform: translateX(70%);
+    }
+  }
+
+  /* A pattern plate drifting behind a band, and the slow orbit on a mark. */
+  @keyframes ham-drift {
+    from {
+      background-position: 0 0;
+    }
+    to {
+      background-position: 160px 160px;
+    }
+  }
+  @keyframes ham-spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  .ham-drift {
+    animation: ham-drift 70s linear infinite;
+  }
+  .ham-spin {
+    animation: ham-spin 7s linear infinite;
+  }
+
+  /* Theme switch: the design's circular sheet, sized to the viewport and
+     expanding from the toggle. Transform and opacity only — no layout
+     thrash — and it paints the colour being left behind, so the new theme is
+     revealed underneath rather than washed over. */
+  @keyframes ham-wash {
+    0% {
+      transform: scale(0);
+      opacity: 1;
+    }
+    60% {
+      opacity: 1;
+    }
+    100% {
       transform: scale(1);
       opacity: 0;
     }
@@ -1458,9 +1673,9 @@
     position: fixed;
     z-index: var(--z-toast);
     pointer-events: none;
-    border-radius: var(--radius-pill);
-    background: radial-gradient(circle, var(--color-accent-300) 0%, transparent 72%);
-    animation: bs-theme-wash var(--duration-theme) var(--ease-out-expressive) forwards;
+    border-radius: 50%;
+    background: var(--theme-wash-from, var(--paper));
+    animation: ham-wash var(--duration-theme) var(--ease-standard) both;
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -1478,6 +1693,7 @@
     [data-rise][data-rise-armed='true'] {
       opacity: 1;
       transform: none;
+      filter: none;
     }
     .theme-wash {
       display: none;

@@ -123,22 +123,45 @@ test.describe('qibla', () => {
     const rotation = async () =>
       (await rose.getAttribute('style'))?.match(/rotate\((-?[\d.]+)deg\)/)?.[1];
 
+    /**
+     * Fire one orientation reading at the window and report what the page
+     * itself saw.
+     *
+     * Two deliberate choices here. The event is built with the real
+     * `DeviceOrientationEvent` constructor rather than a bare `Event` carrying
+     * bolted-on properties, because that is what a browser delivers and it is
+     * the browser's own accessors the component reads. And a probe listener
+     * rides along, so a failure says which link broke — dispatch never reaching
+     * a listener at all, or reaching one while the rose stays put — instead of
+     * only reporting a rotation of zero.
+     */
+    const fire = async (type: string, alpha: number, absolute: boolean) =>
+      page.evaluate(
+        ({ type, alpha, absolute }) => {
+          let reachedAListener = false;
+          const probe = () => {
+            reachedAListener = true;
+          };
+          window.addEventListener(type, probe, true);
+          const event = new DeviceOrientationEvent(type, { alpha, absolute });
+          window.dispatchEvent(event);
+          window.removeEventListener(type, probe, true);
+          return { reachedAListener, alpha: event.alpha, absolute: event.absolute };
+        },
+        { type, alpha, absolute },
+      );
+
     // An absolute reading is a real compass heading: the rose counter-rotates.
     //
     // The dispatch happens *inside* the poll on purpose. The listener is
     // attached by an effect that runs after the button flips to "Kompass
-    // aktiv", so firing once and then polling races hydration — it won
-    // locally and lost on a slower CI runner. Re-firing each attempt removes
-    // the race without weakening what is being asserted.
+    // aktiv", so firing once and then polling races hydration.
     const fireAbsolute = async () => {
-      await page.evaluate(() => {
-        const event = new Event('deviceorientationabsolute') as Event & {
-          alpha?: number;
-          absolute?: boolean;
-        };
-        Object.defineProperty(event, 'alpha', { value: 90 });
-        Object.defineProperty(event, 'absolute', { value: true });
-        window.dispatchEvent(event);
+      const seen = await fire('deviceorientationabsolute', 90, true);
+      expect(seen, 'the dispatched reading must reach a window listener intact').toEqual({
+        reachedAListener: true,
+        alpha: 90,
+        absolute: true,
       });
       return rotation();
     };
@@ -147,15 +170,7 @@ test.describe('qibla', () => {
     // Chrome on Android also fires a *relative* `deviceorientation`, whose
     // alpha is zeroed wherever the device happened to be pointing. Acting on
     // it would swing the needle to an arbitrary bearing.
-    await page.evaluate(() => {
-      const event = new Event('deviceorientation') as Event & {
-        alpha?: number;
-        absolute?: boolean;
-      };
-      Object.defineProperty(event, 'alpha', { value: 200 });
-      Object.defineProperty(event, 'absolute', { value: false });
-      window.dispatchEvent(event);
-    });
+    await fire('deviceorientation', 200, false);
     await page.waitForTimeout(300);
     expect(await rotation()).toBe('-270');
   });

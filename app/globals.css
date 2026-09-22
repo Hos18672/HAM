@@ -1805,6 +1805,90 @@
     color: var(--green);
   }
 
+  /* ── The footer band ──────────────────────────────────────────────────────
+     The design closes every page on a near-black green band with the girih
+     ground drifting behind it, gold column heads, and controls that lift. */
+  .footer-band {
+    position: relative;
+    background: var(--micro);
+    color: var(--microInk);
+    overflow: hidden;
+  }
+  .footer-inner {
+    position: relative;
+    max-inline-size: 1320px;
+    margin-inline: auto;
+    padding: clamp(40px, 5vw, 72px) clamp(20px, 5vw, 56px) 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 228px), 1fr));
+    gap: clamp(30px, 4vw, 60px);
+  }
+  .footer-head {
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    font-weight: var(--weight-bold);
+    color: var(--gold);
+  }
+  :root[dir='rtl'] .footer-head {
+    letter-spacing: 0;
+    text-transform: none;
+  }
+  .footer-band a {
+    color: var(--microInk);
+  }
+  .footer-band a:hover {
+    color: var(--gold);
+  }
+  /* A round control on the band — the social links. */
+  .band-icon {
+    flex: 0 0 auto;
+    inline-size: 46px;
+    block-size: 46px;
+    border-radius: var(--radius-pill);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: var(--rule-hair) solid var(--patBand);
+    color: var(--gold);
+  }
+  .band-icon:hover {
+    border-color: var(--gold);
+    color: var(--goldHi);
+  }
+  .footer-rule {
+    position: relative;
+    max-inline-size: 1320px;
+    margin: clamp(34px, 4vw, 60px) auto 0;
+    padding: 26px clamp(20px, 5vw, 56px) 34px;
+    border-block-start: var(--rule-hair) solid var(--patBand);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13px;
+  }
+  /* The segmented switch, on the band. */
+  .seg-dark {
+    border-color: var(--patBand);
+    background: rgba(200, 164, 93, 0.08);
+    box-shadow: none;
+  }
+  .seg-dark .seg-thumb {
+    background: var(--gold);
+  }
+  .seg-dark .seg-option {
+    color: var(--microInk);
+  }
+  .seg-dark .seg-option[data-on='true'],
+  .seg-dark .seg-option[data-on='true']:hover {
+    color: #04180f;
+  }
+  .seg-dark .seg-option:hover {
+    color: #fbf6ea;
+  }
+
   /* ── The design's remaining component treatments ──────────────────────────
      Carried over from design-system/site.css, mapped onto this app's own
      class names where it already had one for the same thing. */

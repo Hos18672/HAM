@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense } from 'react';
+import { Suspense, type CSSProperties } from 'react';
 import { useParams, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { usePathname, Link } from '@/lib/i18n/navigation';
@@ -16,24 +16,32 @@ import { cn } from '../ui/cn';
  * on a page whose content depends on it (the prayer calendar's `?y=&m=`)
  * losing it would silently throw the reader back to the current month.
  */
-export function LocaleSwitch({ className }: { className?: string }) {
+export function LocaleSwitch({ className, style }: { className?: string; style?: CSSProperties }) {
   // `useSearchParams` opts its subtree out of static prerendering, so it is
   // read inside a boundary: the statically rendered markup links without the
   // query, and the moment it hydrates the real one is there.
   return (
-    <Suspense fallback={<Switch className={className} search="" />}>
-      <SwitchWithQuery className={className} />
+    <Suspense fallback={<Switch className={className} style={style} search="" />}>
+      <SwitchWithQuery className={className} style={style} />
     </Suspense>
   );
 }
 
-function SwitchWithQuery({ className }: { className?: string }) {
+function SwitchWithQuery({ className, style }: { className?: string; style?: CSSProperties }) {
   const params = useSearchParams();
   const search = params.toString();
-  return <Switch className={className} search={search ? `?${search}` : ''} />;
+  return <Switch className={className} style={style} search={search ? `?${search}` : ''} />;
 }
 
-function Switch({ className, search }: { className?: string; search: string }) {
+function Switch({
+  className,
+  style,
+  search,
+}: {
+  className?: string;
+  style?: CSSProperties;
+  search: string;
+}) {
   const t = useTranslations('locale');
   const pathname = usePathname();
   const params = useParams();
@@ -44,6 +52,7 @@ function Switch({ className, search }: { className?: string; search: string }) {
   return (
     <div
       className={cn('seg', className)}
+      style={style}
       role="group"
       aria-label={t('switch')}
       data-pos={position < 0 ? 0 : position}

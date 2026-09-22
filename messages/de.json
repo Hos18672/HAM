@@ -52,7 +52,8 @@
     "confirm": "Bestätigen",
     "save": "Speichern",
     "discard": "Verwerfen",
-    "retry": "Erneut versuchen"
+    "retry": "Erneut versuchen",
+    "donate": "Spenden"
   },
   "theme": {
     "toggle": "Darstellung wechseln",
@@ -283,7 +284,9 @@
     "participate": "Mitmachen",
     "legal": "Rechtliches",
     "rights": "Alle Rechte vorbehalten.",
-    "zvr": "ZVR"
+    "zvr": "ZVR",
+    "join": "Mitmachen",
+    "joinText": "Werden Sie Mitglied oder unterstützen Sie die Arbeit des Hauses."
   },
   "error": {
     "notFoundTitle": "Diese Seite gibt es nicht",

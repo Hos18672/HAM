@@ -1552,6 +1552,26 @@
     padding-inline-start: 0;
   }
 
+  /* The pattern plate: full bleed, masked so it fades out down the page
+     rather than ending on a hard edge. */
+  .plate {
+    position: absolute;
+    inset: 0;
+    inline-size: 100%;
+    block-size: 100%;
+    pointer-events: none;
+    opacity: 0.62;
+    filter: blur(0.4px);
+    -webkit-mask: radial-gradient(
+      130% 110% at 50% 0%,
+      #000 8%,
+      rgba(0, 0, 0, 0.45) 52%,
+      transparent 92%
+    );
+    mask: radial-gradient(130% 110% at 50% 0%, #000 8%, rgba(0, 0, 0, 0.45) 52%, transparent 92%);
+    z-index: 0;
+  }
+
   /* ── .seg — the segmented switch ────────────────────────────────────────
      The design's language control: two options in a pill with a thumb that
      slides between them. The thumb is a sibling rather than a background on

@@ -74,6 +74,16 @@ jobs:
         with:
           enablement: true
 
+      # A workflow token is not allowed to switch Pages on for a repository
+      # that has never had it. That is a one-time click, and the error GitHub
+      # returns for it ("Resource not accessible by integration") says nothing
+      # about which click — so say it here.
+      - name: Explain a Pages that is not switched on
+        if: failure() && steps.pages.outcome == 'failure'
+        run: |
+          echo "::error title=Turn GitHub Pages on::Settings -> Pages -> Build and deployment -> Source: GitHub Actions. Then re-run this workflow. A workflow token cannot do this itself the first time."
+          exit 1
+
       # No `version:` here on purpose — see the note in ci.yml.
       - uses: pnpm/action-setup@v4
 

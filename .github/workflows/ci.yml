@@ -24,6 +24,10 @@ jobs:
   check:
     name: Typecheck, lint and unit tests
     runs-on: ubuntu-latest
+    # These steps take about a minute. Ten is generous; without a bound a
+    # wedged job runs to GitHub's six-hour default, which on a free plan is
+    # the association's whole monthly allowance.
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
 
@@ -56,6 +60,9 @@ jobs:
   e2e:
     name: End-to-end and accessibility
     runs-on: ubuntu-latest
+    # The suite runs in about five minutes on a runner. Twenty-five leaves room
+    # for a slow build and a retry, and still fails fast when something hangs.
+    timeout-minutes: 25
 
     services:
       postgres:

@@ -18,6 +18,15 @@ export default defineConfig({
   reporter: process.env.CI ? [['github'], ['html', { open: 'never' }]] : [['list']],
   timeout: 45_000,
   expect: { timeout: 10_000 },
+  /**
+   * A ceiling for the whole suite.
+   *
+   * With one worker and a 45 s per-test timeout, a run where many tests fail
+   * would otherwise take hours rather than minutes — and a hung run reports
+   * nothing at all, because Playwright only writes its report at the end.
+   * This makes the suite give up and hand back a report instead.
+   */
+  globalTimeout: process.env.CI ? 18 * 60_000 : undefined,
 
   use: {
     baseURL,

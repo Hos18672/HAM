@@ -8,6 +8,7 @@ import { readTheme } from '@/lib/preferences';
 import { getSettings } from '@/lib/db/queries/content';
 import { PrintPlates } from '@/components/site/print-plates';
 import { RiseObserver } from '@/components/site/rise';
+import { PageWipe } from '@/components/site/page-wipe';
 import '../globals.css';
 
 export function generateStaticParams() {
@@ -107,6 +108,7 @@ export default async function LocaleLayout({
           <PrintPlates />
           {children}
           <RiseObserver />
+          <PageWipe />
         </NextIntlClientProvider>
       </body>
     </html>

@@ -1,6 +1,6 @@
 import NextAuth from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
-import bcrypt from 'bcryptjs';
+import { verifyPassword } from './password';
 import { eq, sql as raw } from 'drizzle-orm';
 import { db } from './db';
 import { users } from './db/schema';
@@ -17,13 +17,9 @@ const SESSION_MAX_AGE = 8 * 60 * 60;
 /** Failed logins are counted over a fifteen-minute window. */
 const LOGIN_WINDOW_SECONDS = 15 * 60;
 
-/** Cost 12. Roughly 250 ms on the hosting tier — slow enough to make offline
- *  cracking expensive, fast enough that a login does not feel broken. */
-export const BCRYPT_COST = 12;
-
-export function hashPassword(plain: string): Promise<string> {
-  return bcrypt.hash(plain, BCRYPT_COST);
-}
+// Hashing lives in lib/password.ts so the seed and the e2e fixtures can use it
+// from plain Node — importing this module outside Next.js fails on next-auth.
+export { BCRYPT_COST, hashPassword } from './password';
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   session: { strategy: 'jwt', maxAge: SESSION_MAX_AGE },
@@ -58,7 +54,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         // missing address and a wrong password take the same time to answer.
         const hash =
           user?.passwordHash ?? '$2a$12$invalidinvalidinvalidinvalidinvalidinvalidinvalidinvalidxx';
-        const ok = await bcrypt.compare(password, hash);
+        const ok = await verifyPassword(password, hash);
         if (!ok || !user) {
           await recordAttempt(limitKey, LOGIN_WINDOW_SECONDS);
           return null;

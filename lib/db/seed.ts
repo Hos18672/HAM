@@ -13,7 +13,7 @@ import { createHash } from 'node:crypto';
 import { eq, sql as raw } from 'drizzle-orm';
 import { db, sql } from './index';
 import * as s from './schema';
-import { hashPassword } from '../auth';
+import { hashPassword } from '../password';
 import * as data from './seed-data';
 
 type Locale = 'fa' | 'de';

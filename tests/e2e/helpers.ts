@@ -1,4 +1,4 @@
-import { expect, type Page } from '@playwright/test';
+import type { Page } from '@playwright/test';
 
 export const ADMIN_EMAIL = process.env.ADMIN_EMAIL ?? 'redaktion@haus-aller-menschen.at';
 export const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD ?? 'entwicklung-nur-lokal';
@@ -32,27 +32,14 @@ export async function login(page: Page, email = ADMIN_EMAIL, password = ADMIN_PA
   await page.waitForURL('**/admin', { timeout: 20_000 });
 }
 
+/**
+ * The editor fixture. Created by `global-setup.ts` against the database, so a
+ * test can simply sign in as them.
+ *
+ * It used to be created by driving the user-creation form from a helper, which
+ * made three role tests depend on that form working — and skipped the creation
+ * path entirely on any machine where the account already existed. That is how
+ * it passed locally and failed on a clean CI database.
+ */
 export const EDITOR_EMAIL = 'redakteur@haus-aller-menschen.at';
 export const EDITOR_PASSWORD = 'ein-langes-testpasswort';
-
-/**
- * Make sure an `editor` account exists, so the role boundary can be tested
- * against a real session rather than by reading the code.
- */
-export async function ensureEditor(page: Page) {
-  await login(page);
-  await page.goto('/admin/users');
-
-  const row = page.getByRole('row').filter({ hasText: EDITOR_EMAIL });
-  if ((await row.count()) === 0) {
-    await page.getByRole('button', { name: 'Benutzer anlegen' }).click();
-    await page.getByLabel('Name', { exact: false }).fill('Test Redakteur');
-    await page.getByLabel('E-Mail', { exact: false }).fill(EDITOR_EMAIL);
-    await page.getByLabel('Passwort', { exact: false }).fill(EDITOR_PASSWORD);
-    await page.getByRole('button', { name: 'Anlegen' }).click();
-    await expect(row).toBeVisible({ timeout: 15_000 });
-  }
-
-  await page.getByRole('button', { name: 'Abmelden' }).click();
-  await page.waitForURL('**/login', { timeout: 20_000 });
-}

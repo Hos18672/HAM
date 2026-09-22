@@ -124,16 +124,25 @@ test.describe('qibla', () => {
       (await rose.getAttribute('style'))?.match(/rotate\((-?[\d.]+)deg\)/)?.[1];
 
     // An absolute reading is a real compass heading: the rose counter-rotates.
-    await page.evaluate(() => {
-      const event = new Event('deviceorientationabsolute') as Event & {
-        alpha?: number;
-        absolute?: boolean;
-      };
-      Object.defineProperty(event, 'alpha', { value: 90 });
-      Object.defineProperty(event, 'absolute', { value: true });
-      window.dispatchEvent(event);
-    });
-    await expect.poll(rotation).toBe('-270');
+    //
+    // The dispatch happens *inside* the poll on purpose. The listener is
+    // attached by an effect that runs after the button flips to "Kompass
+    // aktiv", so firing once and then polling races hydration — it won
+    // locally and lost on a slower CI runner. Re-firing each attempt removes
+    // the race without weakening what is being asserted.
+    const fireAbsolute = async () => {
+      await page.evaluate(() => {
+        const event = new Event('deviceorientationabsolute') as Event & {
+          alpha?: number;
+          absolute?: boolean;
+        };
+        Object.defineProperty(event, 'alpha', { value: 90 });
+        Object.defineProperty(event, 'absolute', { value: true });
+        window.dispatchEvent(event);
+      });
+      return rotation();
+    };
+    await expect.poll(fireAbsolute).toBe('-270');
 
     // Chrome on Android also fires a *relative* `deviceorientation`, whose
     // alpha is zeroed wherever the device happened to be pointing. Acting on

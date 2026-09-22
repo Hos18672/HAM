@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { login, ensureEditor, ADMIN_EMAIL, EDITOR_EMAIL, EDITOR_PASSWORD } from './helpers';
+import { login, ADMIN_EMAIL, EDITOR_EMAIL, EDITOR_PASSWORD } from './helpers';
 
 /** The admin's toast region — the one place an outcome is announced. */
 function toast(page: import('@playwright/test').Page) {
@@ -267,8 +267,6 @@ test.describe('admin settings and inbox', () => {
 });
 
 test.describe('role boundaries', () => {
-  test.beforeEach(async ({ page }) => ensureEditor(page));
-
   test('an editor is told why, not handed a server error', async ({ page }) => {
     await login(page, EDITOR_EMAIL, EDITOR_PASSWORD);
 

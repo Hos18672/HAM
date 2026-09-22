@@ -10,6 +10,8 @@ const baseURL = `http://127.0.0.1:${PORT}`;
 
 export default defineConfig({
   testDir: './tests/e2e',
+  // Creates the editor fixture against the database before anything runs.
+  globalSetup: './tests/e2e/global-setup.ts',
   fullyParallel: false,
   // A shared database means tests that write content must not race each other.
   workers: 1,

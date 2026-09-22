@@ -206,6 +206,34 @@ which is enough to test with.
 Point the domain at Vercel and set it as the project's primary domain. This is
 the only thing the association pays for.
 
+### Why not GitHub Pages
+
+GitHub Pages serves static files and nothing else. This is a server
+application: `middleware.ts` routes the two locales and gates `/admin`, six
+server-action modules carry every form and every save, three API routes handle
+sign-in, uploads and revalidation, and all content lives in Postgres. None of
+that can run on Pages, and cutting the app down until it could would remove the
+admin, the live editing, the forms and the search — which is most of the point.
+
+What Pages _can_ hold is a picture of the public site, and the
+`Preview site` workflow publishes one:
+
+<https://hos18672.github.io/HAM/>
+
+It builds the real production app against a freshly seeded database, saves what
+the 32 public pages render, and deploys that. The design, the typography, both
+languages and the seeded content are all genuine — it is the real output of the
+real app. Everything needing a server is inert: no sign-in, no admin, no live
+editing, the forms do not submit and the search does not search. Every page
+carries a banner saying so, and `noindex` plus a refusing `robots.txt` keep the
+preview from ever competing with the real site in a search engine. A nightly
+run keeps the prayer times and the calendar current, since both are rendered
+for the day of the build.
+
+The workflow turns Pages on by itself the first time it runs. If that step is
+refused, set **Settings → Pages → Source** to **GitHub Actions** once and
+re-run it.
+
 ---
 
 ## Architecture notes

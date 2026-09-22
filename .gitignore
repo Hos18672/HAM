@@ -17,3 +17,6 @@ blob-report
 # Transient worktrees the agent harness creates for background agents.
 # These are working copies of this same repository, not project content.
 .claude/worktrees/
+
+# The local preview snapshot; CI builds its own.
+preview/

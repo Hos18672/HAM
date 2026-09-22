@@ -31,8 +31,18 @@ const csp = [
   "object-src 'none'",
 ].join('; ');
 
+/**
+ * GitHub Pages serves the preview snapshot from a sub-path (…/HAM), not from a
+ * domain root, so every absolute asset URL the app emits has to carry that
+ * prefix. `PREVIEW_BASE_PATH` supplies it for the snapshot build alone. Unset —
+ * which is every real build, local or on Vercel — this is undefined and the app
+ * is served from the root exactly as before.
+ */
+const previewBasePath = process.env.PREVIEW_BASE_PATH || undefined;
+
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  ...(previewBasePath ? { basePath: previewBasePath } : {}),
   poweredByHeader: false,
   images: {
     remotePatterns: supabaseOrigin

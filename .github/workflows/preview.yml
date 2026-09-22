@@ -1,0 +1,125 @@
+name: Preview site
+
+# A look at the public site without a server behind it.
+#
+# GitHub Pages cannot host this application: it serves static files, and this
+# app needs middleware for the locales, server actions for every form and every
+# admin save, API routes for auth and uploads, and Postgres for all content.
+# What it can host is a snapshot. This builds the real production app against a
+# freshly seeded database, keeps what it renders, and publishes that — so the
+# design and the content can be looked at and shown to people while the real
+# deployment (Vercel + Supabase, both free tiers) is being set up.
+#
+# Everything interactive is inert in the snapshot, and every page says so.
+
+on:
+  push:
+    branches: ['claude/haus-aller-menschen-build-8h94uf']
+  # The prayer times and the calendar are rendered for the day of the build, so
+  # a preview nobody pushes to would quietly drift into showing a past date.
+  schedule:
+    - cron: '15 3 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# One deployment at a time, and never cancel one half-done.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+env:
+  # A throwaway database for the run; nothing here is a real credential.
+  DATABASE_URL: postgresql://postgres:postgres@localhost:5432/ham
+  DIRECT_URL: postgresql://postgres:postgres@localhost:5432/ham
+  AUTH_SECRET: preview-secret-not-used-anywhere-else-000
+  AUTH_URL: http://127.0.0.1:3100
+  ADMIN_EMAIL: redaktion@haus-aller-menschen.at
+  ADMIN_PASSWORD: nur-fuer-die-vorschau
+  SUPABASE_STORAGE_BUCKET: media
+
+jobs:
+  snapshot:
+    name: Build the snapshot
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: ham
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # Turns Pages on for the repository if it is not on already, and tells us
+      # the sub-path it will be served from. That path has to be baked into the
+      # build, because the app emits absolute asset URLs.
+      - name: Configure Pages
+        id: pages
+        uses: actions/configure-pages@v5
+        with:
+          enablement: true
+
+      # No `version:` here on purpose — see the note in ci.yml.
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Prepare the database
+        run: |
+          pnpm db:push --force
+          pnpm db:seed
+
+      - name: Build
+        env:
+          PREVIEW_BASE_PATH: ${{ steps.pages.outputs.base_path }}
+          NEXT_PUBLIC_SITE_URL: ${{ steps.pages.outputs.base_url }}
+        run: pnpm build
+
+      - name: Render the snapshot
+        env:
+          PREVIEW_BASE_PATH: ${{ steps.pages.outputs.base_path }}
+          NEXT_PUBLIC_SITE_URL: ${{ steps.pages.outputs.base_url }}
+          PREVIEW_REPO_URL: ${{ github.server_url }}/${{ github.repository }}
+        run: |
+          pnpm start --port 3100 &
+          for _ in $(seq 1 60); do
+            curl -sf -o /dev/null "http://127.0.0.1:3100${PREVIEW_BASE_PATH}/de" && break
+            sleep 1
+          done
+          node scripts/preview-snapshot.mjs
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: preview
+
+  deploy:
+    name: Publish to Pages
+    needs: snapshot
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

@@ -109,31 +109,63 @@ test.describe('qibla', () => {
     // no magnetometer fires no orientation event, so the button flips to
     // "Kompass aktiv"; a browser without the API at all says so in the live
     // region. What must never happen is nothing.
-    const activeButton = page.getByRole('button', { name: 'Kompass aktiv' });
+    //
+    // `exact` is not optional here. Playwright matches an accessible name as a
+    // case-insensitive *substring* by default, and "Kompass aktiv" is a
+    // substring of "Kompass aktivieren" — so without it this passes on the
+    // unclicked button and asserts nothing at all.
+    const activeButton = page.getByRole('button', { name: 'Kompass aktiv', exact: true });
     const explanation = page.getByText('stellt keinen Kompass zur Verfügung');
     await expect(activeButton.or(explanation).first()).toBeVisible();
   });
 
   test('turns the rose only on an absolute heading', async ({ page }) => {
+    /**
+     * Give the page the orientation API if the browser has none.
+     *
+     * A desktop browser is not the device this feature is for, and newer
+     * headless builds ship no `DeviceOrientationEvent` at all — the component
+     * then correctly reports the compass as unsupported and never subscribes,
+     * which leaves nothing to test. Supplying the constructor emulates the
+     * phone this code runs on; where the browser has its own, this is a no-op
+     * and the real one is used.
+     */
+    await page.addInitScript(() => {
+      if ('DeviceOrientationEvent' in window) return;
+      class PolyfilledDeviceOrientationEvent extends Event {
+        readonly alpha: number | null;
+        readonly beta: number | null;
+        readonly gamma: number | null;
+        readonly absolute: boolean;
+        constructor(type: string, init: DeviceOrientationEventInit = {}) {
+          super(type, init);
+          this.alpha = init.alpha ?? null;
+          this.beta = init.beta ?? null;
+          this.gamma = init.gamma ?? null;
+          this.absolute = init.absolute ?? false;
+        }
+      }
+      Object.defineProperty(window, 'DeviceOrientationEvent', {
+        configurable: true,
+        writable: true,
+        value: PolyfilledDeviceOrientationEvent,
+      });
+    });
+
     await page.goto('/de/qibla');
     await page.getByRole('button', { name: 'Kompass aktivieren' }).click();
-    await expect(page.getByRole('button', { name: 'Kompass aktiv' })).toBeVisible();
+    // `exact`, for the reason given in the test above: without it this matches
+    // the unclicked button and the rest of the test runs against a compass
+    // that was never activated.
+    await expect(page.getByRole('button', { name: 'Kompass aktiv', exact: true })).toBeVisible();
 
     const rose = page.getByRole('img', { name: /Kompassrose/ });
     const rotation = async () =>
       (await rose.getAttribute('style'))?.match(/rotate\((-?[\d.]+)deg\)/)?.[1];
 
-    /**
-     * Fire one orientation reading at the window and report everything the
-     * page saw: whether the dispatch reached a window listener at all, the
-     * values the browser's own accessors return, and where the rose ended up.
-     *
-     * The event is built with the real `DeviceOrientationEvent` constructor
-     * rather than a bare `Event` carrying bolted-on properties, because that
-     * is what a browser delivers and it is the browser's accessors the
-     * component reads. Everything the page saw is polled as one object so a
-     * failure names which link broke instead of only reporting a rotation.
-     */
+    // One orientation reading, built with the constructor a browser uses, and
+    // everything the page saw of it reported together so a failure names which
+    // link broke rather than only printing a rotation.
     const observe = async (type: string, alpha: number, absolute: boolean) =>
       page
         .evaluate(
@@ -146,15 +178,7 @@ test.describe('qibla', () => {
             const event = new DeviceOrientationEvent(type, { alpha, absolute });
             window.dispatchEvent(event);
             window.removeEventListener(type, probe, true);
-            return {
-              reachedAListener,
-              alpha: event.alpha,
-              absolute: event.absolute,
-              // Not idle curiosity: if a browser defines this, it is a second
-              // heading source competing with the absolute one.
-              webkitCompassHeading: (event as { webkitCompassHeading?: number })
-                .webkitCompassHeading,
-            };
+            return { reachedAListener, alpha: event.alpha, absolute: event.absolute };
           },
           { type, alpha, absolute },
         )

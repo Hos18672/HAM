@@ -101,37 +101,56 @@ test.describe('qibla', () => {
 
   test('states plainly when the compass is unavailable', async ({ page }) => {
     await page.goto('/de/qibla');
-    // Desktop Chrome has no magnetometer, so activating must explain that
+    // A desktop runner has no magnetometer, so activating must say something
     // rather than leaving a needle pointing somewhere arbitrary.
     await page.getByRole('button', { name: 'Kompass aktivieren' }).click();
 
-    // Either outcome is correct and neither is silent: a headless Chrome with
-    // no magnetometer fires no orientation event, so the button flips to
-    // "Kompass aktiv"; a browser without the API at all says so in the live
-    // region. What must never happen is nothing.
+    // Three outcomes are legitimate and none of them is silent: a browser that
+    // hands over the sensor flips the button to "Kompass aktiv"; one without
+    // the API says so; one that gates it behind a permission and refuses says
+    // that instead. What must never happen is nothing at all.
     //
     // `exact` is not optional here. Playwright matches an accessible name as a
     // case-insensitive *substring* by default, and "Kompass aktiv" is a
     // substring of "Kompass aktivieren" — so without it this passes on the
-    // unclicked button and asserts nothing at all.
+    // unclicked button and asserts nothing whatsoever.
     const activeButton = page.getByRole('button', { name: 'Kompass aktiv', exact: true });
-    const explanation = page.getByText('stellt keinen Kompass zur Verfügung');
-    await expect(activeButton.or(explanation).first()).toBeVisible();
+    const unsupported = page.getByText('stellt keinen Kompass zur Verfügung');
+    const denied = page.getByText('Ohne Freigabe kann der Kompass nicht gelesen werden');
+    await expect(activeButton.or(unsupported).or(denied).first()).toBeVisible();
   });
 
   test('turns the rose only on an absolute heading', async ({ page }) => {
     /**
-     * Give the page the orientation API if the browser has none.
-     *
-     * A desktop browser is not the device this feature is for, and newer
-     * headless builds ship no `DeviceOrientationEvent` at all — the component
-     * then correctly reports the compass as unsupported and never subscribes,
-     * which leaves nothing to test. Supplying the constructor emulates the
-     * phone this code runs on; where the browser has its own, this is a no-op
-     * and the real one is used.
+     * Put the page on the footing this feature is written for: a device whose
+     * orientation sensor exists and has been allowed. Both ways a desktop
+     * runner falls short of that are covered below, and a browser that already
+     * hands the sensor over is left alone.
      */
     await page.addInitScript(() => {
-      if ('DeviceOrientationEvent' in window) return;
+      const existing = (
+        window as unknown as {
+          DeviceOrientationEvent?: { requestPermission?: () => Promise<string> };
+        }
+      ).DeviceOrientationEvent;
+
+      // A browser that gates the sensor behind a permission refuses it on a
+      // headless runner, and the component then correctly reports the compass
+      // as denied and never subscribes — leaving nothing to test. Granting it
+      // stands in for the visitor tapping "allow".
+      if (existing) {
+        if (typeof existing.requestPermission === 'function') {
+          Object.defineProperty(existing, 'requestPermission', {
+            configurable: true,
+            writable: true,
+            value: () => Promise.resolve('granted'),
+          });
+        }
+        return;
+      }
+
+      // And a browser with no orientation API at all gets one, because a
+      // desktop browser is not the device this feature is for.
       class PolyfilledDeviceOrientationEvent extends Event {
         readonly alpha: number | null;
         readonly beta: number | null;

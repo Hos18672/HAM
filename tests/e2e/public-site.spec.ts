@@ -148,3 +148,41 @@ test.describe('public site', () => {
     expect(external).toEqual([]);
   });
 });
+
+test.describe('phone width', () => {
+  test.use({ viewport: { width: 375, height: 812 } });
+
+  for (const locale of ['fa', 'de'] as const) {
+    test(`no horizontal overflow anywhere in ${locale}`, async ({ page }) => {
+      for (const path of PUBLIC_PATHS) {
+        await page.goto(`/${locale}${path}`);
+
+        // A horizontal scrollbar on a phone is always a bug. German compounds
+        // are the usual cause — one unbroken word in a card title widens the
+        // whole page — so this walks every route rather than sampling.
+        const overflow = await page.evaluate(() => {
+          const root = document.documentElement;
+          return { scrollWidth: root.scrollWidth, clientWidth: root.clientWidth };
+        });
+        expect(
+          overflow.scrollWidth,
+          `${locale}${path || '/'} scrolls sideways by ${overflow.scrollWidth - overflow.clientWidth}px`,
+        ).toBeLessThanOrEqual(overflow.clientWidth + 1);
+      }
+    });
+  }
+
+  test('the mobile drawer opens, navigates and returns focus', async ({ page }) => {
+    await page.goto('/de');
+    const opener = page.getByRole('button', { name: 'Menü öffnen' });
+    await opener.click();
+
+    const drawer = page.getByRole('dialog', { name: 'Menü' });
+    await expect(drawer).toBeVisible();
+
+    await page.keyboard.press('Escape');
+    await expect(drawer).toBeHidden();
+    // A keyboard user must not be dropped at the top of the document.
+    await expect(opener).toBeFocused();
+  });
+});

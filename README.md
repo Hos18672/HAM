@@ -217,6 +217,19 @@ mode, Tailwind v4 over the design system's own CSS custom properties, Drizzle
 ORM against PostgreSQL 16, Auth.js v5 with a credentials provider, Zod at every
 boundary, next-intl for routing and interface strings.
 
+### Re-seeding is safe to repeat
+
+`pnpm db:seed` gives every row a **deterministic id**, derived from its natural
+key — a page's key, a course's slug, a commemoration's Hijri date. Running it
+twice produces exactly the same ids.
+
+That is not cosmetic. The in-place editor emits `data-field="page.<id>.title"`,
+so a page rendered before a re-seed would point at rows that no longer existed;
+saving then failed on a foreign key and the editor could only say "Nicht
+gespeichert". Stable ids remove the whole class of problem. If a page is ever
+served from a cache older than its content anyway, the editor now says so and
+reloads rather than leaving the reader to retype.
+
 ### Content lives in the database, not in the code
 
 `messages/fa.json` and `messages/de.json` hold **interface chrome only** —

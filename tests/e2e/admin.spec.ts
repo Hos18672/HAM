@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { login, ADMIN_EMAIL } from './helpers';
+import { login, ensureEditor, ADMIN_EMAIL, EDITOR_EMAIL, EDITOR_PASSWORD } from './helpers';
 
 /** The admin's toast region — the one place an outcome is announced. */
 function toast(page: import('@playwright/test').Page) {
@@ -263,5 +263,57 @@ test.describe('admin settings and inbox', () => {
     await page.getByRole('button', { name: 'Sicherung herunterladen' }).click();
     const file = await download;
     expect(file.suggestedFilename()).toMatch(/^inhalte-\d{4}-\d{2}-\d{2}\.json$/);
+  });
+});
+
+test.describe('role boundaries', () => {
+  test.beforeEach(async ({ page }) => ensureEditor(page));
+
+  test('an editor is told why, not handed a server error', async ({ page }) => {
+    await login(page, EDITOR_EMAIL, EDITOR_PASSWORD);
+
+    // The area is refused — but as an explanation a non-technical member of
+    // staff can act on, not as a 500.
+    const response = await page.goto('/admin/users');
+    expect(response?.status()).toBe(200);
+    await expect(page.getByRole('heading', { name: 'Keine Berechtigung' })).toBeVisible();
+    await expect(page.getByText(/nur Administratorinnen und Administratoren/)).toBeVisible();
+  });
+
+  test('an editor is not offered what they cannot do', async ({ page }) => {
+    await login(page, EDITOR_EMAIL, EDITOR_PASSWORD);
+
+    // No link to user management anywhere in the chrome.
+    await expect(page.getByRole('link', { name: 'Benutzer', exact: true })).toHaveCount(0);
+
+    // Backup: download is offered, restore is not.
+    await page.goto('/admin/backup');
+    await expect(page.getByRole('button', { name: /Sicherung herunterladen/ })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Datei auswählen' })).toHaveCount(0);
+    await expect(page.getByText(/Nur Administratoren/)).toBeVisible();
+  });
+
+  test('an editor can still do the whole content job', async ({ page }) => {
+    await login(page, EDITOR_EMAIL, EDITOR_PASSWORD);
+
+    // The role exists to restrict user management and restores — not content.
+    for (const path of [
+      '/admin/content/courses',
+      '/admin/media',
+      '/admin/submissions',
+      '/admin/settings',
+    ]) {
+      const response = await page.goto(path);
+      expect(response?.status(), path).toBe(200);
+    }
+
+    const stamp = Date.now().toString(36);
+    await page.goto('/admin/content/values');
+    await page.locator('input[lang="de"]').first().fill(`Offene Tür ${stamp}`);
+    await page
+      .getByRole('region', { name: 'Ungespeicherte Änderungen' })
+      .getByRole('button', { name: 'Speichern' })
+      .click();
+    await expect(toast(page)).toContainText(/gespeichert/);
   });
 });

@@ -9,6 +9,7 @@
  *   pnpm db:push && pnpm db:seed
  */
 import 'dotenv/config';
+import { createHash } from 'node:crypto';
 import { eq, sql as raw } from 'drizzle-orm';
 import { db, sql } from './index';
 import * as s from './schema';
@@ -17,6 +18,31 @@ import * as data from './seed-data';
 
 type Locale = 'fa' | 'de';
 const LOCALES: Locale[] = ['fa', 'de'];
+
+/**
+ * A stable UUID for a seeded row, derived from its natural key.
+ *
+ * Re-seeding used to mint fresh ids for everything, which quietly broke more
+ * than it looked like: the in-place editor emits `data-field="page.<id>.title"`,
+ * and any cached or prerendered page kept pointing at rows that no longer
+ * existed — so saving failed with a foreign-key violation and the editor just
+ * said "Nicht gespeichert". Deriving the id from something that does not
+ * change (a page key, a course slug, a Hijri date) makes the seed idempotent
+ * in identity as well as in content.
+ *
+ * This is RFC 4122 v5 in shape: SHA-1 over a fixed namespace plus the key,
+ * with the version and variant bits set.
+ */
+const SEED_NAMESPACE = 'haus-aller-menschen.at/seed/';
+
+export function stableId(kind: string, key: string): string {
+  const hash = createHash('sha1').update(`${SEED_NAMESPACE}${kind}:${key}`).digest();
+  const bytes = Buffer.from(hash.subarray(0, 16));
+  bytes[6] = (bytes[6]! & 0x0f) | 0x50; // version 5
+  bytes[8] = (bytes[8]! & 0x3f) | 0x80; // RFC 4122 variant
+  const hex = bytes.toString('hex');
+  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
+}
 
 function log(step: string, count?: number) {
   console.log(`  ✓ ${step}${count === undefined ? '' : ` (${count})`}`);
@@ -114,7 +140,7 @@ async function seedPages() {
   for (const page of data.PAGES) {
     const [row] = await db
       .insert(s.pages)
-      .values({ key: page.key, sort: page.sort, published: true })
+      .values({ id: stableId('page', page.key), key: page.key, sort: page.sort, published: true })
       .returning({ id: s.pages.id });
     if (!row) continue;
     await db.insert(s.pageTranslations).values(
@@ -135,6 +161,7 @@ async function seedBlocks() {
     const [row] = await db
       .insert(s.contentBlocks)
       .values({
+        id: stableId('block', `${block.pageKey}/${block.blockKey}`),
         pageKey: block.pageKey,
         blockKey: block.blockKey,
         kind: block.kind,
@@ -160,7 +187,12 @@ async function seedOffers() {
   for (const offer of data.OFFERS) {
     const [row] = await db
       .insert(s.offers)
-      .values({ icon: offer.icon, sort: offer.sort, published: true })
+      .values({
+        id: stableId('offer', String(offer.sort)),
+        icon: offer.icon,
+        sort: offer.sort,
+        published: true,
+      })
       .returning({ id: s.offers.id });
     if (!row) continue;
     await db.insert(s.offerTranslations).values(
@@ -180,6 +212,7 @@ async function seedCourses() {
     const [row] = await db
       .insert(s.courses)
       .values({
+        id: stableId('course', course.slug),
         slug: course.slug,
         category: course.category,
         level: course.level,
@@ -209,6 +242,7 @@ async function seedEvents() {
     const [row] = await db
       .insert(s.events)
       .values({
+        id: stableId('event', event.slug),
         slug: event.slug,
         startsAt: event.startsAt,
         endsAt: event.endsAt,
@@ -232,7 +266,11 @@ async function seedEvents() {
     for (const [index, item] of event.programme.entries()) {
       const [itemRow] = await db
         .insert(s.programmeItems)
-        .values({ eventId: row.id, sort: index })
+        .values({
+          id: stableId('programme', `${event.slug}/${index}`),
+          eventId: row.id,
+          sort: index,
+        })
         .returning({ id: s.programmeItems.id });
       if (!itemRow) continue;
       await db.insert(s.programmeTranslations).values(
@@ -252,7 +290,7 @@ async function seedSports() {
   for (const sport of data.SPORTS) {
     const [row] = await db
       .insert(s.sports)
-      .values({ sort: sport.sort, published: true })
+      .values({ id: stableId('sport', String(sport.sort)), sort: sport.sort, published: true })
       .returning({ id: s.sports.id });
     if (!row) continue;
     await db.insert(s.sportTranslations).values(
@@ -272,7 +310,7 @@ async function seedCulture() {
   for (const card of data.CULTURE) {
     const [row] = await db
       .insert(s.cultureCards)
-      .values({ sort: card.sort, published: true })
+      .values({ id: stableId('culture', String(card.sort)), sort: card.sort, published: true })
       .returning({ id: s.cultureCards.id });
     if (!row) continue;
     await db.insert(s.cultureTranslations).values(
@@ -291,7 +329,7 @@ async function seedCommunity() {
   for (const card of data.COMMUNITY) {
     const [row] = await db
       .insert(s.communityCards)
-      .values({ sort: card.sort, published: true })
+      .values({ id: stableId('community', String(card.sort)), sort: card.sort, published: true })
       .returning({ id: s.communityCards.id });
     if (!row) continue;
     await db.insert(s.communityTranslations).values(
@@ -310,7 +348,7 @@ async function seedValues() {
   for (const item of data.VALUES) {
     const [row] = await db
       .insert(s.valuesItems)
-      .values({ sort: item.sort })
+      .values({ id: stableId('values', String(item.sort)), sort: item.sort })
       .returning({ id: s.valuesItems.id });
     if (!row) continue;
     await db.insert(s.valuesTranslations).values(
@@ -329,7 +367,7 @@ async function seedWeek() {
   for (const row of data.WEEK) {
     const [inserted] = await db
       .insert(s.weekSchedule)
-      .values({ weekday: row.weekday, sort: row.sort })
+      .values({ id: stableId('week', String(row.weekday)), weekday: row.weekday, sort: row.sort })
       .returning({ id: s.weekSchedule.id });
     if (!inserted) continue;
     await db.insert(s.weekTranslations).values(
@@ -349,6 +387,7 @@ async function seedDuas() {
     const [row] = await db
       .insert(s.duas)
       .values({
+        id: stableId('dua', dua.slug),
         slug: dua.slug,
         category: dua.category,
         arabicTitle: dua.arabicTitle,
@@ -376,6 +415,7 @@ async function seedOccasions() {
     const [row] = await db
       .insert(s.occasions)
       .values({
+        id: stableId('occasion', `${occasion.hijriMonth}-${occasion.hijriDay}`),
         hijriMonth: occasion.hijriMonth,
         hijriDay: occasion.hijriDay,
         sort: occasion.sort,
@@ -398,7 +438,7 @@ async function seedMemberships() {
   for (const tier of data.MEMBERSHIPS) {
     const [row] = await db
       .insert(s.memberships)
-      .values({ tierKey: tier.tierKey, sort: tier.sort })
+      .values({ id: stableId('membership', tier.tierKey), tierKey: tier.tierKey, sort: tier.sort })
       .returning({ id: s.memberships.id });
     if (!row) continue;
     await db.insert(s.membershipTranslations).values(

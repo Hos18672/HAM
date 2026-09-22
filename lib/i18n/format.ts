@@ -75,3 +75,19 @@ export function formatCountdown(totalSeconds: number, locale: Locale): string {
   const text = h > 0 ? `${h}:${pad(m)}:${pad(sec)}` : `${pad(m)}:${pad(sec)}`;
   return digits(text, locale);
 }
+
+/**
+ * Isolate a Latin run inside bidirectional prose.
+ *
+ * `<span dir="ltr">` is the right tool in JSX, but a string built for
+ * interpolation has no element to hang that on — so this uses the Unicode
+ * characters that exist for exactly this: FIRST STRONG ISOLATE opens a run
+ * whose direction is taken from its own first strong character, and POP
+ * DIRECTIONAL ISOLATE closes it. Without them an address like
+ * "Sautergasse 34–38, 1170 Wien" has its digits and punctuation reordered
+ * when it lands in a Persian sentence.
+ */
+export function isolate(value: string): string {
+  if (!value) return value;
+  return `\u2068${value}\u2069`;
+}

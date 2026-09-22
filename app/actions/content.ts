@@ -130,6 +130,14 @@ export async function updateField(input: unknown): Promise<ActionResult> {
     return { ok: true };
   } catch (error) {
     console.error('[content] updateField failed', { entity, id, field, error });
+    // A foreign-key violation here means the row the page was rendered from no
+    // longer exists — the page is being served from a cache older than the
+    // content. Saying so is far more use than a bare "not saved", because the
+    // fix is a reload rather than retyping.
+    const code =
+      (error as { cause?: { code?: string }; code?: string })?.cause?.code ??
+      (error as { code?: string })?.code;
+    if (code === '23503') return fail('stale-page');
     return fail('write-failed');
   }
 }

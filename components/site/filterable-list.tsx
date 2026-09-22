@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useState, type ReactNode } from 'react';
+import { useTranslations } from 'next-intl';
 import { FilterChips } from './filter-chips';
 
 /**
@@ -24,6 +25,7 @@ export function FilterableList({
   emptyMessage: string;
   className?: string;
 }) {
+  const tA11y = useTranslations('a11y');
   const [active, setActive] = useState('all');
 
   const categories = useMemo(
@@ -43,9 +45,11 @@ export function FilterableList({
         labelNamespace={labelNamespace}
       />
 
-      {/* The count is announced so a screen reader learns the list changed. */}
+      {/* Announced so a screen reader learns the list changed. A bare "7" says
+          nothing on its own, so this is a full sentence in the reader's
+          language and numerals. */}
       <p className="visually-hidden" aria-live="polite">
-        {visible.length}
+        {tA11y('listCount', { count: visible.length })}
       </p>
 
       {visible.length === 0 ? (

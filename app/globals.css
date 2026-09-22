@@ -495,12 +495,22 @@
     line-height: var(--leading-tight);
     margin: 0;
     text-wrap: balance;
+    /* German compounds — Nachbarschaftsfrühstück, Generalversammlung — run
+       longer than a phone column, and one unbroken word pushes the whole page
+       sideways. Hyphenation is the right answer rather than a fallback: it is
+       what newsprint does, and the browser uses the dictionary for the `lang`
+       on <html>. `break-word` catches what no dictionary can, such as a
+       pasted URL. Arabic has no hyphenation dictionary, so Persian is
+       unaffected. */
+    overflow-wrap: break-word;
+    hyphens: auto;
   }
 
   p {
     margin: 0;
     max-width: var(--measure);
     text-wrap: pretty;
+    overflow-wrap: break-word;
   }
 
   a {
@@ -1024,6 +1034,10 @@
     font-size: var(--text-xl);
     font-weight: var(--weight-bold);
     line-height: var(--leading-snug);
+    /* A card is a fixed track in a grid; its title must never be what widens it. */
+    min-inline-size: 0;
+    overflow-wrap: break-word;
+    hyphens: auto;
   }
   .card-body {
     color: var(--color-ink-muted);

@@ -2,13 +2,18 @@ import type { Metadata } from 'next';
 import { requireUser } from '@/lib/auth';
 import { getUsers } from '@/lib/db/queries/admin';
 import { UserManager } from '@/components/admin/user-manager';
+import { NoPermission } from '@/components/admin/no-permission';
 
 export const dynamic = 'force-dynamic';
 export const metadata: Metadata = { title: 'Benutzer' };
 
 export default async function UsersPage() {
-  // Admin only — the one area an editor cannot reach.
-  const current = await requireUser('admin');
+  // Admin only. Checked by reading the role rather than by demanding it:
+  // `requireUser('admin')` throws, and an unhandled throw here means an editor
+  // following a stale link gets a 500 instead of being told why.
+  const current = await requireUser();
+  if (current.role !== 'admin') return <NoPermission what="Die Benutzerverwaltung" />;
+
   const users = await getUsers();
 
   return (

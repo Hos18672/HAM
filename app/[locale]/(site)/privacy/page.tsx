@@ -4,6 +4,7 @@ import { setRequestLocale } from 'next-intl/server';
 import { getPageHeader, getSettings } from '@/lib/db/queries/content';
 import { PageHead } from '@/components/site/page-head';
 import { pageMetadata } from '@/lib/page-meta';
+import { isolate } from '@/lib/i18n/format';
 import { locales, type Locale } from '@/lib/i18n/config';
 
 export function generateStaticParams() {
@@ -43,7 +44,7 @@ export default async function PrivacyPage({ params }: { params: Promise<{ locale
         {
           title: 'Verantwortlich',
           body: [
-            `Verantwortlich für die Datenverarbeitung auf dieser Website ist der Verein Ansar al-Mahdi (a.j.) – Haus aller Menschen, ${settings.address}. Bei Fragen zum Datenschutz erreichen Sie uns unter ${contact}.`,
+            `Verantwortlich für die Datenverarbeitung auf dieser Website ist der Verein Ansar al-Mahdi (a.j.) – Haus aller Menschen, ${isolate(settings.address)}. Bei Fragen zum Datenschutz erreichen Sie uns unter ${isolate(contact)}.`,
           ],
         },
         {
@@ -96,7 +97,7 @@ export default async function PrivacyPage({ params }: { params: Promise<{ locale
         {
           title: 'مسئول پردازش داده‌ها',
           body: [
-            `مسئول پردازش داده‌ها در این وب‌سایت، انجمن انصار المهدی (عج) — خانهٔ همهٔ انسان‌ها، ${settings.address} است. برای پرسش‌های مربوط به حریم خصوصی با ${contact} تماس بگیرید.`,
+            `مسئول پردازش داده‌ها در این وب‌سایت، انجمن انصار المهدی (عج) — خانهٔ همهٔ انسان‌ها، ${isolate(settings.address)} است. برای پرسش‌های مربوط به حریم خصوصی با ${isolate(contact)} تماس بگیرید.`,
           ],
         },
         {

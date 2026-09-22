@@ -316,6 +316,7 @@
     "editing": "Sie bearbeiten die {locale}-Fassung.",
     "confirmDelete": "Wirklich löschen?",
     "moveUp": "Nach oben",
-    "moveDown": "Nach unten"
+    "moveDown": "Nach unten",
+    "stale": "Die Seite war veraltet und wurde neu geladen. Bitte noch einmal versuchen."
   }
 }

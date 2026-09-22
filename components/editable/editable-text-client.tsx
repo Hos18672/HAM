@@ -70,6 +70,8 @@ export function EditableTextClient({
       // Roll back to the last value the server accepted.
       node.textContent = committed.current;
       status.setFailed(result.error ?? 'write-failed');
+      // A stale page cannot be recovered by retrying — every id on it is old.
+      if (result.error === 'stale-page') window.location.reload();
     }
   }
 

@@ -3,6 +3,7 @@ import { Link } from '@/lib/i18n/navigation';
 import { NAV, LEGAL_NAV } from './nav-links';
 import { getBlocks, getSettings } from '@/lib/db/queries/content';
 import { EditableText } from '@/components/editable/editable-text';
+import { digits } from '@/lib/i18n/format';
 import type { Locale } from '@/lib/i18n/config';
 import { ASSOCIATION } from '@/lib/db/seed-data';
 
@@ -102,7 +103,9 @@ export async function Footer({ locale }: { locale: Locale }) {
           className="text-xs"
           style={{ color: 'var(--color-ink-faint)', marginBlockStart: 'var(--space-7)' }}
         >
-          © {new Date().getFullYear()} {tBrand('name')}. {t('rights')}
+          {/* The year is a number the reader reads, so it takes their numerals
+              — it was the one Latin digit left on every Persian page. */}
+          © {digits(new Date().getFullYear(), locale)} {tBrand('name')}. {t('rights')}
         </p>
       </div>
     </footer>

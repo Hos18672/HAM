@@ -9,6 +9,7 @@ import {
   formatDistanceKm,
   formatBearing,
   formatCountdown,
+  isolate,
 } from '@/lib/i18n/format';
 import { locales, localeDirection, intlLocale, isLocale } from '@/lib/i18n/config';
 import faMessages from '@/messages/fa.json';
@@ -138,5 +139,19 @@ describe('dates and times', () => {
     // Never counts below zero.
     expect(formatCountdown(-30, 'de')).toBe('00:00');
     expect(formatCountdown(65, 'fa')).toBe('۰۱:۰۵');
+  });
+});
+
+describe('bidi isolation', () => {
+  it('wraps a Latin run in the Unicode isolate characters', () => {
+    const wrapped = isolate('Sautergasse 34–38, 1170 Wien');
+    // U+2068 FIRST STRONG ISOLATE … U+2069 POP DIRECTIONAL ISOLATE.
+    expect(wrapped.codePointAt(0)).toBe(0x2068);
+    expect(wrapped.codePointAt(wrapped.length - 1)).toBe(0x2069);
+    expect(wrapped.slice(1, -1)).toBe('Sautergasse 34–38, 1170 Wien');
+  });
+
+  it('leaves an empty value alone rather than emitting stray control characters', () => {
+    expect(isolate('')).toBe('');
   });
 });

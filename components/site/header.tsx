@@ -6,6 +6,7 @@ import { X, MagnifyingGlass, CaretDown } from '@phosphor-icons/react/dist/ssr';
 import { Link, usePathname } from '@/lib/i18n/navigation';
 import { NAV, LEGAL_NAV } from './nav-links';
 import { ThemeToggle } from './theme-toggle';
+import { PatternPlate } from './ornaments';
 import { LocaleSwitch } from './locale-switch';
 import { SearchPopup } from './search-popup';
 import { Button, LinkButton } from '../ui/button';
@@ -118,118 +119,139 @@ export function Header({ theme, locale }: { theme: ThemeValue; locale: Locale })
         {t('skipToContent')}
       </a>
 
+      {/* The design's header does not sit on the page, it detaches from it: at
+          the top it is a flush glass strip, and once you scroll it pulls in
+          8px, rounds to a full pill, takes a hairline and casts a shadow —
+          all on the same .45s curve. */}
       <header
-        className="border-rule sticky top-0 z-40 border-b"
+        className="sticky top-0"
         style={{
-          background: 'var(--color-bg)',
-          borderBlockEndWidth: condensed ? 'var(--rule-hair)' : '0',
-          transition: 'border-color var(--duration-base) var(--ease-standard)',
+          zIndex: 'var(--z-header)',
+          padding: `${condensed ? '8px' : '0px'} clamp(10px, 2vw, 20px) 0`,
+          transition: 'padding 0.45s var(--ease-out-expressive)',
         }}
       >
         <div
-          className="page flex items-center gap-2"
           style={{
-            blockSize: condensed ? '3.5rem' : 'var(--header-height)',
-            transition: 'block-size var(--duration-base) var(--ease-standard)',
+            position: 'relative',
+            background: 'var(--glass)',
+            backdropFilter: 'blur(18px) saturate(1.3)',
+            border: `var(--rule-hair) solid ${condensed ? 'var(--line)' : 'transparent'}`,
+            borderRadius: condensed ? 'var(--radius-pill)' : '0px',
+            boxShadow: condensed ? '0 20px 44px -26px rgba(7, 59, 41, 0.5)' : 'none',
+            transition:
+              'border-color 0.45s ease, box-shadow 0.45s ease, border-radius 0.45s var(--ease-out-expressive)',
           }}
         >
-          <Brand condensed={condensed} />
+          <PatternPlate opacity={0.18} rounded />
+          <div
+            className="flex items-center gap-2"
+            style={{
+              position: 'relative',
+              maxInlineSize: '1320px',
+              marginInline: 'auto',
+              padding: `${condensed ? '8px' : '15px'} clamp(16px, 4vw, 48px)`,
+              transition: 'padding 0.45s var(--ease-out-expressive)',
+            }}
+          >
+            <Brand condensed={condensed} />
 
-          <nav className="nav ms-auto hidden lg:flex" aria-label={t('primary')}>
-            {primary.map((entry) => (
-              <Link
-                key={entry.href}
-                href={entry.href}
-                className="nav-link"
-                aria-current={isCurrent(entry.href) ? 'page' : undefined}
+            <nav className="nav ms-auto hidden lg:flex" aria-label={t('primary')}>
+              {primary.map((entry) => (
+                <Link
+                  key={entry.href}
+                  href={entry.href}
+                  className="nav-link"
+                  aria-current={isCurrent(entry.href) ? 'page' : undefined}
+                >
+                  {t(entry.key)}
+                </Link>
+              ))}
+
+              <div className="relative" ref={moreRef}>
+                <button
+                  type="button"
+                  ref={moreButtonRef}
+                  className="nav-link"
+                  aria-expanded={moreOpen}
+                  aria-haspopup="true"
+                  onClick={() => setMoreOpen((open) => !open)}
+                >
+                  {t('more')}
+                  <CaretDown
+                    size={14}
+                    weight="bold"
+                    aria-hidden="true"
+                    className="caret"
+                    style={{ marginInlineStart: 'var(--space-1)' }}
+                  />
+                </button>
+                <div
+                  className="pop absolute"
+                  data-open={moreOpen ? 'true' : 'false'}
+                  style={{
+                    insetInlineEnd: 0,
+                    insetBlockStart: 'calc(100% + var(--space-1))',
+                    minInlineSize: '14rem',
+                    background: 'var(--card)',
+                    border: 'var(--rule-hair) solid var(--line)',
+                    borderRadius: 'var(--radius-soft)',
+                    boxShadow: 'var(--shadow)',
+                    padding: 'var(--space-1)',
+                    display: 'grid',
+                    zIndex: 'var(--z-header)',
+                  }}
+                >
+                  {overflow.map((entry) => (
+                    <Link
+                      key={entry.href}
+                      href={entry.href}
+                      className="nav-link pop-item"
+                      aria-current={isCurrent(entry.href) ? 'page' : undefined}
+                    >
+                      {t(entry.key)}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            </nav>
+
+            <div className="ms-auto flex items-center gap-1 lg:ms-2">
+              <Button
+                ref={searchButtonRef}
+                variant="ghost"
+                size="sm"
+                iconOnly
+                aria-label={tActions('openSearch')}
+                aria-expanded={searchOpen}
+                onClick={() => setSearchOpen(true)}
               >
-                {t(entry.key)}
-              </Link>
-            ))}
+                <MagnifyingGlass size={20} weight="duotone" aria-hidden="true" />
+              </Button>
 
-            <div className="relative" ref={moreRef}>
+              <ThemeToggle theme={theme} />
+              <LocaleSwitch className="hidden sm:flex" />
+
+              <LinkButton href={`/${locale}/support`} size="sm" className="hidden sm:inline-flex">
+                {t('support')}
+              </LinkButton>
+
               <button
                 type="button"
-                ref={moreButtonRef}
-                className="nav-link"
-                aria-expanded={moreOpen}
-                aria-haspopup="true"
-                onClick={() => setMoreOpen((open) => !open)}
+                className="burger lg:hidden"
+                ref={drawerButtonRef}
+                aria-label={drawerOpen ? t('closeMenu') : t('openMenu')}
+                aria-expanded={drawerOpen}
+                onClick={() => setDrawerOpen((open) => !open)}
               >
-                {t('more')}
-                <CaretDown
-                  size={14}
-                  weight="bold"
-                  aria-hidden="true"
-                  className="caret"
-                  style={{ marginInlineStart: 'var(--space-1)' }}
-                />
+                <span className="burger-ring" aria-hidden="true" />
+                <span className="bars" aria-hidden="true">
+                  <i />
+                  <i />
+                  <i />
+                </span>
               </button>
-              <div
-                className="pop absolute"
-                data-open={moreOpen ? 'true' : 'false'}
-                style={{
-                  insetInlineEnd: 0,
-                  insetBlockStart: 'calc(100% + var(--space-1))',
-                  minInlineSize: '14rem',
-                  background: 'var(--card)',
-                  border: 'var(--rule-hair) solid var(--line)',
-                  borderRadius: 'var(--radius-soft)',
-                  boxShadow: 'var(--shadow)',
-                  padding: 'var(--space-1)',
-                  display: 'grid',
-                  zIndex: 'var(--z-header)',
-                }}
-              >
-                {overflow.map((entry) => (
-                  <Link
-                    key={entry.href}
-                    href={entry.href}
-                    className="nav-link pop-item"
-                    aria-current={isCurrent(entry.href) ? 'page' : undefined}
-                  >
-                    {t(entry.key)}
-                  </Link>
-                ))}
-              </div>
             </div>
-          </nav>
-
-          <div className="ms-auto flex items-center gap-1 lg:ms-2">
-            <Button
-              ref={searchButtonRef}
-              variant="ghost"
-              size="sm"
-              iconOnly
-              aria-label={tActions('openSearch')}
-              aria-expanded={searchOpen}
-              onClick={() => setSearchOpen(true)}
-            >
-              <MagnifyingGlass size={20} weight="duotone" aria-hidden="true" />
-            </Button>
-
-            <ThemeToggle theme={theme} />
-            <LocaleSwitch className="hidden sm:flex" />
-
-            <LinkButton href={`/${locale}/support`} size="sm" className="hidden sm:inline-flex">
-              {t('support')}
-            </LinkButton>
-
-            <button
-              type="button"
-              className="burger lg:hidden"
-              ref={drawerButtonRef}
-              aria-label={drawerOpen ? t('closeMenu') : t('openMenu')}
-              aria-expanded={drawerOpen}
-              onClick={() => setDrawerOpen((open) => !open)}
-            >
-              <span className="burger-ring" aria-hidden="true" />
-              <span className="bars" aria-hidden="true">
-                <i />
-                <i />
-                <i />
-              </span>
-            </button>
           </div>
         </div>
       </header>

@@ -72,9 +72,15 @@ export function PatternDefs() {
 export function PatternPlate({
   tiling = 'khatam',
   drift = false,
+  opacity,
+  rounded = false,
 }: {
   tiling?: 'khatam' | 'shesh' | 'tumar';
   drift?: boolean;
+  /** The plate sits at 0.62 by default; the header wants it far fainter. */
+  opacity?: number;
+  /** Follow the parent's corners — the header bar rounds as it detaches. */
+  rounded?: boolean;
 }) {
   return (
     <svg
@@ -82,6 +88,10 @@ export function PatternPlate({
       focusable="false"
       role="presentation"
       className={drift ? 'plate ham-drift' : 'plate'}
+      style={{
+        ...(opacity === undefined ? {} : { opacity }),
+        ...(rounded ? { borderRadius: 'inherit', overflow: 'hidden' } : {}),
+      }}
     >
       <rect width="100%" height="100%" fill={`url(#ham-${tiling})`} />
     </svg>

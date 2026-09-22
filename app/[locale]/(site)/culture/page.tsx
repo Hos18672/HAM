@@ -42,14 +42,14 @@ export default async function CulturePage({ params }: { params: Promise<{ locale
       <PageHead header={header} locale={typed} />
 
       {chips.length > 0 ? (
-        <section className="section-tight">
+        <section className="section-tight" data-rise>
           <div className="page">
             <ul
               className="flex flex-wrap gap-2"
               style={{ listStyle: 'none', margin: 0, padding: 0 }}
             >
               {chips.map((chip) => (
-                <li key={chip}>
+                <li key={chip} data-rise>
                   <Tag>{chip}</Tag>
                 </li>
               ))}
@@ -73,6 +73,7 @@ export default async function CulturePage({ params }: { params: Promise<{ locale
                       locale={typed}
                       value={card.title}
                       className="card-title"
+                      words="tight"
                     />
                     <EditableText
                       as="p"

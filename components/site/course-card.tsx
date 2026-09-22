@@ -29,6 +29,7 @@ export async function CourseCard({ course, locale }: { course: Course; locale: L
         locale={locale}
         value={course.title}
         className="card-title"
+        words="tight"
       />
 
       <EditableText

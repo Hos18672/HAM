@@ -57,6 +57,7 @@ export default async function CommunityPage({ params }: { params: Promise<{ loca
                       locale={typed}
                       value={card.title}
                       className="card-title"
+                      words="tight"
                     />
                     <EditableText
                       as="p"

@@ -150,7 +150,7 @@ export default async function PrivacyPage({ params }: { params: Promise<{ locale
   return (
     <>
       <PageHead header={header} locale={typed} />
-      <section className="section">
+      <section className="section" data-rise>
         <div className="page">
           <div className="prose" style={{ maxInlineSize: 'var(--measure)' }}>
             {sections.map((section) => (

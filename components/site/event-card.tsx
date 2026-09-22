@@ -66,6 +66,7 @@ export async function EventCard({
             locale={locale}
             value={event.title}
             className="card-title"
+            words="tight"
           />
         </div>
       </div>

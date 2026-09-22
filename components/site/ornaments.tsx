@@ -159,3 +159,40 @@ export function ViennaSkyline() {
     </svg>
   );
 }
+
+/**
+ * A hairline ring hung off a corner.
+ *
+ * The design uses these to break the edge of a band — a 460px circle mostly
+ * outside the section, drawn in --patBand so it reads as a pressed line rather
+ * than a border. Decorative, and never in the way.
+ */
+export function Ring({
+  size = 460,
+  side = 'end',
+  top = -160,
+  tone = 'var(--patBand)',
+}: {
+  size?: number;
+  side?: 'start' | 'end';
+  top?: number;
+  tone?: string;
+}) {
+  return (
+    <div
+      aria-hidden="true"
+      style={{
+        position: 'absolute',
+        ...(side === 'end'
+          ? { insetInlineEnd: `${-size * 0.3}px` }
+          : { insetInlineStart: `${-size * 0.3}px` }),
+        insetBlockStart: `${top}px`,
+        inlineSize: `${size}px`,
+        blockSize: `${size}px`,
+        border: `var(--rule-hair) solid ${tone}`,
+        borderRadius: '50%',
+        pointerEvents: 'none',
+      }}
+    />
+  );
+}

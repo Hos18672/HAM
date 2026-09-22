@@ -38,7 +38,7 @@ export default async function ActivitiesPage({ params }: { params: Promise<{ loc
     <>
       <PageHead header={header} locale={typed} />
 
-      <section className="section">
+      <section className="section" data-rise>
         <div className="page">
           <ul className="columns-feature" style={{ listStyle: 'none', margin: 0, padding: 0 }}>
             {offers.map((offer) => (
@@ -54,6 +54,7 @@ export default async function ActivitiesPage({ params }: { params: Promise<{ loc
                       locale={typed}
                       value={offer.title}
                       className="card-title"
+                      words="tight"
                     />
                     <EditableText
                       as="p"

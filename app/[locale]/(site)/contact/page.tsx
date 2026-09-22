@@ -53,7 +53,7 @@ export default async function ContactPage({
 
       <PageHead header={header} locale={typed} />
 
-      <section className="section">
+      <section className="section" data-rise>
         <div className="page">
           <div
             style={{
@@ -127,7 +127,9 @@ export default async function ContactPage({
                     }}
                   >
                     {hours.map((line) => (
-                      <li key={line}>{line}</li>
+                      <li key={line} data-rise>
+                        {line}
+                      </li>
                     ))}
                   </ul>
                   {blocks.opening_hours ? (

@@ -54,7 +54,7 @@ export default async function CoursesPage({ params }: { params: Promise<{ locale
 
       <PageHead header={header} locale={typed} />
 
-      <section className="section">
+      <section className="section" data-rise>
         <div className="page">
           <FilterableList
             items={items}

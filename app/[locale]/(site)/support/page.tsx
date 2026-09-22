@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { Check } from '@phosphor-icons/react/dist/ssr';
 import { getPageHeader, getBlocks, getMemberships, getSettings } from '@/lib/db/queries/content';
+import { PatternPlate } from '@/components/site/ornaments';
 import { PageHead, SectionHead } from '@/components/site/page-head';
 import { SupportForm } from '@/components/site/support-form';
 import { EditableText } from '@/components/editable/editable-text';
@@ -48,7 +49,7 @@ export default async function SupportPage({ params }: { params: Promise<{ locale
       <PageHead header={header} locale={typed} />
 
       {/* Membership tiers, each with its own form. */}
-      <section className="section">
+      <section className="section" data-rise>
         <div className="page">
           <SectionHead kicker={t('membership')} />
           <ul className="columns-feature" style={{ listStyle: 'none', margin: 0, padding: 0 }}>
@@ -64,6 +65,7 @@ export default async function SupportPage({ params }: { params: Promise<{ locale
                       locale={typed}
                       value={tier.title}
                       className="card-title"
+                      words="tight"
                     />
                     <EditableText
                       as="p"
@@ -125,7 +127,8 @@ export default async function SupportPage({ params }: { params: Promise<{ locale
 
       {/* Donation */}
       {purposeOptions.length > 0 ? (
-        <section className="section section-alt" data-rise>
+        <section className="section section-alt" style={{ position: 'relative' }} data-rise>
+          <PatternPlate opacity={0.35} />
           <div className="page">
             <div className="rail">
               <div className="head-rule" style={{ paddingBlockStart: 'var(--space-2)' }}>

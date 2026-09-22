@@ -69,6 +69,7 @@ export async function DuaCard({ dua, locale }: { dua: DuaEntry; locale: Locale }
         locale={locale}
         value={dua.title}
         className="card-title"
+        words="tight"
       />
 
       <EditableText

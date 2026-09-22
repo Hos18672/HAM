@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { Words } from './words';
 import { EditableText } from '@/components/editable/editable-text';
 import type { Locale } from '@/lib/i18n/config';
 import type { PageHeader } from '@/lib/db/queries/content';
@@ -73,9 +74,20 @@ export function SectionHead({
   children?: ReactNode;
 }) {
   return (
-    <div style={{ display: 'grid', gap: 'var(--space-2)', marginBlockEnd: 'var(--space-5)' }}>
+    <div
+      style={{ display: 'grid', gap: 'var(--space-2)', marginBlockEnd: 'var(--space-5)' }}
+      data-rise
+    >
       {kicker ? <p className="kicker">{kicker}</p> : null}
-      {title ? <h2 style={{ fontSize: 'var(--text-3xl)' }}>{title}</h2> : null}
+      {/* A heading given as a plain string reveals a word at a time, like every
+          other heading on the site; one built from elements is left alone. */}
+      {typeof title === 'string' ? (
+        <Words as="h2" style={{ fontSize: 'var(--text-3xl)' }}>
+          {title}
+        </Words>
+      ) : title ? (
+        <h2 style={{ fontSize: 'var(--text-3xl)' }}>{title}</h2>
+      ) : null}
       {children}
     </div>
   );

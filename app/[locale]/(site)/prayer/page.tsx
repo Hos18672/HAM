@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import { setRequestLocale } from 'next-intl/server';
 import { getPageHeader } from '@/lib/db/queries/content';
 import { getPrayerDay, getCalendarMonth } from '@/lib/prayer-page';
+import { PatternPlate } from '@/components/site/ornaments';
 import { PageHead } from '@/components/site/page-head';
 import { PrayerList } from '@/components/site/prayer-list';
 import { HijriCalendar } from '@/components/site/hijri-calendar';
@@ -68,13 +69,14 @@ export default async function PrayerPage({
     <>
       <PageHead header={header} locale={typed} />
 
-      <section className="section">
+      <section className="section" data-rise>
         <div className="page">
           <PrayerList day={day} locale={typed} />
         </div>
       </section>
 
-      <section className="section section-alt" data-rise>
+      <section className="section section-alt" style={{ position: 'relative' }} data-rise>
+        <PatternPlate opacity={0.35} />
         <div className="page" style={{ maxInlineSize: '56rem' }}>
           <HijriCalendar month={calendar} locale={typed} basePath="/prayer" />
         </div>

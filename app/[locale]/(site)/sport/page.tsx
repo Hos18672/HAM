@@ -35,7 +35,7 @@ export default async function SportPage({ params }: { params: Promise<{ locale: 
     <>
       <PageHead header={header} locale={typed} />
 
-      <section className="section">
+      <section className="section" data-rise>
         <div className="page">
           {/* A table is the honest shape here: three parallel facts per row.
               This is one of the few places the set permits horizontal rules.

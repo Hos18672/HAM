@@ -89,7 +89,7 @@ export default async function ImprintPage({ params }: { params: Promise<{ locale
   return (
     <>
       <PageHead header={header} locale={typed} />
-      <section className="section">
+      <section className="section" data-rise>
         <div className="page">
           <dl
             style={{

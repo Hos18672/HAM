@@ -21,7 +21,7 @@ import { Card, CardStar } from '@/components/ui/card';
 import { Tag } from '@/components/ui/tag';
 import { LinkButton } from '@/components/ui/button';
 import { Icon } from '@/components/site/icon';
-import { ViennaSkyline, PatternPlate } from '@/components/site/ornaments';
+import { ViennaSkyline, PatternPlate, Ring } from '@/components/site/ornaments';
 import { formatDate, formatTime } from '@/lib/i18n/format';
 import { organizationJsonLd, eventJsonLd, JsonLd } from '@/lib/seo';
 import { isLocale, locales, type Locale } from '@/lib/i18n/config';
@@ -93,19 +93,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
         }}
       >
         <PatternPlate drift opacity={0.75} />
-        <div
-          aria-hidden="true"
-          style={{
-            position: 'absolute',
-            insetInlineEnd: '-140px',
-            insetBlockStart: '-160px',
-            inlineSize: '460px',
-            blockSize: '460px',
-            border: 'var(--rule-hair) solid var(--patBand)',
-            borderRadius: '50%',
-            pointerEvents: 'none',
-          }}
-        />
+        <Ring />
 
         <div className="page" style={{ position: 'relative' }}>
           <div
@@ -196,7 +184,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
                   }}
                 >
                   {chips.map((chip) => (
-                    <li key={chip}>
+                    <li key={chip} data-rise>
                       <Tag>{chip}</Tag>
                     </li>
                   ))}
@@ -276,6 +264,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
                       locale={typed}
                       value={offer.title}
                       className="card-title"
+                      words="tight"
                     />
                     <EditableText
                       as="p"
@@ -433,7 +422,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
           </div>
         </section>
       ) : (
-        <section className="section">
+        <section className="section" data-rise>
           <div className="page">
             <p style={{ color: 'var(--color-ink-muted)' }}>{tEvents('none')}</p>
           </div>
@@ -469,6 +458,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
       {/* ── Vienna & location ────────────────────────────────────────────── */}
       <section className="section-loose section-band" data-rise>
         <PatternPlate drift opacity={0.6} />
+        <Ring side="start" top={-200} size={520} />
         <div className="page">
           <div className="rail">
             <div className="head-rule" style={{ paddingBlockStart: 'var(--space-2)' }}>

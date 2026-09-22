@@ -7,6 +7,7 @@ import {
   getPastEvents,
   getSettings,
 } from '@/lib/db/queries/content';
+import { PatternPlate } from '@/components/site/ornaments';
 import { PageHead, SectionHead } from '@/components/site/page-head';
 import { EventCard } from '@/components/site/event-card';
 import { EditableEntry, EditableAdd } from '@/components/editable/editable-list';
@@ -51,7 +52,7 @@ export default async function EventsPage({ params }: { params: Promise<{ locale:
 
       <PageHead header={header} locale={typed} />
 
-      <section className="section">
+      <section className="section" data-rise>
         <div className="page">
           <SectionHead kicker={t('upcoming')} />
           {upcoming.length === 0 ? (
@@ -78,7 +79,8 @@ export default async function EventsPage({ params }: { params: Promise<{ locale:
       </section>
 
       {past.length > 0 ? (
-        <section className="section section-alt" data-rise>
+        <section className="section section-alt" style={{ position: 'relative' }} data-rise>
+          <PatternPlate opacity={0.35} />
           <div className="page">
             <SectionHead kicker={t('past')} />
             {/* No opacity here. Dimming the whole list was how this said

@@ -47,7 +47,7 @@ export default async function DuasPage({ params }: { params: Promise<{ locale: s
   return (
     <>
       <PageHead header={header} locale={typed} />
-      <section className="section">
+      <section className="section" data-rise>
         <div className="page">
           <FilterableList
             items={items}

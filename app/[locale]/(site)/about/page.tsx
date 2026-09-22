@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { getPageHeader, getBlocks, getValues, getWeekSchedule } from '@/lib/db/queries/content';
+import { PatternPlate } from '@/components/site/ornaments';
 import { PageHead, SectionHead } from '@/components/site/page-head';
 import { EditableText } from '@/components/editable/editable-text';
 import { EditableEntry, EditableAdd } from '@/components/editable/editable-list';
@@ -87,7 +88,8 @@ export default async function AboutPage({ params }: { params: Promise<{ locale: 
       </section>
 
       {/* Values */}
-      <section className="section section-alt" data-rise>
+      <section className="section section-alt" style={{ position: 'relative' }} data-rise>
+        <PatternPlate opacity={0.35} />
         <div className="page">
           <SectionHead title={t('values')} />
           <ul

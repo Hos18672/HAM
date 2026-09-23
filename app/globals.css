@@ -3003,7 +3003,9 @@
   .columns-tight {
     display: grid;
     gap: var(--space-4);
-    grid-template-columns: repeat(auto-fill, minmax(min(100%, 17rem), 1fr));
+    /* auto-fit, not auto-fill: three cards in a grid four tracks wide should
+       take the whole row, not three quarters of it and an empty column. */
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
   }
   .columns-tight > * {
     min-inline-size: 0;

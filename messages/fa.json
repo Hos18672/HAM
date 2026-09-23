@@ -204,6 +204,7 @@
   "prayer": {
     "title": "اوقات شرعی",
     "nextPrayer": "نماز بعدی",
+    "nextMark": "همین نماز",
     "in": "تا",
     "today": "امروز",
     "hijriDate": "قمری",

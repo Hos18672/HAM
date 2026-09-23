@@ -200,8 +200,12 @@ export function PrayerList({ day, locale }: { day: PrayerDay; locale: Locale }) 
                 <p className="ptime-label">
                   {t(`names.${key}`)}
                   {/* The gold ring says "next" to anyone who can see it; this
-                      says it to everyone else. */}
-                  {isNext ? <span className="visually-hidden"> — {t('nextPrayer')}</span> : null}
+                      says it to everyone else. Its own wording, not the
+                      hero's: two elements reading "Nächstes Gebet" on one
+                      page is ambiguous to a reader moving by text, and it
+                      makes any test that looks for that phrase pick blindly
+                      between them. */}
+                  {isNext ? <span className="visually-hidden"> — {t('nextMark')}</span> : null}
                 </p>
                 <p
                   className="tabular"

@@ -204,6 +204,7 @@
   "prayer": {
     "title": "Gebetszeiten",
     "nextPrayer": "Nächstes Gebet",
+    "nextMark": "als Nächstes",
     "in": "in",
     "today": "Heute",
     "hijriDate": "Hidschri",
@@ -211,7 +212,7 @@
     "method": "Berechnung nach der dschaʿfaritischen Methode · Wien",
     "names": {
       "fajr": "Fadschr",
-      "sunrise": "Sonnenaufgang",
+      "sunrise": "Sonnen­aufgang",
       "dhuhr": "Dhuhr",
       "asr": "Asr",
       "maghrib": "Maghrib",

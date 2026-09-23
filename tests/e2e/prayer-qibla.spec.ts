@@ -75,8 +75,14 @@ test.describe('qibla', () => {
     await page.goto('/de/qibla');
 
     // The figure the design specifies: ≈136.6° south-east, ≈3 637 km.
-    await expect(page.getByText(/136,[67]°/)).toBeVisible();
-    await expect(page.getByText('Südosten', { exact: false })).toBeVisible();
+    //
+    // Scoped to the facts row on purpose: the design also prints the reading
+    // in the middle of the rose, so the bearing appears twice on the page —
+    // once as a figure to read, once on the dial. The second is aria-hidden,
+    // but it is still text, so an unscoped match is ambiguous.
+    const bearing = page.locator('.fact-rule[data-lead="true"]');
+    await expect(bearing.getByText(/136,[67]°/)).toBeVisible();
+    await expect(bearing.getByText('Südosten', { exact: false })).toBeVisible();
     await expect(page.getByText(/3.637/)).toBeVisible();
 
     // The rose is an image with an accessible name, not a decorative blob.
@@ -92,11 +98,13 @@ test.describe('qibla', () => {
     await page.goto('/de/qibla');
     await page.getByRole('button', { name: 'Meinen Standort verwenden' }).click();
 
-    await expect(page.getByText(/119,0°/)).toBeVisible({ timeout: 15_000 });
+    // The facts row again — the rose repeats the reading, see above.
+    const bearing = page.locator('.fact-rule[data-lead="true"]');
+    await expect(bearing.getByText(/119,0°/)).toBeVisible({ timeout: 15_000 });
     await expect(page.getByText('Von Ihrem Standort aus')).toBeVisible();
 
     await page.getByRole('button', { name: 'Zurück zum Vereinshaus' }).click();
-    await expect(page.getByText(/136,[67]°/)).toBeVisible();
+    await expect(bearing.getByText(/136,[67]°/)).toBeVisible();
   });
 
   test('states plainly when the compass is unavailable', async ({ page }) => {

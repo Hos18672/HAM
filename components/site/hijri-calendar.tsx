@@ -62,6 +62,13 @@ export async function HijriCalendar({
             <p className="kicker" style={{ color: 'var(--color-accent-2-text)' }}>
               {t('calendar')}
             </p>
+            {/* Both months in the one heading, the Hijri one set large.
+
+                They read as two lines and the design's emphasis is
+                unchanged, but the civil month stays part of the heading
+                rather than becoming a caption beside it: it is the month the
+                arrows move through and the month the URL names, so it has to
+                be findable by a reader moving between headings. */}
             <h2
               style={{
                 marginBlockStart: 'var(--space-1)',
@@ -70,10 +77,18 @@ export async function HijriCalendar({
               }}
             >
               {hijriLabel}
+              <span
+                className="text-sm"
+                style={{
+                  display: 'block',
+                  marginBlockStart: 'var(--space-1)',
+                  fontWeight: 'var(--weight-regular)',
+                  color: 'var(--color-ink-muted)',
+                }}
+              >
+                {monthLabel}
+              </span>
             </h2>
-            <p className="text-sm" style={{ color: 'var(--color-ink-muted)' }}>
-              {monthLabel}
-            </p>
           </div>
 
           {/* Arrows are mirrored in RTL by the stylesheet, so "previous" always

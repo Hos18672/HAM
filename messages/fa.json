@@ -85,6 +85,10 @@
     "programme": "برنامه",
     "vienna": "وین و محل ما"
   },
+  "activities": {
+    "weekTitle": "برنامهٔ هفتگی",
+    "weekLead": "هر روز چه برنامه‌ای برقرار است. تغییرها را در صفحهٔ برنامه‌ها اعلام می‌کنیم."
+  },
   "events": {
     "upcoming": "برنامه‌های پیش رو",
     "past": "برنامه‌های گذشته",
@@ -103,6 +107,9 @@
       "sport": "ورزش"
     }
   },
+  "community": {
+    "volunteerTitle": "همیاری در این خانه"
+  },
   "courses": {
     "filterByCategory": "فیلتر بر اساس زمینه",
     "targetGroup": "مخاطب",
@@ -118,6 +125,9 @@
       "integration": "هم‌زیستی",
       "art": "هنر"
     }
+  },
+  "culture": {
+    "themes": "موضوع‌ها"
   },
   "sport": {
     "activity": "رشته",
@@ -279,8 +289,7 @@
     }
   },
   "about": {
-    "values": "آنچه برای ما مهم است",
-    "schedule": "برنامهٔ هفتگی"
+    "values": "آنچه برای ما مهم است"
   },
   "footer": {
     "mission": "دربارهٔ ما",

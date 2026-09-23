@@ -664,7 +664,7 @@
 
   ::selection {
     background: var(--gold);
-    color: #04180f;
+    color: var(--color-on-gold);
   }
 
   hr {
@@ -1046,19 +1046,27 @@
     --btn-bg: var(--color-accent-2-200);
   }
 
-  /* A control laid over a scrim rather than over paper. The accent tints are
-     the wrong ground there — in light mode `.btn-ghost`'s near-white hover
-     would swallow the label whole — so this variant takes its states from the
-     scrim's own ramp, which does not invert with the theme. */
+  /* A control laid over a scrim or a dark band rather than over paper — the
+     design's `.ham-btn-g`. The accent tints are the wrong ground there: in
+     light mode `.btn-ghost`'s near-white hover would swallow the label whole.
+     So it takes the band's own ink and a gold hairline that firms up on hover,
+     neither of which inverts with the theme.
+
+     This lived in two blocks, one here and one three hundred lines further
+     down, and the second only half-overrode the first: the later `background`
+     beat the earlier `--btn-bg`, but the earlier `--btn-fg` survived, so the
+     label and the ring came from different variants. One block now. */
   .btn-on-scrim {
     --btn-bg: transparent;
-    --btn-fg: var(--color-on-scrim);
+    --btn-fg: var(--bandInk);
     --btn-bd: transparent;
+    box-shadow: inset 0 0 0 1px var(--patBand);
   }
   .btn-on-scrim:hover:not(:disabled) {
     --btn-bg: var(--color-on-scrim-tint);
-    --btn-fg: var(--color-on-scrim);
+    --btn-fg: var(--bandInk);
     --btn-bd: transparent;
+    box-shadow: inset 0 0 0 1px var(--gold);
   }
   .btn-on-scrim:active:not(:disabled) {
     --btn-bg: var(--color-on-scrim-tint-strong);
@@ -1113,11 +1121,6 @@
       color var(--duration-fast) var(--ease-standard),
       transform var(--duration-fast) var(--ease-standard);
   }
-  a.tag:hover,
-  button.tag:hover {
-    transform: translateY(-2px);
-    border-color: var(--gold);
-  }
   :root[dir='rtl'] .tag {
     text-transform: none;
     letter-spacing: 0;
@@ -1126,10 +1129,15 @@
   a.tag {
     cursor: pointer;
   }
+  /* The design's chip hover is a hair of lift and a gold edge. This used to be
+     two rules — the gold one first, then a green-tinted one — and the second
+     put `--color-accent-400` back over the gold, so the edge never went gold
+     at all. One rule, gold edge kept, green tint behind it. */
   button.tag:hover,
   a.tag:hover {
+    transform: translateY(-2px);
     background: var(--color-accent-100);
-    border-color: var(--color-accent-400);
+    border-color: var(--gold);
     color: var(--color-accent-800);
   }
   button.tag:active {
@@ -1526,16 +1534,18 @@
     color: var(--head);
     font-weight: var(--weight-bold);
   }
+  /* The design's marker for the page you are on: the gold rule, grown out from
+     the centre of the chip and held at 56% of its width.
+
+     There used to be a second `[aria-current="page"]::after` block right here,
+     carrying a green `border-block-end` at `inset-block-end: -5px`. Being later
+     and equally specific it won every property it set, so the marker actually
+     rendered as a full-width green rule *under* the chip — in the bar, in the
+     overflow menu, and as a rule straight across the top of the drawer's
+     current item. One rule now, and it is the design's. */
   .nav-link[aria-current='page']::after {
     inset-inline-start: 22%;
     width: 56%;
-  }
-  .nav-link[aria-current='page']::after {
-    content: '';
-    position: absolute;
-    inset-inline: var(--space-3);
-    inset-block-end: calc(var(--space-1) * -1);
-    border-block-end: 2px solid var(--color-accent);
   }
 
   /* ── .table ───────────────────────────────────────────────────────────────
@@ -1920,10 +1930,10 @@
   }
   .seg-dark .seg-option[data-on='true'],
   .seg-dark .seg-option[data-on='true']:hover {
-    color: #04180f;
+    color: var(--color-on-gold);
   }
   .seg-dark .seg-option:hover {
-    color: #fbf6ea;
+    color: var(--bandHead);
   }
 
   /* ── The design's remaining component treatments ──────────────────────────
@@ -2004,7 +2014,7 @@
   }
   .surf:hover::after {
     transform: translateX(560%) rotate(9deg);
-    transition: transform 1.15s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: transform 1.15s var(--ease-standard);
   }
   :root[dir='rtl'] .surf::after {
     transform: translateX(160%) rotate(-9deg);
@@ -2076,11 +2086,11 @@
   /* The gold fill: a diagonal gradient that slides across as it is pressed. */
   .btn-gold {
     --btn-bg: transparent;
-    --btn-fg: #04180f;
+    --btn-fg: var(--color-on-gold);
     background: linear-gradient(135deg, var(--goldHi) 0%, var(--gold) 46%, var(--goldLo) 100%);
     background-size: 180% 180%;
     background-position: 0% 50%;
-    color: #04180f;
+    color: var(--color-on-gold);
     transition:
       transform var(--duration-base) var(--ease-out-expressive),
       box-shadow var(--duration-base) var(--ease-out-expressive),
@@ -2092,16 +2102,8 @@
     box-shadow: 0 16px 36px -16px rgba(200, 164, 93, 0.8);
   }
 
-  /* On a dark band the outline button takes the band's own ink. */
-  .btn-on-scrim {
-    --btn-bg: transparent;
-    --btn-fg: var(--bandInk);
-    box-shadow: inset 0 0 0 1px var(--patBand);
-  }
-  .btn-on-scrim:hover:not(:disabled) {
-    background: rgba(200, 164, 93, 0.1);
-    box-shadow: inset 0 0 0 1px var(--gold);
-  }
+  /* `.btn-on-scrim` used to be defined a second time here. It is one block
+     now, up with the other button variants. */
 
   /* The masthead: the mark grows a touch and a gold ring settles around it. */
   .brand {
@@ -2223,7 +2225,7 @@
   }
   .drawer a,
   .drawer button {
-    animation: ham-rise 0.5s var(--ease-out-expressive) both;
+    animation: ham-rise var(--duration-base) var(--ease-out-expressive) both;
   }
   .drawer-item {
     position: relative;
@@ -2288,6 +2290,30 @@
   }
   :root[dir='rtl'] .steps {
     list-style: persian;
+  }
+
+  /* ── search ───────────────────────────────────────────────────────────────
+     The scrim, from the design's hamSBack: the ink and the blur both ramp in
+     over .4s, so the page behind goes soft rather than snapping out of focus.
+     The element itself is opaque from the first frame — animating its opacity
+     instead (which is what this used to do) fades the blur as a side effect
+     and loses the ramp the design asks for. */
+  @keyframes ham-s-back {
+    from {
+      background-color: rgba(10, 24, 20, 0);
+      backdrop-filter: blur(0px);
+    }
+    to {
+      background-color: var(--color-scrim);
+      backdrop-filter: blur(7px);
+    }
+  }
+  .search-scrim {
+    position: absolute;
+    inset: 0;
+    background-color: var(--color-scrim);
+    backdrop-filter: blur(7px);
+    animation: ham-s-back 0.4s ease-out both;
   }
 
   /* ── .search-pill ─────────────────────────────────────────────────────────
@@ -2651,6 +2677,45 @@
     transform: scaleX(-1);
   }
 
+  /* The mark that rides the panel, from the design's hamWipeMark: it comes up
+     from 0.72 as the panel closes over the page, is held at full size through
+     the beat the panel covers, and blooms past 1 as the panel leaves. It is
+     the piece of the transition the app was missing — without it the sweep is
+     a coloured shape crossing the screen and nothing else.
+
+     It sits on the layer rather than in the panel so it stays at the centre of
+     the viewport while the panel travels under it, and it counts as motion
+     only: the whole `.wipe` is `pointer-events:none`, `aria-hidden`, and gone
+     from the document the moment the panel's animation ends. */
+  @keyframes ham-wipe-mark {
+    0% {
+      opacity: 0;
+      transform: translate(-50%, -50%) scale(0.72);
+    }
+    34% {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+    }
+    62% {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+    }
+    100% {
+      opacity: 0;
+      transform: translate(-50%, -50%) scale(1.14);
+    }
+  }
+  .wipe-mark {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    inline-size: clamp(64px, 9vw, 104px);
+    block-size: clamp(64px, 9vw, 104px);
+    transform: translate(-50%, -50%) scale(0.72);
+    opacity: 0;
+    animation: ham-wipe-mark 0.9s cubic-bezier(0.76, 0, 0.24, 1) both;
+  }
+
   /* The sheen that crosses a button once on hover. */
   @keyframes ham-sheen {
     from {
@@ -2813,7 +2878,7 @@
     block-size: 100%;
     background: linear-gradient(90deg, transparent, var(--gold));
     transform-origin: left;
-    animation: ham-meter 1.5s cubic-bezier(0.4, 0, 0.2, 1) both;
+    animation: ham-meter 1.5s var(--ease-standard) both;
   }
   @keyframes ham-draw {
     from {

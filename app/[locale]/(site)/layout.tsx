@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { setRequestLocale } from 'next-intl/server';
 import { Header } from '@/components/site/header';
 import { Footer } from '@/components/site/footer';
+import { PageEnter } from '@/components/site/page-enter';
 import { EditBar } from '@/components/editable/edit-bar';
 import { EditStatusProvider } from '@/components/editable/edit-status';
 import { readTheme, readEditSession } from '@/lib/preferences';
@@ -28,10 +29,9 @@ export default async function SiteLayout({
       <Header theme={theme} locale={typed} />
       <main
         id="main"
-        className="page-enter"
         style={{ minBlockSize: '60vh', paddingBlockEnd: editing ? 'var(--space-8)' : undefined }}
       >
-        {children}
+        <PageEnter>{children}</PageEnter>
       </main>
       <Footer locale={typed} />
     </>

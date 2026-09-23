@@ -266,6 +266,9 @@
   --weight-medium: 550;
   --weight-semibold: 620;
   --weight-bold: 700;
+  /* The design's own two heading weights, kept exact rather than rounded onto
+     the ramp above: 600 for the serif, 700 for the naskh. */
+  --weight-heading: 600;
 
   /* ── Space. Baseline scale at density 1.25×. ──────────────────────────── */
   --space-0: 0;
@@ -315,6 +318,10 @@
   --duration-base: 500ms;
   --duration-slow: 1250ms;
   --duration-theme: 720ms;
+  /* When the page transition is at full cover — 44%–56% of the wipe's 0.9s —
+     and therefore when the incoming page may arrive unseen. The design's own
+     .42s. */
+  --duration-wipe-cover: 420ms;
 
   --z-header: 40;
   --z-drawer: 60;
@@ -605,14 +612,21 @@
     line-height: var(--leading-relaxed);
   }
 
+  /* Headings.
+
+     The family is per-language, and this had it wrong. The design sets the
+     serif on German headings only — `[lang="de"] h1…h4, blockquote` — and
+     leaves Persian ones in Vazirmatn, for the obvious reason that Source
+     Serif 4 has no Arabic glyphs: applying it to a Persian heading falls back
+     glyph by glyph to whatever serif the machine happens to have, so the
+     Persian pages were being set in a font nobody chose. Weight is per
+     language too: 600 for the serif, 700 for the naskh. */
   h1,
   h2,
   h3,
   h4,
   h5,
   h6 {
-    font-family: var(--font-display);
-    font-weight: var(--weight-bold);
     letter-spacing: var(--tracking-tight);
     line-height: var(--leading-tight);
     margin: 0;
@@ -626,6 +640,32 @@
        unaffected. */
     overflow-wrap: break-word;
     hyphens: auto;
+  }
+
+  :root[lang='de'] h1,
+  :root[lang='de'] h2,
+  :root[lang='de'] h3,
+  :root[lang='de'] h4,
+  :root[lang='de'] h5,
+  :root[lang='de'] h6,
+  :root[lang='de'] blockquote {
+    font-family: var(--font-display);
+    font-weight: var(--weight-heading);
+  }
+  :root[lang='fa'] h1,
+  :root[lang='fa'] h2,
+  :root[lang='fa'] h3,
+  :root[lang='fa'] h4,
+  :root[lang='fa'] h5,
+  :root[lang='fa'] h6,
+  :root[lang='fa'] blockquote {
+    font-family: var(--font-naskh);
+    font-weight: var(--weight-bold);
+  }
+  /* A Latin run inside Persian — an address, an e-mail, a name — is set in
+     the serif, as the design does with `[lang="fa"] [data-latin]`. */
+  :root[lang='fa'] .ltr-island {
+    font-family: var(--font-display);
   }
 
   p {
@@ -1336,7 +1376,10 @@
   }
   .card-title {
     font-size: var(--text-xl);
-    font-weight: var(--weight-bold);
+    /* No weight of its own: a card title is a heading, and the heading rules
+       already set the design's weight for the language it is in — 600 for the
+       serif, 700 for the naskh. Forcing bold here made every German card
+       title a hundred heavier than the design's. */
     line-height: var(--leading-snug);
     /* A card is a fixed track in a grid; its title must never be what widens it. */
     min-inline-size: 0;
@@ -2611,8 +2654,15 @@
      than sliding in. `tight` is for metadata, dates, times and list items,
      where the stagger closes to 34ms so a row of them does not take all day.
      All three ride the observer's armed/in attributes. */
+  /* A split word is an inline-block, and an inline-block does not break the
+     way a text node does: "Nachbarschaftsfrühstück" in a 360px card ran
+     straight out the side. It hyphenates and, failing that, breaks — the same
+     rule the headings themselves carry. */
   [data-words] .word {
     display: inline-block;
+    max-inline-size: 100%;
+    overflow-wrap: break-word;
+    hyphens: auto;
   }
   [data-words='hero'] {
     display: flex;
@@ -3441,14 +3491,16 @@
      of cards, with the dateline, the text and the practicals side by side. */
   .event-row {
     display: grid;
-    grid-template-columns: minmax(0, 1fr);
+    /* The design's own track definition, and it has to be this rather than a
+       media query: the same card is listed full width on the events page and
+       three-up on the home page, so what decides the number of columns is the
+       card's width, not the window's. A `min-width: 60rem` query here split
+       every 360px card on the home page into three overlapping columns.
+       `min(100%, 190px)` collapses to one column when the card is narrow and
+       opens to three when it is not, without asking the viewport anything. */
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 190px), 1fr));
     gap: var(--space-4);
     align-items: center;
-  }
-  @media (min-width: 60rem) {
-    .event-row {
-      grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr) minmax(0, 0.8fr);
-    }
   }
   /* The dateline plate: a gold hairline square, not the green slab. */
   .day-plate {
@@ -3529,6 +3581,12 @@
       animation-duration: 0.01ms !important;
       animation-iteration-count: 1 !important;
       transition-duration: 0.01ms !important;
+      /* Delays too, not only durations. The page transition waits 420ms for
+         the wipe to cover, and the reveals stagger by up to 300ms; with the
+         durations cut to nothing but the delays left in place, a reader who
+         asked for less motion would get no animation and all of the waiting. */
+      animation-delay: 0s !important;
+      transition-delay: 0s !important;
       scroll-behavior: auto !important;
     }
     [data-rise][data-rise-armed='true'] {

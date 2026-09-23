@@ -56,7 +56,7 @@ export default async function SupportPage({ params }: { params: Promise<{ locale
             {tiers.map((tier) => (
               <li key={tier.id} data-rise>
                 <EditableEntry entity="membership" id={tier.id} isLast={tiers.length <= 1}>
-                  <Card as="article" className="h-full">
+                  <Card as="article" plate className="h-full">
                     <EditableText
                       as="h2"
                       entity="membership"
@@ -105,7 +105,13 @@ export default async function SupportPage({ params }: { params: Promise<{ locale
                         </li>
                       ))}
                     </ul>
-                    <div style={{ marginBlockStart: 'auto', paddingBlockStart: 'var(--space-4)' }}>
+                    <div
+                      style={{
+                        marginBlockStart: 'auto',
+                        paddingBlockStart: 'var(--space-4)',
+                        borderBlockStart: 'var(--rule-hair) solid var(--line2)',
+                      }}
+                    >
                       <SupportForm
                         locale={typed}
                         mode="membership"
@@ -130,12 +136,24 @@ export default async function SupportPage({ params }: { params: Promise<{ locale
         <section className="section section-alt" style={{ position: 'relative' }} data-rise>
           <PatternPlate opacity={0.35} />
           <div className="page">
-            <div className="rail">
-              <div className="head-rule" style={{ paddingBlockStart: 'var(--space-2)' }}>
-                <p className="kicker">{t('donation')}</p>
-              </div>
-              <div style={{ maxInlineSize: '36rem' }}>
-                <SupportForm locale={typed} mode="donation" options={purposeOptions} />
+            {/* The design's ask: a gold-bordered panel on the sunk card
+                ground, with the girih plate behind the heading and the lead. */}
+            <div className="surf ask-panel">
+              <PatternPlate tiling="shesh" opacity={0.5} />
+              <div style={{ position: 'relative' }}>
+                <h2 style={{ fontSize: 'clamp(23px, 2.6vw, 30px)' }}>{t('donationTitle')}</h2>
+                <p
+                  style={{
+                    marginBlockStart: 'var(--space-3)',
+                    color: 'var(--color-ink-muted)',
+                    maxInlineSize: '44em',
+                  }}
+                >
+                  {t('donationLead')}
+                </p>
+                <div style={{ marginBlockStart: 'var(--space-5)', maxInlineSize: '36rem' }}>
+                  <SupportForm locale={typed} mode="donation" options={purposeOptions} />
+                </div>
               </div>
             </div>
           </div>
@@ -148,17 +166,7 @@ export default async function SupportPage({ params }: { params: Promise<{ locale
           <div className="page">
             {/* The design's closing panel: gold-bordered, on the sunk card
                 ground, with the girih plate behind it. */}
-            <div
-              className="surf"
-              style={{
-                position: 'relative',
-                maxInlineSize: '36rem',
-                border: 'var(--rule-hair) solid var(--gold)',
-                borderRadius: 'var(--radius-softer)',
-                background: 'var(--card2)',
-                padding: 'clamp(28px, 3.5vw, 48px)',
-              }}
-            >
+            <div className="surf ask-panel" style={{ maxInlineSize: '36rem' }}>
               <PatternPlate opacity={0.4} />
               <p className="kicker" style={{ position: 'relative' }}>
                 {t('bankDetails')}

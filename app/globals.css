@@ -3189,6 +3189,229 @@
      Treatments carried over from design-system/site.css for the prayer / qibla / du'a / gallery / events / support / contact pages.
      Kept in its own region so parallel work on different parts of the site
      does not land in the same place in this file. */
+
+  /* `.ham-glow` — the feature article's lift. Softer and quicker than the
+     panel's: no sheen, no scale, only the shadow opening under it. It was
+     already being asked for by name on the opening event and was not here. */
+  .glow {
+    box-shadow: 0 0 0 0 rgba(7, 59, 41, 0);
+    transition:
+      transform 0.4s cubic-bezier(0.33, 1, 0.68, 1),
+      box-shadow 0.16s ease-out;
+  }
+  .glow:hover {
+    transform: translateY(-3px);
+    box-shadow:
+      0 24px 52px -30px rgba(7, 59, 41, 0.6),
+      0 5px 16px -10px rgba(7, 59, 41, 0.34);
+    transition:
+      transform var(--duration-base) var(--ease-out-expressive),
+      box-shadow var(--duration-base) var(--ease-out-expressive);
+  }
+  :root[data-theme='dark'] .glow:hover {
+    box-shadow:
+      0 24px 52px -28px rgba(0, 0, 0, 0.85),
+      0 5px 16px -10px rgba(0, 0, 0, 0.6);
+  }
+
+  /* `.ham-dua` — the du'a card has a hover of its own, shorter than a card's
+     lift and drawing the border itself rather than an inset ring. */
+  .dua {
+    transition:
+      border-color 0.22s var(--ease-standard),
+      transform 0.22s var(--ease-standard),
+      box-shadow 0.22s var(--ease-standard);
+  }
+  .dua:hover {
+    border-color: var(--gold);
+    transform: translateY(-3px);
+    box-shadow: 0 18px 40px -28px rgba(0, 0, 0, 0.5);
+  }
+  /* The ghosted Arabic word, set behind the card's own content. It cannot be
+     a negative z-index: the card is an isolated stacking context, so -1 puts
+     it under the card's background and it disappears. z-index 0 under the
+     content's 2 is where it belongs. */
+  .dua-ghost {
+    position: absolute;
+    z-index: 0;
+    inset-inline-end: 14px;
+    inset-block-end: -6px;
+    inline-size: 90%;
+    block-size: auto;
+    opacity: 0.07;
+    pointer-events: none;
+  }
+
+  /* `.ham-ptime` — one of the seven daily times. Centred, and with the label
+     given a fixed two-line box so a long German name ("Schariatische
+     Mitternacht") does not push its neighbour's time out of line. */
+  .ptime {
+    align-content: start;
+    justify-items: center;
+    text-align: center;
+    gap: var(--space-2);
+  }
+  .ptime-label {
+    font-size: 12.5px;
+    line-height: 1.45;
+    color: var(--color-ink-muted);
+    min-block-size: 2.9em;
+    /* Hyphenation rather than overflow: the widest of these names is longer
+       than a 106px track and must break inside the word. */
+    overflow-wrap: break-word;
+    hyphens: auto;
+  }
+
+  /* `.ham-day` — a calendar cell. The state lives on the cell itself, so the
+     ring and the tint are one rule each rather than a branch in the markup.
+     Both markers are also written out in text for a screen reader, and the
+     legend names them: the colour is the quick read, never the only one. */
+  .cal-day {
+    position: relative;
+    aspect-ratio: 1;
+    display: grid;
+    align-content: center;
+    justify-items: center;
+    gap: 1px;
+    border: var(--rule-hair) solid var(--line);
+    border-radius: 12px;
+    background: var(--card);
+    transition:
+      border-color 0.2s var(--ease-standard),
+      background-color 0.2s var(--ease-standard);
+  }
+  .cal-day[data-today='true'] {
+    border-color: var(--gold);
+    box-shadow: inset 0 0 0 1px var(--gold);
+  }
+  .cal-day[data-occ='true'] {
+    background: rgba(200, 164, 93, 0.13);
+    border-color: var(--gold);
+    box-shadow: inset 0 0 0 1px rgba(200, 164, 93, 0.45);
+  }
+  .cal-day[data-occ='true'][data-today='true'] {
+    box-shadow: inset 0 0 0 2px var(--gold);
+  }
+  .cal-day-greg {
+    font-size: var(--text-sm);
+    font-weight: var(--weight-semibold);
+    color: var(--head);
+  }
+  .cal-day-hij {
+    font-size: 11px;
+    color: var(--goldInk);
+  }
+  /* The occasion list beside the calendar: the day number on its own gold
+     tile, the name beside it. */
+  .occ-day {
+    flex: none;
+    inline-size: 44px;
+    block-size: 44px;
+    display: grid;
+    place-items: center;
+    border-radius: 12px;
+    background: rgba(200, 164, 93, 0.14);
+    font-size: var(--text-lg);
+    font-weight: var(--weight-bold);
+    color: var(--goldInk);
+  }
+
+  /* A fact under a rule — the design's alternative to a card where two
+     numbers stand side by side. The leading one takes the gold rule. */
+  .fact-rule {
+    border-block-start: 2px solid var(--line);
+    padding-block-start: 14px;
+  }
+  .fact-rule[data-lead='true'] {
+    border-block-start-color: var(--gold);
+  }
+  .fact-figure {
+    font-size: clamp(30px, 4vw, 42px);
+    line-height: 1;
+    font-weight: var(--weight-bold);
+    color: var(--head);
+  }
+
+  /* The gallery's caption sits on the picture, on the design's own scrim:
+     a gradient to near-opaque ink at the foot, with the text well inside the
+     solid end of it, so the contrast does not depend on the photograph. */
+  .tile-caption {
+    position: absolute;
+    inset-inline: 0;
+    inset-block-end: 0;
+    display: block;
+    padding: 40px var(--space-4) var(--space-3);
+    background: linear-gradient(
+      to top,
+      rgba(4, 24, 15, 0.92),
+      rgba(4, 24, 15, 0.72) 42%,
+      transparent
+    );
+    color: var(--bandInk);
+    font-size: 13.5px;
+    font-weight: var(--weight-semibold);
+    letter-spacing: 0.05em;
+    text-align: start;
+    pointer-events: none;
+  }
+  :root[dir='rtl'] .tile-caption {
+    letter-spacing: 0;
+  }
+
+  /* The event row: the design lists events full width rather than as a grid
+     of cards, with the dateline, the text and the practicals side by side. */
+  .event-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-4);
+    align-items: center;
+  }
+  @media (min-width: 60rem) {
+    .event-row {
+      grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr) minmax(0, 0.8fr);
+    }
+  }
+  /* The dateline plate: a gold hairline square, not the green slab. */
+  .day-plate {
+    position: relative;
+    display: grid;
+    place-content: center;
+    justify-items: center;
+    min-inline-size: 68px;
+    padding: 10px 14px;
+    flex-shrink: 0;
+    border: var(--rule-hair) solid var(--gold);
+    border-radius: 12px;
+    line-height: 1;
+  }
+  .day-plate-day {
+    font-size: 23px;
+    font-weight: var(--weight-bold);
+    color: var(--head);
+  }
+  .day-plate-mon {
+    margin-block-start: 5px;
+    font-size: 10.5px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    font-weight: var(--weight-bold);
+    color: var(--goldInk);
+  }
+  :root[dir='rtl'] .day-plate-mon {
+    letter-spacing: 0;
+    text-transform: none;
+  }
+
+  /* The design's closing panel, used twice on the support page and once at
+     the foot of the qibla and contact columns: gold-bordered, on the sunk
+     card ground, with the girih plate behind it. */
+  .ask-panel {
+    position: relative;
+    border: var(--rule-hair) solid var(--gold);
+    border-radius: 22px;
+    background: var(--card2);
+    padding: clamp(28px, 3.5vw, 48px);
+  }
   /* ── end TOOLS ─────────────────────────────────────────────────────────── */
 
   /* Theme switch: the design's circular sheet, sized to the viewport and

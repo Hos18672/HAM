@@ -77,7 +77,7 @@ export default async function PrayerPage({
 
       <section className="section section-alt" style={{ position: 'relative' }} data-rise>
         <PatternPlate opacity={0.35} />
-        <div className="page" style={{ maxInlineSize: '56rem' }}>
+        <div className="page">
           <HijriCalendar month={calendar} locale={typed} basePath="/prayer" />
         </div>
       </section>

@@ -1,5 +1,5 @@
 import { getTranslations } from 'next-intl/server';
-import { Card, FactPair } from '../ui/card';
+import { Card } from '../ui/card';
 import { EditableText } from '@/components/editable/editable-text';
 import type { Locale } from '@/lib/i18n/config';
 import type { DuaEntry } from '@/lib/db/queries/content';
@@ -12,37 +12,44 @@ import type { DuaEntry } from '@/lib/db/queries/content';
 export async function DuaCard({ dua, locale }: { dua: DuaEntry; locale: Locale }) {
   const t = await getTranslations({ locale, namespace: 'duas' });
 
+  const factLabel = {
+    flex: 'none' as const,
+    minInlineSize: '7.5em',
+    color: 'var(--color-accent-2-text)',
+    fontWeight: 'var(--weight-semibold)',
+  };
+
   return (
     <Card
       as="article"
-      variant="softer"
       id={`dua-${dua.slug}`}
-      className="h-full"
-      style={{ position: 'relative', overflow: 'hidden', isolation: 'isolate' }}
+      className="dua h-full"
+      style={{
+        position: 'relative',
+        overflow: 'hidden',
+        isolation: 'isolate',
+        gap: 'var(--space-3)',
+        padding: 'clamp(22px, 2.4vw, 30px)',
+      }}
     >
       {/*
         The ghosted Arabic title.
         Drawn as SVG rather than as a text node on purpose: it is decoration —
-        the same words are the heading right below it — and a 6%-opacity text
+        the same words are the heading right below it — and a 7%-opacity text
         node is indistinguishable from unreadably low-contrast body copy to
         anything inspecting the page, including a contrast checker. As SVG it
         is unambiguously a picture, and screen readers skip it.
+
+        It sits at z-index 0, not -1: the card is an isolated stacking context,
+        so a negative index would put it behind the card's own background and
+        it would never be seen at all.
       */}
       <svg
         aria-hidden="true"
         focusable="false"
         viewBox="0 0 400 80"
         preserveAspectRatio="xMaxYMax meet"
-        style={{
-          position: 'absolute',
-          insetInlineEnd: '14px',
-          insetBlockEnd: '-6px',
-          inlineSize: '90%',
-          blockSize: 'auto',
-          opacity: 0.07,
-          pointerEvents: 'none',
-          zIndex: -1,
-        }}
+        className="dua-ghost"
       >
         <text
           x="400"
@@ -59,7 +66,9 @@ export async function DuaCard({ dua, locale }: { dua: DuaEntry; locale: Locale }
         </text>
       </svg>
 
-      <p className="kicker">{t(`category.${dua.category}`)}</p>
+      <p className="kicker" style={{ color: 'var(--color-accent-2-text)' }}>
+        {t(`category.${dua.category}`)}
+      </p>
 
       <EditableText
         as="h2"
@@ -83,39 +92,39 @@ export async function DuaCard({ dua, locale }: { dua: DuaEntry; locale: Locale }
         multiline
       />
 
+      {/* The two facts, under the design's hairline: the label held at a fixed
+          width so the values line up down the card. */}
       <div
         style={{
           marginBlockStart: 'auto',
           paddingBlockStart: 'var(--space-3)',
+          borderBlockStart: 'var(--rule-hair) solid var(--line)',
           display: 'grid',
-          gap: 'var(--space-3)',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(9rem, 1fr))',
+          gap: 'var(--space-2)',
+          fontSize: 'var(--text-xs)',
+          lineHeight: 'var(--leading-normal)',
         }}
       >
-        <FactPair
-          label={t('whenToRead')}
-          value={
-            <EditableText
-              entity="dua"
-              id={dua.id}
-              field="whenToRead"
-              locale={locale}
-              value={dua.whenToRead}
-            />
-          }
-        />
-        <FactPair
-          label={t('source')}
-          value={
-            <EditableText
-              entity="dua"
-              id={dua.id}
-              field="source"
-              locale={locale}
-              value={dua.source}
-            />
-          }
-        />
+        <div className="flex gap-2">
+          <span style={factLabel}>{t('whenToRead')}</span>
+          <EditableText
+            entity="dua"
+            id={dua.id}
+            field="whenToRead"
+            locale={locale}
+            value={dua.whenToRead}
+          />
+        </div>
+        <div className="flex gap-2">
+          <span style={factLabel}>{t('source')}</span>
+          <EditableText
+            entity="dua"
+            id={dua.id}
+            field="source"
+            locale={locale}
+            value={dua.source}
+          />
+        </div>
       </div>
     </Card>
   );

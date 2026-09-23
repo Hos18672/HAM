@@ -17,8 +17,17 @@ import type { PrayerKey } from '@/lib/prayer-times';
 import type { PrayerDay } from '@/lib/prayer-page';
 import type { Locale } from '@/lib/i18n/config';
 import { Card } from '../ui/card';
+import { PatternPlate } from './ornaments';
 
-const ICONS: Record<PrayerKey, React.ComponentType<{ size?: number; weight?: 'duotone' }>> = {
+const ICONS: Record<
+  PrayerKey,
+  React.ComponentType<{
+    size?: number;
+    weight?: 'duotone';
+    color?: string;
+    'aria-hidden'?: boolean | 'true' | 'false';
+  }>
+> = {
   fajr: SunHorizon,
   sunrise: Sun,
   dhuhr: SunDim,
@@ -63,60 +72,113 @@ export function PrayerList({ day, locale }: { day: PrayerDay; locale: Locale }) 
   }, [day]);
 
   const gregorian = new Date(day.gregorianIso);
+  const gregorianLabel = new Intl.DateTimeFormat(locale === 'fa' ? 'fa-IR' : 'de-AT', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+    timeZone: 'Europe/Vienna',
+    numberingSystem: locale === 'fa' ? 'arabext' : 'latn',
+  }).format(gregorian);
 
   return (
     <div style={{ display: 'grid', gap: 'var(--space-6)' }}>
-      {/* Next prayer */}
+      {/* Next prayer.
+
+          The design's opening panel: two columns on one surface, the prayer
+          and its countdown on one side and today's two dates on the other,
+          with the girih plate behind them. */}
       {day.next ? (
-        <Card variant="softer" marked>
-          <p className="kicker">{t('nextPrayer')}</p>
-          <div className="flex flex-wrap items-baseline gap-3">
-            <h2 style={{ fontSize: 'var(--text-4xl)' }}>{t(`names.${day.next.key}`)}</h2>
-            <p
-              className="tabular"
-              style={{ fontSize: 'var(--text-3xl)', fontWeight: 'var(--weight-bold)' }}
-            >
-              {/* `next.minutes` rather than today's entry for that key: after
-                  Isha this is tomorrow's Fajr, which is a minute or two off
-                  today's and is the time the countdown is actually running to. */}
-              {formatClock(day.next.minutes, locale)}
+        <div
+          className="surf"
+          style={{
+            position: 'relative',
+            background: 'var(--card)',
+            border: 'var(--rule-hair) solid var(--line)',
+            padding: 'clamp(24px, 3.4vw, 44px)',
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 17rem), 1fr))',
+            gap: 'clamp(22px, 3vw, 48px)',
+            alignItems: 'center',
+          }}
+        >
+          <PatternPlate opacity={0.3} />
+
+          <div style={{ position: 'relative' }}>
+            <p className="kicker" style={{ color: 'var(--color-accent-2-text)' }}>
+              {t('nextPrayer')}
             </p>
+            <h2
+              style={{
+                marginBlockStart: 'var(--space-3)',
+                fontSize: 'clamp(30px, 4.4vw, 46px)',
+                lineHeight: 1.05,
+              }}
+            >
+              {t(`names.${day.next.key}`)}
+            </h2>
+            <div
+              style={{
+                marginBlockStart: 'var(--space-2)',
+                display: 'flex',
+                alignItems: 'baseline',
+                flexWrap: 'wrap',
+                gap: 'var(--space-3)',
+              }}
+            >
+              <span
+                className="tabular"
+                style={{
+                  fontSize: 'clamp(34px, 5vw, 52px)',
+                  lineHeight: 1,
+                  fontWeight: 'var(--weight-bold)',
+                  color: 'var(--color-accent-2-text)',
+                }}
+              >
+                {/* `next.minutes` rather than today's entry for that key: after
+                    Isha this is tomorrow's Fajr, which is a minute or two off
+                    today's and is the time the countdown is actually running to. */}
+                {formatClock(day.next.minutes, locale)}
+              </span>
+              <span
+                aria-live="polite"
+                aria-label={t('countdownLabel')}
+                className="tabular text-sm"
+                style={{ color: 'var(--color-ink-muted)' }}
+              >
+                {t('in')}{' '}
+                {remaining === null ? (
+                  // Before hydration there is nothing honest to show, so the
+                  // slot is reserved rather than filled with a number that
+                  // will jump.
+                  <span aria-hidden="true">—</span>
+                ) : (
+                  formatCountdown(remaining, locale)
+                )}
+              </span>
+            </div>
           </div>
 
-          <p
-            aria-live="polite"
-            aria-label={t('countdownLabel')}
-            className="tabular"
-            style={{ fontSize: 'var(--text-xl)', color: 'var(--color-accent-text)' }}
-          >
-            {t('in')}{' '}
-            {remaining === null ? (
-              // Before hydration there is nothing honest to show, so the slot
-              // is reserved rather than filled with a number that will jump.
-              <span aria-hidden="true">—</span>
-            ) : (
-              formatCountdown(remaining, locale)
-            )}
-          </p>
-
-          <p className="text-sm" style={{ color: 'var(--color-ink-muted)' }}>
-            <span>
-              {new Intl.DateTimeFormat(locale === 'fa' ? 'fa-IR' : 'de-AT', {
-                weekday: 'long',
-                day: 'numeric',
-                month: 'long',
-                year: 'numeric',
-                timeZone: 'Europe/Vienna',
-                numberingSystem: locale === 'fa' ? 'arabext' : 'latn',
-              }).format(gregorian)}
-            </span>
-            {' · '}
-            <span>{formatHijri(gregorian, locale)}</span>
-          </p>
-        </Card>
+          <div style={{ position: 'relative', display: 'grid', gap: 'var(--space-1)' }}>
+            <p className="kicker" style={{ color: 'var(--color-accent-2-text)' }}>
+              {t('todayHere')}
+            </p>
+            <p style={{ lineHeight: 'var(--leading-normal)' }}>{gregorianLabel}</p>
+            <p
+              style={{
+                lineHeight: 'var(--leading-normal)',
+                color: 'var(--color-accent-2-text)',
+                fontWeight: 'var(--weight-semibold)',
+              }}
+            >
+              {formatHijri(gregorian, locale)}
+            </p>
+          </div>
+        </div>
       ) : null}
 
-      {/* The seven times */}
+      {/* The seven times. The track is narrow enough that all seven stand in
+          one row on a desktop, as the design sets them. */}
       <ul
         style={{
           listStyle: 'none',
@@ -124,7 +186,7 @@ export function PrayerList({ day, locale }: { day: PrayerDay; locale: Locale }) 
           padding: 0,
           display: 'grid',
           gap: 'var(--space-3)',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(min(11rem, 100%), 1fr))',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 106px), 1fr))',
         }}
       >
         {ORDER.map((key) => {
@@ -133,12 +195,22 @@ export function PrayerList({ day, locale }: { day: PrayerDay; locale: Locale }) 
           const value = day.times[key];
           return (
             <li key={key} data-rise>
-              <Card variant="soft" marked={isNext} className="h-full">
-                <IconComponent size={26} weight="duotone" />
-                <p className="kicker">{t(`names.${key}`)}</p>
+              <Card variant="soft" marked={isNext} className="ptime h-full">
+                <IconComponent size={20} weight="duotone" aria-hidden="true" color="var(--gold)" />
+                <p className="ptime-label">
+                  {t(`names.${key}`)}
+                  {/* The gold ring says "next" to anyone who can see it; this
+                      says it to everyone else. */}
+                  {isNext ? <span className="visually-hidden"> — {t('nextPrayer')}</span> : null}
+                </p>
                 <p
                   className="tabular"
-                  style={{ fontSize: 'var(--text-2xl)', fontWeight: 'var(--weight-bold)' }}
+                  style={{
+                    fontSize: 'clamp(21px, 2.6vw, 28px)',
+                    lineHeight: 1,
+                    fontWeight: 'var(--weight-bold)',
+                    color: 'var(--head)',
+                  }}
                 >
                   {/* A time that does not occur at this latitude prints an
                       em dash rather than crashing or inventing a value. */}
@@ -150,7 +222,7 @@ export function PrayerList({ day, locale }: { day: PrayerDay; locale: Locale }) 
         })}
       </ul>
 
-      <p className="text-xs" style={{ color: 'var(--color-ink-faint)' }}>
+      <p className="text-xs" style={{ color: 'var(--color-ink-faint)', maxInlineSize: '70ch' }}>
         {t('method')} · {digits('48.2175° N, 16.3260° E', locale)}
       </p>
     </div>

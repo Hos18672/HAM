@@ -129,7 +129,7 @@ export function GalleryGrid({ items }: { items: GalleryEntry[] }) {
                 aria-label={`${t('open')}: ${item.alt || item.caption}`}
                 className="tile"
               >
-                <span className="cmyk-wrap tile-media">
+                <span className="cmyk-wrap tile-media" style={{ position: 'relative' }}>
                   <Image
                     src={item.url}
                     alt={item.alt}
@@ -143,20 +143,11 @@ export function GalleryGrid({ items }: { items: GalleryEntry[] }) {
                     className="cmyk"
                     style={{ inlineSize: '100%', blockSize: 'auto', objectFit: 'cover' }}
                   />
+                  {/* The caption rides on the picture, as the design sets it,
+                      on a scrim that is near-opaque where the words are — so
+                      the contrast is the scrim's and not the photograph's. */}
+                  {item.caption ? <span className="tile-caption">{item.caption}</span> : null}
                 </span>
-                {item.caption ? (
-                  <span
-                    className="text-xs"
-                    style={{
-                      display: 'block',
-                      textAlign: 'start',
-                      paddingBlockStart: 'var(--space-1)',
-                      color: 'var(--color-ink-muted)',
-                    }}
-                  >
-                    {item.caption}
-                  </span>
-                ) : null}
               </button>
             </li>
           ))}

@@ -59,6 +59,17 @@ export default async function DuasPage({ params }: { params: Promise<{ locale: s
           <div style={{ marginBlockStart: 'var(--space-5)' }}>
             <EditableAdd entity="dua" />
           </div>
+          {/* The design closes the page on where the full texts actually are. */}
+          <p
+            className="text-sm"
+            style={{
+              marginBlockStart: 'clamp(26px, 3vw, 40px)',
+              color: 'var(--color-ink-muted)',
+              maxInlineSize: '68ch',
+            }}
+          >
+            {t('note')}
+          </p>
         </div>
       </section>
     </>

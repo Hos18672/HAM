@@ -85,6 +85,10 @@
     "programme": "Programm",
     "vienna": "Wien & Standort"
   },
+  "activities": {
+    "weekTitle": "Wochenplan",
+    "weekLead": "Was an welchem Tag stattfindet. Änderungen geben wir auf der Terminseite bekannt."
+  },
   "events": {
     "upcoming": "Kommende Termine",
     "past": "Vergangene Termine",
@@ -103,6 +107,9 @@
       "sport": "Sport"
     }
   },
+  "community": {
+    "volunteerTitle": "Mitmachen im Haus"
+  },
   "courses": {
     "filterByCategory": "Nach Bereich filtern",
     "targetGroup": "Zielgruppe",
@@ -118,6 +125,9 @@
       "integration": "Integration",
       "art": "Kunst"
     }
+  },
+  "culture": {
+    "themes": "Themen"
   },
   "sport": {
     "activity": "Aktivität",
@@ -279,8 +289,7 @@
     }
   },
   "about": {
-    "values": "Was uns wichtig ist",
-    "schedule": "Wochenplan"
+    "values": "Was uns wichtig ist"
   },
   "footer": {
     "mission": "Über uns",

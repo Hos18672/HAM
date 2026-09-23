@@ -1,18 +1,23 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { setRequestLocale } from 'next-intl/server';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { getPageHeader, getBlocks, getCultureCards } from '@/lib/db/queries/content';
-import { PageHead } from '@/components/site/page-head';
+import { Mark, PatternPlate } from '@/components/site/ornaments';
+import { PageHead, SectionHead } from '@/components/site/page-head';
 import { EditableText } from '@/components/editable/editable-text';
 import { EditableEntry, EditableAdd } from '@/components/editable/editable-list';
-import { Card } from '@/components/ui/card';
+import { Card, CardStar } from '@/components/ui/card';
 import { Tag } from '@/components/ui/tag';
+import { Icon } from '@/components/site/icon';
 import { pageMetadata } from '@/lib/page-meta';
 import { locales, type Locale } from '@/lib/i18n/config';
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
 }
+
+/** Decorative badges, cycled. The cards themselves carry no icon field. */
+const CULTURE_ICONS = ['BookOpen', 'Sparkle', 'MusicNotes', 'PaintBrush', 'Moon', 'Star'];
 
 export async function generateMetadata({
   params,
@@ -35,36 +40,63 @@ export default async function CulturePage({ params }: { params: Promise<{ locale
   ]);
   if (!header) notFound();
 
+  const t = await getTranslations({ locale, namespace: 'culture' });
+
   const chips = blocks.theme_chips?.items ?? [];
 
   return (
     <>
       <PageHead header={header} locale={typed} />
 
+      {/* The themes, set against a square panel — a photograph in the design,
+          ornament here. */}
       {chips.length > 0 ? (
-        <section className="section-tight" data-rise>
+        <section className="section section-alt" data-rise>
           <div className="page">
-            <ul
-              className="flex flex-wrap gap-2"
-              style={{ listStyle: 'none', margin: 0, padding: 0 }}
-            >
-              {chips.map((chip) => (
-                <li key={chip} data-rise>
-                  <Tag>{chip}</Tag>
-                </li>
-              ))}
-            </ul>
+            <div className="split">
+              <div>
+                <SectionHead title={t('themes')} />
+                <ul
+                  className="flex flex-wrap gap-2"
+                  style={{ listStyle: 'none', margin: 0, padding: 0 }}
+                  data-rise
+                >
+                  {chips.map((chip) => (
+                    <li key={chip}>
+                      <Tag>{chip}</Tag>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <div
+                className="frame ornament-panel"
+                style={{ aspectRatio: '1 / 1', maxBlockSize: '520px' }}
+                data-rise
+              >
+                <PatternPlate tiling="shesh" opacity={0.5} />
+                <div className="ornament-mark">
+                  <Mark className="" />
+                </div>
+              </div>
+            </div>
           </div>
         </section>
       ) : null}
 
       <section className="section" data-rise>
         <div className="page">
-          <ul className="columns-feature" style={{ listStyle: 'none', margin: 0, padding: 0 }}>
-            {cards.map((card) => (
+          <ul
+            className="columns-tight plate-rota"
+            style={{ listStyle: 'none', margin: 0, padding: 0 }}
+          >
+            {cards.map((card, index) => (
               <li key={card.id} data-rise>
                 <EditableEntry entity="culture" id={card.id} isLast={cards.length <= 1}>
-                  <Card as="article" className="h-full">
+                  <Card as="article" className="h-full" plate>
+                    <CardStar>
+                      <Icon name={CULTURE_ICONS[index % CULTURE_ICONS.length]} size={24} />
+                    </CardStar>
                     <EditableText
                       as="h2"
                       entity="culture"
@@ -73,6 +105,7 @@ export default async function CulturePage({ params }: { params: Promise<{ locale
                       locale={typed}
                       value={card.title}
                       className="card-title"
+                      style={{ fontSize: 'var(--text-lg)', marginBlockStart: 'var(--space-2)' }}
                       words="tight"
                     />
                     <EditableText
@@ -90,7 +123,7 @@ export default async function CulturePage({ params }: { params: Promise<{ locale
               </li>
             ))}
           </ul>
-          <div style={{ marginBlockStart: 'var(--space-5)' }}>
+          <div style={{ marginBlockStart: 'var(--space-4)' }}>
             <EditableAdd entity="culture" />
           </div>
         </div>

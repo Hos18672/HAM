@@ -54,14 +54,15 @@ export default async function CoursesPage({ params }: { params: Promise<{ locale
 
       <PageHead header={header} locale={typed} />
 
-      <section className="section" data-rise>
+      {/* The design gives this page the ruled white ground throughout. */}
+      <section className="section section-alt" data-rise>
         <div className="page">
           <FilterableList
             items={items}
             label={t('filterByCategory')}
             labelNamespace="courses"
             emptyMessage={t('none')}
-            className="columns-feature"
+            className="columns-feature plate-rota"
           />
           <div style={{ marginBlockStart: 'var(--space-5)' }}>
             <EditableAdd entity="course" />

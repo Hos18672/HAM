@@ -9,7 +9,7 @@ import {
   ArrowSquareOut,
 } from '@phosphor-icons/react/dist/ssr';
 import { getPageHeader, getBlocks, getSettings } from '@/lib/db/queries/content';
-import { PageHead, SectionHead } from '@/components/site/page-head';
+import { PageHead } from '@/components/site/page-head';
 import { ContactForm } from '@/components/site/contact-form';
 import { PatternPlate } from '@/components/site/ornaments';
 import { EditableText } from '@/components/editable/editable-text';
@@ -71,6 +71,17 @@ export default async function ContactPage({
               alignItems: 'start',
             }}
           >
+            {/* Form.
+
+                The design opens the page with the invitation to write, and
+                keeps the house's own details beside it. */}
+            <div>
+              <h2 style={{ fontSize: 'clamp(25px, 3vw, 36px)' }}>{t('formTitle')}</h2>
+              <div style={{ marginBlockStart: 'var(--space-5)' }}>
+                <ContactForm locale={typed} defaultTopic={topic} />
+              </div>
+            </div>
+
             {/* Details.
 
                 The design puts these in a panel of their own rather than
@@ -198,12 +209,6 @@ export default async function ContactPage({
                   ) : null}
                 </div>
               </div>
-            </div>
-
-            {/* Form */}
-            <div>
-              <SectionHead kicker={t('topic')} />
-              <ContactForm locale={typed} defaultTopic={topic} />
             </div>
           </div>
         </div>

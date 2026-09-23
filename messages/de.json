@@ -186,7 +186,10 @@
       "geoFailed": "Der Standort konnte nicht ermittelt werden."
     },
     "needle": "Nadel zur Kaaba",
-    "rose": "Kompassrose"
+    "rose": "Kompassrose",
+    "kaaba": "Kaaba · Mekka",
+    "compassHint": "Am Telefon: Knopf drücken und das Gerät flach halten — die Rose dreht mit.",
+    "note": "Berechnet als Großkreisrichtung (kürzester Weg über die Erdkugel) — dieselbe Methode wie in Gebetsapps."
   },
   "prayer": {
     "title": "Gebetszeiten",
@@ -214,7 +217,9 @@
     "weekdays": ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"],
     "previousMonth": "Vorheriger Monat",
     "nextMonth": "Nächster Monat",
-    "countdownLabel": "Verbleibende Zeit bis zum nächsten Gebet"
+    "countdownLabel": "Verbleibende Zeit bis zum nächsten Gebet",
+    "todayHere": "Heute in Wien",
+    "calendarLead": "Der Hidschri-Monat neben dem gregorianischen — mit den Gedenktagen der Ahl al-Bait."
   },
   "duas": {
     "filterByCategory": "Nach Art filtern",
@@ -225,7 +230,8 @@
       "dua": "Bittgebet",
       "ziyara": "Ziyarat",
       "taqib": "Taʿqibat"
-    }
+    },
+    "note": "Die vollständigen Texte liegen im Haus auf — arabisch mit deutscher und persischer Übersetzung. Sprechen Sie uns gerne an."
   },
   "support": {
     "membership": "Mitgliedschaft",
@@ -236,7 +242,9 @@
     "purpose": "Verwendungszweck",
     "tier": "Beitrag",
     "chooseTier": "Beitrag wählen",
-    "choosePurpose": "Zweck wählen"
+    "choosePurpose": "Zweck wählen",
+    "donationTitle": "Unterstützung anfragen",
+    "donationLead": "Wir senden Ihnen Kontoverbindung und Verwendungsnachweis. Auf Wunsch erhalten Sie eine Spendenbestätigung."
   },
   "contact": {
     "openingHours": "Öffnungszeiten",
@@ -253,7 +261,8 @@
       "membership": "Mitgliedschaft",
       "volunteer": "Mitarbeit",
       "other": "Sonstiges"
-    }
+    },
+    "formTitle": "Schreiben Sie uns"
   },
   "form": {
     "name": "Name",

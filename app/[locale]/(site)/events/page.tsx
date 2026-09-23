@@ -75,7 +75,15 @@ export default async function EventsPage({ params }: { params: Promise<{ locale:
           {upcoming.length === 0 ? (
             <p style={{ color: 'var(--color-ink-muted)' }}>{t('none')}</p>
           ) : (
-            <ul className="columns-feature" style={{ listStyle: 'none', margin: 0, padding: 0 }}>
+            <ul
+              style={{
+                listStyle: 'none',
+                margin: 0,
+                padding: 0,
+                display: 'grid',
+                gap: 'var(--space-3)',
+              }}
+            >
               {upcoming.map((event) => (
                 <li key={event.id} data-rise>
                   <EditableEntry
@@ -105,7 +113,15 @@ export default async function EventsPage({ params }: { params: Promise<{ locale:
                 every label in it under 4.5:1 — 0.75 turns the faint ink into
                 #918f85, which is 2.7:1. The heading above already says these
                 are past, so the meaning does not depend on the dimming. */}
-            <ul className="columns-feature" style={{ listStyle: 'none', margin: 0, padding: 0 }}>
+            <ul
+              style={{
+                listStyle: 'none',
+                margin: 0,
+                padding: 0,
+                display: 'grid',
+                gap: 'var(--space-3)',
+              }}
+            >
               {past.map((event) => (
                 <li key={event.id} data-rise>
                   <EditableEntry entity="event" id={event.id} isLast={false}>

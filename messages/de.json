@@ -32,6 +32,7 @@
   "actions": {
     "readMore": "Mehr erfahren",
     "allEvents": "Alle Termine",
+    "askAboutEvent": "Zur Eröffnung fragen",
     "allCourses": "Zum Kursangebot",
     "join": "Mitglied werden",
     "volunteer": "Mitmachen",
@@ -87,6 +88,9 @@
   "events": {
     "upcoming": "Kommende Termine",
     "past": "Vergangene Termine",
+    "openingEvent": "Eröffnung",
+    "programme": "Programm",
+    "date": "Datum",
     "none": "Zurzeit sind keine Termine geplant.",
     "location": "Ort",
     "time": "Zeit",

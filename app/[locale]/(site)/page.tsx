@@ -8,12 +8,11 @@ import {
   getBlocks,
   getOffers,
   getUpcomingEvents,
-  getFeaturedEvent,
   getCourses,
   getSettings,
 } from '@/lib/db/queries/content';
 import { SectionHead } from '@/components/site/page-head';
-import { EventCard, DayPlate } from '@/components/site/event-card';
+import { EventCard } from '@/components/site/event-card';
 import { CourseCard } from '@/components/site/course-card';
 import { EditableText } from '@/components/editable/editable-text';
 import { EditableEntry, EditableAdd } from '@/components/editable/editable-list';
@@ -22,8 +21,7 @@ import { Tag } from '@/components/ui/tag';
 import { LinkButton } from '@/components/ui/button';
 import { Icon } from '@/components/site/icon';
 import { Mark, ViennaSkyline, PatternPlate, Ring } from '@/components/site/ornaments';
-import { formatDate, formatTime } from '@/lib/i18n/format';
-import { organizationJsonLd, eventJsonLd, JsonLd } from '@/lib/seo';
+import { organizationJsonLd, JsonLd } from '@/lib/seo';
 import { isLocale, locales, type Locale } from '@/lib/i18n/config';
 
 export function generateStaticParams() {
@@ -53,11 +51,10 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
   setRequestLocale(locale);
   const typed = locale as Locale;
 
-  const [header, blocks, offers, featured, upcoming, courses, settings] = await Promise.all([
+  const [header, blocks, offers, upcoming, courses, settings] = await Promise.all([
     getPageHeader('home', typed),
     getBlocks('home', typed),
     getOffers(typed),
-    getFeaturedEvent(typed),
     getUpcomingEvents(typed, 3),
     getCourses(typed, 3),
     getSettings(),
@@ -70,13 +67,11 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
   const tNav = await getTranslations({ locale, namespace: 'nav' });
   const tEvents = await getTranslations({ locale, namespace: 'events' });
 
-  const showFeatured = settings.showOpeningEvent && featured;
   const chips = blocks.hero_chips?.items ?? [];
 
   return (
     <>
       <JsonLd data={organizationJsonLd(typed, settings)} />
-      {showFeatured ? <JsonLd data={eventJsonLd(featured, typed, settings)} /> : null}
 
       {/* ── Hero ─────────────────────────────────────────────────────────────
           The design opens on a band, not on paper: deep green under cream,
@@ -305,116 +300,6 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
           </div>
         </div>
       </section>
-
-      {/* ── Featured opening event ───────────────────────────────────────── */}
-      {showFeatured ? (
-        <section className="section section-alt" data-rise>
-          <div className="page">
-            <div className="rail">
-              <div className="head-rule" style={{ paddingBlockStart: 'var(--space-2)' }}>
-                <p className="kicker">{t('openingEvent')}</p>
-                <div style={{ marginBlockStart: 'var(--space-3)' }}>
-                  <DayPlate date={featured.startsAt} locale={typed} />
-                </div>
-              </div>
-
-              <div style={{ display: 'grid', gap: 'var(--space-4)' }}>
-                <EditableText
-                  as="h2"
-                  entity="event"
-                  id={featured.id}
-                  field="title"
-                  locale={typed}
-                  value={featured.title}
-                  style={{ fontSize: 'var(--text-3xl)' }}
-                />
-
-                <p className="text-sm" style={{ color: 'var(--color-ink-muted)' }}>
-                  <time dateTime={featured.startsAt.toISOString()}>
-                    {formatDate(featured.startsAt, typed, {
-                      weekday: 'long',
-                      day: 'numeric',
-                      month: 'long',
-                      year: 'numeric',
-                    })}
-                    {' · '}
-                    {formatTime(featured.startsAt, typed)}
-                    {featured.endsAt ? `–${formatTime(featured.endsAt, typed)}` : ''}
-                  </time>
-                  {featured.location ? (
-                    <>
-                      {' · '}
-                      <EditableText
-                        entity="event"
-                        id={featured.id}
-                        field="location"
-                        locale={typed}
-                        value={featured.location}
-                      />
-                    </>
-                  ) : null}
-                </p>
-
-                <EditableText
-                  as="p"
-                  entity="event"
-                  id={featured.id}
-                  field="body"
-                  locale={typed}
-                  value={featured.body}
-                  multiline
-                />
-
-                {featured.programme.length > 0 ? (
-                  <div style={{ marginBlockStart: 'var(--space-2)' }}>
-                    <p className="kicker" style={{ marginBlockEnd: 'var(--space-2)' }}>
-                      {t('programme')}
-                    </p>
-                    <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'grid' }}>
-                      {featured.programme.map((item) => (
-                        <li
-                          key={item.id}
-                          style={{
-                            display: 'flex',
-                            gap: 'var(--space-3)',
-                            paddingBlock: 'var(--space-2)',
-                            borderBlockEnd: 'var(--rule-hair) solid var(--color-rule)',
-                          }}
-                        >
-                          <EditableText
-                            entity="programme"
-                            id={item.id}
-                            field="timeLabel"
-                            locale={typed}
-                            value={item.timeLabel}
-                            className="tabular"
-                            style={{
-                              inlineSize: '4rem',
-                              flexShrink: 0,
-                              color: 'var(--color-accent-text)',
-                              fontWeight: 'var(--weight-semibold)',
-                            }}
-                          />
-                          <EditableText
-                            entity="programme"
-                            id={item.id}
-                            field="title"
-                            locale={typed}
-                            value={item.title}
-                          />
-                        </li>
-                      ))}
-                    </ul>
-                    <div style={{ marginBlockStart: 'var(--space-3)' }}>
-                      <EditableAdd entity="programme" parentId={featured.id} />
-                    </div>
-                  </div>
-                ) : null}
-              </div>
-            </div>
-          </div>
-        </section>
-      ) : null}
 
       {/* ── Upcoming events ──────────────────────────────────────────────── */}
       {upcoming.length > 0 ? (

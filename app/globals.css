@@ -819,14 +819,16 @@
     }
   }
 
+  /* The design sets a pulled quote as a panel on the sunk card ground rather
+     than as a rule in the margin: same italic, boxed. */
   .pull-quote {
     font-style: italic;
-    font-size: var(--text-2xl);
-    line-height: var(--leading-snug);
-    color: var(--color-ink);
-    max-width: var(--measure-narrow);
-    padding-inline-start: var(--space-4);
-    border-inline-start: var(--rule-thick) solid var(--color-accent);
+    font-size: 19.5px;
+    line-height: 1.75;
+    color: var(--head);
+    padding: 22px 26px;
+    border: var(--rule-hair) solid var(--line);
+    background: var(--card2);
     margin: 0;
   }
 
@@ -1810,7 +1812,7 @@
     transform: rotate(45deg) scale(1.25);
   }
   .card:hover .card-plate {
-    opacity: 0.75;
+    opacity: 0.85;
     transform: rotate(0deg) scale(1.1);
   }
 
@@ -1947,6 +1949,122 @@
   .row-hover:hover {
     background: var(--card2);
     padding-inline: 14px;
+  }
+
+  /* A feature panel.
+
+     The design's treatment for its large stand-alone blocks — the opening
+     hours, the map, the contact panel, the closing ask, the pulled quote.
+     Three things happen together under the pointer: a light sweeps across on
+     the diagonal, a gold hairline settles just inside the border, and the
+     whole panel lifts and grows by a hair. Unlike a card this is not a grid
+     item, so the sheen is worth the paint. */
+  .surf {
+    position: relative;
+    border-radius: var(--radius-soft);
+    overflow: hidden;
+    isolation: isolate;
+    box-shadow: 0 0 0 0 rgba(7, 59, 41, 0);
+    transition:
+      transform 0.55s var(--ease-rise),
+      box-shadow 0.5s var(--ease-rise),
+      border-color 0.45s var(--ease-standard);
+  }
+  .surf::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    border-radius: inherit;
+    pointer-events: none;
+    box-shadow:
+      inset 0 0 0 1px rgba(200, 164, 93, 0),
+      inset 0 0 22px -8px rgba(200, 164, 93, 0);
+    transition: box-shadow 0.6s var(--ease-rise);
+  }
+  .surf:hover::before {
+    box-shadow:
+      inset 0 0 0 1px rgba(200, 164, 93, 0.55),
+      inset 0 0 26px -6px rgba(200, 164, 93, 0.3);
+  }
+  /* The sheen. It rests off the start edge with no transition at all, so
+     leaving the panel snaps it back out of sight rather than sliding it
+     backwards across the content. */
+  .surf::after {
+    content: '';
+    position: absolute;
+    inset-block: -60% -60%;
+    inset-inline-start: -40%;
+    inline-size: 28%;
+    z-index: 2;
+    pointer-events: none;
+    background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.16), transparent);
+    transform: translateX(-160%) rotate(9deg);
+    transition: transform 0s;
+  }
+  .surf:hover::after {
+    transform: translateX(560%) rotate(9deg);
+    transition: transform 1.15s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  :root[dir='rtl'] .surf::after {
+    transform: translateX(160%) rotate(-9deg);
+  }
+  :root[dir='rtl'] .surf:hover::after {
+    transform: translateX(-560%) rotate(-9deg);
+  }
+  :root[data-theme='dark'] .surf::after {
+    background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.08), transparent);
+  }
+  .surf:hover {
+    transform: translateY(-7px) scale(1.012);
+    border-color: var(--gold);
+    box-shadow:
+      0 20px 44px -26px rgba(7, 59, 41, 0.55),
+      0 4px 14px -8px rgba(7, 59, 41, 0.3);
+    transition:
+      transform var(--duration-base) var(--ease-out-expressive),
+      box-shadow var(--duration-base) var(--ease-out-expressive),
+      border-color var(--duration-fast) var(--ease-standard);
+  }
+  :root[data-theme='dark'] .surf:hover {
+    box-shadow:
+      0 20px 44px -24px rgba(0, 0, 0, 0.85),
+      0 4px 14px -8px rgba(0, 0, 0, 0.6);
+  }
+
+  /* The round chrome control: the search and theme buttons in the header.
+
+     The design gives both the same 40px disc with an inset hairline, and
+     turns it a little under the pointer — the one piece of chrome on the
+     site that moves for its own sake. */
+  .chrome-btn {
+    position: relative;
+    flex: 0 0 auto;
+    inline-size: 40px;
+    block-size: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    border-radius: var(--radius-pill);
+    background: var(--card);
+    box-shadow: inset 0 0 0 1px var(--line);
+    color: var(--head);
+    cursor: pointer;
+    transition:
+      background-color 0.3s var(--ease-standard),
+      box-shadow 0.3s var(--ease-standard),
+      color 0.3s var(--ease-standard),
+      transform 0.3s var(--ease-out-expressive);
+  }
+  .chrome-btn:hover {
+    background: var(--card2);
+    box-shadow: inset 0 0 0 1px var(--gold);
+    color: var(--goldInk);
+    transform: rotate(14deg);
+  }
+  .chrome-btn:active {
+    transform: scale(0.92);
   }
 
   /* An icon that points along the reading direction and must turn round with
@@ -2564,6 +2682,209 @@
     animation: ham-spin 7s linear infinite;
   }
 
+  /* ── The opening screen ───────────────────────────────────────────────────
+     The design's boot: the mark draws itself in a gold arc on the band, the
+     house's name arrives under it, a meter fills, and the whole thing blurs
+     away in three drifting puffs. Hidden unless the head script has turned it
+     on, so a page that should not boot never paints a frame of it. */
+  .boot {
+    display: none;
+  }
+  :root[data-boot='1'] .boot {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: var(--z-toast);
+    overflow: hidden;
+    pointer-events: none;
+    will-change: opacity, filter, transform;
+  }
+  .boot[data-exit='1'] {
+    animation: ham-smoke-out 1.5s cubic-bezier(0.4, 0, 0.5, 1) both;
+  }
+  .boot[data-exit='1'] .puff {
+    animation: ham-smoke-drift 1.6s cubic-bezier(0.34, 0, 0.5, 1) both;
+  }
+  .boot[data-exit='1'] .boot-in {
+    opacity: 0;
+    transition: opacity 0.85s cubic-bezier(0.4, 0, 0.5, 1);
+  }
+  .puff {
+    position: absolute;
+    border-radius: 50%;
+    opacity: 0;
+    pointer-events: none;
+    background: radial-gradient(
+      circle at 50% 50%,
+      rgba(200, 164, 93, 0.3),
+      rgba(200, 164, 93, 0.05) 55%,
+      transparent 72%
+    );
+    filter: blur(26px);
+    will-change: transform, opacity;
+  }
+  /* The crescent, held at full cover rather than sweeping past. */
+  .boot-panel {
+    position: absolute;
+    inset-block: -2% -2%;
+    inset-inline-start: -12%;
+    inline-size: 136%;
+    overflow: visible;
+  }
+  .boot-panel svg {
+    display: block;
+    inline-size: 100%;
+    block-size: 100%;
+  }
+  :root[dir='rtl'] .boot-panel svg {
+    transform: scaleX(-1);
+  }
+  .boot-in {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    display: grid;
+    place-content: center;
+    justify-items: center;
+    gap: 26px;
+    padding-inline: 24px;
+    text-align: center;
+  }
+  .boot-mark {
+    position: relative;
+    inline-size: clamp(116px, 17vw, 158px);
+    block-size: clamp(116px, 17vw, 158px);
+  }
+  .boot-mark > svg {
+    position: absolute;
+    inset: 0;
+    inline-size: 100%;
+    block-size: 100%;
+    overflow: visible;
+  }
+  .boot-mark .dr {
+    fill: none;
+    stroke: var(--gold);
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    transform: rotate(-90deg);
+    transform-origin: center;
+    animation: ham-draw 1.4s cubic-bezier(0.45, 0, 0.2, 1) both;
+  }
+  .boot-orbit {
+    inset: -13%;
+    animation: ham-spin 7s linear infinite;
+  }
+  .boot-logo {
+    position: absolute;
+    inset: 11%;
+    display: block;
+    border-radius: 50%;
+    box-shadow:
+      0 0 0 1px var(--patBand),
+      0 14px 34px -18px rgba(0, 0, 0, 0.7);
+    transform-origin: center;
+    animation: ham-logo-in 1.05s var(--ease-out-expressive) both;
+  }
+  .boot-word {
+    font-family: var(--font-display);
+    font-size: clamp(19px, 2.4vw, 26px);
+    letter-spacing: var(--tracking-tight);
+    color: var(--bandInk);
+    animation: ham-boot-word 0.8s var(--ease-out-expressive) 0.45s both;
+  }
+  .boot-sub {
+    font-size: 10px;
+    font-weight: var(--weight-bold);
+    letter-spacing: 0.32em;
+    text-transform: uppercase;
+    color: var(--goldInk);
+    animation: ham-boot-word 0.8s var(--ease-out-expressive) 0.6s both;
+  }
+  .boot-meter {
+    inline-size: min(220px, 52vw);
+    block-size: 1.5px;
+    border-radius: 2px;
+    background: var(--patBand);
+    overflow: hidden;
+  }
+  .boot-meter i {
+    display: block;
+    block-size: 100%;
+    background: linear-gradient(90deg, transparent, var(--gold));
+    transform-origin: left;
+    animation: ham-meter 1.5s cubic-bezier(0.4, 0, 0.2, 1) both;
+  }
+  @keyframes ham-draw {
+    from {
+      stroke-dashoffset: var(--len, 900);
+    }
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+  @keyframes ham-logo-in {
+    from {
+      opacity: 0;
+      transform: scale(0.86);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+  @keyframes ham-boot-word {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  @keyframes ham-meter {
+    0% {
+      transform: scaleX(0);
+    }
+    70% {
+      transform: scaleX(0.82);
+    }
+    100% {
+      transform: scaleX(1);
+    }
+  }
+  @keyframes ham-smoke-drift {
+    0% {
+      opacity: 0;
+      transform: translate3d(0, 0, 0) scale(1);
+    }
+    30% {
+      opacity: 0.5;
+    }
+    100% {
+      opacity: 0;
+      transform: translate3d(var(--dx, 0), var(--dy, -36%), 0) scale(2.3);
+    }
+  }
+  @keyframes ham-smoke-out {
+    0% {
+      opacity: 1;
+      filter: blur(0) saturate(1);
+      transform: scale(1);
+    }
+    45% {
+      opacity: 0.62;
+      filter: blur(14px) saturate(0.85);
+      transform: scale(1.045);
+    }
+    100% {
+      opacity: 0;
+      filter: blur(42px) saturate(0.6);
+      transform: scale(1.14);
+    }
+  }
+
   /* Theme switch: the design's circular sheet, sized to the viewport and
      expanding from the toggle. Transform and opacity only — no layout
      thrash — and it paints the colour being left behind, so the new theme is
@@ -2617,7 +2938,8 @@
       animation: none;
     }
     .theme-wash,
-    .wipe {
+    .wipe,
+    :root[data-boot='1'] .boot {
       display: none;
     }
     .search-pill > svg,

@@ -60,7 +60,7 @@ export default async function AboutPage({ params }: { params: Promise<{ locale: 
               ) : null}
 
               {blocks.pull_quote ? (
-                <blockquote className="pull-quote">
+                <blockquote className="pull-quote surf" data-rise>
                   <EditableText
                     entity="block"
                     id={blocks.pull_quote.id}

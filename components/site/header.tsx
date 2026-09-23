@@ -6,7 +6,7 @@ import { X, MagnifyingGlass, CaretDown } from '@phosphor-icons/react/dist/ssr';
 import { Link, usePathname } from '@/lib/i18n/navigation';
 import { NAV, LEGAL_NAV } from './nav-links';
 import { ThemeToggle } from './theme-toggle';
-import { PatternPlate } from './ornaments';
+import { Mark, PatternPlate } from './ornaments';
 import { LocaleSwitch } from './locale-switch';
 import { SearchPopup } from './search-popup';
 import { Button, LinkButton } from '../ui/button';
@@ -156,7 +156,13 @@ export function Header({ theme, locale }: { theme: ThemeValue; locale: Locale })
           >
             <Brand condensed={condensed} />
 
-            <nav className="nav ms-auto hidden lg:flex" aria-label={t('primary')}>
+            {/* The desktop nav appears at the width it actually fits.
+
+                Measured rather than chosen: masthead, seven items, the two
+                chrome discs and the language switch need about 1180px once
+                the bar's gutters are counted. `lg` — 1024px — was 140px short
+                of that and pushed the bar off the side of the page. */}
+            <nav className="nav ms-auto hidden min-[1180px]:flex" aria-label={t('primary')}>
               {primary.map((entry) => (
                 <Link
                   key={entry.href}
@@ -216,29 +222,39 @@ export function Header({ theme, locale }: { theme: ThemeValue; locale: Locale })
               </div>
             </nav>
 
-            <div className="ms-auto flex items-center gap-1 lg:ms-2">
-              <Button
+            <div className="ms-auto flex items-center gap-2 min-[1180px]:ms-2">
+              <button
+                type="button"
                 ref={searchButtonRef}
-                variant="ghost"
-                size="sm"
-                iconOnly
+                className="chrome-btn"
                 aria-label={tActions('openSearch')}
                 aria-expanded={searchOpen}
                 onClick={() => setSearchOpen(true)}
               >
                 <MagnifyingGlass size={20} weight="duotone" aria-hidden="true" />
-              </Button>
+              </button>
 
               <ThemeToggle theme={theme} />
               <LocaleSwitch className="hidden sm:flex" />
 
-              <LinkButton href={`/${locale}/support`} size="sm" className="hidden sm:inline-flex">
+              {/* The ask, only where there is room for it.
+
+                  The measurement, not a breakpoint off the shelf: the
+                  masthead, the seven nav items, the two discs and the
+                  language switch come to about 1240px of content plus the
+                  bar's own gutters, so below ~1360px this is what has to go.
+                  The drawer and the footer both carry it regardless. */}
+              <LinkButton
+                href={`/${locale}/support`}
+                size="sm"
+                className="hidden min-[1360px]:inline-flex"
+              >
                 {t('support')}
               </LinkButton>
 
               <button
                 type="button"
-                className="burger lg:hidden"
+                className="burger min-[1180px]:hidden"
                 ref={drawerButtonRef}
                 aria-label={drawerOpen ? t('closeMenu') : t('openMenu')}
                 aria-expanded={drawerOpen}
@@ -260,7 +276,7 @@ export function Header({ theme, locale }: { theme: ThemeValue; locale: Locale })
         <div
           ref={drawerRef}
           id="mobile-drawer"
-          className="drawer fixed inset-0 lg:hidden"
+          className="drawer fixed inset-0 min-[1180px]:hidden"
           style={{ zIndex: 'var(--z-drawer)', background: 'var(--color-bg)' }}
           role="dialog"
           aria-modal="true"
@@ -339,24 +355,58 @@ function Brand({ condensed }: { condensed: boolean }) {
   return (
     <Link
       href="/"
-      className="brand flex flex-col"
-      style={{ textDecoration: 'none', color: 'var(--color-ink)', lineHeight: 1.1 }}
+      className="brand flex items-center"
+      // Below 480px the name is not rendered, so the link would otherwise be
+      // an aria-hidden drawing and nothing else. The label is the same string
+      // the masthead shows when there is room for it.
+      aria-label={t('name')}
+      style={{
+        textDecoration: 'none',
+        color: 'var(--color-ink)',
+        lineHeight: 1.1,
+        gap: '14px',
+        flex: '0 0 auto',
+        minInlineSize: 0,
+      }}
     >
+      {/* The mark and the ring that settles around it on hover. The wrapper
+          shrinks with the bar, and the ring is hung off it rather than off the
+          link, so it stays a circle around the mark alone. */}
       <span
         style={{
-          fontSize: condensed ? 'var(--text-base)' : 'var(--text-lg)',
-          fontWeight: 'var(--weight-bold)',
-          letterSpacing: 'var(--tracking-tight)',
-          transition: 'font-size var(--duration-base) var(--ease-standard)',
+          position: 'relative',
+          display: 'block',
+          inlineSize: condensed ? '34px' : '44px',
+          blockSize: condensed ? '34px' : '44px',
+          flex: '0 0 auto',
+          transition:
+            'inline-size 0.5s var(--ease-out-expressive), block-size 0.5s var(--ease-out-expressive)',
         }}
       >
-        {t('name')}
+        <span className="brand-ring" aria-hidden="true" />
+        <Mark />
       </span>
-      {!condensed ? (
-        <span className="kicker" style={{ marginBlockStart: '2px' }}>
-          {t('sub')}
+
+      {/* On a phone the mark stands alone: the name, the two chrome discs and
+          the menu control do not fit on one line under about 480px, and the
+          mark is the part that still says whose house this is. */}
+      <span className="hidden flex-col min-[480px]:flex" style={{ minInlineSize: 0 }}>
+        <span
+          style={{
+            fontSize: condensed ? 'var(--text-base)' : 'var(--text-lg)',
+            fontWeight: 'var(--weight-bold)',
+            letterSpacing: 'var(--tracking-tight)',
+            transition: 'font-size var(--duration-base) var(--ease-standard)',
+          }}
+        >
+          {t('name')}
         </span>
-      ) : null}
+        {!condensed ? (
+          <span className="kicker" style={{ marginBlockStart: '2px' }}>
+            {t('sub')}
+          </span>
+        ) : null}
+      </span>
     </Link>
   );
 }

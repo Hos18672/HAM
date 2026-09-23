@@ -21,7 +21,7 @@ import { Card, CardStar } from '@/components/ui/card';
 import { Tag } from '@/components/ui/tag';
 import { LinkButton } from '@/components/ui/button';
 import { Icon } from '@/components/site/icon';
-import { ViennaSkyline, PatternPlate, Ring } from '@/components/site/ornaments';
+import { Mark, ViennaSkyline, PatternPlate, Ring } from '@/components/site/ornaments';
 import { formatDate, formatTime } from '@/lib/i18n/format';
 import { organizationJsonLd, eventJsonLd, JsonLd } from '@/lib/seo';
 import { isLocale, locales, type Locale } from '@/lib/i18n/config';
@@ -92,7 +92,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
           paddingBlock: 'clamp(var(--space-6), 6vw, var(--space-9))',
         }}
       >
-        <PatternPlate drift opacity={0.75} />
+        <PatternPlate tiling="shesh" drift opacity={0.75} />
         <Ring />
 
         <div className="page" style={{ position: 'relative' }}>
@@ -192,15 +192,34 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
               ) : null}
             </div>
 
-            {/* The portrait frame. The design fills it with a photograph of the
-                house; until the association has uploaded one, it carries the
-                site's own skyline rather than a grey placeholder. */}
+            {/* The portrait frame.
+
+                The design fills it with a photograph of the house, which the
+                association has not supplied. An empty dark rectangle would
+                read as a broken image, so until the photograph exists the
+                frame carries a composition of its own: the girih ground, the
+                house's mark, and the city line along the foot. */}
             <div className="fade-in frame-wrap">
               <div
                 className="frame tile"
-                style={{ aspectRatio: '4 / 5', maxBlockSize: '640px', display: 'grid' }}
+                style={{
+                  aspectRatio: '4 / 5',
+                  maxBlockSize: '640px',
+                  display: 'grid',
+                  placeItems: 'center',
+                }}
               >
-                <ViennaSkyline />
+                <PatternPlate tiling="shesh" opacity={0.5} />
+                <div
+                  style={{
+                    position: 'relative',
+                    inlineSize: 'clamp(120px, 22%, 190px)',
+                    blockSize: 'clamp(120px, 22%, 190px)',
+                  }}
+                >
+                  <Mark className="" />
+                </div>
+                <ViennaSkyline tone="var(--gold)" opacity={0.3} />
               </div>
             </div>
           </div>
@@ -457,7 +476,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
 
       {/* ── Vienna & location ────────────────────────────────────────────── */}
       <section className="section-loose section-band" data-rise>
-        <PatternPlate drift opacity={0.6} />
+        <PatternPlate tiling="shesh" drift opacity={0.6} />
         <Ring side="start" top={-200} size={520} />
         <div className="page">
           <div className="rail">

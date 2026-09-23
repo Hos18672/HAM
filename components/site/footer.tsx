@@ -34,7 +34,7 @@ export async function Footer({ locale }: { locale: Locale }) {
 
   return (
     <footer className="footer-band">
-      <PatternPlate drift />
+      <PatternPlate tiling="shesh" drift opacity={0.6} />
 
       <div className="footer-inner">
         {/* The association, and the two ways to reach it directly. */}

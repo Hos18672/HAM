@@ -32,11 +32,11 @@ export async function DuaCard({ dua, locale }: { dua: DuaEntry; locale: Locale }
         aria-hidden="true"
         focusable="false"
         viewBox="0 0 400 80"
-        preserveAspectRatio="xMaxYMin meet"
+        preserveAspectRatio="xMaxYMax meet"
         style={{
           position: 'absolute',
-          insetInlineEnd: 'var(--space-2)',
-          insetBlockStart: 'var(--space-1)',
+          insetInlineEnd: '14px',
+          insetBlockEnd: '-6px',
           inlineSize: '90%',
           blockSize: 'auto',
           opacity: 0.07,
@@ -52,7 +52,7 @@ export async function DuaCard({ dua, locale }: { dua: DuaEntry; locale: Locale }
           style={{
             fontFamily: 'var(--font-naskh)',
             fontSize: '64px',
-            fill: 'var(--color-ink)',
+            fill: 'var(--gold)',
           }}
         >
           {dua.arabicTitle}

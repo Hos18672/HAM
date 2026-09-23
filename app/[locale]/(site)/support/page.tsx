@@ -146,9 +146,24 @@ export default async function SupportPage({ params }: { params: Promise<{ locale
       {settings.iban ? (
         <section className="section-loose" data-rise>
           <div className="page">
-            <Card variant="soft" style={{ maxInlineSize: '36rem' }}>
-              <p className="kicker">{t('bankDetails')}</p>
-              <div style={{ display: 'grid', gap: 'var(--space-3)' }}>
+            {/* The design's closing panel: gold-bordered, on the sunk card
+                ground, with the girih plate behind it. */}
+            <div
+              className="surf"
+              style={{
+                position: 'relative',
+                maxInlineSize: '36rem',
+                border: 'var(--rule-hair) solid var(--gold)',
+                borderRadius: 'var(--radius-softer)',
+                background: 'var(--card2)',
+                padding: 'clamp(28px, 3.5vw, 48px)',
+              }}
+            >
+              <PatternPlate opacity={0.4} />
+              <p className="kicker" style={{ position: 'relative' }}>
+                {t('bankDetails')}
+              </p>
+              <div style={{ position: 'relative', display: 'grid', gap: 'var(--space-3)' }}>
                 {blocks.account_holder ? (
                   <FactPair
                     label={t('accountHolder')}
@@ -175,7 +190,7 @@ export default async function SupportPage({ params }: { params: Promise<{ locale
                   }
                 />
               </div>
-            </Card>
+            </div>
           </div>
         </section>
       ) : null}

@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { Sun, Moon } from '@phosphor-icons/react/dist/ssr';
-import { Button } from '../ui/button';
 import { THEME_COOKIE, type ThemeValue } from './theme';
 
 /**
@@ -67,10 +66,9 @@ export function ThemeToggle({ theme }: { theme: ThemeValue }) {
   const isDark = current === 'dark';
 
   return (
-    <Button
-      variant="ghost"
-      size="sm"
-      iconOnly
+    <button
+      type="button"
+      className="chrome-btn"
       onClick={toggle}
       aria-label={t('toggle')}
       title={isDark ? t('light') : t('dark')}
@@ -80,6 +78,6 @@ export function ThemeToggle({ theme }: { theme: ThemeValue }) {
       ) : (
         <Moon size={20} weight="duotone" aria-hidden="true" />
       )}
-    </Button>
+    </button>
   );
 }

@@ -10,6 +10,7 @@ import { PrintPlates } from '@/components/site/print-plates';
 import { PatternDefs } from '@/components/site/ornaments';
 import { RiseObserver } from '@/components/site/rise';
 import { PageWipe } from '@/components/site/page-wipe';
+import { Boot } from '@/components/site/boot';
 import '../globals.css';
 
 export function generateStaticParams() {
@@ -88,21 +89,44 @@ export default async function LocaleLayout({
     <html lang={typed} dir={localeDirection[typed]} data-theme={theme} suppressHydrationWarning>
       <head>
         {/*
-          Preload only the face this locale actually renders body text in.
-          Preloading both would push ~140 KB the reader does not need onto the
-          critical path, which is worse than the swap it would avoid.
+          Turning the opening screen on, before the first paint.
+
+          It has to be decided here rather than in the component: by the time
+          React has hydrated the page is already on screen, and a loader that
+          arrives after the content it is supposed to be covering is worse
+          than none. This runs synchronously in the head, so the boot layer
+          either paints from the first frame or never paints at all.
+
+          It says no to a reader who has asked for less motion, and no to
+          every page after the first in a session — three seconds of loader on
+          each of sixteen pages is not a welcome, it is a toll. The timer is
+          the safety net: if the bundle that clears this never arrives, the
+          layer takes itself off anyway.
         */}
-        <link
-          rel="preload"
-          as="font"
-          type="font/woff2"
-          crossOrigin="anonymous"
-          href={
-            typed === 'fa'
-              ? '/fonts/noto-naskh-arabic-arabic-wght-normal.woff2'
-              : '/fonts/source-serif-4-latin-wght-normal.woff2'
-          }
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              '(function(){try{' +
+              "if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;" +
+              "if(sessionStorage.getItem('ham-boot'))return;" +
+              "sessionStorage.setItem('ham-boot','1');" +
+              "document.documentElement.dataset.boot='1';" +
+              'setTimeout(function(){delete document.documentElement.dataset.boot},4000);' +
+              '}catch(e){}})()',
+          }}
         />
+        {/*
+          No font preload link here, on purpose.
+
+          The faces are imported by the stylesheet and webpack emits them
+          under `_next/static/media` with content hashes, so there is no
+          stable path a hand-written <link> could name — and the absolute
+          `/fonts/…` paths this used to carry were 404s the moment the files
+          moved out of `public/`. The stylesheet is itself a render-blocking
+          link in the head, so the browser starts fetching the face it needs
+          as soon as it parses the @font-face rule: a few milliseconds later
+          than a preload, and actually correct.
+        */}
       </head>
       <body>
         <NextIntlClientProvider>
@@ -111,6 +135,7 @@ export default async function LocaleLayout({
           {children}
           <RiseObserver />
           <PageWipe />
+          <Boot />
         </NextIntlClientProvider>
       </body>
     </html>

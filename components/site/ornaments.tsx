@@ -75,6 +75,14 @@ export function PatternPlate({
   opacity,
   rounded = false,
 }: {
+  /**
+   * Which girih field to lay down.
+   *
+   * Not interchangeable: khatam is stroked in `--pat`, the page's own ink, and
+   * disappears on anything dark; shesh is stroked in `--patBand`, the gold,
+   * and is what the design lays over every band. Light ground takes khatam,
+   * dark ground takes shesh.
+   */
   tiling?: 'khatam' | 'shesh' | 'tumar';
   drift?: boolean;
   /** The plate sits at 0.62 by default; the header wants it far fainter. */
@@ -103,7 +111,15 @@ export function PatternMotif() {
   return <PatternPlate />;
 }
 
-export function ViennaSkyline() {
+export function ViennaSkyline({
+  tone = 'var(--color-ink)',
+  opacity = 0.1,
+}: {
+  /** The line is drawn in the ink of whatever ground it sits on: the page's
+      own on paper, gold on the band — where ink at a tenth is invisible. */
+  tone?: string;
+  opacity?: number;
+} = {}) {
   return (
     <svg
       aria-hidden="true"
@@ -116,8 +132,8 @@ export function ViennaSkyline() {
         insetBlockEnd: 0,
         inlineSize: '100%',
         blockSize: '7rem',
-        opacity: 0.1,
-        color: 'var(--color-ink)',
+        opacity,
+        color: tone,
         pointerEvents: 'none',
         zIndex: 0,
       }}
@@ -194,5 +210,38 @@ export function Ring({
         pointerEvents: 'none',
       }}
     />
+  );
+}
+
+/**
+ * The house's mark.
+ *
+ * The design's masthead and boot screen both show a round photographic logo,
+ * which the association has not supplied. Rather than leave a hole where the
+ * mark belongs, this draws one from the same vocabulary as everything else on
+ * the site: the khatam eight-point star — two squares at 45° to each other,
+ * the figure the whole girih ground is built from — in gold on the band green,
+ * inside a hairline ring.
+ *
+ * It is a stand-in, and it is meant to be replaced: swap this for an <img>
+ * pointing at the association's own file and nothing else has to change.
+ */
+export function Mark({ className = 'brand-mark' }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 100 100"
+      aria-hidden="true"
+      focusable="false"
+      style={{ display: 'block', inlineSize: '100%', blockSize: '100%', borderRadius: '50%' }}
+    >
+      <circle cx="50" cy="50" r="50" fill="var(--band)" />
+      <g fill="none" stroke="var(--gold)" strokeWidth="3" strokeLinejoin="round">
+        <rect x="21" y="21" width="58" height="58" />
+        <rect x="21" y="21" width="58" height="58" transform="rotate(45 50 50)" />
+      </g>
+      <circle cx="50" cy="50" r="15" fill="var(--gold)" fillOpacity="0.9" />
+      <circle cx="50" cy="50" r="48.5" fill="none" stroke="var(--gold)" strokeOpacity="0.55" />
+    </svg>
   );
 }

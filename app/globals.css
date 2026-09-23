@@ -306,8 +306,8 @@
   /* ── Layout ───────────────────────────────────────────────────────────── */
   --measure: 62ch;
   --measure-narrow: 44ch;
-  --page-max: 78rem;
-  --page-gutter: var(--space-4);
+  --page-max: 1320px;
+  --page-gutter: clamp(20px, 5vw, 56px);
   --header-height: 4.5rem;
 
   /* ── Motion ───────────────────────────────────────────────────────────── */
@@ -318,10 +318,9 @@
   --duration-base: 500ms;
   --duration-slow: 1250ms;
   --duration-theme: 720ms;
-  /* When the page transition is at full cover — 44%–56% of the wipe's 0.9s —
-     and therefore when the incoming page may arrive unseen. The design's own
-     .42s. */
-  --duration-wipe-cover: 420ms;
+  /* How long a page waits before it arrives, on a navigation. The design's
+     own .42s, from `.ham-page`. */
+  --duration-page-in-delay: 420ms;
 
   --z-header: 40;
   --z-drawer: 60;
@@ -738,16 +737,19 @@
      Sections are separated by whitespace, never by rules, borders or cards.
      ═══════════════════════════════════════════════════════════════════════════ */
 
+  /* The page column.
+
+     Centred, 1320px, with an even gutter — the design's `max-width:1320px;
+     margin:0 auto; padding-inline:clamp(20px,5vw,56px)`. This used to be
+     flush left with the whitespace collecting on the right, which is the
+     underlying broadsheet system's idea and not this site's: it left every
+     page sitting off-centre with a 60px rail on one side and 20px on the
+     other. */
   .page {
     max-width: var(--page-max);
-    margin-inline: 0 auto; /* flush left, whitespace collects on the right */
+    margin-inline: auto;
     padding-inline: var(--page-gutter);
     width: 100%;
-  }
-  @media (min-width: 80rem) {
-    .page {
-      padding-inline-start: var(--space-7);
-    }
   }
 
   /* Vertical rhythm between sections. Whitespace is the separator. */
@@ -802,13 +804,21 @@
     }
   }
 
+  /* The small-caps label. Gold, not grey: the design sets every one of these
+     in `--goldInk` on paper and `--gold` on a band, and a faint ink was
+     reading as a caption rather than as the design's gold rule of a line. */
   .kicker {
     font-size: var(--text-kicker);
     letter-spacing: var(--tracking-kicker);
     text-transform: uppercase;
-    font-weight: var(--weight-semibold);
-    color: var(--color-ink-faint);
+    font-weight: var(--weight-bold);
+    color: var(--goldInk);
     margin: 0;
+  }
+  .section-band .kicker,
+  .footer-band .kicker,
+  .boot .kicker {
+    color: var(--gold);
   }
   :root[dir='rtl'] .kicker {
     /* Uppercasing and wide tracking are meaningless in the Arabic script. */
@@ -1008,10 +1018,16 @@
   .btn > svg {
     transition: transform var(--duration-base) var(--ease-out-expressive);
   }
-  .btn:hover:not(:disabled) > svg:last-child {
+  /* The trailing arrow leans the way the button sends you — but only when
+     there is something for it to trail. In an icon-only button the icon is
+     both the first child and the last, so this used to slide the caret 5px
+     out of the middle of its disc and leave it sitting against the rim: most
+     visible on the calendar's month arrows, which look broken the moment the
+     pointer lands on them. */
+  .btn:hover:not(:disabled) > svg:last-child:not(:first-child) {
     transform: translateX(5px);
   }
-  :root[dir='rtl'] .btn:hover:not(:disabled) > svg:last-child {
+  :root[dir='rtl'] .btn:hover:not(:disabled) > svg:last-child:not(:first-child) {
     transform: translateX(-5px);
   }
   .btn:hover:not(:disabled) {
@@ -2747,101 +2763,14 @@
     animation: ham-page-in 0.8s var(--ease-out-expressive) both;
   }
 
-  /* The page wipe. The panel is wider than the viewport and its curved edge
-     hangs past both ends, so the sweep never shows a straight seam. */
-  @keyframes ham-wipe {
-    0% {
-      transform: translateX(-120%);
-    }
-    44% {
-      transform: translateX(0);
-    }
-    56% {
-      transform: translateX(0);
-    }
-    100% {
-      transform: translateX(120%);
-    }
-  }
-  @keyframes ham-wipe-rtl {
-    0% {
-      transform: translateX(120%);
-    }
-    44% {
-      transform: translateX(0);
-    }
-    56% {
-      transform: translateX(0);
-    }
-    100% {
-      transform: translateX(-120%);
-    }
-  }
-  .wipe {
-    position: fixed;
-    inset: 0;
-    z-index: var(--z-toast);
-    pointer-events: none;
-    overflow: hidden;
-  }
-  .wipe-panel {
-    position: absolute;
-    top: -2%;
-    bottom: -2%;
-    inset-inline-start: -12%;
-    width: 136%;
-    animation: ham-wipe 0.9s cubic-bezier(0.76, 0, 0.24, 1) both;
-  }
-  .wipe-panel svg {
-    display: block;
-    width: 100%;
-    height: 100%;
-  }
-  :root[dir='rtl'] .wipe-panel {
-    animation-name: ham-wipe-rtl;
-  }
-  :root[dir='rtl'] .wipe-panel svg {
-    transform: scaleX(-1);
-  }
+  /* There is no page wipe.
 
-  /* The mark that rides the panel, from the design's hamWipeMark: it comes up
-     from 0.72 as the panel closes over the page, is held at full size through
-     the beat the panel covers, and blooms past 1 as the panel leaves. It is
-     the piece of the transition the app was missing — without it the sweep is
-     a coloured shape crossing the screen and nothing else.
-
-     It sits on the layer rather than in the panel so it stays at the centre of
-     the viewport while the panel travels under it, and it counts as motion
-     only: the whole `.wipe` is `pointer-events:none`, `aria-hidden`, and gone
-     from the document the moment the panel's animation ends. */
-  @keyframes ham-wipe-mark {
-    0% {
-      opacity: 0;
-      transform: translate(-50%, -50%) scale(0.72);
-    }
-    34% {
-      opacity: 1;
-      transform: translate(-50%, -50%) scale(1);
-    }
-    62% {
-      opacity: 1;
-      transform: translate(-50%, -50%) scale(1);
-    }
-    100% {
-      opacity: 0;
-      transform: translate(-50%, -50%) scale(1.14);
-    }
-  }
-  .wipe-mark {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    inline-size: clamp(64px, 9vw, 104px);
-    block-size: clamp(64px, 9vw, 104px);
-    transform: translate(-50%, -50%) scale(0.72);
-    opacity: 0;
-    animation: ham-wipe-mark 0.9s cubic-bezier(0.76, 0, 0.24, 1) both;
-  }
+     A crescent panel used to sweep across on every navigation here, and it
+     was wrong: the prototype contains no such thing — the word "wipe" does
+     not appear in it once. The shape was the boot screen's panel, which I had
+     taken for a page transition. The design's page change is `hamPageIn`
+     alone: the content rises 34px out of a slight shrink, 420ms after the
+     navigation. That is `.page-enter` above. */
 
   /* The sheen that crosses a button once on hover. */
   @keyframes ham-sheen {
@@ -3582,7 +3511,7 @@
       animation-iteration-count: 1 !important;
       transition-duration: 0.01ms !important;
       /* Delays too, not only durations. The page transition waits 420ms for
-         the wipe to cover, and the reveals stagger by up to 300ms; with the
+         420ms on a navigation, and the reveals stagger by up to 300ms; with the
          durations cut to nothing but the delays left in place, a reader who
          asked for less motion would get no animation and all of the waiting. */
       animation-delay: 0s !important;
@@ -3604,7 +3533,6 @@
       animation: none;
     }
     .theme-wash,
-    .wipe,
     :root[data-boot='1'] .boot {
       display: none;
     }

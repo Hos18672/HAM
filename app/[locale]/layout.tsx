@@ -9,7 +9,6 @@ import { getSettings } from '@/lib/db/queries/content';
 import { PrintPlates } from '@/components/site/print-plates';
 import { PatternDefs } from '@/components/site/ornaments';
 import { RiseObserver } from '@/components/site/rise';
-import { PageWipe } from '@/components/site/page-wipe';
 import { Boot } from '@/components/site/boot';
 import '../globals.css';
 
@@ -134,7 +133,6 @@ export default async function LocaleLayout({
           <PatternDefs />
           {children}
           <RiseObserver />
-          <PageWipe />
           <Boot />
         </NextIntlClientProvider>
       </body>

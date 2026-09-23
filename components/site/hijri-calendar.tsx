@@ -54,8 +54,13 @@ export async function HijriCalendar({
       }}
     >
       <div>
+        {/* The heading and the month controls share a row, as the design has
+            them. The heading has to be allowed to shrink for that: at 30px
+            the Hijri month plus the three controls came to more than the
+            column is wide, so the controls wrapped onto a line of their own
+            and ended up floating between the heading and the grid. */}
         <div className="flex flex-wrap items-baseline gap-3">
-          <div>
+          <div style={{ flex: '1 1 12rem', minInlineSize: 0 }}>
             {/* The design leads with the Hijri month and keeps the Gregorian
                 one under it: this is the Hijri calendar, shown against the
                 civil month rather than the other way round. */}
@@ -93,7 +98,7 @@ export async function HijriCalendar({
 
           {/* Arrows are mirrored in RTL by the stylesheet, so "previous" always
               points backwards in reading order. */}
-          <nav className="nav ms-auto" aria-label={t('calendar')}>
+          <nav className="nav ms-auto" style={{ flex: '0 0 auto' }} aria-label={t('calendar')}>
             <Link
               href={`${basePath}?y=${previous.y}&m=${previous.m}`}
               className="btn btn-secondary btn-sm btn-icon"

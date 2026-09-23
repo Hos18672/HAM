@@ -2885,6 +2885,18 @@
     }
   }
 
+  /* ── Design parity: PAGES ──────────────────────────────────────────────
+     Treatments carried over from design-system/site.css for the about / activities / courses / culture / sport / community pages.
+     Kept in its own region so parallel work on different parts of the site
+     does not land in the same place in this file. */
+  /* ── end PAGES ─────────────────────────────────────────────────────────── */
+
+  /* ── Design parity: TOOLS ──────────────────────────────────────────────
+     Treatments carried over from design-system/site.css for the prayer / qibla / du'a / gallery / events / support / contact pages.
+     Kept in its own region so parallel work on different parts of the site
+     does not land in the same place in this file. */
+  /* ── end TOOLS ─────────────────────────────────────────────────────────── */
+
   /* Theme switch: the design's circular sheet, sized to the viewport and
      expanding from the toggle. Transform and opacity only — no layout
      thrash — and it paints the colour being left behind, so the new theme is

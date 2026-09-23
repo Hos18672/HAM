@@ -69,6 +69,7 @@ export async function CourseCard({ course, locale }: { course: Course; locale: L
         value={course.body}
         className="card-body"
         multiline
+        rise
       />
 
       {/* Three facts in one column, ruled off — the design sets the labels in

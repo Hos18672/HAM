@@ -68,6 +68,7 @@ export async function EventCard({
           value={event.body}
           className="card-body"
           multiline
+          rise
         />
       ) : (
         <span />

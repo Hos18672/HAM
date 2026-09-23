@@ -29,6 +29,15 @@ export interface EditableTextProps {
    */
   words?: boolean | 'lines' | 'hero' | 'tight';
   chars?: boolean;
+  /**
+   * Reveal the block as a whole on scroll.
+   *
+   * `words` and `chars` already do this — they carry `data-rise` themselves —
+   * so this is for the body copy between the headings, which the design also
+   * brings in but does not split. Splitting a paragraph of running text is
+   * the wrong effect: the reader is reading it, not admiring it.
+   */
+  rise?: boolean;
 }
 
 /**
@@ -55,6 +64,7 @@ export async function EditableText({
   multiline,
   words,
   chars,
+  rise,
 }: EditableTextProps) {
   const editing = await isEditing();
 
@@ -106,7 +116,12 @@ export async function EditableText({
       );
     }
     return (
-      <Tag className={className} style={style} data-field={`${entity}.${id}.${field}`}>
+      <Tag
+        className={className}
+        style={style}
+        data-field={`${entity}.${id}.${field}`}
+        data-rise={rise ? '' : undefined}
+      >
         {value}
       </Tag>
     );

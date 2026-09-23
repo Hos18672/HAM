@@ -102,6 +102,7 @@ export async function FeaturedEvent({
             locale={locale}
             value={event.body}
             multiline
+            rise
             style={{
               marginBlockStart: '18px',
               fontSize: '15.5px',

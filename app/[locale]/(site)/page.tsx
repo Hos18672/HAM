@@ -20,7 +20,8 @@ import { Card, CardStar } from '@/components/ui/card';
 import { Tag } from '@/components/ui/tag';
 import { LinkButton } from '@/components/ui/button';
 import { Icon } from '@/components/site/icon';
-import { Mark, ViennaSkyline, PatternPlate, Ring } from '@/components/site/ornaments';
+import { delay } from '@/components/site/motion';
+import { Mark, ViennaSkyline, ViennaLine, PatternPlate, Ring } from '@/components/site/ornaments';
 import { organizationJsonLd, JsonLd } from '@/lib/seo';
 import { isLocale, locales, type Locale } from '@/lib/i18n/config';
 
@@ -251,6 +252,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
                   locale={typed}
                   value={blocks.intro_body.text}
                   multiline
+                  rise
                 />
               ) : null}
             </div>
@@ -289,6 +291,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
                       value={offer.body}
                       className="card-body"
                       multiline
+                      rise
                     />
                   </Card>
                 </EditableEntry>
@@ -359,16 +362,29 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
         </section>
       ) : null}
 
-      {/* ── Vienna & location ────────────────────────────────────────────── */}
-      <section className="section-loose section-band" data-rise>
-        <PatternPlate tiling="shesh" drift opacity={0.6} />
-        <Ring side="start" top={-200} size={520} />
+      {/* ── Vienna & location ──────────────────────────────────────────────
+          The design closes the page on the city itself: the text on one side,
+          a drawing of Vienna in a single gold line on the other, both on
+          paper rather than on the band. */}
+      <section className="section-loose">
         <div className="page">
-          <div className="rail">
-            <div className="head-rule" style={{ paddingBlockStart: 'var(--space-2)' }}>
-              <p className="kicker">{t('vienna')}</p>
-            </div>
-            <div style={{ display: 'grid', gap: 'var(--space-3)' }}>
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))',
+              gap: 'clamp(34px, 4vw, 72px)',
+              alignItems: 'center',
+            }}
+          >
+            <div>
+              <div className="flex items-center gap-3" data-rise>
+                <span
+                  aria-hidden="true"
+                  style={{ inlineSize: '26px', blockSize: '1px', background: 'var(--gold)' }}
+                />
+                <p className="kicker">{t('vienna')}</p>
+              </div>
+
               {blocks.vienna_title ? (
                 <EditableText
                   as="h2"
@@ -377,9 +393,16 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
                   field="text"
                   locale={typed}
                   value={blocks.vienna_title.text}
-                  style={{ fontSize: 'var(--text-3xl)' }}
+                  style={{
+                    ...delay(80),
+                    marginBlockStart: '18px',
+                    fontSize: 'clamp(28px, 3.6vw, 44px)',
+                    lineHeight: 1.12,
+                  }}
+                  words
                 />
               ) : null}
+
               {blocks.vienna_body ? (
                 <EditableText
                   as="p"
@@ -389,16 +412,62 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
                   locale={typed}
                   value={blocks.vienna_body.text}
                   multiline
+                  rise
+                  style={{
+                    ...delay(150),
+                    marginBlockStart: '20px',
+                    fontSize: 'var(--text-lg)',
+                    lineHeight: 1.9,
+                    maxInlineSize: '36em',
+                  }}
                 />
               ) : null}
-              <p className="text-sm" style={{ color: 'var(--color-ink-muted)' }}>
-                <span className="ltr-island">{settings.address}</span>
-              </p>
-              <p>
-                <LinkButton href={`/${locale}/contact`} variant="secondary">
+
+              <div
+                data-rise
+                style={{ ...delay(210), marginBlockStart: '30px' }}
+                className="flex flex-wrap gap-8"
+              >
+                <div>
+                  <p className="kicker">{t('address')}</p>
+                  <p
+                    style={{
+                      marginBlockStart: 'var(--space-2)',
+                      fontSize: 'var(--text-base)',
+                      lineHeight: 1.65,
+                      fontWeight: 'var(--weight-semibold)',
+                    }}
+                  >
+                    <span className="ltr-island">{settings.address}</span>
+                  </p>
+                </div>
+              </div>
+
+              <p data-rise style={{ ...delay(280), marginBlockStart: '32px' }}>
+                <LinkButton href={`/${locale}/contact`}>
                   {tActions('contact')}
+                  <ArrowRight
+                    size={16}
+                    weight="bold"
+                    aria-hidden="true"
+                    className="rtl:rotate-180"
+                  />
                 </LinkButton>
               </p>
+            </div>
+
+            <div
+              className="surf"
+              data-rise
+              style={{
+                position: 'relative',
+                background: 'var(--card2)',
+                border: 'var(--rule-hair) solid var(--line)',
+                padding: '30px 26px',
+              }}
+            >
+              <PatternPlate opacity={0.4} />
+              <ViennaLine />
             </div>
           </div>
         </div>

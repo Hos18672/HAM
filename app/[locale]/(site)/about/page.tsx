@@ -79,6 +79,7 @@ export default async function AboutPage({ params }: { params: Promise<{ locale: 
                     locale={typed}
                     value={blocks.body_1.text}
                     multiline
+                    rise
                   />
                 </div>
               ) : null}
@@ -93,6 +94,7 @@ export default async function AboutPage({ params }: { params: Promise<{ locale: 
                     locale={typed}
                     value={blocks.body_2.text}
                     multiline
+                    rise
                   />
                 </div>
               ) : null}
@@ -149,6 +151,7 @@ export default async function AboutPage({ params }: { params: Promise<{ locale: 
                       value={item.body}
                       className="card-body"
                       multiline
+                      rise
                     />
                   </Card>
                 </EditableEntry>

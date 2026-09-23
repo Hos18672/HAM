@@ -245,3 +245,68 @@ export function Mark({ className = 'brand-mark' }: { className?: string }) {
     </svg>
   );
 }
+
+/**
+ * Vienna, as a line.
+ *
+ * The design closes the home page on a drawing of the city — Karlskirche's
+ * dome, the Stephansdom spire, the Riesenrad — in a single gold stroke on the
+ * sunk card. Not the same object as `ViennaSkyline`, which is a filled
+ * silhouette used as a ground inside the hero frame: this one is the drawing
+ * the eye is meant to rest on, so it is stroked, and the paths are the
+ * design's own.
+ */
+export function ViennaLine() {
+  return (
+    <svg
+      viewBox="0 0 640 120"
+      width="100%"
+      height="auto"
+      aria-hidden="true"
+      focusable="false"
+      style={{ display: 'block', position: 'relative' }}
+    >
+      <g
+        fill="none"
+        stroke="var(--gold)"
+        strokeWidth="1.1"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <path d="M30 100V66h66v34z" />
+        <path d="M56 66V30h14v36z" />
+        <path d="M56 30l7-13 7 13z" />
+        <path d="M63 17V9" />
+        <path d="M40 100V84h8v16M78 100V84h8v16" strokeOpacity=".55" />
+        <path d="M136 100V78h28v22z" />
+        <path d="M134 78l16-13 16 13z" />
+        <path d="M132 76a18 18 0 0 1 36 0" />
+        <path d="M147 58h6v-6h-6z" />
+        <path d="M150 52V42M146 46h8" />
+        <path d="M114 100V64h6v36zM113 64h8M180 100V64h6v36zM179 64h8" />
+        <path d="M206 100V74h32v26z" />
+        <circle cx="222" cy="62" r="12" />
+        <path d="M210 62h24M222 50v24" strokeOpacity=".5" />
+        <path d="M284 100V62h50v38z" />
+        <path d="M284 62l25-13 25 13" />
+        <path d="M262 100V56h16v44z" />
+        <path d="M262 56l8-48 8 48z" />
+        <path d="M270 8V1" />
+        <path d="M318 62V44h10v18z" />
+        <path d="M318 44l5-9 5 9z" />
+        <path d="M352 100V76h68v24z" />
+        <path d="M366 76a20 20 0 0 1 40 0" />
+        <path d="M382 56h8v-6h-8z" />
+        <path d="M386 50V40" />
+        <path d="M362 100V86h10v14M400 100V86h10v14" strokeOpacity=".55" />
+        <circle cx="520" cy="62" r="38" />
+        <circle cx="520" cy="62" r="30" strokeOpacity=".5" />
+        <path d="M520 24v76M482 62h76M493 35l54 54M547 35l-54 54" strokeOpacity=".65" />
+        <path d="M502 100l16-38M538 100l-16-38" />
+        <path d="M0 100h640" strokeWidth="1.4" />
+        <path d="M0 106h640" strokeWidth=".8" strokeOpacity=".4" />
+      </g>
+      <circle cx="520" cy="62" r="4" fill="var(--gold)" />
+    </svg>
+  );
+}

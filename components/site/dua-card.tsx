@@ -90,6 +90,7 @@ export async function DuaCard({ dua, locale }: { dua: DuaEntry; locale: Locale }
         value={dua.summary}
         className="card-body"
         multiline
+        rise
       />
 
       {/* The two facts, under the design's hairline: the label held at a fixed

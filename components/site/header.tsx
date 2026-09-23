@@ -2,14 +2,14 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { X, MagnifyingGlass, CaretDown } from '@phosphor-icons/react/dist/ssr';
+import { X, MagnifyingGlass, CaretDown, ArrowRight } from '@phosphor-icons/react/dist/ssr';
 import { Link, usePathname } from '@/lib/i18n/navigation';
 import { NAV, LEGAL_NAV } from './nav-links';
 import { ThemeToggle } from './theme-toggle';
 import { Mark, PatternPlate } from './ornaments';
 import { LocaleSwitch } from './locale-switch';
 import { SearchPopup } from './search-popup';
-import { Button, LinkButton } from '../ui/button';
+import { LinkButton } from '../ui/button';
 import type { ThemeValue } from './theme';
 import type { Locale } from '@/lib/i18n/config';
 
@@ -273,71 +273,106 @@ export function Header({ theme, locale }: { theme: ThemeValue; locale: Locale })
       </header>
 
       {drawerOpen ? (
-        <div
-          ref={drawerRef}
-          id="mobile-drawer"
-          className="drawer fixed inset-0 min-[1180px]:hidden"
-          style={{ zIndex: 'var(--z-drawer)', background: 'var(--color-bg)' }}
-          role="dialog"
-          aria-modal="true"
-          aria-label={t('menu')}
-        >
-          <div className="page flex items-center" style={{ blockSize: 'var(--header-height)' }}>
-            <Brand condensed />
-            <Button
-              variant="ghost"
-              size="sm"
-              iconOnly
-              className="ms-auto"
-              aria-label={t('closeMenu')}
-              onClick={() => setDrawerOpen(false)}
-            >
-              <X size={22} weight="bold" aria-hidden="true" />
-            </Button>
-          </div>
+        <>
+          {/* The scrim. The design's menu is a panel, not a sheet: the page
+              stays visible behind it, softened, and a click out here closes
+              the menu the same way Escape does. */}
+          <div
+            className="drawer-scrim fixed inset-0 min-[1180px]:hidden"
+            style={{ zIndex: 'calc(var(--z-drawer) - 1)' }}
+            aria-hidden="true"
+            onClick={() => setDrawerOpen(false)}
+          />
 
-          <nav
-            className="page flex flex-col overflow-y-auto"
-            aria-label={t('primary')}
-            style={{
-              gap: 'var(--space-1)',
-              paddingBlock: 'var(--space-4)',
-              maxBlockSize: 'calc(100dvh - var(--header-height))',
-            }}
+          <div
+            ref={drawerRef}
+            id="mobile-drawer"
+            className="drawer drawer-panel fixed min-[1180px]:hidden"
+            style={{ zIndex: 'var(--z-drawer)' }}
+            role="dialog"
+            aria-modal="true"
+            aria-label={t('menu')}
           >
-            {NAV.map((entry) => (
-              <Link
-                key={entry.href}
-                href={entry.href}
-                className="nav-link drawer-item"
-                aria-current={isCurrent(entry.href) ? 'page' : undefined}
-                style={{ fontSize: 'var(--text-xl)', paddingBlock: 'var(--space-2)' }}
+            <PatternPlate opacity={0.5} rounded />
+
+            <div style={{ position: 'relative' }}>
+              <p className="drawer-head">
+                {t('primary')}
+                <span aria-hidden="true" />
+                <button
+                  type="button"
+                  className="chrome-btn"
+                  aria-label={t('closeMenu')}
+                  onClick={() => setDrawerOpen(false)}
+                >
+                  <X size={20} weight="bold" aria-hidden="true" />
+                </button>
+              </p>
+
+              <nav
+                aria-label={t('primary')}
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))',
+                  gap: '4px 28px',
+                }}
               >
-                {t(entry.key)}
-              </Link>
-            ))}
+                {NAV.map((entry, index) => (
+                  <Link
+                    key={entry.href}
+                    href={entry.href}
+                    className="drawer-item"
+                    aria-current={isCurrent(entry.href) ? 'page' : undefined}
+                    style={{ animationDelay: `${index * 40}ms` }}
+                  >
+                    <span className="drawer-dot" aria-hidden="true" />
+                    <span>{t(entry.key)}</span>
+                    <ArrowRight
+                      size={15}
+                      weight="bold"
+                      aria-hidden="true"
+                      className="mirror drawer-go"
+                    />
+                  </Link>
+                ))}
+              </nav>
 
-            <hr style={{ marginBlock: 'var(--space-3)' }} />
+              <div
+                style={{
+                  marginBlockStart: 'var(--space-4)',
+                  paddingBlockStart: 'var(--space-4)',
+                  borderBlockStart: 'var(--rule-hair) solid var(--line)',
+                  display: 'grid',
+                  gap: 'var(--space-2)',
+                }}
+              >
+                {LEGAL_NAV.map((entry) => (
+                  <Link
+                    key={entry.href}
+                    href={entry.href}
+                    className="drawer-item drawer-item-quiet"
+                  >
+                    <span>{t(entry.key)}</span>
+                  </Link>
+                ))}
+              </div>
 
-            {LEGAL_NAV.map((entry) => (
-              <Link key={entry.href} href={entry.href} className="nav-link drawer-item">
-                {t(entry.key)}
-              </Link>
-            ))}
+              <LocaleSwitch style={{ marginBlockStart: 'var(--space-4)', inlineSize: '100%' }} />
 
-            <div className="flex items-center gap-2" style={{ marginBlockStart: 'var(--space-3)' }}>
-              <LocaleSwitch />
+              <LinkButton
+                href={`/${locale}/support`}
+                className="btn-gold"
+                style={{
+                  marginBlockStart: 'var(--space-3)',
+                  inlineSize: '100%',
+                  justifyContent: 'center',
+                }}
+              >
+                {t('support')}
+              </LinkButton>
             </div>
-
-            <LinkButton
-              href={`/${locale}/support`}
-              size="lg"
-              style={{ marginBlockStart: 'var(--space-3)' }}
-            >
-              {t('support')}
-            </LinkButton>
-          </nav>
-        </div>
+          </div>
+        </>
       ) : null}
 
       <SearchPopup

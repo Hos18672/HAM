@@ -75,6 +75,7 @@ export default async function ActivitiesPage({ params }: { params: Promise<{ loc
                       value={offer.body}
                       className="card-body"
                       multiline
+                      rise
                     />
                   </Card>
                 </EditableEntry>

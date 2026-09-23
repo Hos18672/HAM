@@ -82,6 +82,7 @@ export default async function CommunityPage({ params }: { params: Promise<{ loca
                       value={card.body}
                       className="card-body"
                       multiline
+                      rise
                     />
                   </Card>
                 </EditableEntry>
@@ -120,6 +121,7 @@ export default async function CommunityPage({ params }: { params: Promise<{ loca
                       maxInlineSize: '36em',
                     }}
                     multiline
+                    rise
                   />
                 ) : null}
               </div>

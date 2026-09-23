@@ -117,6 +117,7 @@ export default async function CulturePage({ params }: { params: Promise<{ locale
                       value={card.body}
                       className="card-body"
                       multiline
+                      rise
                     />
                   </Card>
                 </EditableEntry>
@@ -143,6 +144,7 @@ export default async function CulturePage({ params }: { params: Promise<{ locale
                   locale={typed}
                   value={blocks.poem_text.text}
                   multiline
+                  rise
                   style={{ whiteSpace: 'pre-line' }}
                 />
               </blockquote>

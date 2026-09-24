@@ -1,9 +1,13 @@
-import { getTranslations } from 'next-intl/server';
+'use client';
+
+import { useMemo, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { CaretLeft, CaretRight } from '@phosphor-icons/react/dist/ssr';
-import { Link } from '@/lib/i18n/navigation';
 import { digits, formatDate } from '@/lib/i18n/format';
 import { HIJRI_MONTHS } from '@/lib/hijri';
-import type { CalendarMonth } from '@/lib/prayer-page';
+import { buildCalendarMonth, previousMonth, nextMonth } from '@/lib/calendar';
+import type { CalendarMonth } from '@/lib/calendar';
+import type { Occasion } from '@/lib/db/queries/content';
 import type { Locale } from '@/lib/i18n/config';
 
 /**
@@ -15,32 +19,73 @@ import type { Locale } from '@/lib/i18n/config';
  * gold ring *and* a gold tint. Neither marker is left to the colour alone —
  * the cell also carries the occasion's name and the word "today" in text, and
  * the legend under the grid names both.
+ *
+ * Moving a month happens here, not on the server. It used to be a link to
+ * `?y=&m=`, which is a real navigation: the whole route re-rendered — prayer
+ * times, page head, footer and all — to change which twelve numbers are in a
+ * grid. Everything the calendar needs is arithmetic plus the occasions list,
+ * which is month-independent and arrives once, so the browser can build any
+ * month itself. The URL is kept in step with `replaceState` so the month is
+ * still shareable and still survives a language switch, but nothing is
+ * fetched and nothing else on the page re-renders.
  */
-export async function HijriCalendar({
-  month,
+export function HijriCalendar({
+  initialMonth,
+  currentMonth,
+  occasions,
+  todayIso,
   locale,
   basePath,
 }: {
-  month: CalendarMonth;
+  initialMonth: CalendarMonth;
+  /** The month "today" falls in, which is where the Today button goes back to
+   *  — not necessarily the month the page opened on. */
+  currentMonth: { year: number; month: number };
+  /** Every occasion, keyed by Hijri date — the same list serves every month. */
+  occasions: Occasion[];
+  todayIso: string;
   locale: Locale;
+  /** Locale-prefixed, e.g. `/de/prayer`: this writes the address bar itself. */
   basePath: string;
 }) {
-  const t = await getTranslations({ locale, namespace: 'prayer' });
+  const t = useTranslations('prayer');
   const weekdays = t.raw('weekdays') as string[];
 
-  const previous =
-    month.month === 1 ? { y: month.year - 1, m: 12 } : { y: month.year, m: month.month - 1 };
-  const next =
-    month.month === 12 ? { y: month.year + 1, m: 1 } : { y: month.year, m: month.month + 1 };
+  const [{ year, month }, setShown] = useState({
+    year: initialMonth.year,
+    month: initialMonth.month,
+  });
 
-  const monthLabel = formatDate(new Date(Date.UTC(month.year, month.month - 1, 15, 12)), locale, {
+  // The first month is already built on the server; rebuild only on a move.
+  const shown = useMemo(
+    () =>
+      year === initialMonth.year && month === initialMonth.month
+        ? initialMonth
+        : buildCalendarMonth(year, month, occasions, todayIso),
+    [year, month, initialMonth, occasions, todayIso],
+  );
+
+  /** Move, and leave the address bar telling the truth. */
+  function go(next: { year: number; month: number }) {
+    setShown(next);
+    const url =
+      next.year === currentMonth.year && next.month === currentMonth.month
+        ? basePath
+        : `${basePath}?y=${next.year}&m=${next.month}`;
+    window.history.replaceState(null, '', url);
+  }
+
+  const previous = previousMonth({ year, month });
+  const next = nextMonth({ year, month });
+
+  const monthLabel = formatDate(new Date(Date.UTC(shown.year, shown.month - 1, 15, 12)), locale, {
     month: 'long',
     year: 'numeric',
   });
 
   // The Hijri months this Gregorian month straddles — usually two.
   const hijriMonths = Array.from(
-    new Set(month.cells.filter((cell) => cell.hijri).map((cell) => cell.hijri!.month)),
+    new Set(shown.cells.filter((cell) => cell.hijri).map((cell) => cell.hijri!.month)),
   );
   const hijriLabel = hijriMonths.map((m) => HIJRI_MONTHS[locale][m] ?? '').join(' / ');
 
@@ -96,29 +141,34 @@ export async function HijriCalendar({
             </h2>
           </div>
 
-          {/* Arrows are mirrored in RTL by the stylesheet, so "previous" always
-              points backwards in reading order. */}
-          <nav className="nav ms-auto" style={{ flex: '0 0 auto' }} aria-label={t('calendar')}>
-            <Link
-              href={`${basePath}?y=${previous.y}&m=${previous.m}`}
+          {/* Buttons, not links: moving a month is a change of view, not a
+              change of page. Arrows are mirrored in RTL by the stylesheet, so
+              "previous" always points backwards in reading order. */}
+          <div className="nav ms-auto" style={{ flex: '0 0 auto' }}>
+            <button
+              type="button"
               className="btn btn-secondary btn-sm btn-icon"
               aria-label={t('previousMonth')}
-              scroll={false}
+              onClick={() => go(previous)}
             >
               <CaretLeft size={16} weight="bold" aria-hidden="true" className="mirror" />
-            </Link>
-            <Link href={basePath} className="btn btn-secondary btn-sm" scroll={false}>
+            </button>
+            <button
+              type="button"
+              className="btn btn-secondary btn-sm"
+              onClick={() => go(currentMonth)}
+            >
               {t('today')}
-            </Link>
-            <Link
-              href={`${basePath}?y=${next.y}&m=${next.m}`}
+            </button>
+            <button
+              type="button"
               className="btn btn-secondary btn-sm btn-icon"
               aria-label={t('nextMonth')}
-              scroll={false}
+              onClick={() => go(next)}
             >
               <CaretRight size={16} weight="bold" aria-hidden="true" className="mirror" />
-            </Link>
-          </nav>
+            </button>
+          </div>
         </div>
 
         {/* A real table: the grid is tabular data, and a reader needs the
@@ -151,7 +201,7 @@ export async function HijriCalendar({
             </tr>
           </thead>
           <tbody>
-            {chunk(month.cells, 7).map((week, weekIndex) => (
+            {chunk(shown.cells, 7).map((week, weekIndex) => (
               <tr key={weekIndex}>
                 {week.map((cell, dayIndex) => {
                   if (!cell.iso) {
@@ -241,7 +291,7 @@ export async function HijriCalendar({
         <p className="kicker" style={{ color: 'var(--color-accent-2-text)' }}>
           {t('occasions')}
         </p>
-        {month.occasions.length === 0 ? (
+        {shown.occasions.length === 0 ? (
           <p style={{ marginBlockStart: 'var(--space-3)', color: 'var(--color-ink-muted)' }}>
             {t('occasionsNone')}
           </p>
@@ -256,7 +306,7 @@ export async function HijriCalendar({
               gap: 'var(--space-2)',
             }}
           >
-            {month.occasions.map((occasion) => (
+            {shown.occasions.map((occasion) => (
               <li
                 key={`${occasion.id}-${occasion.iso}`}
                 className="flex items-center gap-4"

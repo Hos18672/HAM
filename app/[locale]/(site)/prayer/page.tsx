@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { setRequestLocale } from 'next-intl/server';
-import { getPageHeader } from '@/lib/db/queries/content';
-import { getPrayerDay, getCalendarMonth } from '@/lib/prayer-page';
+import { getPageHeader, getOccasions } from '@/lib/db/queries/content';
+import { getPrayerDay, getCalendarMonth, viennaIso } from '@/lib/prayer-page';
 import { PatternPlate } from '@/components/site/ornaments';
 import { PageHead } from '@/components/site/page-head';
 import { PrayerList } from '@/components/site/prayer-list';
@@ -64,6 +64,10 @@ export default async function PrayerPage({
     Number.isInteger(Number(m)) && Number(m) >= 1 && Number(m) <= 12 ? Number(m) : viennaMonth;
 
   const calendar = await getCalendarMonth(year, month, typed, now);
+  // The occasions are matched on the Hijri date, so one list serves every
+  // month; handing it to the calendar lets the browser build the months it
+  // moves to without coming back here.
+  const occasions = await getOccasions(typed);
 
   return (
     <>
@@ -78,7 +82,14 @@ export default async function PrayerPage({
       <section className="section section-alt" style={{ position: 'relative' }} data-rise>
         <PatternPlate opacity={0.35} />
         <div className="page">
-          <HijriCalendar month={calendar} locale={typed} basePath="/prayer" />
+          <HijriCalendar
+            initialMonth={calendar}
+            currentMonth={{ year: viennaYear, month: viennaMonth }}
+            occasions={occasions}
+            todayIso={viennaIso(now)}
+            locale={typed}
+            basePath={`/${typed}/prayer`}
+          />
         </div>
       </section>
     </>

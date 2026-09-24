@@ -20,14 +20,34 @@ test.describe('prayer times', () => {
     await expect(page.getByText('Gedenktag', { exact: true })).toBeVisible();
   });
 
-  test('navigates the month calendar in both directions', async ({ page }) => {
+  test('moves the month without reloading the page', async ({ page }) => {
     await page.goto('/de/prayer');
 
-    await page.getByRole('link', { name: 'Nächster Monat' }).click();
-    await expect(page).toHaveURL(/[?&]m=\d+/);
+    // A month is a change of view, not of page: the calendar builds the new
+    // month in the browser. Mark the document, and the mark has to survive.
+    await page.evaluate(() => {
+      document.documentElement.dataset.marker = 'original';
+    });
+    const heading = page.locator('table').locator('xpath=preceding::h2[1]');
+    const first = await heading.textContent();
 
-    await page.getByRole('link', { name: 'Vorheriger Monat' }).click();
+    await page.getByRole('button', { name: 'Nächster Monat' }).click();
     await expect(page).toHaveURL(/[?&]m=\d+/);
+    await expect(heading).not.toHaveText(first ?? '');
+
+    await page.getByRole('button', { name: 'Vorheriger Monat' }).click();
+    await expect(heading).toHaveText(first ?? '');
+
+    // Back where we started, so the query goes away again.
+    await expect(page).toHaveURL(/\/de\/prayer$/);
+    expect(await page.evaluate(() => document.documentElement.dataset.marker)).toBe('original');
+  });
+
+  test('a month linked directly still renders on the server', async ({ page }) => {
+    // The month has to survive being shared, bookmarked or reloaded, and it
+    // has to be in the first paint rather than appearing after hydration.
+    await page.goto('/de/prayer?y=2026&m=3');
+    await expect(page.getByRole('heading', { name: /März 2026/ })).toBeVisible();
   });
 
   test('lists the occasions for the month, or says there are none', async ({ page }) => {

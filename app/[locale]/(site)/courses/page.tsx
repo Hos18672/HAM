@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { getTranslations, setRequestLocale } from 'next-intl/server';
+import { getTranslations } from 'next-intl/server';
+import { requireLocale } from '@/lib/i18n/locale-param';
 import { getPageHeader, getCourses } from '@/lib/db/queries/content';
 import { PageHead } from '@/components/site/page-head';
 import { CourseCard } from '@/components/site/course-card';
@@ -8,7 +9,7 @@ import { FilterableList } from '@/components/site/filterable-list';
 import { EditableEntry, EditableAdd } from '@/components/editable/editable-list';
 import { JsonLd, courseJsonLd } from '@/lib/seo';
 import { pageMetadata } from '@/lib/page-meta';
-import { locales, type Locale } from '@/lib/i18n/config';
+import { locales } from '@/lib/i18n/config';
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -25,8 +26,7 @@ export async function generateMetadata({
 
 export default async function CoursesPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
-  setRequestLocale(locale);
-  const typed = locale as Locale;
+  const typed = requireLocale(locale);
 
   const [header, courses] = await Promise.all([getPageHeader('courses', typed), getCourses(typed)]);
   if (!header) notFound();

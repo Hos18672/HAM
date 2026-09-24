@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { getTranslations, setRequestLocale } from 'next-intl/server';
+import { getTranslations } from 'next-intl/server';
+import { requireLocale } from '@/lib/i18n/locale-param';
 import {
   MapPin,
   Phone,
@@ -15,7 +16,7 @@ import { PatternPlate } from '@/components/site/ornaments';
 import { EditableText } from '@/components/editable/editable-text';
 import { JsonLd, placeJsonLd } from '@/lib/seo';
 import { pageMetadata } from '@/lib/page-meta';
-import { locales, type Locale } from '@/lib/i18n/config';
+import { locales } from '@/lib/i18n/config';
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -39,8 +40,7 @@ export default async function ContactPage({
 }) {
   const { locale } = await params;
   const { topic } = await searchParams;
-  setRequestLocale(locale);
-  const typed = locale as Locale;
+  const typed = requireLocale(locale);
 
   const [header, blocks, settings] = await Promise.all([
     getPageHeader('contact', typed),

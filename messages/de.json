@@ -5,9 +5,9 @@
     "city": "Wien 1170 · Hernals"
   },
   "nav": {
-    "home": "Startseite",
+    "home": "Start",
     "about": "Über uns",
-    "activities": "Angebote",
+    "activities": "Aktivitäten",
     "courses": "Kurse",
     "culture": "Kultur",
     "sport": "Sport",
@@ -70,14 +70,17 @@
   },
   "search": {
     "label": "Website durchsuchen",
-    "placeholder": "Suchen …",
+    "placeholder": "Wonach suchen Sie?",
     "hint": "Mit Enter zum ersten Treffer",
+    "idleHint": "Gebetszeiten, Kurse, Termine, Bittgebete …",
     "empty": "Keine Treffer",
     "emptyHint": "Andere Schreibweise oder ein kürzeres Wort versuchen.",
     "results": "{count, plural, =0 {Keine Treffer} one {Ein Treffer} other {# Treffer}}",
     "typeToSearch": "Suchbegriff eingeben"
   },
   "home": {
+    "heroAbout": "Mehr über uns",
+    "heroActivities": "Unsere Aktivitäten",
     "upcoming": "Kommende Termine",
     "coursesPreview": "Aus dem Kursangebot",
     "offers": "Unsere Bereiche",

@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { getTranslations, setRequestLocale } from 'next-intl/server';
+import { getTranslations } from 'next-intl/server';
+import { requireLocale } from '@/lib/i18n/locale-param';
 import {
   getPageHeader,
   getUpcomingEvents,
@@ -15,7 +16,7 @@ import { FeaturedEvent } from '@/components/site/featured-event';
 import { EditableEntry, EditableAdd } from '@/components/editable/editable-list';
 import { JsonLd, eventJsonLd } from '@/lib/seo';
 import { pageMetadata } from '@/lib/page-meta';
-import { locales, type Locale } from '@/lib/i18n/config';
+import { locales } from '@/lib/i18n/config';
 import { ASSOCIATION } from '@/lib/db/seed-data';
 
 export function generateStaticParams() {
@@ -33,8 +34,7 @@ export async function generateMetadata({
 
 export default async function EventsPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
-  setRequestLocale(locale);
-  const typed = locale as Locale;
+  const typed = requireLocale(locale);
 
   const [header, upcoming, past, featured, settings] = await Promise.all([
     getPageHeader('events', typed),

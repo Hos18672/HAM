@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { getTranslations, setRequestLocale } from 'next-intl/server';
+import { getTranslations } from 'next-intl/server';
+import { requireLocale } from '@/lib/i18n/locale-param';
 import { ArrowRight } from '@phosphor-icons/react/dist/ssr';
 import { Link } from '@/lib/i18n/navigation';
 import {
@@ -21,9 +22,16 @@ import { Tag } from '@/components/ui/tag';
 import { LinkButton } from '@/components/ui/button';
 import { Icon } from '@/components/site/icon';
 import { delay } from '@/components/site/motion';
-import { Mark, ViennaSkyline, ViennaLine, PatternPlate, Ring } from '@/components/site/ornaments';
+import {
+  Mark,
+  ViennaPanorama,
+  PatternPlate,
+  Ring,
+  Corner,
+  Eye,
+} from '@/components/site/ornaments';
 import { organizationJsonLd, JsonLd } from '@/lib/seo';
-import { isLocale, locales, type Locale } from '@/lib/i18n/config';
+import { isLocale, locales } from '@/lib/i18n/config';
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -49,8 +57,7 @@ export async function generateMetadata({
 
 export default async function HomePage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
-  setRequestLocale(locale);
-  const typed = locale as Locale;
+  const typed = requireLocale(locale);
 
   const [header, blocks, offers, upcoming, courses, settings] = await Promise.all([
     getPageHeader('home', typed),
@@ -90,6 +97,9 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
       >
         <PatternPlate tiling="shesh" drift opacity={0.75} />
         <Ring />
+        <Ring size={340} top={-100} />
+        <Corner place="start" />
+        <Corner place="end" />
 
         <div className="page" style={{ position: 'relative' }}>
           <div
@@ -102,6 +112,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
           >
             <div style={{ display: 'grid', gap: 'var(--space-4)' }}>
               <div className="fade-in flex flex-wrap items-center gap-3">
+                <Eye />
                 <EditableText
                   as="p"
                   entity="page"
@@ -154,8 +165,8 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
               />
 
               <div className="flex flex-wrap items-center gap-2">
-                <LinkButton href={`/${locale}/support`} size="lg" className="btn-gold">
-                  {tNav('support')}
+                <LinkButton href={`/${locale}/about`} size="lg" className="btn-gold">
+                  {t('heroAbout')}
                   <ArrowRight size={17} weight="bold" aria-hidden="true" className="mirror" />
                 </LinkButton>
                 <LinkButton
@@ -164,8 +175,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
                   variant="secondary"
                   className="btn-on-scrim"
                 >
-                  {tActions('readMore')}
-                  <ArrowRight size={17} weight="bold" aria-hidden="true" className="mirror" />
+                  {t('heroActivities')}
                 </LinkButton>
               </div>
 
@@ -181,7 +191,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
                 >
                   {chips.map((chip) => (
                     <li key={chip} data-rise>
-                      <Tag>{chip}</Tag>
+                      <span className="chip-word">{chip}</span>
                     </li>
                   ))}
                 </ul>
@@ -209,13 +219,12 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
                 <div
                   style={{
                     position: 'relative',
-                    inlineSize: 'clamp(120px, 22%, 190px)',
-                    blockSize: 'clamp(120px, 22%, 190px)',
+                    inlineSize: 'clamp(180px, 58%, 360px)',
+                    blockSize: 'clamp(180px, 58%, 360px)',
                   }}
                 >
                   <Mark className="" />
                 </div>
-                <ViennaSkyline tone="var(--gold)" opacity={0.3} />
               </div>
             </div>
           </div>
@@ -467,7 +476,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
               }}
             >
               <PatternPlate opacity={0.4} />
-              <ViennaLine />
+              <ViennaPanorama />
             </div>
           </div>
         </div>

@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { getTranslations, setRequestLocale } from 'next-intl/server';
+import { getTranslations } from 'next-intl/server';
+import { requireLocale } from '@/lib/i18n/locale-param';
 import { getPageHeader, getBlocks, getCultureCards } from '@/lib/db/queries/content';
 import { Mark, PatternPlate } from '@/components/site/ornaments';
 import { PageHead, SectionHead } from '@/components/site/page-head';
@@ -10,7 +11,7 @@ import { Card, CardStar } from '@/components/ui/card';
 import { Tag } from '@/components/ui/tag';
 import { Icon } from '@/components/site/icon';
 import { pageMetadata } from '@/lib/page-meta';
-import { locales, type Locale } from '@/lib/i18n/config';
+import { locales } from '@/lib/i18n/config';
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -30,8 +31,7 @@ export async function generateMetadata({
 
 export default async function CulturePage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
-  setRequestLocale(locale);
-  const typed = locale as Locale;
+  const typed = requireLocale(locale);
 
   const [header, blocks, cards] = await Promise.all([
     getPageHeader('culture', typed),

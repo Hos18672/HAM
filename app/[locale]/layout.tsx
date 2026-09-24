@@ -1,9 +1,9 @@
 import type { ReactNode } from 'react';
 import type { Metadata, Viewport } from 'next';
-import { notFound } from 'next/navigation';
 import { NextIntlClientProvider, hasLocale } from 'next-intl';
-import { getTranslations, setRequestLocale } from 'next-intl/server';
-import { locales, localeDirection, type Locale } from '@/lib/i18n/config';
+import { getTranslations } from 'next-intl/server';
+import { requireLocale } from '@/lib/i18n/locale-param';
+import { locales, localeDirection } from '@/lib/i18n/config';
 import { readTheme } from '@/lib/preferences';
 import { getSettings } from '@/lib/db/queries/content';
 import { PrintPlates } from '@/components/site/print-plates';
@@ -17,11 +17,11 @@ export function generateStaticParams() {
 }
 
 /**
- * Anything that is not one of the two locales is not a page. Without this the
- * segment still renders for, say, `/favicon.ico` — the layout calls
- * `notFound()`, but the page underneath has already started its queries and
- * asks Postgres for the locale "favicon.ico", which logs an error on every
- * such request. Refusing the param up front 404s before any of that runs.
+ * Anything that is not one of the two locales is not a page. This alone does
+ * not stop the render: the response 404s, but the page underneath has already
+ * started its queries and asked Postgres for the locale "favicon.ico". The
+ * guard that actually runs first is `requireLocale`, which every page and
+ * layout in this segment puts its param through.
  */
 export const dynamicParams = false;
 
@@ -62,7 +62,7 @@ export async function generateMetadata({
       url: `/${locale}`,
     },
     robots: { index: true, follow: true },
-    icons: { icon: '/icon.svg' },
+    icons: { icon: '/icon.png' },
   };
 }
 
@@ -74,15 +74,12 @@ export default async function LocaleLayout({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
-  if (!hasLocale(locales, locale)) notFound();
-
-  // Enables static rendering: without this the whole subtree opts into
-  // dynamic rendering the moment anything reads the locale.
-  setRequestLocale(locale);
+  // Also enables static rendering: without the locale being set here the whole
+  // subtree opts into dynamic rendering the moment anything reads it.
+  const typed = requireLocale(locale);
 
   const settings = await getSettings();
   const theme = await readTheme(settings.defaultTheme);
-  const typed = locale as Locale;
 
   return (
     <html lang={typed} dir={localeDirection[typed]} data-theme={theme} suppressHydrationWarning>

@@ -74,7 +74,8 @@ export function HomecomingHero({
         theme,
         skipLoader: loaderPlayed || !booted,
         // Without WebGL 2 the house's own mark is shown in the slot instead.
-        fallbackImage: '/logo.png',
+        // The prefix matters on the preview, which is served from a sub-path.
+        fallbackImage: `${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/logo.png`,
         onReady: () => {
           loaderPlayed = true;
         },

@@ -229,7 +229,9 @@ export function ViennaPanorama({
   opacity?: number;
 }) {
   const mask = {
-    maskImage: 'url(/vienna-skyline.png)',
+    // The prefix, for the same reason as the logo: a raw CSS url is this
+    // app's own string, and `basePath` does not touch it.
+    maskImage: `url(${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/vienna-skyline.png)`,
     maskSize: 'contain',
     maskRepeat: 'no-repeat',
     maskPosition: 'center',
@@ -357,7 +359,7 @@ export function Mark({ className = 'brand-mark' }: { className?: string }) {
       {/* eslint-disable-next-line @next/next/no-img-element -- a fixed-size
           decorative mark; the optimiser has nothing to choose between. */}
       <img
-        src="/logo.png"
+        src={`${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/logo.png`}
         alt=""
         aria-hidden="true"
         style={{ display: 'block', inlineSize: '100%', blockSize: '100%', objectFit: 'contain' }}

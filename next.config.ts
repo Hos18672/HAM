@@ -45,6 +45,17 @@ const previewBasePath = process.env.PREVIEW_BASE_PATH || undefined;
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   ...(previewBasePath ? { basePath: previewBasePath } : {}),
+  /**
+   * The same prefix, readable from the browser.
+   *
+   * `basePath` rewrites what the framework emits — `<Link>`, the chunks, the
+   * router — but not a path this app writes itself: an `<img src="/logo.png">`
+   * or a route test inside an inline script. Both of those exist, and under
+   * the preview's sub-path both were wrong: the logo 404'd and the hero's
+   * loader never recognised the home page. Inlined at build time, empty on
+   * every real build.
+   */
+  env: { NEXT_PUBLIC_BASE_PATH: previewBasePath ?? '' },
   poweredByHeader: false,
   images: {
     remotePatterns: supabaseOrigin

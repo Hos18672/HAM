@@ -64,7 +64,10 @@ export async function generateMetadata({
       url: `/${locale}`,
     },
     robots: { index: true, follow: true },
-    icons: { icon: '/icon.png' },
+    // Next does not put `basePath` on a metadata icon, so the prefix is
+    // written in: without it the preview asks the domain root for the
+    // favicon and gets a 404.
+    icons: { icon: `${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/icon.png` },
   };
 }
 
@@ -104,7 +107,12 @@ export default async function LocaleLayout({
           dangerouslySetInnerHTML={{
             __html:
               '(function(){try{' +
+              // The prefix the app is served under: empty in production, /HAM
+              // on the preview. Without it this test never matched there and
+              // the loader simply never armed.
+              `var b=${JSON.stringify(process.env.NEXT_PUBLIC_BASE_PATH ?? '')};` +
               "var p=location.pathname.replace(/\\/+$/,'');" +
+              'if(b&&p.indexOf(b)===0)p=p.slice(b.length);' +
               'if(!/^(\\/(fa|de))?$/.test(p))return;' +
               "document.documentElement.dataset.hc='boot';" +
               '}catch(e){}})()',

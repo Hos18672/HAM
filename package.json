@@ -39,6 +39,7 @@
     "react-dom": "^19.3.0",
     "react-hook-form": "^7.88.0",
     "resend": "^6.28.1",
+    "three": "^0.186.1",
     "zod": "^4.6.5"
   },
   "devDependencies": {

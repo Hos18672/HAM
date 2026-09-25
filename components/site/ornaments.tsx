@@ -260,11 +260,11 @@ export function ViennaLine() {
   return (
     <svg
       viewBox="0 0 640 120"
-      width="100%"
-      height="auto"
       aria-hidden="true"
       focusable="false"
-      style={{ display: 'block', position: 'relative' }}
+      // Sized in CSS, not by attribute: `height="auto"` is not a length, so
+      // the browser rejects it and logs an error on every page that draws it.
+      style={{ display: 'block', position: 'relative', inlineSize: '100%', blockSize: 'auto' }}
     >
       <g
         fill="none"

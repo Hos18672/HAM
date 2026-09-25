@@ -12,6 +12,8 @@ export default [
       'drizzle/**',
       'playwright-report/**',
       'test-results/**',
+      // Vendored Three.js scene: kept exactly as shipped.
+      'lib/homecoming/**',
     ],
   },
   ...compat.extends('next/core-web-vitals', 'next/typescript'),

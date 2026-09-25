@@ -124,7 +124,7 @@ export function Header({ theme, locale }: { theme: ThemeValue; locale: Locale })
           8px, rounds to a full pill, takes a hairline and casts a shadow —
           all on the same .45s curve. */}
       <header
-        className="sticky top-0"
+        className="hc-header sticky top-0"
         style={{
           zIndex: 'var(--z-header)',
           padding: `${condensed ? '8px' : '0px'} clamp(10px, 2vw, 20px) 0`,

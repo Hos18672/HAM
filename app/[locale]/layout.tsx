@@ -9,7 +9,9 @@ import { getSettings } from '@/lib/db/queries/content';
 import { PrintPlates } from '@/components/site/print-plates';
 import { PatternDefs } from '@/components/site/ornaments';
 import { RiseObserver } from '@/components/site/rise';
-import { Boot } from '@/components/site/boot';
+// The Homecoming scene's own layout and page states, first so this app's
+// tokens below can override its three variables.
+import '@/lib/homecoming/homecoming.css';
 import '../globals.css';
 
 export function generateStaticParams() {
@@ -88,29 +90,26 @@ export default async function LocaleLayout({
     <html lang={typed} dir={localeDirection[typed]} data-theme={theme} suppressHydrationWarning>
       <head>
         {/*
-          Turning the opening screen on, before the first paint.
+          The hero's loader, armed before the first paint.
 
-          It has to be decided here rather than in the component: by the time
-          React has hydrated the page is already on screen, and a loader that
-          arrives after the content it is supposed to be covering is worse
-          than none. This runs synchronously in the head, so the boot layer
-          either paints from the first frame or never paints at all.
+          `data-hc="boot"` is what keeps the header and the hero copy hidden
+          until the birds have finished; the scene then moves it to "loading"
+          and "ready". It is set here, in the head, rather than in the page,
+          because by the time a script in the body runs the header has already
+          had a chance to paint.
 
-          It says no to a reader who has asked for less motion, and no to
-          every page after the first in a session — three seconds of loader on
-          each of sixteen pages is not a welcome, it is a toll. The timer is
-          the safety net: if the bundle that clears this never arrives, the
-          layer takes itself off anyway.
+          Only on the home page: the loader is the home hero, and the rest of
+          the site has no business hiding its header. A client-side navigation
+          never re-runs this, which is deliberate — arriving at the home page
+          from inside the app shows the hero directly.
         */}
         <script
           dangerouslySetInnerHTML={{
             __html:
               '(function(){try{' +
-              "if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;" +
-              "if(sessionStorage.getItem('ham-boot'))return;" +
-              "sessionStorage.setItem('ham-boot','1');" +
-              "document.documentElement.dataset.boot='1';" +
-              'setTimeout(function(){delete document.documentElement.dataset.boot},4000);' +
+              "var p=location.pathname.replace(/\\/+$/,'');" +
+              'if(!/^(\\/(fa|de))?$/.test(p))return;' +
+              "document.documentElement.dataset.hc='boot';" +
               '}catch(e){}})()',
           }}
         />
@@ -133,7 +132,6 @@ export default async function LocaleLayout({
           <PatternDefs />
           {children}
           <RiseObserver />
-          <Boot />
         </NextIntlClientProvider>
       </body>
     </html>

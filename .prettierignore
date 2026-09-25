@@ -10,3 +10,7 @@ playwright-report
 design-system/broadsheet.css
 design-system/site.css
 design-system/prototype.html
+
+# Vendored Three.js scene — the loader and hero animation, kept exactly as
+# shipped so it can be replaced wholesale.
+lib/homecoming

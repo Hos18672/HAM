@@ -11,12 +11,12 @@ export interface NavEntry {
 }
 
 export const NAV: NavEntry[] = [
-  { href: '/', key: 'home', primary: false },
+  { href: '/', key: 'home', primary: true },
   { href: '/about', key: 'about', primary: true },
   { href: '/activities', key: 'activities', primary: true },
-  { href: '/courses', key: 'courses', primary: true },
-  { href: '/events', key: 'events', primary: true },
-  { href: '/prayer', key: 'prayer', primary: true },
+  { href: '/courses', key: 'courses', primary: false },
+  { href: '/events', key: 'events', primary: false },
+  { href: '/prayer', key: 'prayer', primary: false },
   { href: '/culture', key: 'culture', primary: false },
   { href: '/sport', key: 'sport', primary: false },
   { href: '/community', key: 'community', primary: false },

@@ -10,16 +10,34 @@ import type { Locale } from '@/lib/i18n/config';
 import { Button } from '../ui/button';
 
 const OPEN_MS = 520;
+const CLOSE_MS = 420;
 const EASE = 'cubic-bezier(.22,1,.3,1)';
+const PILL_H = 60;
+
+/** Where the open pill comes to rest, in viewport pixels. */
+function restingBox() {
+  const width = Math.min(window.innerWidth * 0.92, 620);
+  return {
+    width,
+    left: (window.innerWidth - width) / 2,
+    top: Math.min(150, Math.max(72, window.innerHeight * 0.14)),
+  };
+}
 
 /**
  * The search pill.
  *
- * Opening grows an animated pill from the header button's exact position to a
- * centred bar, with the results panel fading in beneath it; closing runs the
- * reverse — results leave first, then the pill collapses back into the button.
- * Both are done with the Web Animations API on transform and opacity, so the
- * header button never moves and nothing reflows mid-flight.
+ * Opening grows the pill out of the header button's exact box and closes back
+ * into it, with the results panel arriving after the pill has settled and
+ * leaving before it collapses.
+ *
+ * The flight animates the box itself — `left`, `top`, `width` on the wrapper
+ * and `height`/`padding` on the pill — rather than a transform. A transform
+ * scaling a 40px disc into a 620px bar is non-uniform, and a non-uniform scale
+ * drags the border-radius out into ellipses, so the thing in flight reads as a
+ * stretched rectangle. Animating the box keeps the radius resolving against
+ * the real size, so it is a true circle at the button and a true pill at rest.
+ * That costs layout on each frame, for one small fixed-position element.
  *
  * Typing must not restart the open animation: the animation is driven by the
  * `open` prop alone and the query lives in its own state, so a keystroke can
@@ -45,6 +63,7 @@ export function SearchPopup({
   const [hits, setHits] = useState<SearchHit[]>([]);
   const [pending, setPending] = useState(false);
 
+  const popRef = useRef<HTMLDivElement>(null);
   const pillRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -68,26 +87,32 @@ export function SearchPopup({
 
   useEffect(() => {
     if (!open || !mounted) return;
+    const pop = popRef.current;
     const pill = pillRef.current;
     const backdrop = backdropRef.current;
-    if (!pill) return;
+    if (!pop || !pill) return;
+
+    // The wrapper is fixed and sized in script, so the panel below the pill
+    // never reflows while the box is in flight.
+    const to = restingBox();
+    pop.style.width = `${to.width}px`;
+    pop.style.left = `${to.left}px`;
+    pop.style.top = `${to.top}px`;
 
     const from = anchorRect();
-    const to = pill.getBoundingClientRect();
 
     if (!reduced() && from) {
-      // Translate and scale from the button's box to the pill's own box. Using
-      // a transform (rather than animating width/left) keeps this off the
-      // layout path entirely.
-      const scaleX = from.width / to.width;
-      const scaleY = from.height / to.height;
-      const dx = from.left + from.width / 2 - (to.left + to.width / 2);
-      const dy = from.top + from.height / 2 - (to.top + to.height / 2);
-
+      pop.animate(
+        [
+          { left: `${from.left}px`, top: `${from.top}px`, width: `${from.width}px` },
+          { left: `${to.left}px`, top: `${to.top}px`, width: `${to.width}px` },
+        ],
+        { duration: OPEN_MS, easing: EASE, fill: 'both' },
+      );
       pill.animate(
         [
-          { transform: `translate(${dx}px, ${dy}px) scale(${scaleX}, ${scaleY})`, opacity: 0.4 },
-          { transform: 'translate(0, 0) scale(1, 1)', opacity: 1 },
+          { height: `${from.height}px`, paddingInline: '10px' },
+          { height: `${PILL_H}px`, paddingInline: '20px' },
         ],
         { duration: OPEN_MS, easing: EASE, fill: 'both' },
       );
@@ -98,19 +123,20 @@ export function SearchPopup({
       });
     }
 
-    // Focus after the growth has begun, so the caret does not appear at the
-    // button's position first.
-    const timer = window.setTimeout(() => inputRef.current?.focus(), reduced() ? 0 : 120);
+    // Focus once the pill has opened enough to hold a caret, so it does not
+    // appear inside the button-sized disc first.
+    const timer = window.setTimeout(() => inputRef.current?.focus(), reduced() ? 0 : 260);
     return () => window.clearTimeout(timer);
     // `query` is deliberately absent: typing must not restart this.
   }, [open, mounted, anchorRect]);
 
   /* ── Close ────────────────────────────────────────────────────────────── */
   const runClose = useCallback(() => {
+    const pop = popRef.current;
     const pill = pillRef.current;
     const panel = panelRef.current;
     const backdrop = backdropRef.current;
-    const from = anchorRect();
+    const to = anchorRect();
 
     const finish = () => {
       setMounted(false);
@@ -119,36 +145,46 @@ export function SearchPopup({
       anchorRef.current?.focus();
     };
 
-    if (reduced() || !pill || !from) {
+    if (reduced() || !pop || !pill || !to) {
       finish();
       return;
     }
 
     // The results card leaves first …
-    panel?.animate([{ opacity: 1 }, { opacity: 0, transform: 'translateY(-6px)' }], {
-      duration: 140,
-      easing: EASE,
+    panel?.animate([{ opacity: 1 }, { opacity: 0, transform: 'translateY(-10px) scale(.97)' }], {
+      duration: 160,
+      easing: 'cubic-bezier(.4,0,1,1)',
       fill: 'both',
     });
-
-    const to = pill.getBoundingClientRect();
-    const scaleX = from.width / to.width;
-    const scaleY = from.height / to.height;
-    const dx = from.left + from.width / 2 - (to.left + to.width / 2);
-    const dy = from.top + from.height / 2 - (to.top + to.height / 2);
-
-    // … then the pill collapses back into the button.
-    const collapse = pill.animate(
-      [
-        { transform: 'translate(0, 0) scale(1, 1)', opacity: 1 },
-        { transform: `translate(${dx}px, ${dy}px) scale(${scaleX}, ${scaleY})`, opacity: 0.2 },
-      ],
-      { duration: 340, delay: 90, easing: EASE, fill: 'both' },
+    // … the pill empties, so there is no text to squeeze into the disc …
+    pill.querySelectorAll<HTMLElement>('input, svg, button').forEach((child) =>
+      child.animate([{ opacity: 1 }, { opacity: 0 }], {
+        duration: 140,
+        easing: 'ease-in',
+        fill: 'both',
+      }),
     );
-    backdrop?.animate([{ opacity: 1 }, { opacity: 0 }], {
-      duration: 340,
-      delay: 90,
-      easing: EASE,
+
+    const from = pop.getBoundingClientRect();
+
+    // … and the box shrinks back into the button it came out of.
+    const collapse = pop.animate(
+      [
+        { left: `${from.left}px`, top: `${from.top}px`, width: `${from.width}px` },
+        { left: `${to.left}px`, top: `${to.top}px`, width: `${to.width}px` },
+      ],
+      { duration: CLOSE_MS, easing: EASE, fill: 'both' },
+    );
+    pill.animate(
+      [
+        { height: `${PILL_H}px`, paddingInline: '20px' },
+        { height: `${to.height}px`, paddingInline: '10px' },
+      ],
+      { duration: CLOSE_MS, easing: EASE, fill: 'both' },
+    );
+    backdrop?.animate([{ opacity: 1 }, { opacity: 1, offset: 0.65 }, { opacity: 0 }], {
+      duration: CLOSE_MS,
+      easing: 'ease-out',
       fill: 'both',
     });
     collapse.addEventListener('finish', finish, { once: true });
@@ -233,16 +269,8 @@ export function SearchPopup({
         }}
       />
 
-      <div
-        className="page"
-        style={{
-          position: 'relative',
-          paddingBlockStart: 'var(--space-7)',
-          display: 'grid',
-          justifyItems: 'center',
-        }}
-      >
-        <div ref={pillRef} className="search-pill" style={{ inlineSize: 'min(38rem, 100%)' }}>
+      <div ref={popRef} className="search-pop">
+        <div ref={pillRef} className="search-pill">
           <MagnifyingGlass size={20} weight="duotone" aria-hidden="true" />
           <input
             ref={inputRef}
@@ -285,20 +313,12 @@ export function SearchPopup({
           </Button>
         </div>
 
-        <div
-          ref={panelRef}
-          id={listId}
-          className="search-panel"
-          style={{
-            inlineSize: 'min(38rem, 100%)',
-            opacity: showResults ? 1 : 0,
-            transition: `opacity var(--duration-base) ${EASE}`,
-            pointerEvents: showResults ? 'auto' : 'none',
-          }}
-        >
+        <div ref={panelRef} id={listId} className="search-panel">
           <p id={`${listId}-hint`} className="visually-hidden">
             {t('hint')}
           </p>
+
+          {!showResults ? <p className="search-idle">{t('idleHint')}</p> : null}
 
           <div aria-live="polite" aria-atomic="true">
             {showResults && !pending ? (

@@ -128,6 +128,8 @@
 
   /* The design's semantic layer — verbatim, [data-t="light"]. */
   --paper: #f7f3e8;
+  /* The disc the seal sits on. Light in both themes — see `Mark`. */
+  --mark-ground: #f7f3e8;
   --paper2: #ffffff;
   --card: #ffffff;
   --card2: #fbf8f1;
@@ -325,7 +327,6 @@
   --duration-fast: 350ms;
   --duration-base: 500ms;
   --duration-slow: 1250ms;
-  --duration-theme: 720ms;
   /* How long a page waits before it arrives, on a navigation. The design's
      own .42s, from `.ham-page`. */
   --duration-page-in-delay: 420ms;
@@ -1166,16 +1167,14 @@
 
   /* The loader's caption. The scene positions it; the type is ours.
 
-     The width reset matters: this app gives every `p` a reading measure, and
-     the caption is not running text — it is one centred line that the scene
-     pins under the mark. With a measure on it, "Ansar al-Mahdi (a.j.) · Wien"
-     broke across two lines on a phone despite the caption's own `nowrap`. */
+     The two resets matter: this app gives every `p` a reading measure and
+     `text-wrap: pretty`, and the caption is not running text — it is one
+     centred line the scene pins under the mark. The measure squeezed it, and
+     `text-wrap` sets `text-wrap-mode`, which is half of `white-space`, so it
+     quietly overrode the caption's own `nowrap` and broke "Ansar al-Mahdi
+     (a.j.) · Wien" in two on a phone. */
   .hc-cap p {
     max-width: none;
-    /* `text-wrap: pretty` on every `p` in this app quietly re-enables
-       wrapping — it sets `text-wrap-mode`, which is half of `white-space` —
-       so the caption's own `nowrap` was being overridden and the Latin line
-       broke in two. */
     white-space: nowrap;
   }
   .hc-cap-title {
@@ -1367,17 +1366,6 @@
       border-color var(--duration-fast) var(--ease-standard),
       background-color var(--duration-fast) var(--ease-standard);
   }
-  .card::before {
-    content: '';
-    position: absolute;
-    z-index: 1;
-    inset: 0;
-    border-radius: inherit;
-    background: radial-gradient(120% 90% at 100% 0%, rgba(200, 164, 93, 0.22), transparent 58%);
-    opacity: 0;
-    transition: opacity var(--duration-base) var(--ease-standard);
-    pointer-events: none;
-  }
   .card::after {
     content: '';
     position: absolute;
@@ -1399,27 +1387,26 @@
      the pointer, which is how a row of them reads as one surface. Restricting
      it to `a.card` meant the offers, the values and the community cards —
      none of which are links — sat completely dead under the cursor. */
+  /* A lift and a shadow, nothing laid over the face of the card: the gold wash
+     that used to wipe across on hover read as glass sitting on the content. */
   .card:hover {
-    transform: translateY(-6px);
-    border-color: var(--gold);
+    transform: translateY(-4px);
+    border-color: var(--line2);
     box-shadow:
-      0 20px 44px -26px rgba(7, 59, 41, 0.55),
-      0 4px 14px -8px rgba(7, 59, 41, 0.32);
+      0 18px 38px -22px rgba(7, 59, 41, 0.46),
+      0 6px 16px -10px rgba(7, 59, 41, 0.26);
     transition:
       transform var(--duration-base) var(--ease-out-expressive),
       box-shadow var(--duration-base) var(--ease-out-expressive),
       border-color var(--duration-fast) var(--ease-standard);
   }
-  .card:hover::before {
-    opacity: 1;
-  }
   .card:hover::after {
-    opacity: 0.55;
+    opacity: 0.22;
   }
   :root[data-theme='dark'] .card:hover {
     box-shadow:
-      0 20px 44px -24px rgba(0, 0, 0, 0.85),
-      0 4px 14px -8px rgba(0, 0, 0, 0.6);
+      0 18px 38px -20px rgba(0, 0, 0, 0.8),
+      0 6px 16px -10px rgba(0, 0, 0, 0.55);
   }
   .card-title {
     font-size: var(--text-xl);
@@ -1583,15 +1570,24 @@
     text-decoration: none;
     border-radius: var(--radius-pill);
     position: relative;
+    /* Makes the link a stacking context, so the chip below can sit at -1:
+       above the link's own background, behind its label. */
+    isolation: isolate;
     transition: color var(--duration-fast) var(--ease-standard);
     white-space: nowrap;
   }
   /* The chip grows in behind the label; the gold rule underlines the page
      you are on. Both are the design's, and both are pseudo-elements so the
-     label itself never moves. */
+     label itself never moves.
+
+     The chip must be negative: a nav label is a bare text node, and
+     `.nav-link > *` can only lift element children. Left to paint in order,
+     an opaque positioned pseudo-element covers the text — which is what hid
+     every item in the overflow menu the moment it was hovered. */
   .nav-link::before {
     content: '';
     position: absolute;
+    z-index: -1;
     inset: 0;
     border-radius: var(--radius-pill);
     background: var(--chip);
@@ -1975,10 +1971,12 @@
     letter-spacing: 0;
     text-transform: none;
   }
-  .footer-band a {
+  /* Text links only. A button on the band carries its own foreground, and
+     this rule outranks it — which put near-white lettering on the gold CTA. */
+  .footer-band a:not(.btn) {
     color: var(--microInk);
   }
-  .footer-band a:hover {
+  .footer-band a:not(.btn):hover {
     color: var(--gold);
   }
   /* A round control on the band — the social links. */
@@ -2482,6 +2480,12 @@
      The search field is chromeless inside its pill, so the focus ring has to
      be drawn by the pill: without this the only visible focus state is the
      browser default the input suppresses. */
+  /* Fixed and sized in script: the open/close flight animates left, top and
+     width on this wrapper, so the panel under the pill never reflows. */
+  .search-pop {
+    position: fixed;
+    will-change: left, top, width;
+  }
   .search-pill {
     display: flex;
     align-items: center;
@@ -2493,8 +2497,7 @@
     padding-inline: 20px;
     overflow: hidden;
     box-shadow: 0 22px 50px -30px rgba(0, 0, 0, 0.6);
-    transform-origin: center;
-    will-change: transform, border-radius;
+    will-change: block-size, padding-inline;
   }
   .search-pill:focus-within {
     outline: 2px solid var(--gold);
@@ -2515,6 +2518,11 @@
   }
   .search-pill input {
     animation: ham-s-ink 0.3s ease-out 0.2s both;
+  }
+  /* The pill draws its own close button; the native one would sit beside it. */
+  .search-pill input::-webkit-search-cancel-button,
+  .search-pill input::-webkit-search-decoration {
+    display: none;
   }
   .search-pill button {
     animation: ham-s-ink 0.3s ease-out 0.24s both;
@@ -2540,6 +2548,40 @@
     border-radius: var(--radius-soft);
     box-shadow: 0 30px 64px -38px rgba(0, 0, 0, 0.6);
     animation: ham-s-panel 0.42s cubic-bezier(0.22, 1, 0.3, 1) 0.22s both;
+  }
+  /* The hero's word-chips. A `.tag` is a label — small, tracked, upper case;
+     these are four words the eye reads, so they keep their own case and sit at
+     reading size. */
+  .chip-word {
+    display: inline-flex;
+    align-items: center;
+    font-size: 13.5px;
+    font-weight: var(--weight-semibold, 600);
+    padding: 9px 17px;
+    border: var(--rule-hair) solid var(--line);
+    border-radius: var(--radius-pill);
+    background: var(--chip);
+    color: var(--chipInk);
+  }
+
+  /* The foot corner is the head corner turned over; RTL mirrors both so the
+     bracket keeps opening into the page. */
+  .corner-b {
+    transform: rotate(180deg);
+  }
+  :root[dir='rtl'] .corner-a {
+    transform: scaleX(-1);
+  }
+  :root[dir='rtl'] .corner-b {
+    transform: rotate(180deg) scaleX(-1);
+  }
+
+  .search-idle {
+    margin: 0;
+    padding: 18px 22px;
+    font-size: var(--text-sm);
+    line-height: 1.7;
+    color: var(--color-ink-muted);
   }
   .search-hit {
     display: grid;
@@ -2834,32 +2876,6 @@
     animation: ham-spin 7s linear infinite;
   }
 
-  /* Theme switch: the design's circular sheet, sized to the viewport and
-     expanding from the toggle. Transform and opacity only — no layout
-     thrash — and it paints the colour being left behind, so the new theme is
-     revealed underneath rather than washed over. */
-  @keyframes ham-wash {
-    0% {
-      transform: scale(0);
-      opacity: 1;
-    }
-    60% {
-      opacity: 1;
-    }
-    100% {
-      transform: scale(1);
-      opacity: 0;
-    }
-  }
-  .theme-wash {
-    position: fixed;
-    z-index: var(--z-toast);
-    pointer-events: none;
-    border-radius: 50%;
-    background: var(--theme-wash-from, var(--paper));
-    animation: ham-wash var(--duration-theme) var(--ease-standard) both;
-  }
-
   @media (prefers-reduced-motion: reduce) {
     html {
       scroll-behavior: auto;
@@ -2891,9 +2907,6 @@
     }
     .fade-in {
       animation: none;
-    }
-    .theme-wash {
-      display: none;
     }
     .search-pill > svg,
     .search-pill input,

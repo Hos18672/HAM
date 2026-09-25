@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
-import { setRequestLocale } from 'next-intl/server';
+
+import { requireLocale } from '@/lib/i18n/locale-param';
 import { Header } from '@/components/site/header';
 import { Footer } from '@/components/site/footer';
 import { PageEnter } from '@/components/site/page-enter';
@@ -7,7 +8,6 @@ import { EditBar } from '@/components/editable/edit-bar';
 import { EditStatusProvider } from '@/components/editable/edit-status';
 import { readTheme, readEditSession } from '@/lib/preferences';
 import { getSettings } from '@/lib/db/queries/content';
-import type { Locale } from '@/lib/i18n/config';
 
 export default async function SiteLayout({
   children,
@@ -17,12 +17,11 @@ export default async function SiteLayout({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
-  setRequestLocale(locale);
+  const typed = requireLocale(locale);
 
   const settings = await getSettings();
   const theme = await readTheme(settings.defaultTheme);
   const editing = (await readEditSession()) !== null;
-  const typed = locale as Locale;
 
   const page = (
     <>

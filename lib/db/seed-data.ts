@@ -41,14 +41,14 @@ export const PAGES: {
     key: 'home',
     sort: 0,
     fa: {
-      kicker: 'وین ۱۱۷۰ · هرنالس',
-      title: 'خانه‌ای که در آن هیچ‌کس غریبه نیست',
-      lead: 'انجمن فرهنگی، آموزشی، ورزشی و اجتماعی انصار المهدی (عج) در قلب هرنالس. جایی برای آموختن، ورزش کردن، دعا خواندن و در کنار هم بودن — برای فارسی‌زبانان وین و برای همهٔ همسایگان.',
+      kicker: 'انجمن فرهنگی و اجتماعی در وین · ۱۱۷۰',
+      title: 'جایی برای آموزش، فرهنگ، دیدار و همبستگی.',
+      lead: 'ما انجمنی چندفرهنگی در وین هستیم. اینجا مردم از کشورهای بسیار در کنار هم می‌آموزند، تمرین می‌کنند، جشن می‌گیرند و کار می‌کنند — باز برای همه، فارغ از خاستگاه یا دین.',
     },
     de: {
-      kicker: 'Wien 1170 · Hernals',
-      title: 'Ein Haus, in dem niemand fremd ist',
-      lead: 'Der Kultur-, Bildungs-, Sport- und Sozialverein Ansar al-Mahdi (a.j.) mitten in Hernals. Ein Ort zum Lernen, für Sport, für das Gebet und für das Miteinander — für die persischsprachige Gemeinschaft in Wien und für die ganze Nachbarschaft.',
+      kicker: 'Verein in Wien · 1170 Hernals',
+      title: 'Ein Ort für Bildung, Kultur, Begegnung und Gemeinschaft.',
+      lead: 'Wir sind ein multikultureller Verein in Wien. Bei uns lernen, üben, feiern und wirken Menschen aus vielen Ländern zusammen — offen für alle, unabhängig von Herkunft oder Religion.',
     },
   },
   {
@@ -268,19 +268,11 @@ export const BLOCKS: {
   /* home */
   {
     pageKey: 'home',
-    blockKey: 'hero_badge',
-    kind: 'text',
-    sort: 0,
-    fa: { text: 'تازه گشوده شده' },
-    de: { text: 'Neu eröffnet' },
-  },
-  {
-    pageKey: 'home',
     blockKey: 'hero_chips',
     kind: 'list',
     sort: 1,
-    fa: { items: ['کلاس زبان', 'ورزش', 'شب شعر', 'مشاورهٔ اداری', 'برنامهٔ کودکان'] },
-    de: { items: ['Sprachkurse', 'Sport', 'Lyrikabend', 'Amtswegehilfe', 'Kinderprogramm'] },
+    fa: { items: ['دانش', 'فرهنگ', 'همدلی', 'خدمت'] },
+    de: { items: ['Bildung', 'Kultur', 'Begegnung', 'Gemeinschaft'] },
   },
   {
     pageKey: 'home',

@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { getTranslations, setRequestLocale } from 'next-intl/server';
+import { getTranslations } from 'next-intl/server';
+import { requireLocale } from '@/lib/i18n/locale-param';
 import { ArrowRight } from '@phosphor-icons/react/dist/ssr';
 import { Link } from '@/lib/i18n/navigation';
 import {
@@ -22,10 +23,10 @@ import { LinkButton } from '@/components/ui/button';
 import { Icon } from '@/components/site/icon';
 import { HomecomingHero } from '@/components/site/homecoming-hero';
 import { delay } from '@/components/site/motion';
-import { ViennaLine, PatternPlate } from '@/components/site/ornaments';
+import { ViennaPanorama, PatternPlate, Eye } from '@/components/site/ornaments';
 import { organizationJsonLd, JsonLd } from '@/lib/seo';
 import { readTheme } from '@/lib/preferences';
-import { isLocale, locales, type Locale } from '@/lib/i18n/config';
+import { isLocale, locales } from '@/lib/i18n/config';
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -51,8 +52,7 @@ export async function generateMetadata({
 
 export default async function HomePage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
-  setRequestLocale(locale);
-  const typed = locale as Locale;
+  const typed = requireLocale(locale);
 
   const [header, blocks, offers, upcoming, courses, settings] = await Promise.all([
     getPageHeader('home', typed),
@@ -69,29 +69,25 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
   const tActions = await getTranslations({ locale, namespace: 'actions' });
   const tNav = await getTranslations({ locale, namespace: 'nav' });
   const tEvents = await getTranslations({ locale, namespace: 'events' });
-  const tBrand = await getTranslations({ locale, namespace: 'brand' });
-  // The hero's loader needs the theme the page is being rendered in, so the
-  // scene starts in the right colours rather than gliding into them.
-  const theme = await readTheme(settings.defaultTheme);
 
   const chips = blocks.hero_chips?.items ?? [];
+  const tBrand = await getTranslations({ locale, namespace: 'brand' });
+  // The scene starts in the theme the page is rendered in, rather than
+  // gliding into it after the first frame.
+  const theme = await readTheme(settings.defaultTheme);
 
   return (
     <>
       <JsonLd data={organizationJsonLd(typed, settings)} />
 
-      {/* ── Hero ─────────────────────────────────────────────────────────────
-          The design opens on a band, not on paper: deep green under cream,
-          the girih ground drifting across it, and a 460px circle hung off the
-          top corner. The text sits beside a portrait frame rather than under
-          a rail. */}
       {/* ── Hero ──────────────────────────────────────────────────────────
           The band, and the loader that builds it.
 
           The design opens on deep green under cream with the girih ground
-          drifting across it and a 460px circle hung off the top corner. All
-          of that is still here, underneath: the Homecoming canvas is
-          transparent and the birds fly over it.
+          drifting across it, the rings and the corners. All of that is still
+          here, underneath: the Homecoming canvas is transparent and the birds
+          fly over it. Where the portrait frame used to be there is now the
+          square the mark lands in at the hand-over.
 
           The copy is rendered here, on the server, and handed to the client
           shell as children — so the headline, the lead and the buttons are in
@@ -103,6 +99,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
       >
         <div style={{ display: 'grid', gap: 'var(--space-4)' }}>
           <div className="fade-in flex flex-wrap items-center gap-3">
+            <Eye />
             <EditableText
               as="p"
               entity="page"
@@ -155,8 +152,8 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
           />
 
           <div className="flex flex-wrap items-center gap-2">
-            <LinkButton href={`/${locale}/support`} size="lg" className="btn-gold">
-              {tNav('support')}
+            <LinkButton href={`/${locale}/about`} size="lg" className="btn-gold">
+              {t('heroAbout')}
               <ArrowRight size={17} weight="bold" aria-hidden="true" className="mirror" />
             </LinkButton>
             <LinkButton
@@ -165,8 +162,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
               variant="secondary"
               className="btn-on-scrim"
             >
-              {tActions('readMore')}
-              <ArrowRight size={17} weight="bold" aria-hidden="true" className="mirror" />
+              {t('heroActivities')}
             </LinkButton>
           </div>
 
@@ -182,7 +178,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
             >
               {chips.map((chip) => (
                 <li key={chip} data-rise>
-                  <Tag>{chip}</Tag>
+                  <span className="chip-word">{chip}</span>
                 </li>
               ))}
             </ul>
@@ -435,7 +431,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
               }}
             >
               <PatternPlate opacity={0.4} />
-              <ViennaLine />
+              <ViennaPanorama />
             </div>
           </div>
         </div>

@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { setRequestLocale } from 'next-intl/server';
+
+import { requireLocale } from '@/lib/i18n/locale-param';
 import { getPageHeader, getOccasions } from '@/lib/db/queries/content';
 import { getPrayerDay, getCalendarMonth, viennaIso } from '@/lib/prayer-page';
 import { PatternPlate } from '@/components/site/ornaments';
@@ -9,7 +10,6 @@ import { PrayerList } from '@/components/site/prayer-list';
 import { HijriCalendar } from '@/components/site/hijri-calendar';
 import { pageMetadata } from '@/lib/page-meta';
 import { VIENNA } from '@/lib/prayer-times';
-import { type Locale } from '@/lib/i18n/config';
 
 /**
  * Prayer times change every day, so this page is revalidated hourly rather
@@ -36,8 +36,7 @@ export default async function PrayerPage({
 }) {
   const { locale } = await params;
   const { y, m } = await searchParams;
-  setRequestLocale(locale);
-  const typed = locale as Locale;
+  const typed = requireLocale(locale);
 
   const header = await getPageHeader('prayer', typed);
   if (!header) notFound();

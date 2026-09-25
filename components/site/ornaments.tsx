@@ -214,35 +214,155 @@ export function Ring({
 }
 
 /**
- * The house's mark.
+ * Vienna, as a panorama.
  *
- * The design's masthead and boot screen both show a round photographic logo,
- * which the association has not supplied. Rather than leave a hole where the
- * mark belongs, this draws one from the same vocabulary as everything else on
- * the site: the khatam eight-point star — two squares at 45° to each other,
- * the figure the whole girih ground is built from — in gold on the band green,
- * inside a hairline ring.
+ * The association's own drawing of the skyline. It is a bitmap, so it is worn
+ * as a mask rather than drawn: the element is a block of `tone` that the ink
+ * cuts the shape out of. That way the drawing answers to the theme tokens like
+ * everything else here, instead of carrying a colour of its own.
+ */
+export function ViennaPanorama({
+  tone = 'var(--gold)',
+  opacity = 1,
+}: {
+  tone?: string;
+  opacity?: number;
+}) {
+  const mask = {
+    maskImage: 'url(/vienna-skyline.png)',
+    maskSize: 'contain',
+    maskRepeat: 'no-repeat',
+    maskPosition: 'center',
+  } as const;
+  return (
+    <div
+      aria-hidden="true"
+      style={{
+        position: 'relative',
+        inlineSize: '100%',
+        aspectRatio: '2167 / 482',
+        background: tone,
+        opacity,
+        ...mask,
+        WebkitMaskImage: mask.maskImage,
+        WebkitMaskSize: mask.maskSize,
+        WebkitMaskRepeat: mask.maskRepeat,
+        WebkitMaskPosition: mask.maskPosition,
+      }}
+    />
+  );
+}
+
+/**
+ * A girih corner, for the inside edge of a band.
  *
- * It is a stand-in, and it is meant to be replaced: swap this for an <img>
- * pointing at the association's own file and nothing else has to change.
+ * The design hangs one at the top of the band and a second, turned through
+ * 180°, at the foot — a bracket the eye reads as the frame of the page rather
+ * than an object in it. RTL mirrors it so the bracket still opens inwards.
+ */
+export function Corner({
+  place = 'start',
+  size = 84,
+  opacity = 0.38,
+}: {
+  place?: 'start' | 'end';
+  size?: number;
+  opacity?: number;
+}) {
+  return (
+    <svg
+      className={place === 'start' ? 'corner-a' : 'corner-b'}
+      viewBox="0 0 130 130"
+      width={size}
+      height={size}
+      aria-hidden="true"
+      focusable="false"
+      style={{
+        position: 'absolute',
+        zIndex: 0,
+        ...(place === 'start'
+          ? { insetBlockStart: 18, insetInlineStart: 18 }
+          : { insetBlockEnd: 18, insetInlineEnd: 18 }),
+        opacity,
+        pointerEvents: 'none',
+      }}
+    >
+      <g fill="none" stroke="var(--gold)" strokeLinejoin="round" strokeLinecap="round">
+        <path strokeWidth="1.5" d="M4 130V36C4 18 18 4 36 4h94" />
+        <path strokeWidth=".9" strokeOpacity=".8" d="M14 130V40c0-14 12-26 26-26h90" />
+        <path
+          strokeWidth=".8"
+          strokeOpacity=".5"
+          d="M58.17 45.18L45.18 58.17L26.82 58.17L13.83 45.18L13.83 26.82L26.82 13.83L45.18 13.83L58.17 26.82ZM95.86 87.74L87.74 95.86L76.26 95.86L68.14 87.74L68.14 76.26L76.26 68.14L87.74 68.14L95.86 76.26Z"
+        />
+        <path
+          strokeWidth="1.15"
+          d="M60.00 36.00L45.18 39.80L52.97 52.97L39.80 45.18L36.00 60.00L32.20 45.18L19.03 52.97L26.82 39.80L12.00 36.00L26.82 32.20L19.03 19.03L32.20 26.82L36.00 12.00L39.80 26.82L52.97 19.03L45.18 32.20ZM97.00 82.00L87.74 84.38L92.61 92.61L84.38 87.74L82.00 97.00L79.62 87.74L71.39 92.61L76.26 84.38L67.00 82.00L76.26 79.62L71.39 71.39L79.62 76.26L82.00 67.00L84.38 76.26L92.61 71.39L87.74 79.62ZM120.00 112.00L115.06 113.27L117.66 117.66L113.27 115.06L112.00 120.00L110.73 115.06L106.34 117.66L108.94 113.27L104.00 112.00L108.94 110.73L106.34 106.34L110.73 108.94L112.00 104.00L113.27 108.94L117.66 106.34L115.06 110.73Z"
+        />
+        <path
+          strokeWidth=".95"
+          strokeOpacity=".85"
+          d="M26.82 39.80L14.00 39.80M26.82 32.20L14.00 32.20M32.20 26.82L32.20 14.00M39.80 26.82L39.80 14.00M45.18 39.80L79.62 76.26M39.80 45.18L76.26 79.62M87.74 84.38L110.73 108.94M84.38 87.74L108.94 110.73"
+        />
+        <path
+          strokeWidth=".8"
+          strokeOpacity=".6"
+          d="M45.94 36.00L43.03 43.03L36.00 45.94L28.97 43.03L26.06 36.00L28.97 28.97L36.00 26.06L43.03 28.97ZM88.21 82.00L86.39 86.39L82.00 88.21L77.61 86.39L75.79 82.00L77.61 77.61L82.00 75.79L86.39 77.61Z"
+        />
+      </g>
+    </svg>
+  );
+}
+
+/**
+ * The gold eye at the head of the hero: a hairline ring around a filled dot.
+ */
+export function Eye({ size = 26 }: { size?: number }) {
+  return (
+    <svg
+      viewBox="0 0 26 26"
+      width={size}
+      height={size}
+      aria-hidden="true"
+      focusable="false"
+      style={{ flex: 'none' }}
+    >
+      <circle cx="13" cy="13" r="10.5" fill="none" stroke="var(--gold)" strokeWidth="1.2" />
+      <circle cx="13" cy="13" r="3.6" fill="var(--gold)" />
+    </svg>
+  );
+}
+
+/**
+ * The house's mark: the association's own seal.
+ *
+ * It carries its own paper disc rather than sitting on whatever is behind it.
+ * The seal is a deep green on transparency, which all but vanishes against the
+ * band green the masthead uses in the dark theme — so the disc stays light in
+ * both themes and the mark reads the same either way.
  */
 export function Mark({ className = 'brand-mark' }: { className?: string }) {
   return (
-    <svg
+    <span
       className={className}
-      viewBox="0 0 100 100"
-      aria-hidden="true"
-      focusable="false"
-      style={{ display: 'block', inlineSize: '100%', blockSize: '100%', borderRadius: '50%' }}
+      style={{
+        display: 'block',
+        inlineSize: '100%',
+        blockSize: '100%',
+        borderRadius: '50%',
+        background: 'var(--mark-ground)',
+        overflow: 'hidden',
+      }}
     >
-      <circle cx="50" cy="50" r="50" fill="var(--band)" />
-      <g fill="none" stroke="var(--gold)" strokeWidth="3" strokeLinejoin="round">
-        <rect x="21" y="21" width="58" height="58" />
-        <rect x="21" y="21" width="58" height="58" transform="rotate(45 50 50)" />
-      </g>
-      <circle cx="50" cy="50" r="15" fill="var(--gold)" fillOpacity="0.9" />
-      <circle cx="50" cy="50" r="48.5" fill="none" stroke="var(--gold)" strokeOpacity="0.55" />
-    </svg>
+      {/* eslint-disable-next-line @next/next/no-img-element -- a fixed-size
+          decorative mark; the optimiser has nothing to choose between. */}
+      <img
+        src="/logo.png"
+        alt=""
+        aria-hidden="true"
+        style={{ display: 'block', inlineSize: '100%', blockSize: '100%', objectFit: 'contain' }}
+      />
+    </span>
   );
 }
 

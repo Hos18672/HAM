@@ -1,11 +1,12 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { getTranslations, setRequestLocale } from 'next-intl/server';
+import { getTranslations } from 'next-intl/server';
+import { requireLocale } from '@/lib/i18n/locale-param';
 import { getPageHeader, getSettings } from '@/lib/db/queries/content';
 import { PageHead } from '@/components/site/page-head';
 import { pageMetadata } from '@/lib/page-meta';
 import { ASSOCIATION } from '@/lib/db/seed-data';
-import { locales, type Locale } from '@/lib/i18n/config';
+import { locales } from '@/lib/i18n/config';
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -27,8 +28,7 @@ export async function generateMetadata({
  */
 export default async function ImprintPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
-  setRequestLocale(locale);
-  const typed = locale as Locale;
+  const typed = requireLocale(locale);
 
   const [header, settings] = await Promise.all([getPageHeader('imprint', typed), getSettings()]);
   if (!header) notFound();

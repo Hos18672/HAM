@@ -1,8 +1,8 @@
 'use client';
 
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useRef, type ReactNode } from 'react';
 import type { HomecomingControl } from '@/lib/homecoming/src/mount.js';
-import { Mark, PatternPlate, Ring } from './ornaments';
+import { Corner, PatternPlate, Ring } from './ornaments';
 import type { ThemeValue } from './theme';
 
 /**
@@ -47,9 +47,6 @@ export function HomecomingHero({
   const slotRef = useRef<HTMLDivElement>(null);
   const control = useRef<HomecomingControl | null>(null);
 
-  // Drawn rather than rendered: shown when the scene cannot run at all.
-  const [failed, setFailed] = useState(false);
-
   useEffect(() => {
     const host = hostRef.current;
     if (!host) return undefined;
@@ -58,9 +55,8 @@ export function HomecomingHero({
 
     // The import is dynamic so Three.js never reaches the server bundle and
     // never sits on the critical path of any other page.
-    void import('@/lib/homecoming/src/mount.js').then(({ mountHomecoming, hasWebGL2 }) => {
+    void import('@/lib/homecoming/src/mount.js').then(({ mountHomecoming }) => {
       if (disposed || !hostRef.current) return;
-      if (!hasWebGL2()) setFailed(true);
 
       // The loader belongs to a real load of the home page. Arriving here
       // from another page inside the app — where the header and the copy are
@@ -77,11 +73,11 @@ export function HomecomingHero({
         meterEl: meterRef.current,
         theme,
         skipLoader: loaderPlayed || !booted,
-        fallbackImage: undefined,
+        // Without WebGL 2 the house's own mark is shown in the slot instead.
+        fallbackImage: '/logo.png',
         onReady: () => {
           loaderPlayed = true;
         },
-        onError: () => setFailed(true),
         sceneOptions: {
           // This app keeps the theme on <html data-theme>, so the scene can
           // follow it directly and the colours glide on a toggle.
@@ -121,6 +117,9 @@ export function HomecomingHero({
           transparent and sits on top of it. */}
       <PatternPlate tiling="shesh" drift opacity={0.75} />
       <Ring />
+      <Ring size={340} top={-100} />
+      <Corner place="start" />
+      <Corner place="end" />
 
       <div ref={hostRef} className="hc-host" aria-hidden="true">
         <div className="hc-cap">
@@ -138,18 +137,7 @@ export function HomecomingHero({
         <div className="hc-copy">{children}</div>
 
         {/* Where the mark comes to rest. */}
-        <div ref={slotRef} className="hc-slot" aria-hidden="true">
-          {failed ? (
-            <div
-              style={{
-                position: 'absolute',
-                inset: '13%',
-              }}
-            >
-              <Mark className="" />
-            </div>
-          ) : null}
-        </div>
+        <div ref={slotRef} className="hc-slot" aria-hidden="true" />
       </div>
     </section>
   );

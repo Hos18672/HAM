@@ -19,8 +19,10 @@ const supabaseOrigin = (() => {
 const csp = [
   "default-src 'self'",
   // Next.js injects inline bootstrap scripts; 'unsafe-inline' is required for them
-  // in the absence of a per-request nonce on statically rendered pages.
-  "script-src 'self' 'unsafe-inline'",
+  // in the absence of a per-request nonce on statically rendered pages. The dev
+  // server additionally evaluates its HMR runtime from a string — without
+  // 'unsafe-eval' there, the client bundle never hydrates and nothing responds.
+  `script-src 'self' 'unsafe-inline'${process.env.NODE_ENV === 'development' ? " 'unsafe-eval'" : ''}`,
   "style-src 'self' 'unsafe-inline'",
   `img-src 'self' data: blob:${supabaseOrigin ? ' ' + supabaseOrigin : ''}`,
   "font-src 'self'",

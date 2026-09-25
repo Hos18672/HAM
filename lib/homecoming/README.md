@@ -69,3 +69,13 @@ The scene also sets two CSS variables on the host: `--hc-cx` (horizontal centre 
 - **Rendering:** the canvas is transparent, so the hero background stays yours. Rendering pauses when the hero is scrolled out of view, but the loader always runs to the end.
 - **Reduced motion:** with `prefers-reduced-motion`, birds land quickly, with no light sweep and no idle take-offs.
 - **Bird counts:** about 300 birds fly in on desktop (180 on phones), plus about 200 in the sky (120 on phones).
+
+## Local change
+
+This copy is not quite the one that shipped. The arriving groups and the small
+sky groups used to fly in V formations; on this site they are all loose,
+irregular flocks instead — the V read as an arrow pointing at the logo rather
+than as birds. Two lines in `src/homecoming.js`, both marked
+`CHANGED FOR THIS SITE`; the `'v'` shape itself is still in `flockShape` and
+nothing else about the flight, the counts or the timings is touched. Re-apply
+them if this folder is ever replaced with a newer build.

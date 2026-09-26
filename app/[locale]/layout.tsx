@@ -90,7 +90,7 @@ export default async function LocaleLayout({
     <html lang={typed} dir={localeDirection[typed]} data-theme={theme} suppressHydrationWarning>
       <head>
         {/*
-          The hero's loader, armed before the first paint.
+          The hero's loader, armed before the first paint — once per visit.
 
           `data-hc="boot"` is what keeps the header and the hero copy hidden
           until the birds have finished; the scene then moves it to "loading"
@@ -98,10 +98,21 @@ export default async function LocaleLayout({
           because by the time a script in the body runs the header has already
           had a chance to paint.
 
-          Only on the home page: the loader is the home hero, and the rest of
-          the site has no business hiding its header. A client-side navigation
-          never re-runs this, which is deliberate — arriving at the home page
-          from inside the app shows the hero directly.
+          Only on the home page, and only the first time this browsing session
+          reaches it. Inside the app a client-side navigation never re-runs
+          this at all, so the flag matters most on the static preview, where
+          every internal link falls back to a full load: without it, coming
+          home from the logo in the bar played the whole four seconds again.
+          `sessionStorage` is the right shelf for it — the loader is worth
+          seeing once each time someone comes to the site, and not once ever.
+
+          The mark is set the moment the loader is armed rather than when it
+          finishes: a reload halfway through is still a visit that has seen
+          it, and nothing later in the page has to be trusted to record it.
+
+          Reading the shelf is its own try/catch. Where storage throws — a
+          locked-down private window — the loader simply plays, which is what
+          it did before any of this.
         */}
         <script
           dangerouslySetInnerHTML={{
@@ -114,6 +125,8 @@ export default async function LocaleLayout({
               "var p=location.pathname.replace(/\\/+$/,'');" +
               'if(b&&p.indexOf(b)===0)p=p.slice(b.length);' +
               'if(!/^(\\/(fa|de))?$/.test(p))return;' +
+              "try{if(sessionStorage.getItem('ham:hc')==='1')return;" +
+              "sessionStorage.setItem('ham:hc','1')}catch(e){}" +
               "document.documentElement.dataset.hc='boot';" +
               '}catch(e){}})()',
           }}

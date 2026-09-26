@@ -25,7 +25,14 @@ import type { ThemeValue } from './theme';
  * canvas ever runs.
  */
 
-/** The loader plays once per page load, not once per visit to the route. */
+/**
+ * Within one page load, the loader plays at most once — a client-side
+ * navigation away and back finds the hero already built.
+ *
+ * Across page loads it is the head script in the layout that decides, and it
+ * allows one per browsing session: it arms `data-hc="boot"` only when this
+ * session has not seen the loader yet. `booted` below is that decision.
+ */
 let loaderPlayed = false;
 
 export function HomecomingHero({
@@ -58,12 +65,13 @@ export function HomecomingHero({
     void import('@/lib/homecoming/src/mount.js').then(({ mountHomecoming }) => {
       if (disposed || !hostRef.current) return;
 
-      // The loader belongs to a real load of the home page. Arriving here
-      // from another page inside the app — where the header and the copy are
-      // already on screen — goes straight to the hero instead: hiding them
-      // again to play a four-second loader would be a strange thing to do to
-      // someone who has just clicked "Startseite". The head script marks a
-      // genuine home-page load by setting `data-hc="boot"`.
+      // The loader belongs to the first real load of the home page in a
+      // visit. Arriving here any other way — from another page inside the
+      // app, where the header and the copy are already on screen, or back at
+      // the home page later in the same session — goes straight to the hero:
+      // hiding everything again for four seconds is a strange thing to do to
+      // someone who has just clicked "Startseite". The head script sets
+      // `data-hc="boot"` on exactly the load that should play it.
       const booted = document.documentElement.dataset.hc === 'boot';
 
       control.current = mountHomecoming({

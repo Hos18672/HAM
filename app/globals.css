@@ -155,7 +155,7 @@
   /* The band colour as channels, so the skyline can fade into it at any
      alpha, and one step deeper for the shadow the city casts on it. */
   --micro-rgb: 5 42 29;
-  --microDeep-rgb: 2 21 14;
+  --microDeep-rgb: 4 36 25;
   --microDeep: rgb(var(--microDeep-rgb));
   --microInk: rgba(247, 243, 232, 0.78);
   --btnBg: #0b5d3b;
@@ -380,7 +380,7 @@
   --glass: rgba(6, 33, 26, 0.86);
   --micro: #04180f;
   --micro-rgb: 4 24 15;
-  --microDeep-rgb: 2 12 7;
+  --microDeep-rgb: 3 21 13;
   --microDeep: rgb(var(--microDeep-rgb));
   --microInk: rgba(239, 232, 216, 0.72);
   --btnBg: #dcbb7b;
@@ -2038,8 +2038,9 @@
      from this gradient, never from anything behind it.
 
      The shading also does not stop at that boundary — the darkest point sits
-     on it and comes up into the band as a contact shadow, which is what the
-     city casting itself onto the band would actually look like.
+     on it and comes up into the band as a contact shadow. It is only a
+     whisper deeper than the band itself: enough that the eye cannot find
+     where one ends, not enough to read as a shadow in its own right.
 
      The gradient only starts below the rooftops. The city is drawn in
      `--green`, which disappears against the near-black, so the buildings
@@ -2100,13 +2101,13 @@
     position: absolute;
     inset-block-start: 0;
     inset-inline: 0;
-    block-size: clamp(120px, 20vw, 260px);
+    block-size: clamp(90px, 14vw, 190px);
     pointer-events: none;
     background: linear-gradient(
       to bottom,
       rgb(var(--microDeep-rgb) / 1) 0%,
-      rgb(var(--microDeep-rgb) / 0.62) 26%,
-      rgb(var(--microDeep-rgb) / 0.26) 56%,
+      rgb(var(--microDeep-rgb) / 0.5) 30%,
+      rgb(var(--microDeep-rgb) / 0.18) 62%,
       rgb(var(--microDeep-rgb) / 0) 100%
     );
   }

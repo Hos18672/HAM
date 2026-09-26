@@ -1945,6 +1945,18 @@
   /* ── The footer band ──────────────────────────────────────────────────────
      The design closes every page on a near-black green band with the girih
      ground drifting behind it, gold column heads, and controls that lift. */
+  /* The Vienna skyline standing on the footer band. The box is sized here as
+     well as by the script (art 2172 × 560), so the space is held before the
+     skyline loads and nothing jumps when it arrives. */
+  .footer-skyline {
+    position: relative;
+    inline-size: 100%;
+    aspect-ratio: 2172 / 560;
+    min-block-size: 150px;
+    max-block-size: 420px;
+    margin-block-end: -2px;
+    overflow: hidden;
+  }
   .footer-band {
     position: relative;
     background: var(--micro);

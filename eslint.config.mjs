@@ -14,6 +14,8 @@ export default [
       'test-results/**',
       // Vendored Three.js scene: kept exactly as shipped.
       'lib/homecoming/**',
+      // Vendored Vienna skyline (footer): kept exactly as shipped.
+      'lib/vienna-skyline/**',
     ],
   },
   ...compat.extends('next/core-web-vitals', 'next/typescript'),

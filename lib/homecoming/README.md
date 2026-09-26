@@ -79,3 +79,25 @@ than as birds. Two lines in `src/homecoming.js`, both marked
 `CHANGED FOR THIS SITE`; the `'v'` shape itself is still in `flockShape` and
 nothing else about the flight, the counts or the timings is touched. Re-apply
 them if this folder is ever replaced with a newer build.
+
+Two more, also marked `CHANGED FOR THIS SITE`:
+
+- **Scrolling no longer freezes the flock.** Scrolling away used to push each
+  of the logo's birds out to a fixed spot and hold it there, wings spread and
+  still. A scattered bird now keeps flying — flapping and gliding, circling
+  loosely around the spot the scroll pushed it to, facing the way it goes. At
+  the top of the page nothing differs from the shipped scene.
+- **The ring around the logo is looser.** It used to be one tight band, every
+  bird at nearly the same distance and circling at the same speed. Each bird
+  now keeps its own pace (a few circle the other way), swells in and out, and
+  every so often drifts well away from the logo before coming back; one that
+  drifts too far is held inside the screen.
+- **The bird is exported.** `birdVertex`, `birdFragment`, `birdGeometry` and
+  `flockShape` are exported so that `page-sky.js` draws the same birds.
+
+`page-sky.js` is not part of the shipped scene at all: it was written for this
+site. It puts the same birds, in loose flocks that cross the window and come
+back from another edge, over every page (`components/site/wandering-birds.tsx`).
+The page hands it no-fly boxes each frame (the cards, and the footer skyline's
+roof line from `components/site/skyline-silhouette.ts`): flocks turn away as
+they near one, and a bird the scroll carries over one is eased off it.

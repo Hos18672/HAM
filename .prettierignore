@@ -14,3 +14,6 @@ design-system/prototype.html
 # Vendored Three.js scene â€” the loader and hero animation, kept exactly as
 # shipped so it can be replaced wholesale.
 lib/homecoming
+
+# Vendored Vienna skyline for the footer — kept as shipped.
+lib/vienna-skyline

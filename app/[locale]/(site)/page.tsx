@@ -420,16 +420,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
               </p>
             </div>
 
-            <div
-              className="surf"
-              data-rise
-              style={{
-                position: 'relative',
-                background: 'var(--card2)',
-                border: 'var(--rule-hair) solid var(--line)',
-                padding: '30px 26px',
-              }}
-            >
+            <div className="surf" data-rise>
               <PatternPlate opacity={0.4} />
               <ViennaPanorama />
             </div>

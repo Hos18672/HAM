@@ -92,10 +92,6 @@ export function PrayerList({ day, locale }: { day: PrayerDay; locale: Locale }) 
         <div
           className="surf"
           style={{
-            position: 'relative',
-            background: 'var(--card)',
-            border: 'var(--rule-hair) solid var(--line)',
-            padding: 'clamp(24px, 3.4vw, 44px)',
             display: 'grid',
             gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 17rem), 1fr))',
             gap: 'clamp(22px, 3vw, 48px)',

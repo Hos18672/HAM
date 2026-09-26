@@ -138,7 +138,7 @@ export default async function SupportPage({ params }: { params: Promise<{ locale
           <div className="page">
             {/* The design's ask: a gold-bordered panel on the sunk card
                 ground, with the girih plate behind the heading and the lead. */}
-            <div className="surf ask-panel">
+            <div className="surf">
               <PatternPlate tiling="shesh" opacity={0.5} />
               <div style={{ position: 'relative' }}>
                 <h2 style={{ fontSize: 'clamp(23px, 2.6vw, 30px)' }}>{t('donationTitle')}</h2>
@@ -166,7 +166,7 @@ export default async function SupportPage({ params }: { params: Promise<{ locale
           <div className="page">
             {/* The design's closing panel: gold-bordered, on the sunk card
                 ground, with the girih plate behind it. */}
-            <div className="surf ask-panel" style={{ maxInlineSize: '36rem' }}>
+            <div className="surf" style={{ maxInlineSize: '36rem' }}>
               <PatternPlate opacity={0.4} />
               <p className="kicker" style={{ position: 'relative' }}>
                 {t('bankDetails')}

@@ -175,15 +175,7 @@ export async function FeaturedEvent({
         </div>
 
         {/* The facts, on the band's own tinted pane. */}
-        <div
-          className="surf"
-          style={{
-            background: 'rgba(200, 164, 93, 0.08)',
-            border: 'var(--rule-hair) solid var(--patBand)',
-            padding: '28px',
-            borderRadius: 'var(--radius-soft)',
-          }}
-        >
+        <div className="surf surf-marked">
           <div style={{ display: 'grid', gap: '22px' }}>
             <div>
               <div style={label}>{t('date')}</div>

@@ -161,10 +161,6 @@ export function Compass({ locale }: { locale: Locale }) {
       <div
         className="surf"
         style={{
-          position: 'relative',
-          background: 'var(--card)',
-          border: 'var(--rule-hair) solid var(--line)',
-          padding: 'clamp(20px, 3vw, 34px)',
           display: 'grid',
           justifyItems: 'center',
           gap: 'var(--space-4)',

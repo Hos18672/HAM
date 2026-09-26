@@ -295,6 +295,7 @@
   --radius-none: 0;
   --radius-baseline: 10px; /* inputs, per the design */
   --radius-soft: 16px; /* cards and surfaces */
+  --pad-panel: clamp(22px, 3vw, 34px); /* the inside of a panel, everywhere */
   --radius-softer: 18px; /* the hero frame */
   --radius-panel: 22px; /* the menu panel, the closing ask */
   --radius-pill: 999px;
@@ -896,6 +897,9 @@
     color: var(--head);
     padding: 22px 26px;
     border: var(--rule-hair) solid var(--line);
+    /* Plated like every other block of its size on the page: it was the one
+       square-cornered panel left among rounded cards. */
+    border-radius: var(--radius-soft);
     background: var(--card2);
     margin: 0;
   }
@@ -2221,8 +2225,22 @@
      the diagonal, a gold hairline settles just inside the border, and the
      whole panel lifts and grows by a hair. Unlike a card this is not a grid
      item, so the sheen is worth the paint. */
+  /* A panel. `.card` is a discrete listing; `.surf` is the larger surface a
+     block of the page sits on — the contact form, the prayer times, the
+     compass, the month grid.
+
+     It used to carry only the radius and the hover, and left the surface
+     itself to whoever used it: every one of the seven call sites declared
+     its own background, border and padding inline, and no two agreed. The
+     page a reader moved to had panels a different colour and a different
+     size from the one they left, and two of them — the asking panels on the
+     support page — had no background at all, because the class they were
+     given for it (`.ask-panel`) was never written. The ground belongs here. */
   .surf {
     position: relative;
+    background: var(--card);
+    border: var(--rule-hair) solid var(--line);
+    padding: var(--pad-panel);
     border-radius: var(--radius-soft);
     overflow: hidden;
     isolation: isolate;
@@ -2231,6 +2249,14 @@
       transform 0.55s var(--ease-rise),
       box-shadow 0.5s var(--ease-rise),
       border-color 0.45s var(--ease-standard);
+  }
+  /* The one panel that is meant to stand out from the rest: the details of
+     the next event, on the band. Gold on gold rather than a card on paper,
+     because it sits on the dark ground and a white card would punch a hole
+     in it. */
+  .surf-marked {
+    background: rgba(200, 164, 93, 0.08);
+    border-color: var(--patBand);
   }
   .surf::before {
     content: '';
@@ -2292,6 +2318,58 @@
     box-shadow:
       0 20px 44px -24px rgba(0, 0, 0, 0.85),
       0 4px 14px -8px rgba(0, 0, 0, 0.6);
+  }
+
+  /* ── The month grid ───────────────────────────────────────────────────
+     A day is a small plate: the civil date in the display face with the
+     Hijri date under it in gold. None of this existed — the cells were
+     three unstyled spans, so the two numbers ran together into one and the
+     grid read as a column of four-digit figures with no cells around them.
+
+     The two markers are exactly the ones the legend draws beside it: a gold
+     ring for today, a gold wash for a day carrying an occasion. Both are
+     spelled out for a reader as well, so neither is carried by colour. */
+  .cal-day {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    min-block-size: 3.4rem;
+    padding: var(--space-2) 2px;
+    border: var(--rule-hair) solid var(--line);
+    border-radius: 10px;
+    background: var(--card);
+    transition:
+      border-color var(--duration-fast) var(--ease-standard),
+      background-color var(--duration-fast) var(--ease-standard);
+  }
+  .cal-day-greg {
+    font-family: var(--font-display);
+    font-size: 1.0625rem;
+    line-height: 1;
+    color: var(--head);
+  }
+  :root[lang='fa'] .cal-day-greg {
+    font-family: var(--font-naskh);
+  }
+  .cal-day-hij {
+    font-size: 0.6875rem;
+    line-height: 1;
+    color: var(--goldInk);
+  }
+  /* A day with something on it. */
+  .cal-day[data-occ='true'] {
+    border-color: var(--gold);
+    background: rgba(200, 164, 93, 0.16);
+  }
+  /* Today. The ring is 2px where the others are a hairline, and the box is
+     already border-box, so nothing moves in the grid around it. */
+  .cal-day[data-today='true'] {
+    border: 2px solid var(--gold);
+  }
+  .cal-day[data-today='true'] .cal-day-greg {
+    font-weight: var(--weight-bold);
   }
 
   /* The round chrome control: the search and theme buttons in the header.

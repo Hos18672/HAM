@@ -87,16 +87,7 @@ export default async function ContactPage({
                 The design puts these in a panel of their own rather than
                 loose in a column: a card with the girih plate behind it, the
                 house's name at the top, and each fact behind its own icon. */}
-            <div
-              className="surf"
-              data-rise
-              style={{
-                position: 'relative',
-                background: 'var(--card)',
-                border: 'var(--rule-hair) solid var(--line)',
-                padding: 'clamp(22px, 3vw, 32px)',
-              }}
-            >
+            <div className="surf" data-rise>
               <PatternPlate opacity={0.4} />
 
               <div style={{ position: 'relative', display: 'grid', gap: 'var(--space-2)' }}>

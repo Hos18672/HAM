@@ -119,16 +119,19 @@ export function Header({ theme, locale }: { theme: ThemeValue; locale: Locale })
         {t('skipToContent')}
       </a>
 
-      {/* The design's header does not sit on the page, it detaches from it: at
-          the top it is a flush glass strip, and once you scroll it pulls in
-          8px, rounds to a full pill, takes a hairline and casts a shadow —
-          all on the same .45s curve. */}
+      {/* The header is a pill and stays one. The design's own has it flush and
+          square at the top of the page and rounds it on the first scroll,
+          but a bar that changes shape as you start reading is a shape you
+          have to keep re-reading, and the corners are the thing the eye
+          fixes on. So the pill, the 8px it is pulled in by and its hairline
+          are the same at every scroll position, and only the weight changes:
+          it tightens vertically and takes a shadow once it is no longer
+          standing on the top of the page. */}
       <header
         className="hc-header sticky top-0"
         style={{
           zIndex: 'var(--z-header)',
-          padding: `${condensed ? '8px' : '0px'} clamp(10px, 2vw, 20px) 0`,
-          transition: 'padding 0.45s var(--ease-out-expressive)',
+          padding: '8px clamp(10px, 2vw, 20px) 0',
         }}
       >
         <div
@@ -136,11 +139,10 @@ export function Header({ theme, locale }: { theme: ThemeValue; locale: Locale })
             position: 'relative',
             background: 'var(--glass)',
             backdropFilter: 'blur(18px) saturate(1.3)',
-            border: `var(--rule-hair) solid ${condensed ? 'var(--line)' : 'transparent'}`,
-            borderRadius: condensed ? 'var(--radius-pill)' : '0px',
+            border: 'var(--rule-hair) solid var(--line)',
+            borderRadius: 'var(--radius-pill)',
             boxShadow: condensed ? '0 20px 44px -26px rgba(7, 59, 41, 0.5)' : 'none',
-            transition:
-              'border-color 0.45s ease, box-shadow 0.45s ease, border-radius 0.45s var(--ease-out-expressive)',
+            transition: 'box-shadow 0.45s ease',
           }}
         >
           <PatternPlate opacity={0.18} rounded />

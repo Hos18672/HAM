@@ -155,7 +155,7 @@
   /* The band colour as channels, so the skyline can fade into it at any
      alpha, and one step deeper for the shadow the city casts on it. */
   --micro-rgb: 5 42 29;
-  --microDeep-rgb: 4 36 25;
+  --microDeep-rgb: 5 40 27;
   --microDeep: rgb(var(--microDeep-rgb));
   --microInk: rgba(247, 243, 232, 0.78);
   --btnBg: #0b5d3b;
@@ -380,7 +380,7 @@
   --glass: rgba(6, 33, 26, 0.86);
   --micro: #04180f;
   --micro-rgb: 4 24 15;
-  --microDeep-rgb: 3 21 13;
+  --microDeep-rgb: 4 23 14;
   --microDeep: rgb(var(--microDeep-rgb));
   --microInk: rgba(239, 232, 216, 0.72);
   --btnBg: #dcbb7b;
@@ -2058,12 +2058,12 @@
     overflow: hidden;
     background: linear-gradient(
       to bottom,
-      rgb(var(--micro-rgb) / 0) 60%,
-      rgb(var(--micro-rgb) / 0.04) 70%,
-      rgb(var(--micro-rgb) / 0.18) 78%,
-      rgb(var(--micro-rgb) / 0.5) 85%,
-      rgb(var(--micro-rgb) / 0.85) 91%,
-      var(--micro) 95%,
+      rgb(var(--micro-rgb) / 0) 66%,
+      rgb(var(--micro-rgb) / 0.03) 75%,
+      rgb(var(--micro-rgb) / 0.14) 82%,
+      rgb(var(--micro-rgb) / 0.44) 88%,
+      rgb(var(--micro-rgb) / 0.82) 93%,
+      var(--micro) 96%,
       var(--microDeep) 100%
     );
   }
@@ -2101,13 +2101,13 @@
     position: absolute;
     inset-block-start: 0;
     inset-inline: 0;
-    block-size: clamp(90px, 14vw, 190px);
+    block-size: clamp(70px, 11vw, 150px);
     pointer-events: none;
     background: linear-gradient(
       to bottom,
       rgb(var(--microDeep-rgb) / 1) 0%,
-      rgb(var(--microDeep-rgb) / 0.5) 30%,
-      rgb(var(--microDeep-rgb) / 0.18) 62%,
+      rgb(var(--microDeep-rgb) / 0.45) 32%,
+      rgb(var(--microDeep-rgb) / 0.15) 64%,
       rgb(var(--microDeep-rgb) / 0) 100%
     );
   }

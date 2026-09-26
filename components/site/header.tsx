@@ -126,12 +126,15 @@ export function Header({ theme, locale }: { theme: ThemeValue; locale: Locale })
           fixes on. So the pill, the 8px it is pulled in by and its hairline
           are the same at every scroll position, and only the weight changes:
           it tightens vertically and takes a shadow once it is no longer
-          standing on the top of the page. */}
+          standing on the top of the page.
+
+          The 14px floor on the inset is for phones: 2vw is 7px at 360, which
+          left the pill all but touching both edges of the screen. */}
       <header
         className="hc-header sticky top-0"
         style={{
           zIndex: 'var(--z-header)',
-          padding: '8px clamp(10px, 2vw, 20px) 0',
+          padding: '8px clamp(14px, 2vw, 20px) 0',
         }}
       >
         <div

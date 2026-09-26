@@ -96,33 +96,40 @@ export default async function ActivitiesPage({ params }: { params: Promise<{ loc
               <SectionHead title={t('weekTitle')}>
                 <p className="lead">{t('weekLead')}</p>
               </SectionHead>
-              <table className="table-week table">
-                <caption className="visually-hidden">{t('weekTitle')}</caption>
-                <tbody>
-                  {week.map((row) => (
-                    <tr key={row.id}>
-                      <th scope="row">
-                        <EditableText
-                          entity="week"
-                          id={row.id}
-                          field="label"
-                          locale={typed}
-                          value={row.label}
-                        />
-                      </th>
-                      <td>
-                        <EditableText
-                          entity="week"
-                          id={row.id}
-                          field="detail"
-                          locale={typed}
-                          value={row.detail}
-                        />
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+              {/* The one table on the site, in the wrapper the stylesheet has
+                  been carrying for it all along: a table cannot be narrower
+                  than its columns, and at 320px this one pushed the whole
+                  page 6px sideways. Inside the wrapper it scrolls on its own
+                  instead. */}
+              <div className="table-scroll">
+                <table className="table-week table">
+                  <caption className="visually-hidden">{t('weekTitle')}</caption>
+                  <tbody>
+                    {week.map((row) => (
+                      <tr key={row.id}>
+                        <th scope="row">
+                          <EditableText
+                            entity="week"
+                            id={row.id}
+                            field="label"
+                            locale={typed}
+                            value={row.label}
+                          />
+                        </th>
+                        <td>
+                          <EditableText
+                            entity="week"
+                            id={row.id}
+                            field="detail"
+                            locale={typed}
+                            value={row.detail}
+                          />
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         </section>

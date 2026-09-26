@@ -2052,6 +2052,38 @@
   .footer-city {
     position: relative;
   }
+  /* The city stands on the ground the page ends on.
+
+     The skyline's own box is transparent where the sky is, so it stood on
+     the body's paper whatever came before it — and six of the sixteen pages
+     (courses, culture, events, prayer, sport, support) end on a white
+     section. That drew a hard white-to-cream rule straight across the page
+     an inch above the roofs, which is the last thing you see before the
+     footer. Matching the ground to the section above closes it.
+
+     Older browsers without `:has()` keep the paper, which is what every
+     page had before. */
+  main:has(> :last-child > :last-child.section-alt) + .footer-city {
+    /* `--paper2` is what the alt section itself is made of. `--card` is the
+       same white on paper and a different green in the dark, which is where
+       taking the wrong one showed. */
+    background: var(--paper2);
+    /* And up a pixel under it, the same way the band is pulled up under the
+       skyline: the two boxes do not always land on the same subpixel, and
+       the body's paper shows through the crack when they do not. */
+    margin-block-start: -1px;
+  }
+  /* And its closing hairline comes off. An alt section is ruled top and
+     bottom to separate it from the paper on either side; when it is the last
+     one on the page there is no paper under it any more, only the sky, and
+     the rule was drawn straight across it an inch above the roofs.
+
+     The width goes, not the colour: a transparent border still owns its
+     pixel, and the body's paper showed through the gap as a one-pixel line —
+     fainter than the rule and just as visible. */
+  main > :last-child > :last-child.section-alt {
+    border-block-end-width: 0;
+  }
   .footer-skyline {
     position: relative;
     inline-size: 100%;

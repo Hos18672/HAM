@@ -152,6 +152,11 @@
   --patBand: rgba(200, 164, 93, 0.3);
   --glass: rgba(247, 243, 232, 0.88);
   --micro: #052a1d;
+  /* The band colour as channels, so the skyline can fade into it at any
+     alpha, and one step deeper for the shadow the city casts on it. */
+  --micro-rgb: 5 42 29;
+  --microDeep-rgb: 2 21 14;
+  --microDeep: rgb(var(--microDeep-rgb));
   --microInk: rgba(247, 243, 232, 0.78);
   --btnBg: #0b5d3b;
   --btnFg: #f7f3e8;
@@ -374,6 +379,9 @@
   --patBand: rgba(220, 187, 123, 0.22);
   --glass: rgba(6, 33, 26, 0.86);
   --micro: #04180f;
+  --micro-rgb: 4 24 15;
+  --microDeep-rgb: 2 12 7;
+  --microDeep: rgb(var(--microDeep-rgb));
   --microInk: rgba(239, 232, 216, 0.72);
   --btnBg: #dcbb7b;
   --btnFg: #04180f;
@@ -2014,13 +2022,24 @@
      skyline loads and nothing jumps when it arrives. */
   /* The city and the footer are one piece.
 
-     The skyline used to stand on the page's own paper and the footer band
-     began under it with a hard horizontal edge, so the two read as separate
-     blocks stacked on each other. Now the band's colour comes up out of the
-     river: transparent where the sky is, so the page continues into it
-     without a line, and fully `--micro` by the bottom edge, which is the
-     colour the footer carries on with. The join is therefore invisible at
-     every width, with no overlap hack to get the subpixels to agree.
+     The band's colour comes up out of the river: transparent where the sky
+     is, so the page continues into it without a line, and dark by the time
+     the water reaches the footer, which carries the same colour on.
+
+     Two things make the join disappear rather than merely line up. The stops
+     are an ease rather than a straight ramp, so neither end of the fade has
+     a shoulder you can pick out; and the fade is fully dark a little before
+     the element ends, so its steep part never lands on the boundary itself,
+     where any subpixel rounding would print it as a rule. The band is pulled
+     up a pixel under it as well, so there is nothing to round.
+
+     The skyline's own box must stay transparent at the top, where the page's
+     paper has to show through the sky — so the band's colour can only come
+     from this gradient, never from anything behind it.
+
+     The shading also does not stop at that boundary — the darkest point sits
+     on it and comes up into the band as a contact shadow, which is what the
+     city casting itself onto the band would actually look like.
 
      The gradient only starts below the rooftops. The city is drawn in
      `--green`, which disappears against the near-black, so the buildings
@@ -2036,13 +2055,60 @@
     max-block-size: 420px;
     margin-block-end: -1px;
     overflow: hidden;
-    background: linear-gradient(to bottom, transparent 78%, var(--micro) 100%);
+    background: linear-gradient(
+      to bottom,
+      rgb(var(--micro-rgb) / 0) 60%,
+      rgb(var(--micro-rgb) / 0.04) 70%,
+      rgb(var(--micro-rgb) / 0.18) 78%,
+      rgb(var(--micro-rgb) / 0.5) 85%,
+      rgb(var(--micro-rgb) / 0.85) 91%,
+      var(--micro) 95%,
+      var(--microDeep) 100%
+    );
   }
   .footer-band {
     position: relative;
     background: var(--micro);
     color: var(--microInk);
     overflow: hidden;
+  }
+  /* The plate's own mask is brightest at the top edge, which put the girih
+     at full strength exactly on the join and drew the line all over again.
+     On the band it comes up out of the dark instead, so nothing changes at
+     the boundary itself. */
+  .footer-band .plate {
+    -webkit-mask: linear-gradient(
+      to bottom,
+      transparent 0,
+      rgba(0, 0, 0, 0.35) 150px,
+      #000 320px,
+      rgba(0, 0, 0, 0.55) 100%
+    );
+    mask: linear-gradient(
+      to bottom,
+      transparent 0,
+      rgba(0, 0, 0, 0.35) 150px,
+      #000 320px,
+      rgba(0, 0, 0, 0.55) 100%
+    );
+  }
+  /* The shadow the city lays over the top of the band: darkest against the
+     water, gone before the columns start. It is the first child box, so the
+     drifting plate and everything else still sit above it. */
+  .footer-band::before {
+    content: '';
+    position: absolute;
+    inset-block-start: 0;
+    inset-inline: 0;
+    block-size: clamp(120px, 20vw, 260px);
+    pointer-events: none;
+    background: linear-gradient(
+      to bottom,
+      rgb(var(--microDeep-rgb) / 1) 0%,
+      rgb(var(--microDeep-rgb) / 0.62) 26%,
+      rgb(var(--microDeep-rgb) / 0.26) 56%,
+      rgb(var(--microDeep-rgb) / 0) 100%
+    );
   }
   .footer-inner {
     position: relative;

@@ -4,6 +4,7 @@ import { requireLocale } from '@/lib/i18n/locale-param';
 import { Header } from '@/components/site/header';
 import { Footer } from '@/components/site/footer';
 import { PageEnter } from '@/components/site/page-enter';
+import { WanderingBirds } from '@/components/site/wandering-birds';
 import { EditBar } from '@/components/editable/edit-bar';
 import { EditStatusProvider } from '@/components/editable/edit-status';
 import { readTheme, readEditSession } from '@/lib/preferences';
@@ -33,6 +34,7 @@ export default async function SiteLayout({
         <PageEnter>{children}</PageEnter>
       </main>
       <Footer locale={typed} />
+      <WanderingBirds />
     </>
   );
 

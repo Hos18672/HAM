@@ -2012,14 +2012,31 @@
   /* The Vienna skyline standing on the footer band. The box is sized here as
      well as by the script (art 2172 × 560), so the space is held before the
      skyline loads and nothing jumps when it arrives. */
+  /* The city and the footer are one piece.
+
+     The skyline used to stand on the page's own paper and the footer band
+     began under it with a hard horizontal edge, so the two read as separate
+     blocks stacked on each other. Now the band's colour comes up out of the
+     river: transparent where the sky is, so the page continues into it
+     without a line, and fully `--micro` by the bottom edge, which is the
+     colour the footer carries on with. The join is therefore invisible at
+     every width, with no overlap hack to get the subpixels to agree.
+
+     The gradient only starts below the rooftops. The city is drawn in
+     `--green`, which disappears against the near-black, so the buildings
+     stay on light ground and it is the water that turns to night. */
+  .footer-city {
+    position: relative;
+  }
   .footer-skyline {
     position: relative;
     inline-size: 100%;
     aspect-ratio: 2172 / 560;
     min-block-size: 150px;
     max-block-size: 420px;
-    margin-block-end: -2px;
+    margin-block-end: -1px;
     overflow: hidden;
+    background: linear-gradient(to bottom, transparent 78%, var(--micro) 100%);
   }
   .footer-band {
     position: relative;

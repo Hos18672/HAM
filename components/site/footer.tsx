@@ -34,7 +34,9 @@ export async function Footer({ locale }: { locale: Locale }) {
   );
 
   return (
-    <>
+    // The city and the band are one block: the skyline's ground fades into
+    // the footer's own colour, so there is no edge between them.
+    <div className="footer-city">
       <FooterSkyline />
       <footer className="footer-band">
         <PatternPlate tiling="shesh" drift opacity={0.6} />
@@ -191,6 +193,6 @@ export async function Footer({ locale }: { locale: Locale }) {
           </div>
         </div>
       </footer>
-    </>
+    </div>
   );
 }

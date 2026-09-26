@@ -72,6 +72,15 @@ function Switch({
             className="seg-option"
             data-on={isCurrent ? 'true' : 'false'}
             aria-current={isCurrent ? 'true' : undefined}
+            // The language lives in the URL, so it survives every link and
+            // every reload on its own. The one place it cannot is the bare
+            // root, which has nothing to go on and sends everybody to the
+            // house's own Persian. Recording the choice here lets that one
+            // door remember a reader who has already made it — and leaves
+            // the default exactly as it was for a reader who has not.
+            onClick={() => {
+              document.cookie = `NEXT_LOCALE=${locale}; path=/; max-age=31536000; samesite=lax`;
+            }}
           >
             {localeLabel[locale]}
           </Link>

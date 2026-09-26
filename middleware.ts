@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import createIntlMiddleware from 'next-intl/middleware';
+import { hasLocale } from 'next-intl';
 import { routing } from './lib/i18n/navigation';
 
 const intlMiddleware = createIntlMiddleware(routing);
@@ -33,6 +34,20 @@ export default async function middleware(request: NextRequest) {
 
   if (pathname.startsWith('/login') || pathname.startsWith('/api')) {
     return NextResponse.next();
+  }
+
+  // The bare root is the one address that carries no language, and
+  // `localeDetection` is off on purpose: a first-time reader gets the
+  // house's own Persian rather than whatever their browser asks for. But a
+  // reader who has picked a language should not be sent back to Persian
+  // every time they open the site without a path, so an explicit choice —
+  // and only an explicit one, written by the switch in the bar — is
+  // honoured here.
+  if (pathname === '/') {
+    const chosen = request.cookies.get('NEXT_LOCALE')?.value;
+    if (chosen && chosen !== routing.defaultLocale && hasLocale(routing.locales, chosen)) {
+      return NextResponse.redirect(new URL(`/${chosen}`, request.url));
+    }
   }
 
   return intlMiddleware(request);

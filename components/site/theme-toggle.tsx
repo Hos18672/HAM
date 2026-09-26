@@ -14,7 +14,17 @@ export function ThemeToggle({ theme }: { theme: ThemeValue }) {
   // or the second click computes the same "next" theme as the first and the
   // switch appears to be stuck.
   const [current, setCurrent] = useState<ThemeValue>(theme);
-  useEffect(() => setCurrent(theme), [theme]);
+
+  // And what is on `<html>` outranks the prop. On a statically built host
+  // every page carries the theme it was built with, while the head script
+  // has already put the reader's own choice on the element — so trusting the
+  // prop made the switch think it was light when the page was dark, compute
+  // "dark" as the next theme again, and refuse to go back. The element is
+  // the truth on both hosts: in production the server wrote it.
+  useEffect(() => {
+    const applied = document.documentElement.dataset.theme;
+    setCurrent(applied === 'dark' || applied === 'light' ? applied : theme);
+  }, [theme]);
 
   function toggle() {
     const next: ThemeValue = current === 'dark' ? 'light' : 'dark';

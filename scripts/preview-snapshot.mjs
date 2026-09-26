@@ -107,7 +107,9 @@ async function main() {
   await writeFileAt(join(OUT, '404.html'), transform(missing.body));
 
   // Middleware normally redirects the root to the default locale. There is no
-  // middleware on a static host, so the root is a plain redirect instead.
+  // middleware on a static host, so the root is a plain redirect instead —
+  // one that honours a language the reader has already chosen, as the
+  // middleware does. The meta refresh stays as the answer without script.
   const [defaultLocale] = locales;
   await writeFileAt(
     join(OUT, 'index.html'),
@@ -116,6 +118,14 @@ async function main() {
   <head>
     <meta charset="utf-8" />
     <meta name="robots" content="noindex, nofollow" />
+    <script>
+      (function () {
+        try {
+          var m = document.cookie.match(/(?:^|; )NEXT_LOCALE=(${locales.join('|')})/);
+          if (m && m[1] !== '${defaultLocale}') location.replace('./' + m[1] + '/');
+        } catch (e) {}
+      })();
+    </script>
     <meta http-equiv="refresh" content="0; url=./${defaultLocale}/" />
     <link rel="canonical" href="./${defaultLocale}/" />
     <title>Haus aller Menschen</title>

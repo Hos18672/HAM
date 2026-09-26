@@ -5,6 +5,7 @@ import { getTranslations } from 'next-intl/server';
 import { requireLocale } from '@/lib/i18n/locale-param';
 import { locales, localeDirection } from '@/lib/i18n/config';
 import { readTheme } from '@/lib/preferences';
+import { THEME_COOKIE } from '@/components/site/theme';
 import { getSettings } from '@/lib/db/queries/content';
 import { PrintPlates } from '@/components/site/print-plates';
 import { PatternDefs } from '@/components/site/ornaments';
@@ -89,6 +90,30 @@ export default async function LocaleLayout({
   return (
     <html lang={typed} dir={localeDirection[typed]} data-theme={theme} suppressHydrationWarning>
       <head>
+        {/*
+          The reader's theme, before the first paint.
+
+          The toggle writes a cookie and the server reads it on the next
+          render, which is the whole story on a server-rendered host. On the
+          static preview there is no next render: every page is HTML that was
+          built once, carrying whatever the theme was at build time. So dark
+          mode survived exactly as long as you stayed on the page you set it
+          on, and the next click put the lights back on.
+
+          Reading the cookie here settles it before anything paints, on both
+          hosts. In production it agrees with what the server already wrote
+          and changes nothing; on the preview it is the only thing that
+          knows. `<html>` carries suppressHydrationWarning for this.
+        */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              '(function(){try{' +
+              `var m=document.cookie.match(/(?:^|; )${THEME_COOKIE}=(dark|light)/);` +
+              'if(m)document.documentElement.dataset.theme=m[1];' +
+              '}catch(e){}})()',
+          }}
+        />
         {/*
           The hero's loader, armed before the first paint — once per visit.
 

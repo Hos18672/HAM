@@ -3,8 +3,16 @@
    very first paint. mount.js then sets data-hc="loading" and later data-hc="ready".
    Mark the site header with the class .hc-header (or adapt the selector below). */
 
+/* CHANGED FOR THIS SITE: the header height is not set here.
+
+   This file lands after app/globals.css in the bundle, so its 84px won the
+   cascade over the app's own value however the app set it — and the app's
+   is the real one. The hero was pulled up 84px under an 88px bar and left a
+   4px strip of paper above itself on every load; the page heads, which use
+   the same variable, did the same on all fifteen sub-pages. The two colours
+   below are still defaults: the app overrides them, and they only have to
+   be sane if it does not. */
 :root {
-  --hc-header-h: 84px;        /* height of the fixed/sticky site header */
   --hc-gold: #d0ae63;         /* progress line + caption accent */
   --hc-cap-color: #fbf6ea;    /* caption text on the hero band */
 }

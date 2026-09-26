@@ -16,7 +16,7 @@ import type { PageHeader } from '@/lib/db/queries/content';
  */
 export function PageHead({ header, locale }: { header: PageHeader; locale: Locale }) {
   return (
-    <header className="section-band" style={{ paddingBlock: 'clamp(48px, 6vw, 96px)' }} data-rise>
+    <header className="section-band page-head-band" data-rise>
       <PatternPlate tiling="shesh" drift opacity={0.7} />
       <Ring />
 

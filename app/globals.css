@@ -320,9 +320,15 @@
 
   /* ── The Homecoming hero ──────────────────────────────────────────────
      The scene's own three variables, given this site's values. The header
-     height has to be the real one: the hero is pulled up underneath the bar
-     by exactly this much. */
-  --hc-header-h: 4.5rem;
+     height has to be the real one: the hero and every page head are pulled
+     up underneath the bar by exactly this much, so if it is short they start
+     below the bar and leave a strip of bare paper above them.
+
+     88px is what the bar measures in its resting state at every width from
+     320 to 1600 — 8px of clearance above it, a hairline, 15px of padding,
+     a 48px row of controls, 15px and a hairline again. It was 4.5rem (72),
+     which is the bar's own row and not the box it sits in. */
+  --hc-header-h: 88px;
   --hc-gold: var(--gold);
   --hc-cap-color: var(--bandHead);
 
@@ -796,6 +802,20 @@
     color: var(--bandInk);
     overflow: hidden;
     padding-block: clamp(52px, 6vw, 96px);
+  }
+
+  /* The page head runs up behind the bar rather than starting under it.
+
+     The bar is sticky and so in flow: the band began at its bottom edge, and
+     the top 88px of all fifteen sub-pages was bare paper with the pill
+     floating in it. The band's green is meant to be what you see behind the
+     bar — which is what the home page has always done, its hero being pulled
+     up by this same amount. The padding gains what the margin takes, so
+     nothing inside the band moves. */
+  .page-head-band {
+    margin-block-start: calc(-1 * var(--hc-header-h));
+    padding-block-start: calc(clamp(48px, 6vw, 96px) + var(--hc-header-h));
+    padding-block-end: clamp(48px, 6vw, 96px);
   }
   .section-band h1,
   .section-band h2,

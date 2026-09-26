@@ -101,3 +101,12 @@ back from another edge, over every page (`components/site/wandering-birds.tsx`).
 The page hands it no-fly boxes each frame (the cards, and the footer skyline's
 roof line from `components/site/skyline-silhouette.ts`): flocks turn away as
 they near one, and a bird the scroll carries over one is eased off it.
+
+## The header height is the app's
+
+`homecoming.css` no longer declares `--hc-header-h`. It is set in
+`app/globals.css`, which is the only place that knows how tall the bar
+actually is. The vendored default (84px) used to win the cascade — this file
+lands after the app's stylesheet in the bundle — so the hero and every page
+head were pulled up 84px under an 88px bar and left a strip of bare paper
+above them.

@@ -93,7 +93,7 @@ export function SectionHead({
       style={{ display: 'grid', gap: 'var(--space-2)', marginBlockEnd: 'var(--space-5)' }}
       data-rise
     >
-      {kicker ? <p className="kicker">{kicker}</p> : null}
+      {kicker ? <p className="kicker kicker-led">{kicker}</p> : null}
       {/* A heading given as a plain string reveals a word at a time, like every
           other heading on the site; one built from elements is left alone. */}
       {typeof title === 'string' ? (

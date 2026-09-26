@@ -109,7 +109,7 @@ export function HijriCalendar({
             {/* The design leads with the Hijri month and keeps the Gregorian
                 one under it: this is the Hijri calendar, shown against the
                 civil month rather than the other way round. */}
-            <p className="kicker" style={{ color: 'var(--color-accent-2-text)' }}>
+            <p className="kicker kicker-led" style={{ color: 'var(--color-accent-2-text)' }}>
               {t('calendar')}
             </p>
             {/* Both months in the one heading, the Hijri one set large.
@@ -288,7 +288,7 @@ export function HijriCalendar({
 
       {/* Occasions in this month, beside the grid rather than under it. */}
       <div>
-        <p className="kicker" style={{ color: 'var(--color-accent-2-text)' }}>
+        <p className="kicker kicker-led" style={{ color: 'var(--color-accent-2-text)' }}>
           {t('occasions')}
         </p>
         {shown.occasions.length === 0 ? (

@@ -1187,6 +1187,70 @@
     font-weight: var(--weight-bold);
   }
 
+  /* ── The gold dash before a label ─────────────────────────────────────
+     The design draws a short gold rule in front of its eyebrow on the home
+     page's closing section. Every kicker on the site now gets one, and it
+     draws itself as the block arrives — so a section announces itself with a
+     stroke before it says anything. Scaled from the reading edge, so it draws
+     the right way round in Persian.
+
+     Only where a kicker leads a block: `.kicker` is also used for small
+     labels inside cards and facts, and a rule in front of each of those
+     would be noise. `.kicker-led` opts in. */
+  .kicker-led {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .kicker-led::before {
+    content: '';
+    flex: 0 0 auto;
+    inline-size: 26px;
+    block-size: 1px;
+    background: var(--gold);
+    transform: scaleX(0);
+    transform-origin: left center;
+    transition: transform 0.9s var(--ease-rise) 0.1s;
+  }
+  :root[dir='rtl'] .kicker-led::before {
+    transform-origin: right center;
+  }
+  /* Drawn once the block it leads has been revealed — and already drawn for
+     anyone the observer never armed, so it is never a missing rule. */
+  [data-rise]:not([data-rise-armed='true']) .kicker-led::before,
+  [data-rise][data-rise-in='true'] .kicker-led::before,
+  .kicker-led:not([data-rise] *)::before {
+    transform: scaleX(1);
+  }
+
+  /* ── A link draws its own rule ────────────────────────────────────────
+     The underline itself stays exactly as it is — it is what tells a reader
+     this is a link at all, and colour alone would not. Under the pointer a
+     second, thicker gold rule is drawn beneath it, from the reading edge
+     outwards: the same gesture as the dash before a section label, at the
+     scale of a word. It is drawn, not faded, so the eye follows it. */
+  main p > a,
+  main li > a,
+  main figcaption > a {
+    background-image: linear-gradient(var(--gold), var(--gold));
+    background-repeat: no-repeat;
+    background-position: 0 100%;
+    background-size: 0% 2px;
+    transition:
+      background-size 0.45s var(--ease-out-expressive),
+      color var(--duration-fast) var(--ease-standard);
+  }
+  :root[dir='rtl'] main p > a,
+  :root[dir='rtl'] main li > a,
+  :root[dir='rtl'] main figcaption > a {
+    background-position: 100% 100%;
+  }
+  main p > a:hover,
+  main li > a:hover,
+  main figcaption > a:hover {
+    background-size: 100% 2px;
+  }
+
   /* ── .tag ─────────────────────────────────────────────────────────────────
      Static label, or a filter chip when it carries [aria-pressed]. */
   .tag {
@@ -2868,21 +2932,68 @@
   }
 
   /* A pattern plate drifting behind a band, and the slow orbit on a mark. */
-  @keyframes ham-drift {
-    from {
-      background-position: 0 0;
-    }
-    to {
-      background-position: 160px 160px;
-    }
-  }
   @keyframes ham-spin {
     to {
       transform: rotate(360deg);
     }
   }
-  .ham-drift {
-    animation: ham-drift 70s linear infinite;
+  /* The girih ground, actually moving.
+
+     One tile, then repeat: khatam tiles at 100 user units and shesh at 50, so
+     each travels its own distance and the loop is seamless. Slow on purpose —
+     70s for a tile — because this is a ground, not an animation. */
+  @keyframes plate-drift-khatam {
+    to {
+      transform: translate(100px, 100px);
+    }
+  }
+  @keyframes plate-drift-shesh {
+    to {
+      transform: translate(50px, 50px);
+    }
+  }
+  @keyframes plate-drift-tumar {
+    to {
+      transform: translate(48px, 16px);
+    }
+  }
+  .plate-field {
+    will-change: transform;
+  }
+
+  /* ── The ground has depth ─────────────────────────────────────────────
+     A section's girih plate drifts a little slower than the page it is
+     behind, so the ground sits back from the content rather than travelling
+     with it. Scroll-linked, not scroll-listening: the browser runs it off the
+     scroll timeline on the compositor, and there is no handler and no
+     layout read. Where the timeline is not supported the plate simply holds
+     still, which is what it did before. */
+  @supports (animation-timeline: view()) {
+    @keyframes plate-parallax {
+      from {
+        translate: 0 -3%;
+      }
+      to {
+        translate: 0 3%;
+      }
+    }
+    .section .plate,
+    .section-alt .plate,
+    .section-band .plate,
+    .section-loose .plate {
+      animation: plate-parallax linear both;
+      animation-timeline: view();
+      animation-range: cover 0% cover 100%;
+    }
+  }
+  .plate-drift-khatam {
+    animation: plate-drift-khatam 70s linear infinite;
+  }
+  .plate-drift-shesh {
+    animation: plate-drift-shesh 42s linear infinite;
+  }
+  .plate-drift-tumar {
+    animation: plate-drift-tumar 30s linear infinite;
   }
   .ham-spin {
     animation: ham-spin 7s linear infinite;
@@ -2919,6 +3030,19 @@
     }
     .fade-in {
       animation: none;
+    }
+    /* The ground stops drifting and stops parallaxing, and the gold dash is
+       simply there rather than drawn. */
+    .plate-field,
+    .section .plate,
+    .section-alt .plate,
+    .section-band .plate,
+    .section-loose .plate {
+      animation: none !important;
+      translate: none !important;
+    }
+    .kicker-led::before {
+      transform: scaleX(1) !important;
     }
     .search-pill > svg,
     .search-pill input,

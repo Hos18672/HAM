@@ -95,13 +95,31 @@ export function PatternPlate({
       aria-hidden="true"
       focusable="false"
       role="presentation"
-      className={drift ? 'plate ham-drift' : 'plate'}
+      className="plate"
       style={{
         ...(opacity === undefined ? {} : { opacity }),
         ...(rounded ? { borderRadius: 'inherit', overflow: 'hidden' } : {}),
       }}
     >
-      <rect width="100%" height="100%" fill={`url(#ham-${tiling})`} />
+      {/*
+        The drift moves the rectangle, not a background.
+
+        `.ham-drift` animates `background-position`, which is what the design
+        source does — and an <svg> with a <pattern> fill has no background, so
+        the ground has never actually moved, here or in the prototype. The
+        pattern is laid out in user space, so translating the rectangle slides
+        the field behind it instead. The rectangle is drawn at four times the
+        area it needs, centred, so nothing uncovers an edge while it travels,
+        and it travels exactly one tile before it repeats.
+      */}
+      <rect
+        className={drift ? `plate-field plate-drift-${tiling}` : undefined}
+        x="-50%"
+        y="-50%"
+        width="200%"
+        height="200%"
+        fill={`url(#ham-${tiling})`}
+      />
     </svg>
   );
 }

@@ -11,20 +11,24 @@
  *
  * So instead this runs the real production build against a real seeded
  * database and keeps what it renders. What lands on Pages is the genuine
- * output of the genuine app, with everything interactive necessarily inert —
- * hence the banner this injects on every page, so nobody mistakes the preview
- * for the association's live site.
+ * output of the genuine app, with everything interactive necessarily inert.
+ *
+ * There used to be a black bar across the top of every page saying so. It is
+ * gone at the owner's request: it sat above the hero, pushed the whole page
+ * down and covered the loader. What keeps the preview from being taken for
+ * the real site is now `noindex` on every page and a robots.txt that refuses
+ * the lot — neither of which is visible, and neither of which was removed.
  *
  * Usage (the server must already be running):
  *   PREVIEW_BASE_PATH=/HAM node scripts/preview-snapshot.mjs
  */
 import { cp, mkdir, readdir, readFile, writeFile } from 'node:fs/promises';
+import { Buffer } from 'node:buffer';
 import { dirname, join } from 'node:path';
 
 const ORIGIN = process.env.PREVIEW_ORIGIN ?? 'http://127.0.0.1:3100';
 const BASE_PATH = process.env.PREVIEW_BASE_PATH ?? '';
 const OUT = process.env.PREVIEW_OUT ?? 'preview';
-const REPO_URL = process.env.PREVIEW_REPO_URL ?? 'https://github.com/Hos18672/HAM';
 
 /** The locales, read from the app rather than repeated here. */
 async function readLocales() {
@@ -43,63 +47,12 @@ async function readRoutes() {
 }
 
 /**
- * The preview banner.
- *
- * Added by a script on `load` rather than baked into the markup on purpose:
- * an extra element in the server HTML would not match what React expects when
- * it hydrates. Appending it afterwards leaves hydration untouched, and if the
- * script never runs the page is simply the page.
- */
-function bannerScript() {
-  const de =
-    'Vorschau der Gestaltung — nicht die Live-Website des Vereins. ' +
-    'Anmeldung, Verwaltung, Formulare und Suche brauchen einen Server und sind hier ohne Funktion.';
-  const fa =
-    'پیش‌نمایش طراحی — وب‌سایت زندهٔ انجمن نیست. ' +
-    'ورود، بخش مدیریت، فرم‌ها و جست‌وجو به سرور نیاز دارند و اینجا کار نمی‌کنند.';
-
-  return `<script>(function () {
-  function mount() {
-    if (document.getElementById('ham-preview-banner')) return;
-    var bar = document.createElement('div');
-    bar.id = 'ham-preview-banner';
-    bar.setAttribute('role', 'note');
-    bar.style.cssText =
-      'position:sticky;top:0;z-index:2147483647;background:#1c1917;color:#fafaf9;' +
-      'font:500 13px/1.5 system-ui,sans-serif;padding:8px 16px;text-align:center;' +
-      'display:flex;gap:8px;justify-content:center;flex-wrap:wrap;align-items:center';
-    var de = document.createElement('span');
-    de.lang = 'de';
-    de.dir = 'ltr';
-    de.textContent = ${JSON.stringify(de)};
-    var fa = document.createElement('span');
-    fa.lang = 'fa';
-    fa.dir = 'rtl';
-    fa.textContent = ${JSON.stringify(fa)};
-    fa.style.opacity = '0.75';
-    var link = document.createElement('a');
-    link.href = ${JSON.stringify(REPO_URL)};
-    link.textContent = 'Quellcode';
-    link.style.cssText = 'color:#fafaf9;text-underline-offset:3px';
-    bar.appendChild(de);
-    bar.appendChild(fa);
-    bar.appendChild(link);
-    document.body.insertBefore(bar, document.body.firstChild);
-  }
-  if (document.readyState === 'complete') setTimeout(mount, 0);
-  else window.addEventListener('load', function () { setTimeout(mount, 0); });
-})();</script>`;
-}
-
-/**
  * A preview must never outrank the real site once it exists, so every page
  * carries `noindex` and robots.txt refuses the lot.
  */
 function transform(html) {
   const noindex = '<meta name="robots" content="noindex, nofollow" />';
-  let out = html.replace(/<head([^>]*)>/i, (match, attrs) => `<head${attrs}>${noindex}`);
-  out = out.replace(/<\/body>/i, `${bannerScript()}</body>`);
-  return out;
+  return html.replace(/<head([^>]*)>/i, (match, attrs) => `<head${attrs}>${noindex}`);
 }
 
 async function fetchPage(path) {
@@ -139,9 +92,15 @@ async function main() {
     }
   }
 
-  // The icon, which is a route rather than a file in public/.
-  const icon = await fetchPage('/icon.svg');
-  if (icon.status === 200) await writeFileAt(join(OUT, 'icon.svg'), icon.body);
+  // The icons, which are routes built from `app/icon.*` rather than files in
+  // public/. Fetched as bytes, not text: one of them is a PNG, and reading a
+  // PNG as UTF-8 turns it into something that is no longer a PNG.
+  for (const name of ['icon.svg', 'icon.png']) {
+    const response = await fetch(`${ORIGIN}${BASE_PATH}/${name}`);
+    if (response.status !== 200) continue;
+    await mkdir(OUT, { recursive: true });
+    await writeFile(join(OUT, name), Buffer.from(await response.arrayBuffer()));
+  }
 
   // Pages serves 404.html for anything missing, so give it the real one.
   const missing = await fetchPage(`/${locales[0]}/gibt-es-nicht`);

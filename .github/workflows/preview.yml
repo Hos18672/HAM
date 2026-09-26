@@ -109,7 +109,6 @@ jobs:
         env:
           PREVIEW_BASE_PATH: ${{ steps.pages.outputs.base_path }}
           NEXT_PUBLIC_SITE_URL: ${{ steps.pages.outputs.base_url }}
-          PREVIEW_REPO_URL: ${{ github.server_url }}/${{ github.repository }}
         run: |
           pnpm start --port 3100 &
           for _ in $(seq 1 60); do

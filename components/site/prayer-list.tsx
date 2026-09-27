@@ -181,8 +181,13 @@ export function PrayerList({ day, locale }: { day: PrayerDay; locale: Locale }) 
           margin: 0,
           padding: 0,
           display: 'grid',
-          gap: 'var(--space-3)',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 106px), 1fr))',
+          // The same 20px every other set of cards on the site is spaced by.
+          // At 15 the seven of them read as one block rather than seven.
+          gap: 'var(--space-4)',
+          // 96, not the 106 it was: the wider gap costs the row 10px of
+          // track, and at 390 that was the difference between three of them
+          // fitting and two. The gap changes, the shape of the row does not.
+          gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 96px), 1fr))',
         }}
       >
         {ORDER.map((key) => {

@@ -908,6 +908,19 @@
     }
   }
 
+  /* The denser list: the same grid, a smaller gap.
+
+     This was never written either, and four pages ask for it on its own —
+     about, community, culture and sport. A `<ul>` with no grid and no gap
+     at all, so the cards there sat 6px apart, and on the sport page they
+     touched. On the activities page it is paired with `.columns-feature`,
+     which is where that page's columns come from: this only tightens them,
+     so it must not set a template of its own. */
+  .columns-tight {
+    display: grid;
+    gap: var(--space-5);
+  }
+
   /* The design sets a pulled quote as a panel on the sunk card ground rather
      than as a rule in the margin: same italic, boxed. */
   .pull-quote {
@@ -1987,6 +2000,8 @@
   .card-plate .pB {
     opacity: 0;
   }
+  /* Which plate a card carries, and which way up, comes from its position in
+     the set — so no two neighbours are the same. */
   .card:nth-child(3n + 2) .card-plate .pA,
   .card:nth-child(4n + 3) .card-plate .pA {
     opacity: 0;
@@ -2006,6 +2021,42 @@
   }
   .card:nth-child(7n + 4) .card-plate {
     transform: rotate(45deg) scale(1.25);
+  }
+  /* The same, counted on the list items.
+
+     In a list every card is wrapped in its own `<li>`, so the rules above
+     see a card that is the first child of something — `5n + 1`, all of them,
+     and every plate in the list came out identical. `.plate-rota` on the
+     list is the hook for counting the items instead. Five pages have been
+     asking for it and it was never written.
+
+     Written out again rather than folded into the rules above with `:is()`:
+     the card still matches `.card:nth-child(5n + 1)` from inside its item,
+     and one selector cannot both count the item and ignore the card. These
+     carry a class more, so they win wherever both apply. */
+  .plate-rota > li:nth-child(3n + 2) .card-plate .pA,
+  .plate-rota > li:nth-child(4n + 3) .card-plate .pA {
+    opacity: 0;
+  }
+  .plate-rota > li:nth-child(3n + 2) .card-plate .pB,
+  .plate-rota > li:nth-child(4n + 3) .card-plate .pB {
+    opacity: 1;
+  }
+  .plate-rota > li:nth-child(2n) .card-plate {
+    transform: rotate(90deg) scale(1.12);
+  }
+  .plate-rota > li:nth-child(3n) .card-plate {
+    transform: rotate(180deg) scale(0.92);
+  }
+  .plate-rota > li:nth-child(5n + 1) .card-plate {
+    transform: rotate(-90deg) scale(1.05);
+  }
+  .plate-rota > li:nth-child(7n + 4) .card-plate {
+    transform: rotate(45deg) scale(1.25);
+  }
+  /* Hover still wins over both. */
+  .plate-rota > li .card:hover .card-plate {
+    transform: rotate(0deg) scale(1.1);
   }
   .card:hover .card-plate {
     opacity: 0.85;

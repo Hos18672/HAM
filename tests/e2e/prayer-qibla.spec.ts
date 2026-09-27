@@ -28,7 +28,9 @@ test.describe('prayer times', () => {
     await page.evaluate(() => {
       document.documentElement.dataset.marker = 'original';
     });
-    const heading = page.locator('table').locator('xpath=preceding::h2[1]');
+    // The month grid's own table: the month's prayer timetable under it is a
+    // second table on the page.
+    const heading = page.locator('table.cal-grid').locator('xpath=preceding::h2[1]');
     const first = await heading.textContent();
 
     await page.getByRole('button', { name: 'Nächster Monat' }).click();
@@ -47,7 +49,9 @@ test.describe('prayer times', () => {
     // The month has to survive being shared, bookmarked or reloaded, and it
     // has to be in the first paint rather than appearing after hydration.
     await page.goto('/de/prayer?y=2026&m=3');
-    await expect(page.getByRole('heading', { name: /März 2026/ })).toBeVisible();
+    // Twice: the grid's heading and the timetable's both name the month.
+    await expect(page.getByRole('heading', { name: /März 2026/ })).toHaveCount(2);
+    await expect(page.getByRole('heading', { name: /März 2026/ }).first()).toBeVisible();
   });
 
   test('lists the occasions for the month, or says there are none', async ({ page }) => {
@@ -75,7 +79,11 @@ test.describe('prayer times', () => {
   test('puts a commemoration on the Gregorian day its Hijri date falls on', async ({ page }) => {
     // 13 Rajab 1448 — Imam Ali's birthday — is 22 December 2026.
     await page.goto('/de/prayer?y=2026&m=12');
-    const cell = page.getByRole('cell').filter({ hasText: 'Geburtstag Imam Alis' }).first();
+    const cell = page
+      .locator('table.cal-grid')
+      .getByRole('cell')
+      .filter({ hasText: 'Geburtstag Imam Alis' })
+      .first();
     await expect(cell).toContainText('22');
     // …and the Hijri day number printed beneath it.
     await expect(cell).toContainText('13');
@@ -83,7 +91,7 @@ test.describe('prayer times', () => {
 
   test('shows the first and last day of a month, and a leap day', async ({ page }) => {
     await page.goto('/de/prayer?y=2024&m=2');
-    const days = page.locator('tbody td').filter({ hasText: /\d/ });
+    const days = page.locator('table.cal-grid tbody td').filter({ hasText: /\d/ });
     await expect(days).toHaveCount(29);
     await expect(days.first()).toContainText('1');
     await expect(days.last()).toContainText('29');

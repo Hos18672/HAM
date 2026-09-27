@@ -206,6 +206,20 @@ export const PAGES: {
     },
   },
   {
+    key: 'quran',
+    sort: 11,
+    fa: {
+      kicker: 'قرآن کریم',
+      title: 'قرآن کریم',
+      lead: 'همهٔ ۱۱۴ سوره به متن عربی، آیه به آیه همراه با ترجمهٔ فارسی.',
+    },
+    de: {
+      kicker: 'Der Heilige Quran',
+      title: 'Der Quran',
+      lead: 'Alle 114 Suren im arabischen Wortlaut, Vers für Vers mit der deutschen Übersetzung.',
+    },
+  },
+  {
     key: 'support',
     sort: 12,
     fa: {

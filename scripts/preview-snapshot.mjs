@@ -43,7 +43,12 @@ async function readRoutes() {
   const entries = await readdir('app/[locale]/(site)', { withFileTypes: true });
   const segments = entries.filter((entry) => entry.isDirectory()).map((entry) => entry.name);
   segments.sort();
-  return ['', ...segments.map((segment) => `/${segment}`)];
+  // The Quran is read as a book of 604 pages, each at its own address under
+  // /quran/page/ — nested, so the listing above does not reach them. On the
+  // live site the reader turns pages by asking the server; here there is no
+  // server, so every page has to be a file.
+  const quranPages = Array.from({ length: 604 }, (_, i) => `/quran/page/${i + 1}`);
+  return ['', ...segments.map((segment) => `/${segment}`), ...quranPages];
 }
 
 /**

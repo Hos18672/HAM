@@ -27,7 +27,8 @@
     "openMenu": "Menü öffnen",
     "skipToContent": "Zum Inhalt springen",
     "primary": "Hauptnavigation",
-    "footer": "Fußzeilennavigation"
+    "footer": "Fußzeilennavigation",
+    "quran": "Quran"
   },
   "actions": {
     "readMore": "Mehr erfahren",
@@ -234,7 +235,59 @@
     "nextMonth": "Nächster Monat",
     "countdownLabel": "Verbleibende Zeit bis zum nächsten Gebet",
     "todayHere": "Heute in Wien",
-    "calendarLead": "Der Hidschri-Monat neben dem gregorianischen — mit den Gedenktagen der Ahl al-Bait."
+    "calendarLead": "Der Hidschri-Monat neben dem gregorianischen — mit den Gedenktagen der Ahl al-Bait.",
+    "extrasTitle": "Weitere Zeiten",
+    "extras": {
+      "imsak": "Imsak",
+      "sunset": "Sonnen­untergang",
+      "firstThird": "Erstes Nachtdrittel",
+      "lastThird": "Letztes Nachtdrittel"
+    },
+    "extrasNote": "Imsak liegt zehn Minuten vor Fadschr. Die Nacht wird vom Sonnenuntergang bis Fadschr gerechnet.",
+    "useMyLocation": "Zeiten für meinen Standort",
+    "backToVienna": "Zurück zu Wien",
+    "locating": "Standort wird ermittelt …",
+    "todayYourPlace": "Heute an Ihrem Standort",
+    "geoDenied": "Der Standortzugriff wurde nicht erlaubt. Es werden weiter die Zeiten für Wien gezeigt.",
+    "geoUnsupported": "Dieser Browser kann keinen Standort bestimmen.",
+    "geoFailed": "Der Standort konnte nicht bestimmt werden. Bitte versuchen Sie es noch einmal.",
+    "fetchFailed": "Die Zeiten für Ihren Standort konnten nicht geladen werden. Bitte versuchen Sie es später noch einmal.",
+    "locationNote": "Ihr Standort wird auf etwa einen Kilometer gerundet, nur für diese Berechnung verwendet und nicht gespeichert.",
+    "sourceApi": "Quelle: Aladhan-API · Methode Schia Ithna-Aschari (Leva-Institut, Qom)",
+    "sourceLocal": "Berechnet nach der dschaʿfaritischen Methode (die Aladhan-API war nicht erreichbar)",
+    "placeVienna": "Wien",
+    "timetable": "Gebetszeiten des Monats",
+    "timetableDate": "Datum",
+    "timetableLead": "Alle Zeiten für Wien, Tag für Tag.",
+    "timetableLoading": "Die Zeiten dieses Monats werden geladen …",
+    "timetableFailed": "Die Zeiten dieses Monats konnten nicht geladen werden.",
+    "print": "Drucken",
+    "holidays": {
+      "ramadanStart": {
+        "name": "Beginn des Ramadan",
+        "note": "Der erste Fastentag"
+      },
+      "arafa": {
+        "name": "Tag von Arafa",
+        "note": "Der Tag des Arafa-Bittgebets Imam Husains (a.)"
+      },
+      "birthHusayn": {
+        "name": "Geburtstag Imam Husains (a.)",
+        "note": "Am dritten Schaʿban"
+      },
+      "birthAbbas": {
+        "name": "Geburtstag Abbas ibn Alis (a.)",
+        "note": "Am vierten Schaʿban"
+      },
+      "birthSajjad": {
+        "name": "Geburtstag Imam as-Saddschads (a.)",
+        "note": "Am fünften Schaʿban"
+      },
+      "birthAliAkbar": {
+        "name": "Geburtstag Ali Akbars (a.)",
+        "note": "Am elften Schaʿban"
+      }
+    }
   },
   "duas": {
     "filterByCategory": "Nach Art filtern",
@@ -348,5 +401,41 @@
     "moveUp": "Nach oben",
     "moveDown": "Nach unten",
     "stale": "Die Seite war veraltet und wurde neu geladen. Bitte noch einmal versuchen."
+  },
+  "quran": {
+    "header": {
+      "kicker": "Der Heilige Quran",
+      "title": "Der Quran",
+      "lead": "Alle 114 Suren im arabischen Wortlaut, Vers für Vers mit der deutschen Übersetzung."
+    },
+    "search": "Sure suchen",
+    "searchPlaceholder": "Name oder Nummer",
+    "none": "Keine Sure gefunden.",
+    "surah": "Sure",
+    "ayahs": "{count} Verse",
+    "meccan": "Mekkanisch",
+    "medinan": "Medinensisch",
+    "juz": "Teil {n}",
+    "sajda": "Niederwerfung",
+    "previous": "Vorherige Sure",
+    "next": "Nächste Sure",
+    "allSurahs": "Alle Suren",
+    "unavailable": "Der Quran kann gerade nicht geladen werden. Bitte versuchen Sie es in einigen Minuten noch einmal.",
+    "source": "Arabischer Text: Uthmani · Übersetzung: {translator} · Quelle: Al Quran Cloud",
+    "ayahLabel": "Vers {n}",
+    "pageOf": "Seite {n} von 604",
+    "surahSelect": "Sure",
+    "juzSelect": "Teil (Dschuz)",
+    "pageSelect": "Seite",
+    "nextPage": "Nächste Seite",
+    "previousPage": "Vorherige Seite",
+    "markSilent": "Nicht gesprochene Buchstaben markieren",
+    "silentLegend": "Grau markiert: Buchstaben, die geschrieben, aber nicht gesprochen werden — das verbindende Alif (Hamzat al-Wasl), das angeglichene Lam des Artikels vor den „Sonnenbuchstaben“ und weitere stumme Buchstaben.",
+    "translationToggle": "Übersetzung dieser Seite",
+    "readAsBook": "Als Buch lesen",
+    "keys": "Tipp: Mit den Pfeiltasten blättern.",
+    "pageShort": "Seite {n}",
+    "markSilentShort": "Stumme Buchstaben",
+    "go": "Öffnen"
   }
 }

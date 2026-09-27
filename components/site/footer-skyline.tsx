@@ -36,7 +36,14 @@ export function FooterSkyline() {
     void import('@/lib/vienna-skyline/vienna-skyline.js')
       .then(({ createViennaSkyline }) => {
         if (disposed || !hostRef.current) return;
-        control = createViennaSkyline(hostRef.current, { color: 'var(--green)', reveal: false });
+        control = createViennaSkyline(hostRef.current, {
+          color: 'var(--green)',
+          reveal: false,
+          // Kept in step with `.footer-skyline` in globals.css, so the box does
+          // not jump when the library takes it over.
+          minHeight: 100,
+          maxHeight: 200,
+        });
         themeWatch.observe(root, { attributes: true, attributeFilter: ['data-theme'] });
       })
       .catch(() => {

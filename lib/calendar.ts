@@ -34,12 +34,16 @@ export interface CalendarMonth {
  *   than read from the clock so the server and the browser agree on which cell
  *   is today, and so a page rendered just before midnight does not disagree
  *   with itself after hydration.
+ * @param extraByIso Occasions for particular dates from elsewhere — the
+ *   holidays the prayer-times API marks. A day the editors have an occasion
+ *   for keeps only theirs.
  */
 export function buildCalendarMonth(
   year: number,
   month: number,
   occasions: Occasion[],
   todayIso: string,
+  extraByIso: Record<string, Occasion[]> = {},
 ): CalendarMonth {
   const byHijri = new Map<string, Occasion[]>();
   for (const occasion of occasions) {
@@ -65,7 +69,8 @@ export function buildCalendarMonth(
     const date = new Date(Date.UTC(year, month - 1, day, 12));
     const hijri = toHijri(date);
     const iso = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-    const dayOccasions = byHijri.get(`${hijri.month}-${hijri.day}`) ?? [];
+    const own = byHijri.get(`${hijri.month}-${hijri.day}`) ?? [];
+    const dayOccasions = own.length > 0 ? own : (extraByIso[iso] ?? []);
 
     for (const occasion of dayOccasions) {
       monthOccasions.push({ ...occasion, iso, gregorianDay: day });

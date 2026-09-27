@@ -235,12 +235,59 @@ interface RawPage {
   }[];
 }
 
+/**
+ * Whole editions, for building the GitHub Pages preview.
+ *
+ * The preview renders all 604 pages in both languages in one go; asking the
+ * API for them a page at a time is 2 416 requests and runs past the workflow's
+ * time limit. With `QURAN_WHOLE_EDITIONS=1` each edition is fetched once
+ * instead and the pages are cut from it here. Kept in memory rather than in
+ * Next's fetch cache, which refuses entries over 2 MB — an edition is about
+ * 2.5 MB. The live site leaves this off and asks for single pages, which cache
+ * well and keep a cold start small.
+ */
+const WHOLE_EDITIONS = process.env.QURAN_WHOLE_EDITIONS === '1';
+const editions = new Map<string, Promise<RawPage['ayahs']>>();
+
+function wholeEdition(edition: string): Promise<RawPage['ayahs']> {
+  let entry = editions.get(edition);
+  if (!entry) {
+    entry = fetch(`${BASE}/quran/${edition}`, {
+      signal: AbortSignal.timeout(60_000),
+      cache: 'no-store',
+    })
+      .then((response) => {
+        if (!response.ok) throw new Error(`alquran.cloud ${response.status}`);
+        return response.json() as Promise<{
+          data: { surahs: (Omit<RawSurah, 'numberOfAyahs'> & { ayahs: RawPage['ayahs'] })[] };
+        }>;
+      })
+      .then(({ data }) =>
+        data.surahs.flatMap(({ ayahs, ...surah }) =>
+          ayahs.map((ayah) => ({
+            ...ayah,
+            surah: { ...surah, numberOfAyahs: ayahs.length } as RawSurah,
+          })),
+        ),
+      );
+    entry.catch(() => editions.delete(edition));
+    editions.set(edition, entry);
+  }
+  return entry;
+}
+
+async function pageOf(page: number, edition: string): Promise<RawPage> {
+  if (!WHOLE_EDITIONS) return get<RawPage>(`/page/${page}/${edition}`);
+  const all = await wholeEdition(edition);
+  return { ayahs: all.filter((ayah) => (ayah as { page?: number }).page === page) };
+}
+
 /** One page of the Medina mushaf with its translation, or null. */
 export async function getMushafPage(page: number, locale: Locale): Promise<MushafPage | null> {
   try {
     const [arabic, translation] = await Promise.all([
-      get<RawPage>(`/page/${page}/quran-tajweed`),
-      get<RawPage>(`/page/${page}/${TRANSLATION[locale].edition}`),
+      pageOf(page, 'quran-tajweed'),
+      pageOf(page, TRANSLATION[locale].edition),
     ]);
     if (arabic.ayahs.length === 0 || arabic.ayahs.length !== translation.ayahs.length) return null;
 

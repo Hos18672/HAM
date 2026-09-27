@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { requireLocale } from '@/lib/i18n/locale-param';
 import { isLocale, locales } from '@/lib/i18n/config';
-import { getSurahList } from '@/lib/quran';
+import { getQuranIndex, getSurahList } from '@/lib/quran';
 import { getQuranHeader } from '@/lib/quran-page';
 import { PageHead } from '@/components/site/page-head';
 import { SurahIndex } from '@/components/site/surah-index';
@@ -39,11 +39,15 @@ export default async function QuranPage({ params }: { params: Promise<{ locale: 
   const { locale } = await params;
   const typed = requireLocale(locale);
 
-  const [header, surahs] = await Promise.all([getQuranHeader(typed), getSurahList()]);
+  const [header, surahs, index] = await Promise.all([
+    getQuranHeader(typed),
+    getSurahList(),
+    getQuranIndex(),
+  ]);
   // An unreachable API is an error, not an empty page: an error is not
   // cached, so the next visit tries again rather than keeping a blank list.
   const t = await getTranslations({ locale, namespace: 'quran' });
-  if (!surahs) throw new Error(t('unavailable'));
+  if (!surahs || !index) throw new Error(t('unavailable'));
 
   return (
     <>
@@ -57,7 +61,7 @@ export default async function QuranPage({ params }: { params: Promise<{ locale: 
           >
             {t('readAsBook')}
           </Link>
-          <SurahIndex surahs={surahs} locale={typed} />
+          <SurahIndex surahs={surahs} startPage={index.surahPage} locale={typed} />
         </div>
       </section>
     </>

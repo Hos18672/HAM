@@ -40,6 +40,9 @@ env:
   ADMIN_EMAIL: redaktion@haus-aller-menschen.at
   ADMIN_PASSWORD: nur-fuer-die-vorschau
   SUPABASE_STORAGE_BUCKET: media
+  # The snapshot renders all 604 Quran pages in both languages; this has the
+  # server fetch each Quran edition once instead of 2 416 single pages.
+  QURAN_WHOLE_EDITIONS: '1'
 
 jobs:
   snapshot:

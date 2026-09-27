@@ -23,6 +23,8 @@ import type { Locale } from '@/lib/i18n/config';
  * page it names from here, instead of jumping back.
  */
 const loaded = new Map<string, MushafPage>();
+/** Empty on the live site; the sub-path on the GitHub Pages preview. */
+const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH ?? '';
 const pending = new Map<string, Promise<MushafPage>>();
 const pageFromUrl = () => {
   if (typeof window === 'undefined') return null;
@@ -71,7 +73,7 @@ export function MushafReader({
       if (done) return Promise.resolve(done);
       let entry = pending.get(key);
       if (!entry) {
-        entry = fetch(`/api/quran/page/${n}?locale=${locale}`)
+        entry = fetch(`${BASE_PATH}/api/quran/page/${n}?locale=${locale}`)
           .then((response) => {
             if (!response.ok) throw new Error(String(response.status));
             return response.json() as Promise<MushafPage>;
@@ -88,6 +90,11 @@ export function MushafReader({
     [locale],
   );
 
+  const pageUrl = useCallback(
+    (n: number, hash = '') => `${BASE_PATH}/${locale}/quran/page/${n}${hash}`,
+    [locale],
+  );
+
   const show = useCallback(
     async (n: number, history: 'push' | 'none' = 'push', hash = '') => {
       if (n < 1 || n > PAGE_COUNT) return;
@@ -97,7 +104,7 @@ export function MushafReader({
         const data = await fetchPage(n);
         setPage(data);
         if (history === 'push') {
-          window.history.pushState({ quranPage: n }, '', `/${locale}/quran/page/${n}${hash}`);
+          window.history.pushState({ quranPage: n }, '', pageUrl(n, hash));
         }
         // Bring the surah asked for into view, or else the top of the book
         // if the reader has scrolled past it.
@@ -107,12 +114,18 @@ export function MushafReader({
             el.scrollIntoView({ block: 'start' });
         });
       } catch {
+        // No page data to be had — on the static preview there is no server
+        // to ask — so open the page itself, which is there as a file.
+        if (history === 'push') {
+          window.location.assign(pageUrl(n, hash));
+          return;
+        }
         setFailed(true);
       } finally {
         setLoading(false);
       }
     },
-    [fetchPage, locale],
+    [fetchPage, pageUrl],
   );
 
   // Fetch the neighbours ahead of the reader.

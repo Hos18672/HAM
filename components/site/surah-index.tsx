@@ -34,7 +34,16 @@ const latinDigits = (text: string) =>
  * The 114 surahs as the site's card grid, with a search that takes a number
  * (in either script), the transliterated name, or the Arabic one.
  */
-export function SurahIndex({ surahs, locale }: { surahs: SurahInfo[]; locale: Locale }) {
+export function SurahIndex({
+  surahs,
+  startPage,
+  locale,
+}: {
+  surahs: SurahInfo[];
+  /** Index 1–114: the book page each surah begins on. */
+  startPage: number[];
+  locale: Locale;
+}) {
   const t = useTranslations('quran');
   const [query, setQuery] = useState('');
 
@@ -86,7 +95,12 @@ export function SurahIndex({ surahs, locale }: { surahs: SurahInfo[]; locale: Lo
           {shown.map((surah) => (
             <li key={surah.number}>
               <Card variant="soft" interactive className="h-full" style={{ padding: 0 }}>
-                <Link href={`/quran/${surah.number}`} className="surah-card">
+                {/* Straight to the page, at the surah's banner — not through the
+                    surah's own address, which only a server can redirect. */}
+                <Link
+                  href={`/quran/page/${startPage[surah.number] ?? 1}#surah-${surah.number}`}
+                  className="surah-card"
+                >
                   <span className="ayah-mark" aria-hidden="true">
                     {digits(surah.number, locale)}
                   </span>

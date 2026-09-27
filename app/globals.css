@@ -1550,6 +1550,31 @@
     border-color: transparent;
     padding: var(--space-4) var(--space-5);
   }
+  /* The row of prayer times: seven small cards where the time is the whole
+     point of each one.
+
+     `.ptime` and `.ptime-label` are on the markup and were never written, so
+     the cards took `.card-soft`'s padding — 30px a side, meant for a card
+     three times this wide. That left 37px of room at 768px for a time
+     needing 85, and the clock broke across two lines at every width below
+     1280: "12:4" over "6". The label broke mid-word with it.
+
+     So: the side padding of a small card, and a time that is never broken.
+     The track minimum in `prayer-list.tsx` is what keeps the nowrap honest —
+     it has to stay wide enough for the largest the clamped time can get. */
+  .ptime {
+    padding: var(--space-4) var(--space-3);
+  }
+  .ptime .tabular {
+    white-space: nowrap;
+  }
+  .ptime-label {
+    font-size: var(--text-sm);
+    line-height: 1.3;
+    color: var(--color-ink-muted);
+    /* Its own soft hyphens decide where it breaks, never the renderer. */
+    overflow-wrap: normal;
+  }
   .card-softer {
     border-radius: var(--radius-softer);
   }

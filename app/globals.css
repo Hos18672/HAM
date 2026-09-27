@@ -623,8 +623,30 @@
     font-synthesis-weight: none;
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
-    /* The set is flush-left and asymmetric; never centre the page body. */
-    overflow-x: hidden;
+
+    /* Sideways is clipped, not hidden.
+
+       `overflow-x: hidden` makes the other axis `auto` whether you write it
+       or not, which turns the body into a scroll container — and a sticky
+       child of a scroll container sticks inside *that* box rather than to
+       the window. Chromium papers over it and the bar stays put; other
+       engines do exactly what the spec allows and let it scroll away, which
+       is a header that does not stick on whoever's browser it is.
+
+       `clip` clips without any of that: no scroll container, no `auto` on
+       the block axis, sticky resolves against the window everywhere.
+
+       The old two-declaration fallback does not survive the build — the
+       minifier sees one property twice and keeps the last — so engines that
+       do not know `clip` (Safari 15 and earlier) are served `hidden` from
+       the query below instead. Nothing on the site overflows sideways at
+       any width anyway: this is a net, not a floor. */
+    overflow-x: clip;
+  }
+  @supports not (overflow: clip) {
+    body {
+      overflow-x: hidden;
+    }
   }
 
   /* The Arabic script needs a touch more room than the Latin serif. */

@@ -2929,7 +2929,7 @@
   .mushaf-stage,
   .mushaf-banner-wrap {
     /* Scrolled to on a turn: stop below the floating header, not under it. */
-    scroll-margin-block-start: 110px;
+    scroll-margin-block-start: 150px;
   }
   .mushaf-stage {
     transition: opacity var(--duration-fast) var(--ease-standard);

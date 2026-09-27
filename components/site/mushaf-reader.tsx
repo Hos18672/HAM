@@ -26,6 +26,12 @@ const loaded = new Map<string, MushafPage>();
 /** Empty on the live site; the sub-path on the GitHub Pages preview. */
 const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH ?? '';
 const pending = new Map<string, Promise<MushafPage>>();
+/**
+ * What to bring into view once the new page is on screen. Outside the
+ * component for the same reason as `loaded`: the turn remounts it, and a
+ * scroll aimed at the old copy of the book scrolls nothing.
+ */
+let scrollTarget: string | null = null;
 const pageFromUrl = () => {
   if (typeof window === 'undefined') return null;
   const match = /\/quran\/page\/(\d+)/.exec(window.location.pathname);
@@ -64,6 +70,7 @@ export function MushafReader({
   const [loading, setLoading] = useState(false);
   const [failed, setFailed] = useState(false);
   const [marked, setMarked] = useState(true);
+  const [scrollTick, setScrollTick] = useState(0);
   const bookRef = useRef<HTMLDivElement>(null);
 
   const fetchPage = useCallback(
@@ -106,18 +113,18 @@ export function MushafReader({
         if (history === 'push') {
           window.history.pushState({ quranPage: n }, '', pageUrl(n, hash));
         }
-        // Bring the surah asked for into view, or else the top of the book
-        // if the reader has scrolled past it.
-        requestAnimationFrame(() => {
-          const el = hash ? document.getElementById(hash.slice(1)) : bookRef.current;
-          if (el && (hash || el.getBoundingClientRect().top < 0))
-            el.scrollIntoView({ block: 'start' });
-        });
+        // The new page comes into view on its own: the surah asked for, or
+        // else the top of the book, wherever the reader had scrolled to. Done
+        // once the page is on screen (see `scrollTarget`).
+        scrollTarget = hash ? hash.slice(1) : 'mushaf';
+        setScrollTick((tick) => tick + 1);
       } catch {
         // No page data to be had — on the static preview there is no server
         // to ask — so open the page itself, which is there as a file.
         if (history === 'push') {
-          window.location.assign(pageUrl(n, hash));
+          // Anchored at the book, so the page opens on it rather than at the
+          // top of the site page.
+          window.location.assign(pageUrl(n, hash || '#mushaf'));
           return;
         }
         setFailed(true);
@@ -127,6 +134,15 @@ export function MushafReader({
     },
     [fetchPage, pageUrl],
   );
+
+  // After a turn — in this copy of the reader or the one it remounted as —
+  // bring the new page into view.
+  useEffect(() => {
+    if (!scrollTarget) return;
+    const id = scrollTarget;
+    scrollTarget = null;
+    requestAnimationFrame(() => document.getElementById(id)?.scrollIntoView({ block: 'start' }));
+  }, [page, scrollTick]);
 
   // Fetch the neighbours ahead of the reader.
   useEffect(() => {
@@ -271,6 +287,7 @@ export function MushafReader({
       {/* The book. */}
       <div
         ref={bookRef}
+        id="mushaf"
         className="mushaf-stage"
         data-silent={marked ? 'on' : 'off'}
         aria-busy={loading}

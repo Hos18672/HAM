@@ -3202,13 +3202,11 @@
       inline-size: 46px;
       block-size: 46px;
     }
-    /* On a phone the panel is a sheet along the bottom of the screen. */
+    /* On a phone the panel still drops from its own button, as wide as the
+       toolbar allows: from the start edge under a field that starts the row,
+       from the end edge under the one that ends it. */
     .mushaf-toolbar .mushaf-field .mushaf-panel {
-      position: fixed;
-      inset-inline: 12px;
-      inset-block-start: auto;
-      inset-block-end: 12px;
-      inline-size: auto;
+      inline-size: calc(100vw - 32px);
       min-inline-size: 0;
       max-inline-size: none;
     }

@@ -81,6 +81,8 @@ export default async function EventsPage({ params }: { params: Promise<{ locale:
                 margin: 0,
                 padding: 0,
                 display: 'grid',
+                // Held to the page's width on the narrowest phones.
+                gridTemplateColumns: 'minmax(0, 1fr)',
                 gap: 'var(--space-3)',
               }}
             >
@@ -119,6 +121,8 @@ export default async function EventsPage({ params }: { params: Promise<{ locale:
                 margin: 0,
                 padding: 0,
                 display: 'grid',
+                // Held to the page's width on the narrowest phones.
+                gridTemplateColumns: 'minmax(0, 1fr)',
                 gap: 'var(--space-3)',
               }}
             >

@@ -638,6 +638,14 @@
     /* The set is flush-left and asymmetric; never centre the page body. */
     overflow-x: hidden;
   }
+  /* And at the root too. A phone's browser takes the body's overflow for the
+     window's only when the root says so; without it, anything a little too
+     wide pushed the whole page sideways and left a strip of bare paper down
+     one edge. `clip` rather than `hidden`, so the root does not become a
+     scroll container and the sticky and fixed pieces behave as before. */
+  html {
+    overflow-x: clip;
+  }
 
   /* The Arabic script needs a touch more room than the Latin serif. */
   [lang='fa'],
@@ -2620,6 +2628,14 @@
     flex-wrap: wrap;
     align-items: center;
     gap: var(--space-3);
+  }
+
+  /* The qibla card's buttons may break a long label onto two lines, rather
+     than hold the card wider than a narrow phone. */
+  .compass-actions .btn {
+    max-inline-size: 100%;
+    white-space: normal;
+    text-align: center;
   }
 
   /* ── The mushaf ───────────────────────────────────────────────────────

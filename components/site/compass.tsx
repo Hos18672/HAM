@@ -162,6 +162,9 @@ export function Compass({ locale }: { locale: Locale }) {
         className="surf"
         style={{
           display: 'grid',
+          // Held to the card's width: an auto column grows to its widest
+          // content, and a long button label pushed the dial off the card.
+          gridTemplateColumns: 'minmax(0, 1fr)',
           justifyItems: 'center',
           gap: 'var(--space-4)',
         }}
@@ -184,7 +187,7 @@ export function Compass({ locale }: { locale: Locale }) {
         />
 
         <div
-          className="flex flex-wrap justify-center gap-2"
+          className="compass-actions flex flex-wrap justify-center gap-2"
           style={{ position: 'relative', width: '100%' }}
         >
           <Button variant="secondary" onClick={activateCompass} disabled={compass === 'active'}>

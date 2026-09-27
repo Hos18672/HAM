@@ -198,7 +198,9 @@ export function MushafReader({
   const n = page.number;
 
   return (
-    <div style={{ display: 'grid', gap: 'var(--space-5)' }}>
+    // `minmax(0, 1fr)`: a grid column otherwise grows to its widest content,
+    // and on a narrow phone the surah picker's line pushed it off the screen.
+    <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr)', gap: 'var(--space-5)' }}>
       {/* The toolbar: where to go, and the one reading option. */}
       <div className="mushaf-toolbar">
         <Picker

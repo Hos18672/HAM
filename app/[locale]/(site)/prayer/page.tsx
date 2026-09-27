@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation';
 
 import { requireLocale } from '@/lib/i18n/locale-param';
 import { getPageHeader, getOccasions } from '@/lib/db/queries/content';
-import { getPrayerDay, getCalendarMonth, viennaIso } from '@/lib/prayer-page';
+import { getPrayerDay, getCalendarMonth, getTimetable, viennaIso } from '@/lib/prayer-page';
 import { PatternPlate } from '@/components/site/ornaments';
 import { PageHead } from '@/components/site/page-head';
 import { PrayerList } from '@/components/site/prayer-list';
@@ -13,7 +13,8 @@ import { VIENNA } from '@/lib/prayer-times';
 
 /**
  * Prayer times change every day, so this page is revalidated hourly rather
- * than being built once. The calendar below it accepts ?y= and ?m=, which
+ * than being built once. The times themselves come from the Aladhan API,
+ * cached for a day, with the local calculation behind it (`lib/aladhan`). The calendar below it accepts ?y= and ?m=, which
  * makes the route dynamic on those requests only.
  */
 export const revalidate = 3600;
@@ -62,7 +63,10 @@ export default async function PrayerPage({
   const month =
     Number.isInteger(Number(m)) && Number(m) >= 1 && Number(m) <= 12 ? Number(m) : viennaMonth;
 
-  const calendar = await getCalendarMonth(year, month, typed, now);
+  const [calendar, timetable] = await Promise.all([
+    getCalendarMonth(year, month, typed, now),
+    getTimetable(year, month),
+  ]);
   // The occasions are matched on the Hijri date, so one list serves every
   // month; handing it to the calendar lets the browser build the months it
   // moves to without coming back here.
@@ -83,6 +87,7 @@ export default async function PrayerPage({
         <div className="page">
           <HijriCalendar
             initialMonth={calendar}
+            initialTimetable={timetable}
             currentMonth={{ year: viennaYear, month: viennaMonth }}
             occasions={occasions}
             todayIso={viennaIso(now)}

@@ -26,8 +26,10 @@ export async function generateMetadata({
  *
  * This text describes what the application actually does — there is no
  * analytics, no tracker, no font CDN and no third-party embed anywhere in the
- * codebase, so the policy can say so plainly. If that ever changes, this page
- * has to change with it.
+ * codebase, so the policy can say so plainly. The one outside service the
+ * server itself calls is the Aladhan prayer-times API (`lib/aladhan`), and the
+ * section on location says exactly what reaches it. If any of that changes,
+ * this page has to change with it.
  */
 export default async function PrivacyPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
@@ -80,9 +82,16 @@ export default async function PrivacyPage({ params }: { params: Promise<{ locale
           ],
         },
         {
+          title: 'Gebetszeiten',
+          body: [
+            'Die Gebetszeiten beziehen wir vom Dienst Aladhan (aladhan.com). Die Anfrage stellt unser Server, nicht Ihr Browser: Aladhan erfährt dabei weder Ihre IP-Adresse noch sonst etwas über Sie. Ist der Dienst nicht erreichbar, berechnet unser Server die Zeiten selbst.',
+          ],
+        },
+        {
           title: 'Standort und Kompass',
           body: [
-            'Auf der Qibla-Seite können Sie Ihren Standort freigeben, um die Gebetsrichtung von Ihrem Aufenthaltsort aus zu berechnen. Diese Berechnung findet ausschließlich in Ihrem Browser statt. Ihr Standort wird weder an uns noch an Dritte übermittelt und nirgends gespeichert.',
+            'Auf der Qibla-Seite können Sie Ihren Standort freigeben, um die Gebetsrichtung von Ihrem Aufenthaltsort aus zu berechnen. Diese Berechnung findet ausschließlich in Ihrem Browser statt. Ihr Standort wird dabei weder an uns noch an Dritte übermittelt.',
+            'Auf der Seite der Gebetszeiten können Sie Ihren Standort ebenfalls freigeben, um die Zeiten für Ihren Aufenthaltsort zu sehen. Dafür sendet Ihr Browser Ihre Koordinaten, auf etwa einen Kilometer gerundet, zusammen mit Ihrer Zeitzone an unseren Server, der damit die Zeiten bei Aladhan abfragt. Die Koordinaten werden nur für diese Abfrage verwendet und weder von uns gespeichert noch mit Ihrer Person verknüpft. Zum Schutz vor Missbrauch zählen wir die Abfragen je Prüfwert Ihrer IP-Adresse (siehe oben) für eine Stunde.',
           ],
         },
         {
@@ -133,9 +142,16 @@ export default async function PrivacyPage({ params }: { params: Promise<{ locale
           ],
         },
         {
+          title: 'اوقات شرعی',
+          body: [
+            'اوقات شرعی را از سرویس Aladhan (aladhan.com) می‌گیریم. این درخواست را سرور ما می‌فرستد، نه مرورگر شما: Aladhan نه نشانی IP شما را می‌بیند و نه چیز دیگری دربارهٔ شما. اگر این سرویس در دسترس نباشد، سرور ما خود اوقات را محاسبه می‌کند.',
+          ],
+        },
+        {
           title: 'موقعیت مکانی و قطب‌نما',
           body: [
-            'در صفحهٔ قبله می‌توانید موقعیت خود را در اختیار بگذارید تا جهت قبله از محل شما محاسبه شود. این محاسبه تنها در مرورگر شما انجام می‌گیرد. موقعیت شما نه به ما و نه به کسی دیگر فرستاده و هیچ‌جا ذخیره نمی‌شود.',
+            'در صفحهٔ قبله می‌توانید موقعیت خود را در اختیار بگذارید تا جهت قبله از محل شما محاسبه شود. این محاسبه تنها در مرورگر شما انجام می‌گیرد و موقعیت شما نه به ما و نه به کسی دیگر فرستاده می‌شود.',
+            'در صفحهٔ اوقات شرعی نیز می‌توانید موقعیت خود را در اختیار بگذارید تا اوقات محل خود را ببینید. برای این کار مرورگر شما مختصات شما را، گردشده تا حدود یک کیلومتر، همراه با منطقهٔ زمانی‌تان به سرور ما می‌فرستد و سرور با آن اوقات را از Aladhan می‌پرسد. این مختصات تنها برای همین درخواست به کار می‌رود، نزد ما ذخیره نمی‌شود و به شخص شما پیوند نمی‌خورد. برای جلوگیری از سوءاستفاده، شمار درخواست‌ها را بر پایهٔ مقدار کنترلی نشانی IP شما (بالا را ببینید) برای یک ساعت می‌شماریم.',
           ],
         },
         {

@@ -1,8 +1,10 @@
 /**
- * Prayer times, computed from first principles. No third-party API: the
- * astronomy is a few dozen lines of trigonometry, and calling out to a service
- * would mean another dependency, another privacy disclosure and a page that
- * breaks when someone else's server does.
+ * Prayer times, computed from first principles.
+ *
+ * The page takes its times from the Aladhan API (`lib/aladhan`), pinned to
+ * this same method. This is what stands behind it: when the API is slow or
+ * down the day is computed here instead, so the page never breaks when
+ * someone else's server does — and the two agree to within a minute or two.
  *
  * Method: **Ja'fari (Shia)** as used by the Leva Institute, Qum —
  *   Fajr      16° below the horizon
@@ -36,6 +38,19 @@ export type PrayerKey = (typeof PRAYER_KEYS)[number];
 
 /** Minutes after local midnight, or null when the event does not occur. */
 export type PrayerTimes = Record<PrayerKey, number | null>;
+
+/**
+ * The times shown under the seven: when to stop eating before a fast, the
+ * sunset itself (Maghrib here is 4° after it), and the thirds of the night that
+ * night prayer is timed by. The night runs, as for midnight, from sunset to the
+ * next Fajr.
+ */
+export const EXTRA_KEYS = ['imsak', 'sunset', 'firstThird', 'lastThird'] as const;
+export type ExtraKey = (typeof EXTRA_KEYS)[number];
+export type ExtraTimes = Record<ExtraKey, number | null>;
+
+/** Imsak is this many minutes before Fajr, as the Aladhan API has it. */
+export const IMSAK_MINUTES = 10;
 
 export interface Coordinates {
   latitude: number;
@@ -256,6 +271,14 @@ const toMinutes = (h: number | null): number | null =>
  * does not occur that day at that latitude.
  */
 export function getPrayerTimes(date: Date, options: ComputeOptions = {}): PrayerTimes {
+  return getDayTimes(date, options).times;
+}
+
+/** The seven times and the four extra ones for one civil day. */
+export function getDayTimes(
+  date: Date,
+  options: ComputeOptions = {},
+): { times: PrayerTimes; extras: ExtraTimes } {
   const timeZone = options.timeZone ?? VIENNA.timeZone;
   const coords = options.coordinates ?? { latitude: VIENNA.latitude, longitude: VIENNA.longitude };
 
@@ -272,24 +295,34 @@ export function getPrayerTimes(date: Date, options: ComputeOptions = {}): Prayer
   const tomorrowOffset = utcOffsetHours(timeZone, t.year, t.month, t.day);
   const tomorrow = computeDayHours(t.year, t.month, t.day, coords, tomorrowOffset);
 
-  let midnight: number | null = null;
-  if (today.sunset !== null && tomorrow.fajr !== null) {
-    // Add a day to tomorrow's Fajr so the midpoint lands in the night, and
+  // The night, sunset to the next Fajr, split at its half and its thirds.
+  const nightAt = (fraction: number): number | null => {
+    if (today.sunset === null || tomorrow.fajr === null) return null;
+    // Add a day to tomorrow's Fajr so the point lands in the night, and
     // correct for a DST shift across the night. Tomorrow's Fajr is a clock
     // reading in *tomorrow's* offset; re-expressed as hours elapsed since
     // today's midnight it loses the hour the clocks gained, hence the minus.
     const nextFajr = tomorrow.fajr + 24 - (tomorrowOffset - offset);
-    midnight = today.sunset + (nextFajr - today.sunset) / 2;
-  }
+    return today.sunset + (nextFajr - today.sunset) * fraction;
+  };
 
+  const fajr = toMinutes(today.fajr);
   return {
-    fajr: toMinutes(today.fajr),
-    sunrise: toMinutes(today.sunrise),
-    dhuhr: toMinutes(today.dhuhr),
-    asr: toMinutes(today.asr),
-    maghrib: toMinutes(today.maghrib),
-    isha: toMinutes(today.isha),
-    midnight: toMinutes(midnight),
+    times: {
+      fajr,
+      sunrise: toMinutes(today.sunrise),
+      dhuhr: toMinutes(today.dhuhr),
+      asr: toMinutes(today.asr),
+      maghrib: toMinutes(today.maghrib),
+      isha: toMinutes(today.isha),
+      midnight: toMinutes(nightAt(1 / 2)),
+    },
+    extras: {
+      imsak: fajr === null ? null : fajr - IMSAK_MINUTES,
+      sunset: toMinutes(today.sunset),
+      firstThird: toMinutes(nightAt(1 / 3)),
+      lastThird: toMinutes(nightAt(2 / 3)),
+    },
   };
 }
 

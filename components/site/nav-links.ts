@@ -23,6 +23,7 @@ export const NAV: NavEntry[] = [
   { href: '/gallery', key: 'gallery', primary: false },
   { href: '/qibla', key: 'qibla', primary: false },
   { href: '/duas', key: 'duas', primary: false },
+  { href: '/quran', key: 'quran', primary: false },
   { href: '/contact', key: 'contact', primary: false },
 ];
 

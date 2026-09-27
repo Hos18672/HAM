@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { CaretLeft, CaretRight } from '@phosphor-icons/react/dist/ssr';
 import { digits, formatDate } from '@/lib/i18n/format';
@@ -8,7 +8,12 @@ import { HIJRI_MONTHS } from '@/lib/hijri';
 import { buildCalendarMonth, previousMonth, nextMonth } from '@/lib/calendar';
 import type { CalendarMonth } from '@/lib/calendar';
 import type { Occasion } from '@/lib/db/queries/content';
+import type { Timetable } from '@/lib/prayer-page';
 import type { Locale } from '@/lib/i18n/config';
+import { PrayerTimetable } from './prayer-timetable';
+
+type TimetableEntry = Timetable | 'loading' | 'failed';
+const monthKey = ({ year, month }: { year: number; month: number }) => `${year}-${month}`;
 
 /**
  * The month calendar, showing the Gregorian and Hijri day numbers side by
@@ -26,11 +31,18 @@ import type { Locale } from '@/lib/i18n/config';
  * grid. Everything the calendar needs is arithmetic plus the occasions list,
  * which is month-independent and arrives once, so the browser can build any
  * month itself. The URL is kept in step with `replaceState` so the month is
- * still shareable and still survives a language switch, but nothing is
- * fetched and nothing else on the page re-renders.
+ * still shareable and still survives a language switch, and nothing else on
+ * the page re-renders.
+ *
+ * The one thing fetched on a move is the month's prayer times, for the
+ * timetable under the grid (`/api/prayer/month`, cached for a day). The same
+ * answer carries the holidays the Aladhan API marks, and the few of those this
+ * site shows (see `lib/holidays`) join the editors' occasions in the grid and
+ * the list — on a day the editors have nothing for.
  */
 export function HijriCalendar({
   initialMonth,
+  initialTimetable,
   currentMonth,
   occasions,
   todayIso,
@@ -38,6 +50,8 @@ export function HijriCalendar({
   basePath,
 }: {
   initialMonth: CalendarMonth;
+  /** The first month's prayer times, fetched with the page. */
+  initialTimetable: Timetable;
   /** The month "today" falls in, which is where the Today button goes back to
    *  — not necessarily the month the page opened on. */
   currentMonth: { year: number; month: number };
@@ -56,14 +70,59 @@ export function HijriCalendar({
     month: initialMonth.month,
   });
 
-  // The first month is already built on the server; rebuild only on a move.
+  const [timetables, setTimetables] = useState<Record<string, TimetableEntry>>(() => ({
+    [monthKey(initialTimetable)]: initialTimetable,
+  }));
+  const entry = timetables[monthKey({ year, month })];
+  const timetable = typeof entry === 'object' ? entry : null;
+
+  // Fetch a month's times the first time it is shown; each is kept after.
+  useEffect(() => {
+    const key = monthKey({ year, month });
+    if (timetables[key] !== undefined) return;
+    setTimetables((all) => ({ ...all, [key]: 'loading' }));
+    fetch(`/api/prayer/month?y=${year}&m=${month}`)
+      .then((response) => {
+        if (!response.ok) throw new Error(String(response.status));
+        return response.json() as Promise<Timetable>;
+      })
+      .then((data) => setTimetables((all) => ({ ...all, [key]: data })))
+      .catch(() => setTimetables((all) => ({ ...all, [key]: 'failed' })));
+  }, [year, month, timetables]);
+
+  // The API's holidays for this month, as occasions for the grid and list.
+  const holidayOccasions = useMemo(() => {
+    const byIso: Record<string, Occasion[]> = {};
+    for (const day of timetable?.days ?? []) {
+      if (day.holidays.length === 0) continue;
+      byIso[day.iso] = day.holidays.map((key) => ({
+        id: `aladhan-${key}`,
+        hijriMonth: 0,
+        hijriDay: 0,
+        name: t(`holidays.${key}.name`),
+        note: t(`holidays.${key}.note`),
+      }));
+    }
+    return byIso;
+  }, [timetable, t]);
+
   const shown = useMemo(
-    () =>
-      year === initialMonth.year && month === initialMonth.month
-        ? initialMonth
-        : buildCalendarMonth(year, month, occasions, todayIso),
-    [year, month, initialMonth, occasions, todayIso],
+    () => buildCalendarMonth(year, month, occasions, todayIso, holidayOccasions),
+    [year, month, occasions, todayIso, holidayOccasions],
   );
+
+  const occasionDays = useMemo(() => {
+    const days = new Map<string, string[]>();
+    for (const cell of shown.cells) {
+      if (cell.iso && cell.occasions.length > 0) {
+        days.set(
+          cell.iso,
+          cell.occasions.map((o) => o.name),
+        );
+      }
+    }
+    return days;
+  }, [shown]);
 
   /** Move, and leave the address bar telling the truth. */
   function go(next: { year: number; month: number }) {
@@ -175,6 +234,7 @@ export function HijriCalendar({
             column headers with it. `border-spacing` gives the design's gap
             between the cells without a wrapper element per cell. */}
         <table
+          className="cal-grid"
           style={{
             marginBlockStart: 'var(--space-4)',
             inlineSize: '100%',
@@ -331,6 +391,18 @@ export function HijriCalendar({
             ))}
           </ul>
         )}
+      </div>
+
+      {/* The month's prayer times, across both columns. */}
+      <div style={{ gridColumn: '1 / -1' }}>
+        <PrayerTimetable
+          timetable={timetable}
+          state={timetable ? 'ready' : entry === 'failed' ? 'failed' : 'loading'}
+          todayIso={todayIso}
+          occasionDays={occasionDays}
+          monthLabel={monthLabel}
+          locale={locale}
+        />
       </div>
     </div>
   );

@@ -240,9 +240,8 @@ export function Compass({ locale }: { locale: Locale }) {
       {/* The reading itself: two figures under their rules, then how to stand. */}
       <div>
         <div className="flex items-center gap-3" data-rise>
-          <svg width="22" height="22" viewBox="0 0 26 26" aria-hidden="true" focusable="false">
-            <circle cx="13" cy="13" r="10.5" fill="none" stroke="var(--gold)" strokeWidth="1.2" />
-            <circle cx="13" cy="13" r="3" fill="var(--gold)" />
+          <svg width="26" height="26" viewBox="-16 -16 32 32" aria-hidden="true" focusable="false">
+            <KaabaMark gold="var(--gold)" />
           </svg>
           <p className="kicker" style={{ color: 'var(--color-accent-2-text)' }}>
             {t('kaaba')}
@@ -350,6 +349,9 @@ function CompassRose({
         position: 'relative',
         inlineSize: 'min(100%, 22.5rem)',
         aspectRatio: 1,
+        // A click on the dial selected its letters and painted them gold.
+        userSelect: 'none',
+        WebkitUserSelect: 'none',
       }}
     >
       <svg
@@ -437,18 +439,11 @@ function CompassRose({
           <title>{needleLabel}</title>
           <path d="M200 44 L216 200 L200 186 L184 200 Z" fill="url(#ham-gold)" />
           <path d="M200 356 L184 200 L200 214 L216 200 Z" fill="var(--color-neutral-400)" />
-          {/* The Kaaba mark at the needle's head. */}
-          <rect
-            x="188"
-            y="30"
-            width="24"
-            height="24"
-            rx="2"
-            fill="var(--color-ink)"
-            stroke="url(#ham-gold)"
-            strokeWidth="2"
-          />
-          <line x1="188" y1="40" x2="212" y2="40" stroke="url(#ham-gold)" strokeWidth="2" />
+          {/* The Kaaba at the needle's head, turned back upright so it stands
+              on its base whichever way the needle and the rose point. */}
+          <g transform={`translate(200 50) rotate(${-bearing - roseRotation}) scale(1.2)`}>
+            <KaabaMark gold="url(#ham-gold)" />
+          </g>
         </g>
 
         {/* The design's centre disc, laid over the needle's shafts so the
@@ -461,7 +456,6 @@ function CompassRose({
           stroke="var(--color-rule)"
           strokeWidth="1"
         />
-        <circle cx="200" cy="200" r="5" fill="url(#ham-gold)" />
       </svg>
 
       {/* The reading, printed on the disc. It does not turn with the rose, and
@@ -470,9 +464,12 @@ function CompassRose({
       <div
         aria-hidden="true"
         style={{
+          // Physical `left`, not `inset-inline-start`: in Persian the start
+          // side is the right, and the -50% translate then pushed the reading
+          // off the disc to the left.
           position: 'absolute',
-          insetInlineStart: '50%',
-          insetBlockStart: '50%',
+          left: '50%',
+          top: '50%',
           transform: 'translate(-50%, -50%)',
           inlineSize: '30%',
           display: 'grid',
@@ -498,5 +495,31 @@ function CompassRose({
         </span>
       </div>
     </div>
+  );
+}
+
+/**
+ * The Kaaba, drawn around (0, 0) at about 30 units across: the black cube seen
+ * a little from the side, with the gold band of the kiswa below its roof and
+ * the gold door on its face. The black is fixed — it is the Kaaba's own
+ * colour, not the ink — and the gold outline keeps it legible on the dark
+ * theme's green.
+ */
+function KaabaMark({ gold }: { gold: string }) {
+  return (
+    <g strokeLinejoin="round">
+      <path d="M-13 -9 L-5 -15 L15 -15 L7 -9 Z" fill="#2b2b2b" />
+      <path d="M7 -9 L15 -15 L15 8 L7 14 Z" fill="#0d0d0d" />
+      <rect x="-13" y="-9" width="20" height="23" fill="#1a1a1a" />
+      <rect x="-13" y="-4.5" width="20" height="3.2" fill={gold} />
+      <path d="M7 -4.5 L15 -10.5 L15 -7.3 L7 -1.3 Z" fill={gold} opacity="0.8" />
+      <rect x="-1" y="3.5" width="5" height="8.5" rx="0.6" fill={gold} />
+      <path
+        d="M-13 -9 L-5 -15 L15 -15 L15 8 L7 14 L-13 14 Z M7 -9 L7 14 M-13 -9 L7 -9"
+        fill="none"
+        stroke={gold}
+        strokeWidth="1.2"
+      />
+    </g>
   );
 }

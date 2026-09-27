@@ -54,7 +54,8 @@ test.describe('public site', () => {
     // The prayer calendar's month lives in ?y=&m=. Dropping it on a language
     // switch throws the reader silently back to the current month.
     await page.goto('/de/prayer?y=2026&m=3');
-    await expect(page.getByRole('heading', { name: /März 2026/ })).toBeVisible();
+    // .first(): the calendar and the timetable under it both name the month.
+    await expect(page.getByRole('heading', { name: /März 2026/ }).first()).toBeVisible();
 
     await page.getByRole('link', { name: 'فارسی' }).first().click();
     await expect(page).toHaveURL(/\/fa\/prayer\?y=2026&m=3$/);

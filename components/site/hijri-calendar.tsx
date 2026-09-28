@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import { CaretLeft, CaretRight } from '@phosphor-icons/react/dist/ssr';
 import { digits, formatDate } from '@/lib/i18n/format';
 import { HIJRI_MONTHS } from '@/lib/hijri';
+import { toPersianDate, persianMonthName } from '@/lib/persian-date';
 import { buildCalendarMonth, previousMonth, nextMonth } from '@/lib/calendar';
 import type { CalendarMonth } from '@/lib/calendar';
 import type { Occasion } from '@/lib/db/queries/content';
@@ -137,9 +138,18 @@ export function HijriCalendar({
   const previous = previousMonth({ year, month });
   const next = nextMonth({ year, month });
 
+  /**
+   * The civil month, and it has to say `gregory` out loud.
+   *
+   * `fa-IR` resolves to the Persian calendar by default, so for a Persian
+   * reader this line has always been the Solar Hijri month wearing the label
+   * of the Gregorian one — while a German reader never saw the Solar Hijri
+   * month at all. Both months are named below, each as itself.
+   */
   const monthLabel = formatDate(new Date(Date.UTC(shown.year, shown.month - 1, 15, 12)), locale, {
     month: 'long',
     year: 'numeric',
+    calendar: 'gregory',
   });
 
   // The Hijri months this Gregorian month straddles — usually two.
@@ -147,6 +157,49 @@ export function HijriCalendar({
     new Set(shown.cells.filter((cell) => cell.hijri).map((cell) => cell.hijri!.month)),
   );
   const hijriLabel = hijriMonths.map((m) => HIJRI_MONTHS[locale][m] ?? '').join(' / ');
+
+  /**
+   * And the Solar Hijri months it straddles, which is the calendar half this
+   * community counts its own life in. Worked out from the platform's Persian
+   * calendar, not from an API: `lib/persian-date` says why.
+   *
+   * Read at noon UTC of each day so the month a day belongs to never depends
+   * on the hour the page happens to be rendered at.
+   */
+  const persianLabel = useMemo(() => {
+    const seen: string[] = [];
+    for (const cell of shown.cells) {
+      if (!cell.iso) continue;
+      const [cy, cm, cd] = cell.iso.split('-').map(Number) as [number, number, number];
+      const { month: pm, year: py } = toPersianDate(new Date(Date.UTC(cy, cm - 1, cd, 12)));
+      const label = `${persianMonthName(pm, locale)} ${digits(py, locale)}`;
+      if (!seen.includes(label)) seen.push(label);
+    }
+    return seen.join(' / ');
+  }, [shown, locale]);
+
+  /**
+   * The day whose detail is open underneath the grid. Today when today is in
+   * the month being shown, and otherwise nothing: a month you have paged to
+   * has no day that is more yours than the others, and opening one at random
+   * would only be something else to close.
+   */
+  const [selectedIso, setSelectedIso] = useState<string | null>(null);
+  useEffect(() => {
+    const today = shown.cells.find((cell) => cell.isToday);
+    setSelectedIso(today?.iso ?? null);
+  }, [shown]);
+
+  const selected = selectedIso
+    ? (shown.cells.find((cell) => cell.iso === selectedIso) ?? null)
+    : null;
+  const selectedPersian = selectedIso
+    ? (() => {
+        const [cy, cm, cd] = selectedIso.split('-').map(Number) as [number, number, number];
+        const p = toPersianDate(new Date(Date.UTC(cy, cm - 1, cd, 12)));
+        return `${digits(p.day, locale)}. ${persianMonthName(p.month, locale)} ${digits(p.year, locale)}`;
+      })()
+    : null;
 
   return (
     <div
@@ -196,6 +249,13 @@ export function HijriCalendar({
                 }}
               >
                 {monthLabel}
+                {persianLabel ? (
+                  // Its own element, not a joined string: a middot between a
+                  // Latin and an Arabic-script run lands wherever the bidi
+                  // algorithm decides, which in Persian was next to the wrong
+                  // number entirely.
+                  <span style={{ display: 'block' }}>{persianLabel}</span>
+                ) : null}
               </span>
             </h2>
           </div>
@@ -268,16 +328,25 @@ export function HijriCalendar({
                     return <td key={`blank-${dayIndex}`} />;
                   }
                   const hasOccasion = cell.occasions.length > 0;
+                  const iso = cell.iso;
                   return (
                     <td
-                      key={cell.iso}
+                      key={iso}
                       style={{ padding: 0 }}
                       aria-current={cell.isToday ? 'date' : undefined}
                     >
-                      <div
+                      {/* A day is a button. Reading a grid of two numbers and
+                          matching them by eye against a list beside it is the
+                          part of this that did not work: now a day can be
+                          asked, and answers underneath. */}
+                      <button
+                        type="button"
                         className="cal-day"
                         data-today={cell.isToday ? 'true' : undefined}
                         data-occ={hasOccasion ? 'true' : undefined}
+                        data-on={iso === selectedIso ? 'true' : undefined}
+                        aria-pressed={iso === selectedIso}
+                        onClick={() => setSelectedIso(iso)}
                       >
                         <span className="tabular cal-day-greg">
                           {digits(cell.gregorianDay, locale)}
@@ -285,8 +354,13 @@ export function HijriCalendar({
                         <span className="tabular cal-day-hij">
                           {cell.hijri ? digits(cell.hijri.day, locale) : ''}
                         </span>
-                        {/* Both markers spelled out, so neither is carried by
-                            the ring or the tint alone. */}
+                        {/* The mark a day carries something. A dot rather than
+                            a tint alone: the tint is a wash of gold over cream
+                            and it is the first thing to go on a bright phone
+                            screen held outdoors. */}
+                        <span className="cal-day-dot" aria-hidden="true" />
+                        {/* Every marker spelled out too, so none of them is
+                            carried by colour. */}
                         {cell.isToday ? (
                           <span className="visually-hidden"> — {t('legendToday')}</span>
                         ) : null}
@@ -296,7 +370,7 @@ export function HijriCalendar({
                             — {t('legendOccasion')}: {cell.occasions.map((o) => o.name).join(', ')}
                           </span>
                         ) : null}
-                      </div>
+                      </button>
                     </td>
                   );
                 })}
@@ -304,6 +378,49 @@ export function HijriCalendar({
             ))}
           </tbody>
         </table>
+
+        {/* What the chosen day is, in all three calendars, and what is on it.
+
+            This is the piece the grid was missing: the cells can only hold
+            two numbers, and everything else about a day — the third calendar,
+            the weekday, what it commemorates — had to be matched by eye
+            against a list in the next column. Now the day says it itself. */}
+        {selected ? (
+          <div className="cal-detail" aria-live="polite">
+            <p className="kicker" style={{ color: 'var(--color-accent-2-text)' }}>
+              {selected.isToday ? t('legendToday') : t('chosenDay')}
+            </p>
+            <p className="cal-detail-date">
+              {formatDate(new Date(`${selected.iso}T12:00:00Z`), locale, {
+                weekday: 'long',
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric',
+                calendar: 'gregory',
+              })}
+            </p>
+            {selected.hijri ? (
+              <p className="cal-detail-alt">
+                {`${digits(selected.hijri.day, locale)}. ${HIJRI_MONTHS[locale][selected.hijri.month]} ${digits(selected.hijri.year, locale)}`}
+              </p>
+            ) : null}
+            {selectedPersian ? <p className="cal-detail-alt">{selectedPersian}</p> : null}
+            {selected.occasions.length > 0 ? (
+              <ul className="cal-detail-list">
+                {selected.occasions.map((occasion) => (
+                  <li key={`${occasion.id}-${occasion.name}`}>
+                    <span className="cal-detail-name">{occasion.name}</span>
+                    {occasion.note ? (
+                      <span className="cal-detail-note"> — {occasion.note}</span>
+                    ) : null}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="cal-detail-none">{t('dayNothing')}</p>
+            )}
+          </div>
+        ) : null}
 
         {/* Legend for the two markers. */}
         <div
@@ -369,24 +486,24 @@ export function HijriCalendar({
             {shown.occasions.map((occasion) => (
               <li
                 key={`${occasion.id}-${occasion.iso}`}
-                className="flex items-center gap-4"
-                style={{
-                  background: 'var(--card)',
-                  border: 'var(--rule-hair) solid var(--line)',
-                  borderRadius: '14px',
-                  padding: 'var(--space-3) var(--space-4)',
-                }}
+                className="occ-row"
+                data-on={occasion.iso === selectedIso ? 'true' : undefined}
               >
-                <span className="tabular occ-day" aria-hidden="true">
-                  {digits(occasion.gregorianDay, locale)}
-                </span>
-                <span>
-                  <span className="visually-hidden">{digits(occasion.gregorianDay, locale)}. </span>
-                  <span style={{ fontWeight: 'var(--weight-semibold)' }}>{occasion.name}</span>
-                  {occasion.note ? (
-                    <span style={{ color: 'var(--color-ink-muted)' }}> — {occasion.note}</span>
-                  ) : null}
-                </span>
+                {/* The row picks its own day out of the grid above. The two
+                    were side by side and unconnected: a reader had to find
+                    the 27th by eye. */}
+                <button type="button" onClick={() => setSelectedIso(occasion.iso)}>
+                  <span className="tabular occ-day" aria-hidden="true">
+                    {digits(occasion.gregorianDay, locale)}
+                  </span>
+                  <span>
+                    <span className="visually-hidden">
+                      {digits(occasion.gregorianDay, locale)}.{' '}
+                    </span>
+                    <span className="occ-name">{occasion.name}</span>
+                    {occasion.note ? <span className="occ-note"> — {occasion.note}</span> : null}
+                  </span>
+                </button>
               </li>
             ))}
           </ul>

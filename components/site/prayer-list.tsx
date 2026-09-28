@@ -17,6 +17,9 @@ import { formatClock, formatCountdown, digits } from '@/lib/i18n/format';
 import { formatHijri } from '@/lib/hijri';
 import { EXTRA_KEYS, type PrayerKey } from '@/lib/prayer-times';
 import type { PrayerDay } from '@/lib/prayer-page';
+import { localPrayerDay } from '@/lib/prayer-local';
+import { CITIES, CITY_GROUPS, DEFAULT_CITY_ID, cityName, findCity } from '@/lib/cities';
+import { toPersianDate, persianMonthName } from '@/lib/persian-date';
 import type { Locale } from '@/lib/i18n/config';
 import { Button } from '../ui/button';
 import { Card } from '../ui/card';
@@ -63,6 +66,53 @@ export function PrayerList({ day: vienna, locale }: { day: PrayerDay; locale: Lo
   const [remaining, setRemaining] = useState<number | null>(null);
   const [day, setDay] = useState(vienna);
   const [geo, setGeo] = useState<GeoState>('vienna');
+  const [cityId, setCityId] = useState<string>(DEFAULT_CITY_ID);
+
+  /**
+   * A chosen city is worked out here in the browser rather than asked of the
+   * server: a round trip per choice would be slower than the answer, and on
+   * the static preview there is no server to ask. `lib/prayer-local` uses the
+   * same calculation the server falls back to.
+   *
+   * The choice is remembered per browser, so someone in Graz is not choosing
+   * Graz again every visit. Vienna clears the memory rather than storing
+   * itself — this is a Viennese house, and its own city is the default, not
+   * a preference.
+   */
+  function chooseCity(id: string) {
+    const city = findCity(id);
+    setGeo('vienna');
+    setCityId(city ? city.id : DEFAULT_CITY_ID);
+    try {
+      if (!city || city.id === DEFAULT_CITY_ID) window.localStorage.removeItem('ham-city');
+      else window.localStorage.setItem('ham-city', city.id);
+    } catch {
+      // Private window, or storage turned off. The choice still holds for
+      // this page; it simply will not outlive it.
+    }
+    if (!city || city.id === DEFAULT_CITY_ID) {
+      setDay(vienna);
+      return;
+    }
+    setDay(localPrayerDay(new Date(), city));
+  }
+
+  // The remembered city, once, after hydration — reading storage during the
+  // render would make the server's HTML and the first paint disagree.
+  useEffect(() => {
+    let stored: string | null = null;
+    try {
+      stored = window.localStorage.getItem('ham-city');
+    } catch {
+      stored = null;
+    }
+    const city = findCity(stored);
+    if (!city || city.id === DEFAULT_CITY_ID) return;
+    setCityId(city.id);
+    setDay(localPrayerDay(new Date(), city));
+    // Only on mount: afterwards the reader's own choices drive this.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   function useMyLocation() {
     if (typeof navigator === 'undefined' || !navigator.geolocation) {
@@ -92,8 +142,7 @@ export function PrayerList({ day: vienna, locale }: { day: PrayerDay; locale: Lo
   }
 
   function backToVienna() {
-    setDay(vienna);
-    setGeo('vienna');
+    chooseCity(DEFAULT_CITY_ID);
   }
 
   const geoMessage =
@@ -139,7 +188,22 @@ export function PrayerList({ day: vienna, locale }: { day: PrayerDay; locale: Lo
     year: 'numeric',
     timeZone: day.place.timeZone,
     numberingSystem: locale === 'fa' ? 'arabext' : 'latn',
+    // Said out loud, because `fa-IR` resolves to the Persian calendar by
+    // default: without it this line and the Iranian one below it were the
+    // same date twice for a Persian reader.
+    calendar: 'gregory',
   }).format(gregorian);
+
+  const chosenCity = findCity(cityId);
+  const placeLabel =
+    geo === 'located'
+      ? t('todayYourPlace')
+      : chosenCity && chosenCity.id !== DEFAULT_CITY_ID
+        ? t('todayIn', { city: cityName(chosenCity, locale) })
+        : t('todayHere');
+
+  const persian = toPersianDate(gregorian);
+  const persianLabel = `${digits(persian.day, locale)}. ${persianMonthName(persian.month, locale)} ${digits(persian.year, locale)}`;
 
   const { latitude, longitude } = day.place;
   const coordinates = day.place.vienna
@@ -223,7 +287,7 @@ export function PrayerList({ day: vienna, locale }: { day: PrayerDay; locale: Lo
 
           <div style={{ position: 'relative', display: 'grid', gap: 'var(--space-1)' }}>
             <p className="kicker" style={{ color: 'var(--color-accent-2-text)' }}>
-              {day.place.vienna ? t('todayHere') : t('todayYourPlace')}
+              {placeLabel}
             </p>
             <p style={{ lineHeight: 'var(--leading-normal)' }}>{gregorianLabel}</p>
             <p
@@ -235,6 +299,45 @@ export function PrayerList({ day: vienna, locale }: { day: PrayerDay; locale: Lo
             >
               {formatHijri(gregorian, locale, day.place.timeZone)}
             </p>
+            {/* The Solar Hijri date, as Iran keeps it. Computed from the
+                platform's own Persian calendar rather than asked of anyone:
+                see `lib/persian-date`. It is read in Tehran whatever city is
+                showing above it, because the question it answers is what the
+                date is there. */}
+            <p className="text-sm" style={{ color: 'var(--color-ink-muted)' }}>
+              {t('iranDate')}: {persianLabel}
+            </p>
+
+            {/* The city. A plain select: it is a list of thirty names on a
+                page people open on a phone, and the one the platform draws is
+                better at that than anything built here. */}
+            <div style={{ marginBlockStart: 'var(--space-3)' }}>
+              <label
+                className="kicker"
+                htmlFor="prayer-city"
+                style={{ display: 'block', marginBlockEnd: 'var(--space-1)' }}
+              >
+                {t('cityLabel')}
+              </label>
+              <select
+                id="prayer-city"
+                className="input"
+                value={geo === 'located' ? '' : cityId}
+                onChange={(event) => chooseCity(event.target.value)}
+                style={{ maxInlineSize: '18rem' }}
+              >
+                {geo === 'located' ? <option value="">{t('todayYourPlace')}</option> : null}
+                {CITY_GROUPS.map((group) => (
+                  <optgroup key={group} label={t(`cityGroups.${group}`)}>
+                    {CITIES.filter((city) => city.group === group).map((city) => (
+                      <option key={city.id} value={city.id}>
+                        {cityName(city, locale)}
+                      </option>
+                    ))}
+                  </optgroup>
+                ))}
+              </select>
+            </div>
 
             <div className="flex flex-wrap gap-2" style={{ marginBlockStart: 'var(--space-3)' }}>
               {geo === 'located' ? (

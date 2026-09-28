@@ -2542,6 +2542,134 @@
     font-weight: var(--weight-bold);
   }
 
+  /* ── A day can be asked ───────────────────────────────────────────────
+     The cells are buttons now. They were plain boxes, and everything about
+     a day that would not fit in two numbers — the third calendar, the
+     weekday, what it commemorates — had to be matched by eye against a list
+     in the next column. */
+  .cal-day {
+    position: relative;
+    inline-size: 100%;
+    font: inherit;
+    cursor: pointer;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+  .cal-day:hover {
+    border-color: var(--gold);
+  }
+  .cal-day[data-on='true'] {
+    background: var(--band);
+    border-color: var(--band);
+  }
+  .cal-day[data-on='true'] .cal-day-greg {
+    color: var(--bandHead);
+  }
+  .cal-day[data-on='true'] .cal-day-hij {
+    color: var(--gold);
+  }
+  /* Both at once: the chosen day keeps its ring when it is also today. */
+  .cal-day[data-on='true'][data-today='true'] {
+    border-color: var(--gold);
+  }
+
+  /* The mark that a day carries something, under the two numbers. A dot as
+     well as the wash: the wash is gold on cream and it is the first thing to
+     go on a bright screen held outdoors. */
+  .cal-day-dot {
+    inline-size: 5px;
+    block-size: 5px;
+    border-radius: 50%;
+    background: transparent;
+  }
+  .cal-day[data-occ='true'] .cal-day-dot {
+    background: var(--gold);
+  }
+  .cal-day[data-on='true'][data-occ='true'] .cal-day-dot {
+    background: var(--gold);
+  }
+
+  /* ── What the chosen day is ───────────────────────────────────────────
+     All three calendars for one day, and what is on it. */
+  .cal-detail {
+    margin-block-start: var(--space-4);
+    padding: var(--space-4);
+    border: var(--rule-hair) solid var(--line);
+    border-radius: var(--radius-soft);
+    background: var(--card2);
+  }
+  .cal-detail-date {
+    margin-block-start: var(--space-1);
+    font-family: var(--font-display);
+    font-size: 1.125rem;
+    line-height: 1.3;
+    color: var(--head);
+  }
+  :root[lang='fa'] .cal-detail-date {
+    font-family: var(--font-naskh);
+  }
+  .cal-detail-alt {
+    margin-block-start: 2px;
+    font-size: var(--text-sm);
+    color: var(--goldInk);
+  }
+  .cal-detail-list {
+    margin: var(--space-3) 0 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: var(--space-2);
+  }
+  .cal-detail-name {
+    font-weight: var(--weight-semibold);
+  }
+  .cal-detail-note {
+    color: var(--color-ink-muted);
+  }
+  .cal-detail-none {
+    margin-block-start: var(--space-3);
+    color: var(--color-ink-muted);
+  }
+
+  /* ── The month's list of days ─────────────────────────────────────────
+     Each row picks its own day out of the grid above, so the two are one
+     thing rather than two lists side by side. */
+  .occ-row {
+    border-radius: 14px;
+    background: var(--card);
+    border: var(--rule-hair) solid var(--line);
+    transition:
+      border-color var(--duration-fast) var(--ease-standard),
+      background-color var(--duration-fast) var(--ease-standard);
+  }
+  .occ-row > button {
+    inline-size: 100%;
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    padding: var(--space-3) var(--space-4);
+    font: inherit;
+    color: inherit;
+    text-align: start;
+    background: none;
+    border: 0;
+    cursor: pointer;
+    border-radius: inherit;
+  }
+  .occ-row:hover {
+    border-color: var(--gold);
+  }
+  .occ-row[data-on='true'] {
+    border-color: var(--gold);
+    background: rgba(200, 164, 93, 0.12);
+  }
+  .occ-name {
+    font-weight: var(--weight-semibold);
+  }
+  .occ-note {
+    color: var(--color-ink-muted);
+  }
+
   /* ── The month's prayer times ─────────────────────────────────────────
      The shared `.table`, with the grid's two markers carried over to its
      rows: today's row in a gold ring's colour and weight, a day with an

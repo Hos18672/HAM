@@ -287,7 +287,23 @@
         "name": "Geburtstag Ali Akbars (a.)",
         "note": "Am elften Schaʿban"
       }
-    }
+    },
+    "cityLabel": "Ort",
+    "todayIn": "Heute in {city}",
+    "cityNote": "Zeiten für {city}, berechnet nach derselben dschaʿfaritischen Methode.",
+    "iranDate": "Iranischer Kalender",
+    "cityGroups": {
+      "at": "Österreich",
+      "de": "Deutschland",
+      "ch": "Schweiz",
+      "ir": "Iran",
+      "af": "Afghanistan",
+      "iq": "Irak",
+      "sa": "Saudi-Arabien",
+      "eu": "Weitere Städte"
+    },
+    "chosenDay": "Gewählter Tag",
+    "dayNothing": "An diesem Tag ist nichts eingetragen."
   },
   "duas": {
     "filterByCategory": "Nach Art filtern",

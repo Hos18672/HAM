@@ -2510,16 +2510,18 @@
     font-family: var(--font-body);
     font-size: var(--text-base);
     line-height: 1.4;
-    color: var(--bandHead);
-    background-color: rgba(255, 255, 255, 0.08);
+    /* Theme tokens, not the band's own colours.
+
+       These were `--bandHead` on a white wash, which is right on the dark
+       panel I first built it against and invisible on the light one: in
+       light mode the panel is white and the city was near-white on it. The
+       ink and the ground both follow the theme now. */
+    color: var(--color-ink);
+    background-color: var(--card2);
     border: var(--rule-hair) solid var(--gold);
     border-radius: var(--radius-pill);
     -webkit-appearance: none;
     appearance: none;
-    /* Its own colour scheme, so a browser drawing native chrome — and the
-       dropdown list, which is the platform's to draw — uses the dark set
-       rather than the light one. */
-    color-scheme: dark;
     /* One chevron, drawn as a mask so it takes the text colour and cannot
        come out as the two overlapping triangles the old arrow did. */
     background-image: none;
@@ -2544,7 +2546,7 @@
     block-size: 6px;
     transform: translateY(-50%);
     pointer-events: none;
-    background-color: var(--gold);
+    background-color: var(--goldInk);
     -webkit-mask: var(--chevron-down) center / contain no-repeat;
     mask: var(--chevron-down) center / contain no-repeat;
   }
@@ -2553,11 +2555,13 @@
     outline-offset: 2px;
   }
   /* The list the platform draws. Stated, because a list left to inherit is
-     the one that comes out unreadable. */
+     the one that comes out unreadable — and stated in tokens, so it is the
+     right one of the two. The page's own `color-scheme` is what tells the
+     platform which set of native chrome to draw, and it already flips. */
   .city-select option,
   .city-select optgroup {
-    color: #f7f3e8;
-    background-color: #0b3125;
+    color: var(--color-ink);
+    background-color: var(--card);
   }
 
   /* ── The month grid ───────────────────────────────────────────────────

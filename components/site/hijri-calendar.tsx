@@ -6,6 +6,8 @@ import { CaretLeft, CaretRight } from '@phosphor-icons/react/dist/ssr';
 import { digits, formatDate } from '@/lib/i18n/format';
 import { HIJRI_MONTHS } from '@/lib/hijri';
 import { toPersianDate, persianMonthName } from '@/lib/persian-date';
+import { localTimetable } from '@/lib/prayer-local';
+import { VIENNA } from '@/lib/prayer-times';
 import { buildCalendarMonth, previousMonth, nextMonth } from '@/lib/calendar';
 import type { CalendarMonth } from '@/lib/calendar';
 import type { Occasion } from '@/lib/db/queries/content';
@@ -88,7 +90,13 @@ export function HijriCalendar({
         return response.json() as Promise<Timetable>;
       })
       .then((data) => setTimetables((all) => ({ ...all, [key]: data })))
-      .catch(() => setTimetables((all) => ({ ...all, [key]: 'failed' })));
+      .catch(() =>
+        // No route to ask — the static preview has no server — or it said
+        // no. The month is arithmetic either way, so it is worked out here
+        // rather than shown as a failure: without this every month but the
+        // one the page was built with came back empty.
+        setTimetables((all) => ({ ...all, [key]: localTimetable(year, month, VIENNA) })),
+      );
   }, [year, month, timetables]);
 
   // The API's holidays for this month, as occasions for the grid and list.

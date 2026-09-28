@@ -307,6 +307,8 @@
   --radius-none: 0;
   --radius-baseline: 10px; /* inputs, per the design */
   --radius-soft: 16px; /* cards and surfaces */
+  /* A chevron, for anything that opens downwards. */
+  --chevron-down: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23000' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
   --pad-panel: clamp(22px, 3vw, 34px); /* the inside of a panel, everywhere */
   --radius-softer: 18px; /* the hero frame */
   --radius-panel: 22px; /* the menu panel, the closing ask */
@@ -2490,6 +2492,74 @@
       0 4px 14px -8px rgba(0, 0, 0, 0.6);
   }
 
+  /* ── The city on the prayer page ──────────────────────────────────────
+     A select, on a dark panel, on somebody's phone.
+
+     It reused the form `.input`, which is built for a white form on paper
+     and takes its colours from the page ground. On the band that came out
+     as the page's own cream with cream text on it — a blank box with an
+     arrow — and where a browser draws its own control chrome (Android's
+     force-dark among them) there was nothing to stop it. So the colours are
+     stated here, on the element and on its list, rather than inherited, and
+     the control is drawn rather than borrowed. */
+  .city-select {
+    inline-size: 100%;
+    max-inline-size: 20rem;
+    min-block-size: 2.75rem;
+    padding: var(--space-2) var(--space-6) var(--space-2) var(--space-3);
+    font-family: var(--font-body);
+    font-size: var(--text-base);
+    line-height: 1.4;
+    color: var(--bandHead);
+    background-color: rgba(255, 255, 255, 0.08);
+    border: var(--rule-hair) solid var(--gold);
+    border-radius: var(--radius-pill);
+    -webkit-appearance: none;
+    appearance: none;
+    /* Its own colour scheme, so a browser drawing native chrome — and the
+       dropdown list, which is the platform's to draw — uses the dark set
+       rather than the light one. */
+    color-scheme: dark;
+    /* One chevron, drawn as a mask so it takes the text colour and cannot
+       come out as the two overlapping triangles the old arrow did. */
+    background-image: none;
+    background-repeat: no-repeat;
+    cursor: pointer;
+  }
+  :root[dir='rtl'] .city-select {
+    padding-inline: var(--space-3) var(--space-6);
+  }
+  .city-select-wrap {
+    position: relative;
+    display: inline-block;
+    inline-size: 100%;
+    max-inline-size: 20rem;
+  }
+  .city-select-wrap::after {
+    content: '';
+    position: absolute;
+    inset-inline-end: var(--space-3);
+    inset-block-start: 50%;
+    inline-size: 10px;
+    block-size: 6px;
+    transform: translateY(-50%);
+    pointer-events: none;
+    background-color: var(--gold);
+    -webkit-mask: var(--chevron-down) center / contain no-repeat;
+    mask: var(--chevron-down) center / contain no-repeat;
+  }
+  .city-select:focus-visible {
+    outline: 2px solid var(--gold);
+    outline-offset: 2px;
+  }
+  /* The list the platform draws. Stated, because a list left to inherit is
+     the one that comes out unreadable. */
+  .city-select option,
+  .city-select optgroup {
+    color: #f7f3e8;
+    background-color: #0b3125;
+  }
+
   /* ── The month grid ───────────────────────────────────────────────────
      A day is a small plate: the civil date in the display face with the
      Hijri date under it in gold. None of this existed — the cells were
@@ -4300,17 +4370,64 @@
 /* Printing the month's prayer times. The timetable's own button marks the
    document before it opens the print dialog, so only that print is narrowed
    to the table; printing the page any other way prints the page. */
+/* A4 with a printer's margin, rather than whatever the browser guesses. */
+@page {
+  size: A4 portrait;
+  margin: 12mm;
+}
+
 @media print {
-  html[data-print='timetable'] body * {
-    visibility: hidden;
+  /* Nothing may print invisibly because it was never scrolled past.
+
+     The reveal leaves an element it has claimed at `opacity: 0` with a 7px
+     blur and a scale until it comes into view, and a printed page has no
+     view to come into. The timetable sits inside a section like any other,
+     so printing before scrolling to it produced a blank sheet — and once the
+     blur and the scale were in play, what did print was soft and offset. */
+  [data-rise],
+  [data-rise][data-rise-armed='true'],
+  [data-words][data-rise-armed='true'] .word {
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
   }
-  html[data-print='timetable'] .timetable-print,
-  html[data-print='timetable'] .timetable-print * {
-    visibility: visible;
+
+  /* Only the sheet is printed, and only it takes up paper.
+
+     This used to hide the rest with `visibility: hidden`, which leaves every
+     hidden thing occupying exactly as much space as before: the document
+     kept its full height and the printer was asked for three further sheets
+     with nothing on them. `display: none` on everything that is neither the
+     sheet, nor inside it, nor an ancestor of it collapses the page to the
+     table — and lets the sheet stay in normal flow, so it needs no
+     positioning and cannot be anchored to the wrong box. */
+  html[data-print='timetable']
+    body
+    *:not(:has(.timetable-print)):not(.timetable-print):not(.timetable-print *) {
+    display: none !important;
+  }
+  /* The ancestors are kept — they have to be, the sheet is inside them —
+     but they bring nothing of their own to the paper. Their padding and
+     their cream ground were running a second, empty sheet out of the
+     printer after the table. */
+  html[data-print='timetable'] body *:has(.timetable-print) {
+    display: block !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    background: none !important;
+    box-shadow: none !important;
+    min-block-size: 0 !important;
+    max-inline-size: none !important;
+    inline-size: auto !important;
+  }
+  /* The paper is white. The body's cream is the page's ground, not the
+     sheet's, and it was printing as a block of colour under the table. */
+  html[data-print='timetable'],
+  html[data-print='timetable'] body {
+    background: #fff !important;
   }
   html[data-print='timetable'] .timetable-print {
-    position: absolute;
-    inset: 0 0 auto 0;
     background: #fff;
     color: #000;
   }
@@ -4320,8 +4437,41 @@
   html[data-print='timetable'] .timetable-print .table-scroll {
     overflow: visible;
   }
+
+  /* And the table is made to fit the width it has rather than asking for
+     more. Ten columns of times: fixed layout so they share the page evenly,
+     and the dates get the room they need from the first column. */
   html[data-print='timetable'] .timetable {
     min-inline-size: 0;
-    font-size: 10pt;
+    inline-size: 100%;
+    table-layout: fixed;
+    font-size: 8.5pt;
+  }
+  html[data-print='timetable'] .timetable td {
+    padding: 2pt 1pt;
+    white-space: nowrap;
+  }
+  /* The times may not wrap; their headings must. "Schariatische
+     Mitternacht" is four times the width of the column it labels, and
+     clipping it left the sheet headed by "SCHARIA". */
+  html[data-print='timetable'] .timetable th {
+    padding: 2pt 1pt;
+    white-space: normal;
+    overflow-wrap: break-word;
+    font-size: 6.5pt;
+    letter-spacing: 0.04em;
+    vertical-align: bottom;
+  }
+  html[data-print='timetable'] .timetable th:first-child,
+  html[data-print='timetable'] .timetable td:first-child {
+    inline-size: 15%;
+  }
+  /* The header repeats on every sheet a long month runs to, and no row is
+     broken across the fold. */
+  html[data-print='timetable'] .timetable thead {
+    display: table-header-group;
+  }
+  html[data-print='timetable'] .timetable tr {
+    break-inside: avoid;
   }
 }

@@ -319,24 +319,25 @@ export function PrayerList({ day: vienna, locale }: { day: PrayerDay; locale: Lo
               >
                 {t('cityLabel')}
               </label>
-              <select
-                id="prayer-city"
-                className="input"
-                value={geo === 'located' ? '' : cityId}
-                onChange={(event) => chooseCity(event.target.value)}
-                style={{ maxInlineSize: '18rem' }}
-              >
-                {geo === 'located' ? <option value="">{t('todayYourPlace')}</option> : null}
-                {CITY_GROUPS.map((group) => (
-                  <optgroup key={group} label={t(`cityGroups.${group}`)}>
-                    {CITIES.filter((city) => city.group === group).map((city) => (
-                      <option key={city.id} value={city.id}>
-                        {cityName(city, locale)}
-                      </option>
-                    ))}
-                  </optgroup>
-                ))}
-              </select>
+              <span className="city-select-wrap">
+                <select
+                  id="prayer-city"
+                  className="city-select"
+                  value={geo === 'located' ? '' : cityId}
+                  onChange={(event) => chooseCity(event.target.value)}
+                >
+                  {geo === 'located' ? <option value="">{t('todayYourPlace')}</option> : null}
+                  {CITY_GROUPS.map((group) => (
+                    <optgroup key={group} label={t(`cityGroups.${group}`)}>
+                      {CITIES.filter((city) => city.group === group).map((city) => (
+                        <option key={city.id} value={city.id}>
+                          {cityName(city, locale)}
+                        </option>
+                      ))}
+                    </optgroup>
+                  ))}
+                </select>
+              </span>
             </div>
 
             <div className="flex flex-wrap gap-2" style={{ marginBlockStart: 'var(--space-3)' }}>

@@ -1,6 +1,6 @@
 import { getDayTimes, getNextPrayer, localMinutes, type Coordinates } from './prayer-times';
 import { toHijri } from './hijri';
-import type { PrayerDay } from './prayer-page';
+import type { PrayerDay, Timetable } from './prayer-page';
 
 /**
  * A day of prayer times worked out in the browser.
@@ -64,4 +64,40 @@ export function localPrayerDay(now: Date, place: LocalPlace): PrayerDay {
     place: { ...place, vienna: false },
     source: 'local',
   };
+}
+
+/**
+ * One month of times, worked out in the browser.
+ *
+ * The page asks `/api/prayer/month` for a month it did not open on, which is
+ * right where there is a server — the answer comes from Aladhan and is
+ * cached for everyone. On the static preview there is no such route, so
+ * every month but the one the page was built with came back 404 and the
+ * timetable said it had failed. It falls back to this instead.
+ *
+ * No holidays: those come from the API's own list, and there is no API here.
+ * The grid above the timetable marks the month's occasions anyway, from the
+ * ones the editors keep.
+ */
+export function localTimetable(year: number, month: number, place: LocalPlace): Timetable {
+  const days: Timetable['days'] = [];
+  const last = new Date(Date.UTC(year, month, 0)).getUTCDate();
+
+  for (let day = 1; day <= last; day++) {
+    // Noon UTC: far enough from either midnight that the civil date in the
+    // place is the one we asked for, whatever its offset.
+    const at = new Date(Date.UTC(year, month - 1, day, 12));
+    const { times, extras } = getDayTimes(at, {
+      coordinates: place,
+      timeZone: place.timeZone,
+    });
+    days.push({
+      iso: `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`,
+      times,
+      extras,
+      holidays: [],
+    });
+  }
+
+  return { year, month, days, source: 'local' };
 }

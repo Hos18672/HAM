@@ -15,7 +15,7 @@ import {
 } from '@phosphor-icons/react/dist/ssr';
 import { formatClock, formatCountdown, digits } from '@/lib/i18n/format';
 import { formatHijri } from '@/lib/hijri';
-import { EXTRA_KEYS, type PrayerKey } from '@/lib/prayer-times';
+import type { PrayerKey } from '@/lib/prayer-times';
 import type { PrayerDay } from '@/lib/prayer-page';
 import { localPrayerDay } from '@/lib/prayer-local';
 import { CITIES, CITY_GROUPS, DEFAULT_CITY_ID, cityName, findCity } from '@/lib/cities';
@@ -122,19 +122,31 @@ export function PrayerList({ day: vienna, locale }: { day: PrayerDay; locale: Lo
     setGeo('locating');
     navigator.geolocation.getCurrentPosition(
       async (position) => {
+        // Rounded to two decimals — about a kilometre — before it leaves the
+        // device, and rounded for the local calculation too, so the same
+        // coarse position is used either way.
+        const place = {
+          latitude: Number(position.coords.latitude.toFixed(2)),
+          longitude: Number(position.coords.longitude.toFixed(2)),
+          timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        };
         const query = new URLSearchParams({
-          lat: position.coords.latitude.toFixed(2),
-          lng: position.coords.longitude.toFixed(2),
-          tz: Intl.DateTimeFormat().resolvedOptions().timeZone,
+          lat: String(place.latitude),
+          lng: String(place.longitude),
+          tz: place.timeZone,
         });
         try {
           const response = await fetch(`/api/prayer/day?${query}`);
           if (!response.ok) throw new Error(String(response.status));
           setDay((await response.json()) as PrayerDay);
-          setGeo('located');
         } catch {
-          setGeo('fetchFailed');
+          // No route to ask — the static preview has none — or it said no.
+          // The day is arithmetic, so it is worked out here instead of
+          // telling the reader their own position could not be used.
+          setDay(localPrayerDay(new Date(), place));
         }
+        setCityId('');
+        setGeo('located');
       },
       (error) => setGeo(error.code === error.PERMISSION_DENIED ? 'denied' : 'failed'),
       { timeout: 10_000, maximumAge: 600_000 },
@@ -420,54 +432,6 @@ export function PrayerList({ day: vienna, locale }: { day: PrayerDay; locale: Lo
           );
         })}
       </ul>
-
-      {/* The four extra times: smaller, and under the seven rather than
-          among them, since none of them is a time of prayer. */}
-      <div>
-        <p className="kicker" style={{ color: 'var(--color-accent-2-text)' }}>
-          {t('extrasTitle')}
-        </p>
-        <ul
-          style={{
-            listStyle: 'none',
-            margin: 0,
-            marginBlockStart: 'var(--space-3)',
-            padding: 0,
-            display: 'grid',
-            gap: 'var(--space-2)',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 12rem), 1fr))',
-          }}
-        >
-          {EXTRA_KEYS.map((key) => (
-            <li
-              key={key}
-              className="flex items-baseline justify-between gap-3"
-              style={{
-                background: 'var(--card)',
-                border: 'var(--rule-hair) solid var(--line)',
-                borderRadius: '14px',
-                padding: 'var(--space-3) var(--space-4)',
-              }}
-            >
-              <span className="text-sm" style={{ color: 'var(--color-ink-muted)' }}>
-                {t(`extras.${key}`)}
-              </span>
-              <span
-                className="tabular"
-                style={{ fontWeight: 'var(--weight-bold)', color: 'var(--head)' }}
-              >
-                {formatClock(day.extras[key], locale)}
-              </span>
-            </li>
-          ))}
-        </ul>
-        <p
-          className="text-xs"
-          style={{ marginBlockStart: 'var(--space-2)', color: 'var(--color-ink-muted)' }}
-        >
-          {t('extrasNote')}
-        </p>
-      </div>
 
       <p className="text-xs" style={{ color: 'var(--color-ink-faint)', maxInlineSize: '70ch' }}>
         {day.source === 'aladhan' ? t('sourceApi') : t('sourceLocal')} ·{' '}

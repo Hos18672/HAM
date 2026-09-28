@@ -95,7 +95,6 @@ export function PrayerTimetable({
               <tr>
                 <th scope="col">{t('timetableDate')}</th>
                 <th scope="col">{t('hijriDate')}</th>
-                <th scope="col">{t('extras.imsak')}</th>
                 {COLUMNS.map((key) => (
                   <th key={key} scope="col">
                     {t(`names.${key}`)}
@@ -130,7 +129,6 @@ export function PrayerTimetable({
                       ) : null}
                     </th>
                     <td className="timetable-hij">{digits(toHijri(date).day, locale)}</td>
-                    <td>{formatClock(day.extras.imsak, locale)}</td>
                     {COLUMNS.map((key) => (
                       <td key={key}>{formatClock(day.times[key], locale)}</td>
                     ))}

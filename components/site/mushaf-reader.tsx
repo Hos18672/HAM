@@ -13,6 +13,9 @@ import {
 } from '@phosphor-icons/react/dist/ssr';
 import { digits } from '@/lib/i18n/format';
 import { BASMALA, JUZ_COUNT, PAGE_COUNT } from '@/lib/quran-constants';
+import { useReader } from './use-reader';
+import { ReaderControls } from './reader-controls';
+import { ReaderShell } from './reader-shell';
 import type { MushafPage, PageAyah } from '@/lib/quran';
 import type { Locale } from '@/lib/i18n/config';
 
@@ -62,6 +65,7 @@ export function MushafReader({
   locale: Locale;
 }) {
   const t = useTranslations('quran');
+  const tReader = useTranslations('reader');
   loaded.set(`${locale}:${initialPage.number}`, initialPage);
   const [page, setPage] = useState(() => {
     const n = pageFromUrl();
@@ -197,11 +201,26 @@ export function MushafReader({
   );
   const n = page.number;
 
+  // The whole screen, the size of the letters, and the turn under the thumb.
+  const reader = useReader({
+    storageKey: 'quran',
+    onNext: n < PAGE_COUNT ? () => void show(n + 1) : undefined,
+    onPrevious: n > 1 ? () => void show(n - 1) : undefined,
+  });
+
   return (
     // `minmax(0, 1fr)`: a grid column otherwise grows to its widest content,
     // and on a narrow phone the surah picker's line pushed it off the screen.
-    <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr)', gap: 'var(--space-5)' }}>
-      {/* The toolbar: where to go, and the one reading option. */}
+    <ReaderShell
+      reader={reader}
+      style={{
+        display: 'grid',
+        gridTemplateColumns: 'minmax(0, 1fr)',
+        gap: 'var(--space-5)',
+      }}
+    >
+      {/* The toolbar: where to go, and every reading option there is — the
+          same bar whether the book is on the page or filling the screen. */}
       <div className="mushaf-toolbar">
         <Picker
           className="mushaf-field-wide"
@@ -284,6 +303,7 @@ export function MushafReader({
           <span className="mushaf-switch-track" aria-hidden="true" />
           {t('markSilentShort')}
         </button>
+        <ReaderControls reader={reader} locale={locale} />
       </div>
 
       {/* The book. */}
@@ -293,6 +313,7 @@ export function MushafReader({
         className="mushaf-stage"
         data-silent={marked ? 'on' : 'off'}
         aria-busy={loading}
+        {...reader.swipe}
       >
         <MushafPageView
           page={page}
@@ -307,6 +328,9 @@ export function MushafReader({
           }}
         />
       </div>
+
+      {/* How to turn a page, for a reader who would not think to try. */}
+      <p className="reader-hint text-xs">{tReader('turnHint')}</p>
 
       <p
         aria-live="polite"
@@ -342,7 +366,7 @@ export function MushafReader({
           ))}
         </ol>
       </details>
-    </div>
+    </ReaderShell>
   );
 }
 

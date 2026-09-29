@@ -3173,6 +3173,9 @@
   }
   .mushaf-stage {
     transition: opacity var(--duration-fast) var(--ease-standard);
+    /* The browser keeps the up-and-down gesture and leaves the sideways one
+       to the reader, who is turning a page with it. */
+    touch-action: pan-y;
   }
   .mushaf-stage[aria-busy='true'] {
     opacity: 0.55;
@@ -3305,7 +3308,9 @@
     position: relative;
     padding: var(--space-3) clamp(0px, 1.5vw, 12px);
     font-family: 'Scheherazade New', var(--font-naskh), serif;
-    font-size: clamp(1.3rem, 3.6vw, 1.95rem);
+    /* `--reader-scale` is what the size control sets, 0.75 to 2.2. The page
+       is complete at 1, which is what it is without the control. */
+    font-size: calc(clamp(1.3rem, 3.6vw, 1.95rem) * var(--reader-scale, 1));
     line-height: 2.25;
     color: var(--head);
   }
@@ -3427,6 +3432,12 @@
       flex: 1 1 100%;
       justify-content: center;
     }
+    /* The size control and the fullscreen button share the row under it. */
+    .reader-size,
+    .mushaf-toolbar .reader-full-btn {
+      flex: 1 1 calc(50% - var(--space-2));
+      justify-content: center;
+    }
     .mushaf {
       --mushaf-inset: 6px;
       /* The bottom clears the double rule and its corner rosettes, so the
@@ -3466,7 +3477,7 @@
     }
     .mushaf-body {
       padding-inline: 0;
-      font-size: 1.32rem;
+      font-size: calc(1.32rem * var(--reader-scale, 1));
       line-height: 2.15;
     }
     /* On a narrow line, justification stretches the gaps badly. */
@@ -3476,6 +3487,119 @@
     .mushaf-banner {
       font-size: 1em;
     }
+  }
+
+  /* ── The reader ───────────────────────────────────────────────────────
+     What a long right-to-left text needs on a phone, shared by the mushaf
+     and the du'a reader: the whole screen, letters at a size the reader
+     chooses, and a page that turns under the thumb. Each piece degrades to
+     nothing — the page is complete without any of them. */
+  .reader-shell[data-full='true'] {
+    position: fixed;
+    inset: 0;
+    z-index: var(--z-dialog);
+    align-content: start;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: clamp(10px, 2vw, 20px) clamp(10px, 3vw, 28px) clamp(32px, 6vw, 64px);
+    background: var(--paper);
+    /* Under the phone's own notch and home bar, where there are any. */
+    padding-block-start: max(clamp(10px, 2vw, 20px), env(safe-area-inset-top));
+    padding-block-end: max(clamp(32px, 6vw, 64px), env(safe-area-inset-bottom));
+  }
+  /* Nothing is given up by filling the screen: every control comes along and
+     stays in reach at the top of the scroll. They go on one line and slide
+     rather than stacking — wrapped, they took a third of a phone's screen,
+     which is the screen the reader had just asked for. */
+  .reader-shell[data-full='true'] .mushaf-toolbar {
+    position: sticky;
+    inset-block-start: 0;
+    z-index: 5;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+  }
+  .reader-shell[data-full='true'] .mushaf-toolbar::-webkit-scrollbar {
+    display: none;
+  }
+  .reader-shell[data-full='true'] .mushaf-toolbar > * {
+    flex: 0 0 auto;
+  }
+  .reader-shell[data-full='true'] .mushaf-field {
+    inline-size: 9.5rem;
+  }
+  .reader-shell[data-full='true'] .mushaf-field-wide {
+    inline-size: 14rem;
+  }
+  .reader-shell[data-full='true'] .mushaf-stage,
+  .reader-shell[data-full='true'] .mushaf-banner-wrap {
+    scroll-margin-block-start: 88px;
+  }
+  .reader-shell[data-full='true'] .reader-hint {
+    display: none;
+  }
+
+  /* The size control: two discs and the reading between them. */
+  .reader-size {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    min-block-size: 44px;
+    padding-inline: 10px;
+    background: var(--card2);
+    border: var(--rule-hair) solid transparent;
+    border-radius: 12px;
+    color: var(--goldInk);
+  }
+  .reader-size button {
+    display: grid;
+    place-items: center;
+    inline-size: 28px;
+    block-size: 28px;
+    padding: 0;
+    color: var(--head);
+    background: var(--card);
+    border: var(--rule-hair) solid var(--line);
+    border-radius: 50%;
+    cursor: pointer;
+    transition: border-color var(--duration-fast) var(--ease-standard);
+  }
+  .reader-size button:hover:not(:disabled) {
+    border-color: var(--gold);
+  }
+  .reader-size button:focus-visible {
+    outline: 2px solid var(--gold);
+    outline-offset: 2px;
+  }
+  .reader-size button:disabled {
+    opacity: 0.35;
+    cursor: default;
+  }
+  .reader-size-value {
+    min-inline-size: 3.4em;
+    text-align: center;
+    font-size: var(--text-xs);
+    color: var(--color-ink-muted);
+  }
+
+  .reader-full-btn {
+    background: var(--card2);
+    border: var(--rule-hair) solid transparent;
+    transition: border-color var(--duration-fast) var(--ease-standard);
+  }
+  .reader-full-btn:hover,
+  .reader-full-btn[aria-pressed='true'] {
+    border-color: var(--gold);
+  }
+  .reader-full-btn > svg {
+    color: var(--goldInk);
+  }
+
+  .reader-hint {
+    margin-block-start: calc(-1 * var(--space-3));
+    text-align: center;
+    color: var(--color-ink-faint);
   }
 
   .timetable-hij {

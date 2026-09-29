@@ -449,9 +449,16 @@
     "silentLegend": "Grau markiert: Buchstaben, die geschrieben, aber nicht gesprochen werden — das verbindende Alif (Hamzat al-Wasl), das angeglichene Lam des Artikels vor den „Sonnenbuchstaben“ und weitere stumme Buchstaben.",
     "translationToggle": "Übersetzung dieser Seite",
     "readAsBook": "Als Buch lesen",
-    "keys": "Tipp: Mit den Pfeiltasten blättern.",
     "pageShort": "Seite {n}",
     "markSilentShort": "Stumme Buchstaben",
     "go": "Öffnen"
+  },
+  "reader": {
+    "fullscreen": "Vollbild",
+    "exitFullscreen": "Vollbild verlassen",
+    "textSize": "Schriftgröße",
+    "larger": "Schrift vergrößern",
+    "smaller": "Schrift verkleinern",
+    "turnHint": "Zum Blättern wischen oder die Pfeiltasten verwenden — nach links geht es weiter, wie im arabischen Buch."
   }
 }

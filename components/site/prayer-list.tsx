@@ -111,7 +111,6 @@ export function PrayerList({ day: vienna, locale }: { day: PrayerDay; locale: Lo
     setCityId(city.id);
     setDay(localPrayerDay(new Date(), city));
     // Only on mount: afterwards the reader's own choices drive this.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   function useMyLocation() {

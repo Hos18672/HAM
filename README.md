@@ -305,6 +305,33 @@ association house) and the WGS84 geodesic distance (≈3 637 km — about 3 km
 shorter than the spherical figure, which over that path is worth being accurate
 about).
 
+### The lunar calendar is Iran's, not Saudi Arabia's
+
+Every runtime ships ICU, and ICU's Hijri calendar is the **Umm al-Qura** table
+Saudi Arabia publishes. That is not the calendar this community reads, and the
+difference is not a constant: Umm al-Qura begins a month when the moon _sets
+after the sun at Mecca_, the Iranian calendar when the crescent is _seen from
+Iran_, which as a rule takes one more evening. Over the 310 months tabulated,
+Iran begins a day later 200 times, on the same day 109 times, and two days
+later once. Reading the Saudi table therefore put roughly two commemorations
+in three on the wrong day.
+
+So `lib/hijri-iran.ts` carries the month lengths of the **published Iranian
+calendar** (Institute of Geophysics, University of Tehran), from 1 Muharram
+1423 to the end of what has been published — currently Shawwal 1448, early
+March 2027. `lib/hijri.ts` reads that table, and past its end falls back to
+Umm al-Qura moved on by a day, which is the likelier of the two readings.
+
+**Extending it is one line per year** in `MONTH_LENGTHS`: twelve numbers, 29
+or 30, as the Iranian calendar for that year gives them. The unit tests pin
+the conversion against the days Iran actually kept — Ashura, Arbaʿin, the
+Prophet's birthday, the death of Fatima Masuma, and three first-of-Ramadans.
+
+The days marked in the calendar beyond the ones the editors keep (`lib/
+holidays.ts`) are Hijri dates for the same reason. They used to be read out of
+the prayer-times API's holiday list, which is not a Shia calendar, comes in
+the Saudi reckoning, and is absent from the static preview entirely.
+
 ### Security
 
 - Server actions re-check the session **inside** the action. Middleware only

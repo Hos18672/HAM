@@ -9,7 +9,6 @@ import {
   type PrayerTimes,
 } from './prayer-times';
 import { dayTimes, monthTimes, VIENNA_PLACE, type Place, type Source } from './aladhan';
-import { pickHolidays, type HolidayKey } from './holidays';
 import { toHijri, type HijriDate } from './hijri';
 import { buildCalendarMonth, type CalendarMonth } from './calendar';
 import { getOccasions } from './db/queries/content';
@@ -85,8 +84,6 @@ export interface TimetableDay {
   iso: string;
   times: PrayerTimes;
   extras: ExtraTimes;
-  /** The API's holidays this site shows (see `lib/holidays`). */
-  holidays: HolidayKey[];
 }
 
 export interface Timetable {
@@ -96,19 +93,14 @@ export interface Timetable {
   source: Source;
 }
 
-/** One month of Vienna's times, with the holidays the API marks in it. */
+/** One month of Vienna's times. */
 export async function getTimetable(year: number, month: number): Promise<Timetable> {
   const { days, source } = await monthTimes(year, month, VIENNA_PLACE);
   return {
     year,
     month,
     source,
-    days: days.map((day) => ({
-      iso: day.iso,
-      times: day.times,
-      extras: day.extras,
-      holidays: pickHolidays(day.holidays),
-    })),
+    days: days.map((day) => ({ iso: day.iso, times: day.times, extras: day.extras })),
   };
 }
 

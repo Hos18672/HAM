@@ -34,21 +34,28 @@ export interface CalendarMonth {
  *   than read from the clock so the server and the browser agree on which cell
  *   is today, and so a page rendered just before midnight does not disagree
  *   with itself after hydration.
- * @param extraByIso Occasions for particular dates from elsewhere — the
- *   holidays the prayer-times API marks. A day the editors have an occasion
- *   for keeps only theirs.
+ * @param fallback Occasions the site keeps outside the database — the days
+ *   in `lib/holidays`. Matched on the Hijri date exactly as the editors'
+ *   are, and only used for a Hijri date the editors have nothing for.
  */
 export function buildCalendarMonth(
   year: number,
   month: number,
   occasions: Occasion[],
   todayIso: string,
-  extraByIso: Record<string, Occasion[]> = {},
+  fallback: Occasion[] = [],
 ): CalendarMonth {
   const byHijri = new Map<string, Occasion[]>();
   for (const occasion of occasions) {
     const key = `${occasion.hijriMonth}-${occasion.hijriDay}`;
     byHijri.set(key, [...(byHijri.get(key) ?? []), occasion]);
+  }
+
+  const fallbackByHijri = new Map<string, Occasion[]>();
+  for (const occasion of fallback) {
+    const key = `${occasion.hijriMonth}-${occasion.hijriDay}`;
+    if (byHijri.has(key)) continue;
+    fallbackByHijri.set(key, [...(fallbackByHijri.get(key) ?? []), occasion]);
   }
 
   const firstOfMonth = new Date(Date.UTC(year, month - 1, 1, 12));
@@ -69,8 +76,9 @@ export function buildCalendarMonth(
     const date = new Date(Date.UTC(year, month - 1, day, 12));
     const hijri = toHijri(date);
     const iso = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-    const own = byHijri.get(`${hijri.month}-${hijri.day}`) ?? [];
-    const dayOccasions = own.length > 0 ? own : (extraByIso[iso] ?? []);
+    const key = `${hijri.month}-${hijri.day}`;
+    const own = byHijri.get(key) ?? [];
+    const dayOccasions = own.length > 0 ? own : (fallbackByHijri.get(key) ?? []);
 
     for (const occasion of dayOccasions) {
       monthOccasions.push({ ...occasion, iso, gregorianDay: day });

@@ -41,8 +41,6 @@ export interface ApiDay {
   iso: string;
   times: PrayerTimes;
   extras: ExtraTimes;
-  /** The holidays Aladhan lists for this day, as raw English names. */
-  holidays: string[];
 }
 
 export interface Place extends Coordinates {
@@ -91,10 +89,7 @@ function parseClock(value: unknown, key: string): number | null {
 
 interface RawDay {
   timings?: Record<string, unknown>;
-  date?: {
-    gregorian?: { date?: string };
-    hijri?: { holidays?: unknown };
-  };
+  date?: { gregorian?: { date?: string } };
 }
 
 function parseDay(raw: RawDay): ApiDay | null {
@@ -111,13 +106,10 @@ function parseDay(raw: RawDay): ApiDay | null {
   // Dhuhr always exists; if the API did not send it, nothing else is trusted.
   if (times.dhuhr === null) return null;
 
-  const holidays = raw.date?.hijri?.holidays;
-  return {
-    iso: `${dateMatch[3]}-${dateMatch[2]}-${dateMatch[1]}`,
-    times,
-    extras,
-    holidays: Array.isArray(holidays) ? holidays.filter((h) => typeof h === 'string') : [],
-  };
+  // The API also lists holidays for the day. They are not read: its list is
+  // not a Shia calendar and its dates are the Saudi reckoning, so the days
+  // this site marks are Hijri dates of its own (`lib/holidays`).
+  return { iso: `${dateMatch[3]}-${dateMatch[2]}-${dateMatch[1]}`, times, extras };
 }
 
 /* ─── Requests ───────────────────────────────────────────────────────────── */
@@ -210,5 +202,5 @@ function localDay(iso: string, place: Place): ApiDay {
     coordinates: { latitude: place.latitude, longitude: place.longitude },
     timeZone: place.timeZone,
   });
-  return { iso, times, extras, holidays: [] };
+  return { iso, times, extras };
 }

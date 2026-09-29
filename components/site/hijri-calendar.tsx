@@ -9,6 +9,7 @@ import { toPersianDate, persianMonthName } from '@/lib/persian-date';
 import { localTimetable } from '@/lib/prayer-local';
 import { VIENNA } from '@/lib/prayer-times';
 import { buildCalendarMonth, previousMonth, nextMonth } from '@/lib/calendar';
+import { HOLIDAYS } from '@/lib/holidays';
 import type { CalendarMonth } from '@/lib/calendar';
 import type { Occasion } from '@/lib/db/queries/content';
 import type { Timetable } from '@/lib/prayer-page';
@@ -38,10 +39,9 @@ const monthKey = ({ year, month }: { year: number; month: number }) => `${year}-
  * the page re-renders.
  *
  * The one thing fetched on a move is the month's prayer times, for the
- * timetable under the grid (`/api/prayer/month`, cached for a day). The same
- * answer carries the holidays the Aladhan API marks, and the few of those this
- * site shows (see `lib/holidays`) join the editors' occasions in the grid and
- * the list — on a day the editors have nothing for.
+ * timetable under the grid (`/api/prayer/month`, cached for a day). The days
+ * the site marks beyond the editors' own (see `lib/holidays`) are Hijri dates
+ * like theirs, so they need nothing fetched and are right on the preview too.
  */
 export function HijriCalendar({
   initialMonth,
@@ -99,21 +99,19 @@ export function HijriCalendar({
       );
   }, [year, month, timetables]);
 
-  // The API's holidays for this month, as occasions for the grid and list.
-  const holidayOccasions = useMemo(() => {
-    const byIso: Record<string, Occasion[]> = {};
-    for (const day of timetable?.days ?? []) {
-      if (day.holidays.length === 0) continue;
-      byIso[day.iso] = day.holidays.map((key) => ({
-        id: `aladhan-${key}`,
-        hijriMonth: 0,
-        hijriDay: 0,
+  // The days the site keeps outside the database (`lib/holidays`), as
+  // occasions the grid can match on the Hijri date like any other.
+  const holidayOccasions = useMemo(
+    () =>
+      HOLIDAYS.map(({ key, hijriMonth, hijriDay }) => ({
+        id: `holiday-${key}`,
+        hijriMonth,
+        hijriDay,
         name: t(`holidays.${key}.name`),
         note: t(`holidays.${key}.note`),
-      }));
-    }
-    return byIso;
-  }, [timetable, t]);
+      })),
+    [t],
+  );
 
   const shown = useMemo(
     () => buildCalendarMonth(year, month, occasions, todayIso, holidayOccasions),

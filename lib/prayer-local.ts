@@ -75,9 +75,8 @@ export function localPrayerDay(now: Date, place: LocalPlace): PrayerDay {
  * every month but the one the page was built with came back 404 and the
  * timetable said it had failed. It falls back to this instead.
  *
- * No holidays: those come from the API's own list, and there is no API here.
- * The grid above the timetable marks the month's occasions anyway, from the
- * ones the editors keep.
+ * The grid above the timetable marks the month's occasions either way: they
+ * are Hijri dates worked out here, not something the API hands over.
  */
 export function localTimetable(year: number, month: number, place: LocalPlace): Timetable {
   const days: Timetable['days'] = [];
@@ -95,7 +94,6 @@ export function localTimetable(year: number, month: number, place: LocalPlace): 
       iso: `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`,
       times,
       extras,
-      holidays: [],
     });
   }
 

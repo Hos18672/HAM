@@ -163,6 +163,14 @@
   --pat: rgba(11, 93, 59, 0.14);
   --patBand: rgba(200, 164, 93, 0.3);
   --glass: rgba(247, 243, 232, 0.88);
+  /* The globe on the qibla page: a pale green sea, the warm paper for land,
+     and the two rule weights the rest of the site uses for coast and border.
+     Named here so the map themes with everything else. */
+  --map-sea: #e6efe8;
+  --map-land: #fbf8f1;
+  --map-coast: rgba(11, 93, 59, 0.5);
+  --map-border: rgba(11, 93, 59, 0.2);
+  --map-grid: rgba(11, 93, 59, 0.11);
   --micro: #052a1d;
   /* The band colour as channels, so the skyline can fade into it at any
      alpha, and one step deeper for the shadow the city casts on it. */
@@ -398,6 +406,11 @@
   --bandHead: #fbf6ea;
   --pat: rgba(220, 187, 123, 0.16);
   --patBand: rgba(220, 187, 123, 0.22);
+  --map-sea: #042017;
+  --map-land: #164a36;
+  --map-coast: rgba(220, 187, 123, 0.45);
+  --map-border: rgba(220, 187, 123, 0.18);
+  --map-grid: rgba(220, 187, 123, 0.12);
   --glass: rgba(6, 33, 26, 0.86);
   --micro: #04180f;
   --micro-rgb: 4 24 15;
@@ -3600,6 +3613,44 @@
     margin-block-start: calc(-1 * var(--space-3));
     text-align: center;
     color: var(--color-ink-faint);
+  }
+
+  /* ── The qibla globe ────────────────────────────────────────────────── */
+  .qibla-map {
+    position: relative;
+    display: grid;
+    justify-items: center;
+    gap: var(--space-3);
+  }
+  .qibla-globe {
+    inline-size: min(100%, 27rem);
+    block-size: auto;
+    /* The finger turns the earth; the page is scrolled beside the map. */
+    touch-action: none;
+    cursor: grab;
+    user-select: none;
+    -webkit-user-select: none;
+    filter: drop-shadow(0 18px 30px rgba(20, 40, 30, 0.18));
+  }
+  .qibla-globe:active {
+    cursor: grabbing;
+  }
+  .qibla-globe-label {
+    font-family: var(--font-sans);
+    font-size: 7px;
+    font-weight: var(--weight-semibold);
+    fill: var(--head);
+    paint-order: stroke;
+    stroke: var(--card);
+    stroke-width: 2.4px;
+    stroke-linejoin: round;
+  }
+  .qibla-map-controls {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: var(--space-2);
   }
 
   .timetable-hij {

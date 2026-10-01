@@ -305,6 +305,27 @@ association house) and the WGS84 geodesic distance (≈3 637 km — about 3 km
 shorter than the spherical figure, which over that path is worth being accurate
 about).
 
+### The qibla map carries its own world
+
+The qibla page draws a globe, not a flat map, because the direction of prayer
+is the bearing of a great circle and a great circle is straight on no flat map
+there is — on the Mercator that prayer apps print, the line from Vienna to
+Mecca bends visibly south of where you must actually face.
+
+It asks no tile service for the map. A tile is a request to somebody else's
+server carrying the reader's address and, to within a street, their position:
+the opposite of what this site promises, and forbidden by its own CSP besides.
+So `lib/world-outline.ts` carries the coastlines and borders — Natural Earth's
+public-domain 1:110m data, simplified to about a tenth of a degree and written
+as encoded paths, 21 KB in all, imported only when the map is drawn. The map
+therefore works on the static preview and on a bad connection, and `lib/globe.
+ts` (orthographic projection, great circles, horizon clipping along the rim) is
+pure arithmetic with unit tests.
+
+The trade is resolution: the outline is continental, so the map zooms to about
+a sixth of the globe and no further. It shows where you are on the earth and
+which way the qibla runs from there, not which street you are standing in.
+
 ### The lunar calendar is Iran's, not Saudi Arabia's
 
 Every runtime ships ICU, and ICU's Hijri calendar is the **Umm al-Qura** table

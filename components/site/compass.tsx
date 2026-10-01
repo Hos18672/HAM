@@ -1,16 +1,17 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import {
   Compass as CompassIcon,
   MapPin,
   ArrowCounterClockwise,
 } from '@phosphor-icons/react/dist/ssr';
-import { qiblaFrom, HOUSE, type QiblaResult } from '@/lib/qibla';
+import { qiblaFrom, HOUSE, type Coordinates } from '@/lib/qibla';
 import { formatBearing, formatDistanceKm } from '@/lib/i18n/format';
 import { Button } from '../ui/button';
 import { PatternPlate } from './ornaments';
+import { QiblaMap } from './qibla-map';
 import type { Locale } from '@/lib/i18n/config';
 
 /** A device orientation event that also carries the iOS compass heading. */
@@ -35,7 +36,10 @@ type GeoState = 'house' | 'locating' | 'located' | 'denied' | 'unsupported' | 'f
 export function Compass({ locale }: { locale: Locale }) {
   const t = useTranslations('qibla');
 
-  const [qibla, setQibla] = useState<QiblaResult>(() => qiblaFrom(HOUSE));
+  // The place, not the reading: the map needs the coordinates too, and two
+  // copies of "where we are" is one too many.
+  const [origin, setOrigin] = useState<Coordinates>(HOUSE);
+  const qibla = useMemo(() => qiblaFrom(origin), [origin]);
   const [geo, setGeo] = useState<GeoState>('house');
   const [compass, setCompass] = useState<CompassState>('idle');
   const [heading, setHeading] = useState(0);
@@ -106,12 +110,10 @@ export function Compass({ locale }: { locale: Locale }) {
     setGeo('locating');
     navigator.geolocation.getCurrentPosition(
       (position) => {
-        setQibla(
-          qiblaFrom({
-            latitude: position.coords.latitude,
-            longitude: position.coords.longitude,
-          }),
-        );
+        setOrigin({
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+        });
         setGeo('located');
       },
       (error) => setGeo(error.code === error.PERMISSION_DENIED ? 'denied' : 'failed'),
@@ -120,7 +122,7 @@ export function Compass({ locale }: { locale: Locale }) {
   }
 
   function backToHouse() {
-    setQibla(qiblaFrom(HOUSE));
+    setOrigin(HOUSE);
     setGeo('house');
   }
 
@@ -147,176 +149,203 @@ export function Compass({ locale }: { locale: Locale }) {
         : null;
 
   return (
-    <div
-      style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 20rem), 1fr))',
-        gap: 'clamp(34px, 4.5vw, 76px)',
-        alignItems: 'center',
-      }}
-    >
-      {/* The dial, on the design's own surface: a card with the girih plate
-          behind it, holding the rose, its controls and the one line of advice
-          that only applies while you are standing there holding the phone. */}
+    <div style={{ display: 'grid', gap: 'clamp(34px, 4.5vw, 72px)' }}>
       <div
-        className="surf"
         style={{
           display: 'grid',
-          // Held to the card's width: an auto column grows to its widest
-          // content, and a long button label pushed the dial off the card.
-          gridTemplateColumns: 'minmax(0, 1fr)',
-          justifyItems: 'center',
-          gap: 'var(--space-4)',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 20rem), 1fr))',
+          gap: 'clamp(34px, 4.5vw, 76px)',
+          alignItems: 'center',
         }}
       >
-        <PatternPlate opacity={0.35} />
-
-        <CompassRose
-          bearing={qibla.bearing}
-          roseRotation={roseRotation}
-          locale={locale}
-          label={t('rose')}
-          needleLabel={t('needle')}
-          cardinal={t(`cardinalLong.${qibla.cardinal}`)}
-          cardinals={{
-            n: t('cardinal.n'),
-            e: t('cardinal.e'),
-            s: t('cardinal.s'),
-            w: t('cardinal.w'),
-          }}
-        />
-
+        {/* The dial, on the design's own surface: a card with the girih plate
+          behind it, holding the rose, its controls and the one line of advice
+          that only applies while you are standing there holding the phone. */}
         <div
-          className="compass-actions flex flex-wrap justify-center gap-2"
-          style={{ position: 'relative', width: '100%' }}
-        >
-          <Button variant="secondary" onClick={activateCompass} disabled={compass === 'active'}>
-            <CompassIcon size={18} weight="duotone" aria-hidden="true" />
-            {compass === 'active' ? t('compassActive') : t('activateCompass')}
-          </Button>
-          <Button
-            onClick={useMyLocation}
-            loading={geo === 'locating'}
-            disabled={geo === 'locating'}
-          >
-            <MapPin size={18} weight="duotone" aria-hidden="true" />
-            {t('useMyLocation')}
-          </Button>
-          {geo === 'located' ? (
-            <Button variant="ghost" onClick={backToHouse}>
-              <ArrowCounterClockwise size={18} weight="duotone" aria-hidden="true" />
-              {t('backToHouse')}
-            </Button>
-          ) : null}
-        </div>
-
-        <p
-          className="text-xs"
+          className="surf"
           style={{
-            position: 'relative',
-            color: 'var(--color-ink-muted)',
-            textAlign: 'center',
-            maxInlineSize: '34em',
-          }}
-        >
-          {t('compassHint')}
-        </p>
-
-        {/* Failures are stated, never silent. */}
-        <div
-          aria-live="polite"
-          style={{ position: 'relative', display: 'grid', gap: 'var(--space-1)' }}
-        >
-          {geoMessage ? (
-            <p className="text-sm" style={{ color: 'var(--color-accent-2-text)' }}>
-              {geoMessage}
-            </p>
-          ) : null}
-          {compassMessage ? (
-            <p className="text-sm" style={{ color: 'var(--color-accent-2-text)' }}>
-              {compassMessage}
-            </p>
-          ) : null}
-        </div>
-      </div>
-
-      {/* The reading itself: two figures under their rules, then how to stand. */}
-      <div>
-        <div className="flex items-center gap-3" data-rise>
-          <svg width="26" height="26" viewBox="-16 -16 32 32" aria-hidden="true" focusable="false">
-            <KaabaMark gold="var(--gold)" />
-          </svg>
-          <p className="kicker" style={{ color: 'var(--color-accent-2-text)' }}>
-            {t('kaaba')}
-          </p>
-        </div>
-
-        <div
-          data-rise
-          style={{
-            marginBlockStart: 'var(--space-4)',
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 11rem), 1fr))',
+            // Held to the card's width: an auto column grows to its widest
+            // content, and a long button label pushed the dial off the card.
+            gridTemplateColumns: 'minmax(0, 1fr)',
+            justifyItems: 'center',
             gap: 'var(--space-4)',
           }}
         >
-          <div className="fact-rule" data-lead="true">
-            <p className="kicker">{t('bearing')}</p>
-            <p className="tabular fact-figure" style={{ marginBlockStart: 'var(--space-1)' }}>
-              {formatBearing(qibla.bearing, locale)}°
-            </p>
-            <p className="text-sm" style={{ color: 'var(--color-ink-muted)' }}>
-              {t(`cardinalLong.${qibla.cardinal}`)}
-            </p>
-          </div>
-          <div className="fact-rule">
-            <p className="kicker">{t('distance')}</p>
-            <p className="tabular fact-figure" style={{ marginBlockStart: 'var(--space-1)' }}>
-              {formatDistanceKm(qibla.distanceKm, locale)}
-            </p>
-            <p className="text-sm" style={{ color: 'var(--color-ink-muted)' }}>
-              <span className="ltr-island">{t('kilometres')}</span>
-            </p>
-          </div>
-        </div>
+          <PatternPlate opacity={0.35} />
 
-        <p
-          data-rise
-          className="text-sm"
-          style={{ marginBlockStart: 'var(--space-4)', color: 'var(--color-ink-muted)' }}
-        >
-          {geo === 'located' ? t('fromYourLocation') : t('fromHouse')}
-        </p>
+          <CompassRose
+            bearing={qibla.bearing}
+            roseRotation={roseRotation}
+            locale={locale}
+            label={t('rose')}
+            needleLabel={t('needle')}
+            cardinal={t(`cardinalLong.${qibla.cardinal}`)}
+            cardinals={{
+              n: t('cardinal.n'),
+              e: t('cardinal.e'),
+              s: t('cardinal.s'),
+              w: t('cardinal.w'),
+            }}
+          />
 
-        {/* Three-step how-to. */}
-        <div data-rise style={{ marginBlockStart: 'var(--space-6)' }}>
-          <p className="kicker" style={{ color: 'var(--color-accent-2-text)' }}>
-            {t('howTo')}
-          </p>
-          <ol
-            className="steps"
+          <div
+            className="compass-actions flex flex-wrap justify-center gap-2"
+            style={{ position: 'relative', width: '100%' }}
+          >
+            <Button variant="secondary" onClick={activateCompass} disabled={compass === 'active'}>
+              <CompassIcon size={18} weight="duotone" aria-hidden="true" />
+              {compass === 'active' ? t('compassActive') : t('activateCompass')}
+            </Button>
+            <Button
+              onClick={useMyLocation}
+              loading={geo === 'locating'}
+              disabled={geo === 'locating'}
+            >
+              <MapPin size={18} weight="duotone" aria-hidden="true" />
+              {t('useMyLocation')}
+            </Button>
+            {geo === 'located' ? (
+              <Button variant="ghost" onClick={backToHouse}>
+                <ArrowCounterClockwise size={18} weight="duotone" aria-hidden="true" />
+                {t('backToHouse')}
+              </Button>
+            ) : null}
+          </div>
+
+          <p
+            className="text-xs"
             style={{
-              margin: 0,
-              marginBlockStart: 'var(--space-3)',
-              paddingInlineStart: '26px',
-              display: 'grid',
-              gap: 'var(--space-2)',
-              maxInlineSize: 'var(--measure)',
+              position: 'relative',
+              color: 'var(--color-ink-muted)',
+              textAlign: 'center',
+              maxInlineSize: '34em',
             }}
           >
-            <li>{t('step1')}</li>
-            <li>{t('step2')}</li>
-            <li>{t('step3')}</li>
-          </ol>
+            {t('compassHint')}
+          </p>
+
+          {/* Failures are stated, never silent. */}
+          <div
+            aria-live="polite"
+            style={{ position: 'relative', display: 'grid', gap: 'var(--space-1)' }}
+          >
+            {geoMessage ? (
+              <p className="text-sm" style={{ color: 'var(--color-accent-2-text)' }}>
+                {geoMessage}
+              </p>
+            ) : null}
+            {compassMessage ? (
+              <p className="text-sm" style={{ color: 'var(--color-accent-2-text)' }}>
+                {compassMessage}
+              </p>
+            ) : null}
+          </div>
         </div>
 
-        <p
-          data-rise
-          className="text-xs"
-          style={{ marginBlockStart: 'var(--space-4)', color: 'var(--color-ink-muted)' }}
-        >
-          {t('note')}
-        </p>
+        {/* The reading itself: two figures under their rules, then how to stand. */}
+        <div>
+          <div className="flex items-center gap-3" data-rise>
+            <svg
+              width="26"
+              height="26"
+              viewBox="-16 -16 32 32"
+              aria-hidden="true"
+              focusable="false"
+            >
+              <KaabaMark gold="var(--gold)" />
+            </svg>
+            <p className="kicker" style={{ color: 'var(--color-accent-2-text)' }}>
+              {t('kaaba')}
+            </p>
+          </div>
+
+          <div
+            data-rise
+            style={{
+              marginBlockStart: 'var(--space-4)',
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 11rem), 1fr))',
+              gap: 'var(--space-4)',
+            }}
+          >
+            <div className="fact-rule" data-lead="true">
+              <p className="kicker">{t('bearing')}</p>
+              <p className="tabular fact-figure" style={{ marginBlockStart: 'var(--space-1)' }}>
+                {formatBearing(qibla.bearing, locale)}°
+              </p>
+              <p className="text-sm" style={{ color: 'var(--color-ink-muted)' }}>
+                {t(`cardinalLong.${qibla.cardinal}`)}
+              </p>
+            </div>
+            <div className="fact-rule">
+              <p className="kicker">{t('distance')}</p>
+              <p className="tabular fact-figure" style={{ marginBlockStart: 'var(--space-1)' }}>
+                {formatDistanceKm(qibla.distanceKm, locale)}
+              </p>
+              <p className="text-sm" style={{ color: 'var(--color-ink-muted)' }}>
+                <span className="ltr-island">{t('kilometres')}</span>
+              </p>
+            </div>
+          </div>
+
+          <p
+            data-rise
+            className="text-sm"
+            style={{ marginBlockStart: 'var(--space-4)', color: 'var(--color-ink-muted)' }}
+          >
+            {geo === 'located' ? t('fromYourLocation') : t('fromHouse')}
+          </p>
+
+          {/* Three-step how-to. */}
+          <div data-rise style={{ marginBlockStart: 'var(--space-6)' }}>
+            <p className="kicker" style={{ color: 'var(--color-accent-2-text)' }}>
+              {t('howTo')}
+            </p>
+            <ol
+              className="steps"
+              style={{
+                margin: 0,
+                marginBlockStart: 'var(--space-3)',
+                paddingInlineStart: '26px',
+                display: 'grid',
+                gap: 'var(--space-2)',
+                maxInlineSize: 'var(--measure)',
+              }}
+            >
+              <li>{t('step1')}</li>
+              <li>{t('step2')}</li>
+              <li>{t('step3')}</li>
+            </ol>
+          </div>
+
+          <p
+            data-rise
+            className="text-xs"
+            style={{ marginBlockStart: 'var(--space-4)', color: 'var(--color-ink-muted)' }}
+          >
+            {t('note')}
+          </p>
+        </div>
+      </div>
+
+      {/* The same direction on a map of the world, which is where a bearing
+          in degrees becomes a thing you can see. */}
+      <div className="surf" data-rise style={{ display: 'grid', gap: 'var(--space-4)' }}>
+        <PatternPlate opacity={0.22} />
+        <div style={{ position: 'relative' }}>
+          <p className="kicker" style={{ color: 'var(--color-accent-2-text)' }}>
+            {t('mapKicker')}
+          </p>
+          <h2 style={{ marginBlockStart: 'var(--space-1)' }}>{t('mapTitle')}</h2>
+        </div>
+        <QiblaMap
+          origin={origin}
+          bearing={qibla.bearing}
+          distanceKm={qibla.distanceKm}
+          locale={locale}
+          originLabel={geo === 'located' ? t('youAreHere') : t('theHouse')}
+        />
       </div>
     </div>
   );

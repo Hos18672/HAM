@@ -204,7 +204,18 @@
     "rose": "Kompassrose",
     "kaaba": "Kaaba · Mekka",
     "compassHint": "Am Telefon: Knopf drücken und das Gerät flach halten — die Rose dreht mit.",
-    "note": "Berechnet als Großkreisrichtung (kürzester Weg über die Erdkugel) — dieselbe Methode wie in Gebetsapps."
+    "note": "Berechnet als Großkreisrichtung (kürzester Weg über die Erdkugel) — dieselbe Methode wie in Gebetsapps.",
+    "mapKicker": "Auf der Weltkugel",
+    "mapTitle": "Der kürzeste Weg nach Mekka",
+    "mapLabel": "Weltkugel mit der Gebetsrichtung",
+    "mapHint": "Ziehen Sie die Kugel, um sie zu drehen. Die goldene Linie ist der kürzeste Weg über die Erde — auf einer flachen Karte wäre sie gebogen.",
+    "mecca": "Mekka",
+    "youAreHere": "Ihr Standort",
+    "theHouse": "Vereinshaus",
+    "zoom": "Vergrößerung",
+    "zoomIn": "Näher heran",
+    "zoomOut": "Weiter weg",
+    "recentre": "Ansicht zurücksetzen"
   },
   "prayer": {
     "title": "Gebetszeiten",

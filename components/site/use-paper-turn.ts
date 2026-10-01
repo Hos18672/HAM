@@ -143,6 +143,14 @@ export function usePaperTurn({
     if (event.pointerType === 'mouse' || settling.current) return;
     if ((event.target as HTMLElement).closest('button, a, input, select, textarea, summary'))
       return;
+    // A touch is captured by the element it began on anyway; a pen is not,
+    // and without this a sheet could be left in the air when the hand
+    // wandered off the book before letting go.
+    try {
+      (event.currentTarget as HTMLElement).setPointerCapture(event.pointerId);
+    } catch {
+      /* the pointer is already gone */
+    }
     drag.current = {
       id: event.pointerId,
       x: event.clientX,

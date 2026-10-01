@@ -1,182 +1,204 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
+import AxeBuilder from '@axe-core/playwright';
 
 /**
- * Reading the Quran as a book.
+ * The Quran reader, rebuilt to the design reference.
  *
- * The one thing these are really for: a turn must not be a visit. The page's
- * data is fetched and only the sheet is drawn again — the address is
- * corrected with `replaceState`, which Next treats as a shallow update — so
- * the whole screen, the chosen size and everything else the reader set stay
- * exactly as they were. It used to load the site page afresh on every turn,
- * which lost all of it.
+ * Two ways to read, a bar that holds every choice, a foot that holds all 604
+ * pages, and a presentation mode for a room. The one thing underneath all of
+ * it: a turn must not be a visit — the page's data is fetched and the address
+ * written without telling the router, so nothing else on the site renders.
  *
- * The text comes from alquran.cloud, so where that cannot be reached the
- * page cannot render at all and there is nothing here to test. That is
- * stated as a skip rather than hidden: a silent pass would be a lie.
+ * The text comes from alquran.cloud, so where that cannot be reached the page
+ * cannot render and there is nothing here to test. That is stated as a skip
+ * rather than hidden: a silent pass would be a lie.
  */
-const QURAN = '/de/quran/page/1';
+const ENTRY = '/de/quran/page/2';
 
-test.describe('the mushaf', () => {
+/** Something only a fresh load of the whole page would clear. */
+const mark = (page: Page) =>
+  page.evaluate(() => {
+    (window as unknown as { __kept?: string }).__kept = 'here';
+  });
+const kept = (page: Page) =>
+  page.evaluate(() => (window as unknown as { __kept?: string }).__kept ?? null);
+
+test.describe('the Quran reader', () => {
   test.beforeEach(async ({ page }) => {
-    const response = await page.goto(QURAN);
+    const response = await page.goto(ENTRY);
     test.skip(
       !response || response.status() >= 500,
       'the Quran text service cannot be reached from here',
     );
-    await expect(page.locator('.mushaf-body')).toBeVisible();
+    await expect(page.locator('.qr-bar')).toBeVisible();
+    await expect(page.locator('.qr-ar').first()).toBeVisible();
   });
 
-  /** Something only a fresh load of the page would clear. */
-  const mark = (page: import('@playwright/test').Page) =>
-    page.evaluate(() => {
-      (window as unknown as { __kept?: string }).__kept = 'here';
-      (window as unknown as { __leaf?: boolean }).__leaf = false;
-      new MutationObserver(() => {
-        if (document.querySelector('.mushaf-leaf')) {
-          (window as unknown as { __leaf?: boolean }).__leaf = true;
-        }
-      }).observe(document.body, { childList: true, subtree: true });
-    });
-  const kept = (page: import('@playwright/test').Page) =>
-    page.evaluate(() => (window as unknown as { __kept?: string }).__kept);
-  const sawLeaf = (page: import('@playwright/test').Page) =>
-    page.evaluate(() => (window as unknown as { __leaf?: boolean }).__leaf);
-
-  test('turns to the next page without loading the site again', async ({ page }) => {
-    await mark(page);
-    await page.keyboard.press('ArrowLeft');
-
-    await expect(page).toHaveURL(/\/de\/quran\/page\/2$/);
-    await expect(page.locator('.mushaf-folio')).toHaveText('2');
-    // Nothing else rendered: the mark set before the turn is still there.
-    expect(await kept(page)).toBe('here');
-
-    // …and back again, the way an Arabic book turns.
-    await page.keyboard.press('ArrowRight');
-    await expect(page).toHaveURL(/\/de\/quran\/page\/1$/);
-    expect(await kept(page)).toBe('here');
+  test('opens verse by verse, each with its translation under it', async ({ page }) => {
+    const verses = page.locator('.qr-verse');
+    await expect(verses.first()).toBeVisible();
+    // Every verse carries its number, its Arabic and its rendering.
+    const count = await verses.count();
+    expect(count).toBeGreaterThan(0);
+    expect(await page.locator('.qr-verse .qr-ar').count()).toBe(count);
+    expect(await page.locator('.qr-verse .qr-tr').count()).toBe(count);
   });
 
-  test('turns the sheet like paper', async ({ page }) => {
-    await mark(page);
-    await page.keyboard.press('ArrowLeft');
-    // A sheet was in the air on the way: hung on the spine and swung about
-    // it, rather than one page being swapped for another.
-    await expect.poll(() => sawLeaf(page), { timeout: 5_000 }).toBe(true);
-    await expect(page).toHaveURL(/\/quran\/page\/2$/);
-    // And it is gone once the turn is over.
-    await expect(page.locator('.mushaf-leaf')).toHaveCount(0);
-  });
+  test('switches to the printed page and back', async ({ page }) => {
+    await page.getByRole('button', { name: 'Mushaf' }).click();
+    await expect(page.locator('.qr-sheet')).toBeVisible();
+    // The printed page is continuous, not one block per verse.
+    await expect(page.locator('.qr-verse')).toHaveCount(0);
+    await expect(page.locator('.qr-sheet-text').first()).toBeVisible();
 
-  test('a swipe turns the page too, and keeps the whole screen', async ({ page }) => {
-    await page.getByRole('button', { name: 'Vollbild', exact: true }).click();
-    const shell = page.locator('.reader-shell');
-    await expect(shell).toHaveAttribute('data-full', 'true');
-    await mark(page);
-
-    const stage = page.locator('.mushaf-stage');
-    const box = (await stage.boundingBox())!;
-    const y = box.y + Math.min(box.height / 2, 300);
-    const send = (type: string, x: number) =>
-      stage.dispatchEvent(type, {
-        pointerId: 1,
-        pointerType: 'touch',
-        isPrimary: true,
-        clientX: x,
-        clientY: y,
-        bubbles: true,
-      });
-    // Left to right: the finished leaf carried over the spine, which is
-    // the hand a reader of a mushaf already has.
-    await send('pointerdown', box.x + 40);
-    await send('pointermove', box.x + 160);
-    await send('pointermove', box.x + box.width - 40);
-    await send('pointerup', box.x + box.width - 40);
-
-    await expect(page).toHaveURL(/\/quran\/page\/2$/);
-    // The reader asked for the whole screen and still has it — this is the
-    // bug the paper turn was built around.
-    await expect(shell).toHaveAttribute('data-full', 'true');
-    expect(await kept(page)).toBe('here');
-  });
-
-  test('keeps the chosen text size across a turn', async ({ page }) => {
-    const size = () =>
-      page.evaluate(() => getComputedStyle(document.querySelector('.mushaf-body')!).fontSize);
-    const before = await size();
-    await page.getByRole('button', { name: 'Schrift vergrößern' }).click();
-    await page.getByRole('button', { name: 'Schrift vergrößern' }).click();
-    const bigger = await size();
-    expect(parseFloat(bigger)).toBeGreaterThan(parseFloat(before));
-
-    await page.keyboard.press('ArrowLeft');
-    await expect(page).toHaveURL(/\/quran\/page\/2$/);
-    await expect.poll(size).toBe(bigger);
-  });
-
-  test('puts each verse’s translation under that verse', async ({ page }) => {
-    // Off by default: the page is a page of the mushaf first.
-    await expect(page.locator('.mushaf-tr')).toHaveCount(0);
-
-    await page.getByRole('switch', { name: 'Übersetzung' }).click();
-    const verses = page.locator('.mushaf-text');
-    const lines = page.locator('.mushaf-tr');
-    await expect.poll(() => lines.count()).toBeGreaterThan(0);
-    // One rendering per verse, and each immediately after its own verse —
-    // not gathered at the foot of the page, where nobody reads them.
-    expect(await lines.count()).toBe(await verses.count());
-    const order = await page.evaluate(() =>
-      [...document.querySelectorAll('.mushaf-text, .mushaf-tr')].map((el) =>
-        el.classList.contains('mushaf-tr') ? 'tr' : 'ar',
-      ),
-    );
-    expect(order.join(' ')).toMatch(/^ar tr( ar tr)*$/);
-
-    // And the choice is the reader's: it survives a turn and a reload.
-    await page.keyboard.press('ArrowLeft');
-    await expect(page).toHaveURL(/\/quran\/page\/2$/);
-    await expect.poll(() => lines.count()).toBeGreaterThan(0);
+    // …and the choice is the reader's: it survives a reload.
     await page.reload();
-    await expect.poll(() => lines.count()).toBeGreaterThan(0);
+    await expect(page.locator('.qr-sheet')).toBeVisible();
+
+    await page.getByRole('button', { name: 'Vers für Vers' }).click();
+    await expect(page.locator('.qr-verse').first()).toBeVisible();
   });
 
-  test('on a phone, no control is cut off in fullscreen', async ({ page }) => {
-    await page.setViewportSize({ width: 390, height: 844 });
-    await page.getByRole('button', { name: 'Vollbild', exact: true }).click();
-    await expect(page.locator('.reader-shell')).toHaveAttribute('data-full', 'true');
+  test('turns the page with the arrow keys, without loading the site again', async ({ page }) => {
+    await mark(page);
+    // Onwards is leftwards: the next page of a mushaf lies to the left.
+    await page.keyboard.press('ArrowLeft');
+    await expect(page).toHaveURL(/\/de\/quran\/page\/3$/);
+    expect(await kept(page)).toBe('here');
+
+    await page.keyboard.press('ArrowRight');
+    await expect(page).toHaveURL(/\/de\/quran\/page\/2$/);
+    expect(await kept(page)).toBe('here');
+  });
+
+  test('turns the page from the foot, and only when the slider is let go', async ({ page }) => {
+    await mark(page);
+    const slider = page.getByRole('slider');
+    const box = (await slider.boundingBox())!;
+    const y = box.y + box.height / 2;
+
+    // Dragged but not released: the reading under the slider follows the
+    // hand, and the page does not. Six hundred pages are not fetched on the
+    // way past them.
+    await page.mouse.move(box.x + box.width * 0.5, y);
+    await page.mouse.down();
+    await page.mouse.move(box.x + box.width * 0.2, y, { steps: 8 });
+    const label = page.locator('.qr-slider-label');
+    await expect.poll(() => label.textContent()).not.toContain('2 von');
+    await expect(page).toHaveURL(/\/page\/2$/);
+
+    // Letting go commits it, and still without loading the site again.
+    await page.mouse.up();
+    await expect(page).not.toHaveURL(/\/page\/2$/);
+    expect(await kept(page)).toBe('here');
+  });
+
+  test('sets the text size and remembers it', async ({ page }) => {
+    const size = () =>
+      page.evaluate(() => getComputedStyle(document.querySelector('.qr-ar')!).fontSize);
+    const before = parseFloat(await size());
+    await page.getByRole('button', { name: 'Schrift vergrößern' }).click();
+    await page.getByRole('button', { name: 'Schrift vergrößern' }).click();
+    const bigger = parseFloat(await size());
+    expect(bigger).toBeGreaterThan(before);
+
+    await page.reload();
+    await expect.poll(async () => parseFloat(await size())).toBe(bigger);
+  });
+
+  test('presents one verse at a time, and crosses the page boundary', async ({ page }) => {
+    await page.getByRole('button', { name: 'Präsentation', exact: true }).click();
+    const stage = page.locator('.qp');
+    await expect(stage).toBeVisible();
+    const where = page.locator('.qp-pos');
+    const first = await where.textContent();
+
+    // Space and the page keys are what a presenter's clicker sends.
+    await page.keyboard.press(' ');
+    await expect.poll(() => where.textContent()).not.toBe(first);
+    await page.keyboard.press('PageUp');
+    await expect.poll(() => where.textContent()).toBe(first);
+
+    // Back from the first verse of this page opens the one before it — at
+    // its last verse, not its first.
+    await page.keyboard.press('PageUp');
+    await expect(page).toHaveURL(/\/page\/1$/);
+    const back = (await where.textContent()) ?? '';
+    const lastOfPageOne = back;
+    await page.keyboard.press(' ');
+    await expect.poll(() => where.textContent()).not.toBe(lastOfPageOne);
+    // Forward from there crosses onwards again.
+    await expect(page).toHaveURL(/\/page\/2$/);
+
+    // T turns the translation off and on; Esc leaves.
+    await expect(page.locator('.qp-tr')).toHaveCount(1);
+    await page.keyboard.press('t');
+    await expect(page.locator('.qp-tr')).toHaveCount(0);
+    await page.keyboard.press('t');
+    await expect(page.locator('.qp-tr')).toHaveCount(1);
+    await page.keyboard.press('Escape');
+    await expect(stage).toHaveCount(0);
+  });
+
+  test('presents from one verse when asked from that verse', async ({ page }) => {
+    const buttons = page.getByRole('button', { name: 'Ab hier präsentieren' });
+    const third = buttons.nth(2);
+    await third.scrollIntoViewIfNeeded();
+    await third.click();
+    await expect(page.locator('.qp')).toBeVisible();
+    // The third verse of the page, not the first.
+    const shown = await page.locator('.qp-ar').textContent();
+    const onPage = await page.locator('.qr-verse .qr-ar').nth(2).textContent();
+    expect(shown?.replace(/\s+/g, '')).toContain((onPage ?? '').replace(/\s+/g, '').slice(0, 12));
+  });
+
+  test('fills the screen, and the site stands down while it does', async ({ page }) => {
+    const header = page.locator('.hc-header');
+    await expect(header).toBeVisible();
+    await page.keyboard.press('f');
+    await expect(header).toBeHidden();
+    await expect(page.locator('.qr-notes')).toBeHidden();
+    // The reader itself stays, bar and all.
+    await expect(page.locator('.qr-bar')).toBeVisible();
+    await page.keyboard.press('f');
+    await expect(header).toBeVisible();
+  });
+
+  test('folds its controls away on a phone, and nothing is cut off', async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 812 });
+    await page.reload();
+    await expect(page.locator('.qr-bar')).toBeVisible();
+
+    // Only the three stay out; the rest are behind the first of them.
+    await expect(page.locator('.qr-controls')).toBeHidden();
+    await page.getByRole('button', { name: 'Einstellungen' }).click();
+    await expect(page.locator('.qr-controls')).toBeVisible();
 
     const width = page.viewportSize()!.width;
-    const controls = page.locator('.mushaf-toolbar button');
-    const count = await controls.count();
-    for (let i = 0; i < count; i += 1) {
-      const box = await controls.nth(i).boundingBox();
+    for (const control of await page.locator('.qr-bar button, .qr-bar select').all()) {
+      const box = await control.boundingBox();
       if (!box) continue;
       expect(box.x).toBeGreaterThanOrEqual(-0.5);
       expect(box.x + box.width).toBeLessThanOrEqual(width + 0.5);
     }
-
-    // And it stays small. The bar sits above the page on a phone, so every
-    // row it takes is a row of the Quran the reader cannot see; it had
-    // grown to four rows and most of the top of the screen.
-    const bar = (await page.locator('.mushaf-toolbar').boundingBox())!;
-    expect(bar.height).toBeLessThan(150);
+    // The arrows either side belong to a wide screen only.
+    await expect(page.locator('.qr-side').first()).toBeHidden();
   });
 
-  test('presents to a room', async ({ page }) => {
-    await page.setViewportSize({ width: 1920, height: 1080 });
-    const size = () =>
-      page.evaluate(() =>
-        parseFloat(getComputedStyle(document.querySelector('.mushaf-body')!).fontSize),
-      );
-    const before = await size();
-    await page.getByRole('button', { name: 'Präsentation', exact: true }).click();
-    const shell = page.locator('.reader-shell');
-    await expect(shell).toHaveAttribute('data-present', 'true');
-    expect(await size()).toBeGreaterThan(before);
+  test('has no axe violations, reading or presenting', async ({ page }) => {
+    const audit = () =>
+      new AxeBuilder({ page })
+        .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'])
+        .analyze();
+    const say = (r: Awaited<ReturnType<typeof audit>>) =>
+      r.violations.map((v) => `${v.id} (${v.impact}): ${v.help}`).join('\n');
 
-    // The presenter's remote sends page down; so does the space bar.
-    await page.keyboard.press('PageDown');
-    await expect(page).toHaveURL(/\/quran\/page\/2$/);
-    await expect(shell).toHaveAttribute('data-present', 'true');
+    const reading = await audit();
+    expect(reading.violations, say(reading)).toEqual([]);
+
+    await page.getByRole('button', { name: 'Präsentation', exact: true }).click();
+    await expect(page.locator('.qp')).toBeVisible();
+    const presenting = await audit();
+    expect(presenting.violations, say(presenting)).toEqual([]);
   });
 });

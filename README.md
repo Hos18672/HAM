@@ -365,52 +365,83 @@ which street you are standing in. Zoomed right in, the local map is rings and
 an arrow on bare ground — which is still the whole answer, because the answer
 is a direction.
 
-### A turn of the page is not a visit to the page
+### The Quran reader
 
-The mushaf is a book, and turning its page must not be a page load. The data
-comes from `/api/quran/page/[page]` — or, where there is no server, from a file
-the preview snapshot writes out for all 604 pages — and the address is then
-corrected with `replaceState`, which Next treats as a shallow update and does
-not re-render the route. So **only the sheet is drawn again**: the whole
-screen, the chosen text size and the reader's place all survive the turn. They
-did not before: on the static preview a turn fell through to loading the entire
-site page afresh, which is why fullscreen never lasted past one page.
+Built to a design reference supplied as a working prototype, rebuilt in this
+repo's own components (`components/site/quran-reader.tsx`). Two ways to read
+the same page:
 
-The turn itself is paper (`components/site/use-paper-turn.ts`). A deck of two
-sheets: the one in hand hangs on the spine — the right-hand edge, this being a
-book bound on the right — and swings about it in 3D while the page underneath
-comes into view, so the turn reveals rather than replaces. **Onwards is a
-sweep from left to right**, because that is the hand: you take the leaf you
-have finished, on the left, and carry it over the spine. (The next page still
-_lies_ to the left, which is why the arrow keys read the other way round —
-they name a side, the swipe names a movement of the hand.) The angle is written
-straight onto the element frame by frame rather than held in React state: a
-turn is sixty frames, and sixty renders of a page of the Quran is sixty frames
-dropped. It is CSS 3D transforms, not a WebGL scene — a page of justified
-Arabic has to stay selectable, searchable text, which it cannot be inside a
-canvas. Under `prefers-reduced-motion` there is no sheet in the air at all.
+- **Vers für Vers / آیه‌به‌آیه** — each verse on its own, numbered, with its
+  translation directly under it. This is how somebody studies, and it is the
+  view that opens.
+- **Mushaf** — the page as it is printed: justified, continuous, the verses
+  running on into one another with their gold end-marks. This is how somebody
+  recites, and clicking any verse starts presenting from it.
 
-### Reading on a phone, and reading to a room
+Above them a bar that holds every choice and, below 980px, folds all of it
+behind one settings button so only three controls stay out. Along the foot a
+slider over all 604 pages, which commits when it is let go rather than on
+every pixel of the drag. The arrow keys turn the page, `F` fills the screen,
+`P` presents, `T` turns the translation on and off, and a swipe of more than
+70px does what the arrows do.
 
-`components/site/use-reader.ts` is shared by the mushaf and the du'a reader,
-because it is the same reading. It gives both the whole screen, a text size the
-reader chooses and keeps, and the turn under the thumb. Two things learnt the
-hard way are written into it: fullscreen is requested of `document.documentElement`
-rather than the reader's own element, because a browser leaves fullscreen the
-moment the element it was showing is taken out of the page; and the state is
-handed to the next copy of the reader as it _changes_, not on unmount, because
-React mounts the new copy before unmounting the old one.
+The Arabic is set in **Amiri Quran**, self-hosted like every other face here.
+The reference loads it and its icons from Google's and unpkg's CDNs; this site
+loads nothing from anybody, so the font is vendored into `assets/fonts/` and
+the icons were already a package.
 
-**Presentation** is the same reader sized for a hall: one page, type scaled to
-the room, the translation drawer and the running notes gone, and the toolbar
-fading out three seconds after the last hand — returning at any movement, and
-at any focus, so a keyboard never chases something invisible. Space, page up
-and page down turn the page, which is what a presenter's remote sends.
+#### A turn of the page is not a visit to the page
 
-In fullscreen on a narrow screen the toolbar **wraps**; it does not slide. A
-control half off the edge of the screen reads as broken, and nobody guesses
-that a toolbar scrolls. The words on the two icon buttons are hidden from the
-eye and kept for a screen reader, which still needs their names.
+The data comes from `/api/quran/page/[page]` — or, where there is no server,
+from a file the preview snapshot writes out for all 604 pages — and the
+address is then written with `History.prototype.replaceState`, the method
+itself rather than the one Next replaces it with. Next's version tells the
+router the path has changed, and the router then rebuilds the route's whole
+subtree: measured on the preview, every turn threw away the page shell and
+built it again. Turning a leaf is not a navigation — the route is the same
+page of the site before and after — so the address is written and the router
+is left alone.
+
+In the mushaf view the turn is paper (`components/site/use-paper-turn.ts`). A
+deck of two sheets: the one in hand hangs on the spine — the right-hand edge,
+this being a book bound on the right — and swings about it in 3D while the
+page underneath comes into view, so the turn reveals rather than replaces.
+**Onwards is a sweep from left to right**, because that is the hand: you take
+the leaf you have finished, on the left, and carry it over the spine. (The
+next page still _lies_ to the left, which is why the arrow keys read the other
+way round — they name a side, the swipe names a movement of the hand.) The
+angle is written straight onto the element frame by frame rather than held in
+React state: a turn is sixty frames, and sixty renders of a page of the Quran
+is sixty frames dropped. CSS 3D transforms, not a WebGL scene — a page of
+justified Arabic has to stay selectable, searchable text, which it cannot be
+inside a canvas. Under `prefers-reduced-motion` there is no sheet in the air.
+
+#### Presentation, for a room
+
+A dark-green overlay showing one verse at a time
+(`components/site/quran-present.tsx`), as large as it can be: the Arabic steps
+through four sizes by the length of the verse, because three words set at the
+size of forty wastes the wall and forty set at the size of three cannot be
+read from the back. It takes the keys every presenter's clicker sends — space
+and the page keys as well as the arrows — and a click anywhere on the stage,
+because in a hall the nearest control is the screen. Stepping past the last
+verse of a page opens the next page at its first; stepping back from the first
+opens the previous page at its **last**. A gold bar along the foot shows where
+the verse sits in its surah.
+
+#### Two things that had to be worked around
+
+The fixed furniture — the arrows either side, the bar along the foot, the
+presentation overlay — is **portalled to the body**. The site reveals each
+page with an animation whose wrapper keeps a transform, and an element with a
+transform is the containing block for anything `position: fixed` inside it: the
+foot was pinned two thousand pixels below the window rather than to it.
+
+**Night mode is the site's own theme**, not a second one. The reference carries
+its own night palette because it is a page on its own; here the site already
+has a dark theme, a switch for it in the header and a cookie every server
+render reads. A reader turning the lights down on the Quran page means the
+lights, so the reader's night button drives the same switch.
 
 ### The du'a texts are in the code, not the database
 

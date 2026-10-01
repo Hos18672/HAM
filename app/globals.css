@@ -71,10 +71,25 @@
     U+2010-2011, U+204F, U+2E41, U+FB50-FDFF, U+FE70-FE74, U+FE76-FEFC;
 }
 
-/* Scheherazade New (SIL, Open Font License), for the Quran only: a Naskh
-   drawn for Quranic text, with the verse-end sign (U+06DD) that encloses the
-   verse number the way a printed mushaf does. Only `.mushaf` uses it, so no
-   other page downloads it. */
+/* Amiri Quran (Khaled Hosny, Open Font License), the face the reader's design
+   asks for: Amiri cut specifically for Quranic text, with the Uthmani marks
+   and the verse-end sign. Self-hosted like every other face here — the design
+   reference loads it from Google's CDN, which this site does not do. Only the
+   reader asks for it, so no other page downloads it. */
+@font-face {
+  font-family: 'Amiri Quran';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('../assets/fonts/amiri-quran-arabic-400-normal.woff2') format('woff2');
+  unicode-range:
+    U+0600-06FF, U+0750-077F, U+0870-088E, U+0890-0891, U+0898-08E1, U+08E3-08FF, U+200C-200E,
+    U+2010-2011, U+204F, U+2E41, U+FB50-FDFF, U+FE70-FE74, U+FE76-FEFC;
+}
+
+/* Scheherazade New (SIL, Open Font License), kept as the fallback behind
+   Amiri Quran: another Naskh drawn for Quranic text, with the same verse-end
+   sign (U+06DD) that encloses the verse number as a printed mushaf does. */
 @font-face {
   font-family: 'Scheherazade New';
   font-style: normal;
@@ -2880,6 +2895,765 @@
     max-inline-size: 100%;
     white-space: normal;
     text-align: center;
+  }
+
+  /* ══ The Quran reader ═══════════════════════════════════════════════════
+     Rebuilt to the design reference. Two ways to read — verse by verse for
+     study, the printed page for recitation — a bar that holds every choice,
+     a foot that holds all 604 pages, and a presentation mode for a room.
+
+     The reference loads Amiri Quran and Phosphor from CDNs; both are
+     self-hosted here, as everything on this site is. Its night palette is
+     this site's own dark theme rather than a second one: a reader turning
+     the lights down means the lights. */
+  .qr {
+    --qr-gold: var(--gold);
+    --qr-green: var(--green);
+    position: relative;
+    padding-block-end: 96px;
+  }
+
+  /* ── Where you are, and every choice there is ────────────────────────── */
+  .qr-bar {
+    position: sticky;
+    inset-block-start: 0;
+    z-index: 20;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px 20px;
+    max-inline-size: 1200px;
+    margin-inline: auto;
+    padding: 12px clamp(16px, 4vw, 40px);
+    background: var(--glass);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-block-end: var(--rule-hair) solid var(--line);
+  }
+  .qr-head {
+    flex: 1 1 220px;
+    min-inline-size: 0;
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+    flex-wrap: wrap;
+  }
+  .qr-head-name {
+    margin: 0;
+    font-family: 'Amiri Quran', 'Scheherazade New', var(--font-naskh), serif;
+    font-size: clamp(24px, 3vw, 32px);
+    line-height: 1.5;
+    color: var(--head);
+  }
+  .qr-head-meta {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin: 0;
+    font-size: 13px;
+    color: var(--color-ink-muted);
+  }
+
+  /* The three that stay out on a narrow screen; the rest fold behind the
+     first of them. */
+  .qr-compact {
+    display: flex;
+    gap: 8px;
+  }
+  .qr-controls {
+    display: none;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    flex: 1 1 100%;
+  }
+  .qr-controls[data-open] {
+    display: flex;
+  }
+  @media (min-width: 61.25rem) {
+    .qr-compact {
+      display: none;
+    }
+    .qr-controls {
+      display: flex;
+      flex: 0 1 auto;
+    }
+  }
+
+  /* ── The controls themselves ─────────────────────────────────────────── */
+  .qr-chip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    block-size: 40px;
+    min-inline-size: 40px;
+    padding-inline: 14px;
+    font: inherit;
+    font-size: 14px;
+    white-space: nowrap;
+    color: var(--head);
+    background: transparent;
+    border: var(--rule-hair) solid var(--line);
+    border-radius: 999px;
+    cursor: pointer;
+    transition:
+      background var(--duration-fast) var(--ease-standard),
+      color var(--duration-fast) var(--ease-standard),
+      border-color var(--duration-fast) var(--ease-standard);
+  }
+  .qr-chip:not([aria-pressed='true']):hover {
+    border-color: var(--green);
+  }
+  .qr-chip[aria-pressed='true'],
+  .qr-chip[aria-expanded='true'] {
+    background: var(--green);
+    border-color: var(--green);
+    color: var(--paper);
+  }
+  /* The gold one is the loud one: presentation is the only button here that
+     starts something rather than adjusting it. */
+  .qr-present,
+  .qr-present[aria-pressed='true'] {
+    background: var(--gold);
+    border-color: var(--gold);
+    color: #14261d;
+    font-weight: var(--weight-semibold);
+  }
+  .qr-present:hover {
+    filter: brightness(1.05);
+  }
+  .qr-chip:not(.qr-chip-wide) {
+    padding-inline: 0;
+    inline-size: 40px;
+  }
+  .qr-alif {
+    font-family: 'Amiri Quran', 'Scheherazade New', var(--font-naskh), serif;
+    font-size: 18px;
+    opacity: 0.65;
+  }
+
+  .qr-select {
+    display: block;
+    flex: 1 1 160px;
+    max-inline-size: 220px;
+    min-inline-size: 0;
+  }
+  .qr-select-narrow {
+    flex: 0 1 120px;
+  }
+  .qr-select select {
+    inline-size: 100%;
+    block-size: 40px;
+    padding-inline: 14px;
+    font: inherit;
+    font-size: 14px;
+    color: var(--head);
+    background: var(--card);
+    border: var(--rule-hair) solid var(--line);
+    border-radius: 999px;
+    cursor: pointer;
+  }
+
+  .qr-seg {
+    display: flex;
+    gap: 2px;
+    padding: 3px;
+    border: var(--rule-hair) solid var(--line);
+    border-radius: 999px;
+  }
+  .qr-seg button {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    block-size: 34px;
+    padding-inline: 12px;
+    font: inherit;
+    font-size: 14px;
+    white-space: nowrap;
+    color: var(--head);
+    background: transparent;
+    border: 0;
+    border-radius: 999px;
+    cursor: pointer;
+  }
+  .qr-seg button[aria-pressed='true'] {
+    background: var(--green);
+    color: var(--paper);
+  }
+
+  .qr-size {
+    display: flex;
+    align-items: center;
+    block-size: 40px;
+    border: var(--rule-hair) solid var(--line);
+    border-radius: 999px;
+  }
+  .qr-size button {
+    display: grid;
+    place-items: center;
+    inline-size: 40px;
+    block-size: 38px;
+    padding: 0;
+    color: var(--head);
+    background: none;
+    border: 0;
+    cursor: pointer;
+  }
+  .qr-size button:disabled {
+    opacity: 0.35;
+    cursor: default;
+  }
+  .qr-size span {
+    min-inline-size: 42px;
+    text-align: center;
+    font-size: 12px;
+    color: var(--color-ink-muted);
+  }
+  .qr-screen {
+    display: none;
+    gap: 8px;
+  }
+  @media (min-width: 61.25rem) {
+    .qr-screen {
+      display: flex;
+    }
+  }
+
+  /* ── The page ────────────────────────────────────────────────────────── */
+  .qr-main {
+    max-inline-size: 900px;
+    margin-inline: auto;
+    padding: clamp(24px, 5vw, 56px) clamp(16px, 4vw, 40px) 40px;
+  }
+  .qr[data-view='mushaf'] .qr-main {
+    max-inline-size: 820px;
+  }
+  .qr-failed {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-4);
+    padding-block: 48px;
+  }
+  .qr-retry {
+    block-size: 44px;
+    padding-inline: 20px;
+    font: inherit;
+    color: var(--paper);
+    background: var(--green);
+    border: 0;
+    border-radius: 999px;
+    cursor: pointer;
+  }
+
+  /* Where a surah opens: the gold double rule of the reference, which is
+     the one place this design draws a line. */
+  .qr-surah {
+    text-align: center;
+    padding-block: 24px 8px;
+  }
+  .qr-surah-rule {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+  }
+  .qr-surah-rule span {
+    flex: 1;
+    max-inline-size: 160px;
+    block-size: 0;
+    padding-block-start: 3px;
+    border-block: 1px solid var(--gold);
+  }
+  .qr-surah-rule h2 {
+    margin: 0;
+    font-family: 'Amiri Quran', 'Scheherazade New', var(--font-naskh), serif;
+    font-size: clamp(28px, 4vw, 40px);
+    font-weight: 400;
+    line-height: 1.6;
+  }
+  .qr-surah-meta {
+    margin: 4px 0 0;
+    font-size: 13px;
+    color: var(--color-ink-muted);
+  }
+  .qr-bism {
+    margin: 24px 0 0;
+    text-align: center;
+    font-family: 'Amiri Quran', 'Scheherazade New', var(--font-naskh), serif;
+    font-size: var(--qr-ar);
+    line-height: 2;
+  }
+
+  .qr-verse {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding-block: clamp(20px, 3vw, 32px);
+  }
+  .qr-verse-top {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .qr-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-inline-size: 34px;
+    block-size: 34px;
+    padding-inline: 8px;
+    font-size: 13px;
+    font-weight: var(--weight-semibold);
+    color: var(--goldInk);
+    border: 1px solid var(--gold);
+    border-radius: 999px;
+  }
+  .qr-from {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    block-size: 36px;
+    margin-inline-start: auto;
+    padding-inline: 12px;
+    font: inherit;
+    font-size: 13px;
+    color: var(--color-ink-muted);
+    background: transparent;
+    border: 0;
+    border-radius: 999px;
+    cursor: pointer;
+  }
+  .qr-from:hover {
+    color: var(--green);
+    background: color-mix(in srgb, var(--green) 8%, transparent);
+  }
+  .qr-ar {
+    margin: 0;
+    font-family: 'Amiri Quran', 'Scheherazade New', var(--font-naskh), serif;
+    font-size: var(--qr-ar);
+    line-height: 2.15;
+    text-align: right;
+  }
+  .qr-mark {
+    margin-inline-start: 6px;
+    color: var(--goldInk);
+  }
+  .qr-tr {
+    margin: 0;
+    max-inline-size: 68ch;
+    font-size: calc(max(0.9, var(--qr-scale)) * 1rem);
+    line-height: 1.9;
+    color: var(--color-ink-muted);
+    text-wrap: pretty;
+  }
+
+  /* ── The printed page ────────────────────────────────────────────────── */
+  .qr-stage {
+    /* The browser keeps the up-and-down gesture and leaves the sideways one
+       to the reader, who is turning a page with it. */
+    touch-action: pan-y;
+  }
+  .qr-deck {
+    position: relative;
+    perspective: 2200px;
+    perspective-origin: 85% 50%;
+  }
+  .qr-sheet {
+    padding: clamp(20px, 5vw, 64px) clamp(18px, 5vw, 64px) 28px;
+    background: var(--card);
+    border: var(--rule-hair) solid var(--line);
+    border-radius: 6px;
+    box-shadow:
+      0 1px 2px rgba(20, 38, 29, 0.06),
+      0 12px 40px rgba(20, 38, 29, 0.08);
+  }
+  .qr-sheet-surah {
+    margin-block: 8px 16px;
+    padding-block: 10px;
+    text-align: center;
+    border-block: 1px solid var(--gold);
+  }
+  .qr-sheet-surah h2 {
+    margin: 0;
+    font-family: 'Amiri Quran', 'Scheherazade New', var(--font-naskh), serif;
+    font-size: clamp(24px, 3.4vw, 34px);
+    font-weight: 400;
+    line-height: 1.6;
+  }
+  .qr-sheet-text {
+    margin: 0 0 12px;
+    font-family: 'Amiri Quran', 'Scheherazade New', var(--font-naskh), serif;
+    font-size: var(--qr-ar);
+    line-height: 2.3;
+    text-align: justify;
+    text-align-last: center;
+  }
+  .qr-sheet-ayah {
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  .qr-sheet-ayah:hover,
+  .qr-sheet-ayah:focus-visible {
+    background: color-mix(in srgb, var(--gold) 16%, transparent);
+  }
+  .qr-folio {
+    margin: 12px 0 0;
+    text-align: center;
+    font-size: 14px;
+    color: var(--color-ink-muted);
+  }
+  .qr-mushaf-tr {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-inline-size: 68ch;
+    margin-block-start: 40px;
+  }
+  .qr-mushaf-tr-head {
+    margin: 0;
+    font-size: 13px;
+    font-weight: var(--weight-semibold);
+    color: var(--green);
+  }
+  .qr-mushaf-tr p:last-child {
+    margin: 0;
+    font-size: calc(max(0.9, var(--qr-scale)) * 1rem);
+    line-height: 2;
+    color: var(--color-ink-muted);
+  }
+  .qr-mushaf-tr sup {
+    margin-inline: 3px;
+    font-weight: 700;
+    color: var(--goldInk);
+  }
+
+  /* The leaf, as in the du'a reader: it hangs on the spine — the right-hand
+     edge, this being a book bound on the right — and sweeps rightwards. */
+  .qr-leaf {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    transform-origin: 100% 50%;
+    transform-style: preserve-3d;
+    will-change: transform;
+    pointer-events: none;
+  }
+  .qr-leaf-face,
+  .qr-leaf-back,
+  .qr-leaf-shade {
+    position: absolute;
+    inset: 0;
+    backface-visibility: hidden;
+  }
+  .qr-leaf-back {
+    background: var(--card);
+    border: var(--rule-hair) solid var(--line);
+    border-radius: 6px;
+    transform: rotateY(180deg);
+  }
+  .qr-leaf-shade {
+    border-radius: 6px;
+    background: linear-gradient(
+      to left,
+      rgba(20, 30, 25, 0.35) 0%,
+      rgba(20, 30, 25, 0.12) 28%,
+      rgba(20, 30, 25, 0) 70%
+    );
+    opacity: var(--leaf-shade, 0);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .qr-leaf {
+      display: none;
+    }
+  }
+
+  /* ── Either side, where there is room ────────────────────────────────── */
+  .qr-side {
+    display: none;
+    position: fixed;
+    inset-block-start: 50%;
+    transform: translateY(-50%);
+    inline-size: 52px;
+    block-size: 52px;
+    place-items: center;
+    color: var(--head);
+    background: var(--card);
+    border: var(--rule-hair) solid var(--line);
+    border-radius: 999px;
+    cursor: pointer;
+    z-index: 10;
+  }
+  .qr-side:hover:not(:disabled) {
+    border-color: var(--green);
+    color: var(--green);
+  }
+  .qr-side:disabled {
+    opacity: 0.35;
+    cursor: default;
+  }
+  .qr-side-prev {
+    inset-inline-end: clamp(12px, 2vw, 32px);
+  }
+  .qr-side-next {
+    inset-inline-start: clamp(12px, 2vw, 32px);
+  }
+  :root[dir='rtl'] .qr-side-prev,
+  :root[dir='ltr'] .qr-side-prev {
+    right: clamp(12px, 2vw, 32px);
+    left: auto;
+  }
+  :root[dir='rtl'] .qr-side-next,
+  :root[dir='ltr'] .qr-side-next {
+    left: clamp(12px, 2vw, 32px);
+    right: auto;
+  }
+  @media (min-width: 61.25rem) {
+    .qr-side {
+      display: grid;
+    }
+  }
+
+  /* ── Along the foot: all 604 pages ───────────────────────────────────── */
+  .qr-foot {
+    position: fixed;
+    inset-inline: 0;
+    inset-block-end: 0;
+    z-index: 20;
+    background: var(--glass);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-block-start: var(--rule-hair) solid var(--line);
+    padding-block-end: env(safe-area-inset-bottom);
+  }
+  .qr-foot-inner {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    max-inline-size: 900px;
+    margin-inline: auto;
+    padding: 10px clamp(12px, 3vw, 24px);
+  }
+  .qr-step {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    block-size: 44px;
+    min-inline-size: 44px;
+    padding-inline: 14px;
+    font: inherit;
+    font-size: 14px;
+    color: var(--head);
+    background: transparent;
+    border: var(--rule-hair) solid var(--line);
+    border-radius: 999px;
+    cursor: pointer;
+  }
+  .qr-step-next {
+    color: var(--paper);
+    background: var(--green);
+    border-color: var(--green);
+  }
+  .qr-step:disabled {
+    opacity: 0.4;
+    cursor: default;
+  }
+  .qr-step-word {
+    display: none;
+  }
+  @media (min-width: 35rem) {
+    .qr-step-word {
+      display: inline;
+    }
+  }
+  .qr-slider {
+    flex: 1;
+    min-inline-size: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .qr-slider input {
+    inline-size: 100%;
+    margin: 0;
+    accent-color: var(--green);
+    cursor: pointer;
+  }
+  .qr-slider-label {
+    margin: 0;
+    text-align: center;
+    font-size: 12px;
+    color: var(--color-ink-muted);
+  }
+
+  /* ── The notes under it ──────────────────────────────────────────────── */
+  .qr-notes {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    max-inline-size: 1200px;
+    margin-inline: auto;
+    padding: 0 clamp(16px, 4vw, 40px) 120px;
+    font-size: 13px;
+    line-height: 1.9;
+    color: var(--color-ink-muted);
+  }
+  .qr-notes p {
+    margin: 0;
+  }
+
+  /* ── Filling the screen ──────────────────────────────────────────────── */
+  /* The reader and nothing else: the site's own header, its footer and the
+     notes all stand down, and the page behind does not scroll away. */
+  :root[data-quran-full='true'] .hc-header,
+  :root[data-quran-full='true'] .footer-city,
+  :root[data-quran-full='true'] .qr-notes {
+    display: none;
+  }
+  :root[data-quran-full='true'] .qr-bar {
+    max-inline-size: none;
+  }
+
+  /* ── Presentation ────────────────────────────────────────────────────── */
+  .qp {
+    position: fixed;
+    inset: 0;
+    z-index: var(--z-dialog);
+    display: flex;
+    flex-direction: column;
+    background: #06211a;
+    color: #f7f3e8;
+  }
+  .qp-top {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: clamp(14px, 2.4vw, 28px) clamp(16px, 4vw, 56px);
+  }
+  .qp-where {
+    flex: 1;
+    min-inline-size: 0;
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .qp-surah {
+    font-family: 'Amiri Quran', 'Scheherazade New', var(--font-naskh), serif;
+    font-size: clamp(22px, 2.6vw, 36px);
+    line-height: 1.5;
+  }
+  .qp-pos {
+    font-size: clamp(13px, 1.2vw, 17px);
+    color: #b9c4bd;
+  }
+  .qp-btn {
+    display: grid;
+    place-items: center;
+    block-size: 44px;
+    min-inline-size: 44px;
+    padding-inline: 12px;
+    font: inherit;
+    font-size: 15px;
+    color: #f7f3e8;
+    background: rgba(247, 243, 232, 0.08);
+    border: 0;
+    border-radius: 999px;
+    cursor: pointer;
+  }
+  .qp-btn[aria-pressed='true'] {
+    background: #c8a45d;
+    color: #06211a;
+  }
+  .qp-btn:hover {
+    background: rgba(247, 243, 232, 0.16);
+  }
+  .qp-stage {
+    flex: 1;
+    min-block-size: 0;
+    overflow: auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: clamp(20px, 3vw, 44px);
+    padding-inline: clamp(20px, 7vw, 140px);
+    text-align: center;
+    cursor: pointer;
+  }
+  .qp-bism {
+    margin: 0;
+    font-family: 'Amiri Quran', 'Scheherazade New', var(--font-naskh), serif;
+    font-size: clamp(22px, 2.6vw, 38px);
+    line-height: 1.8;
+    color: #c8a45d;
+  }
+  .qp-ar {
+    margin: 0;
+    max-inline-size: 1500px;
+    font-family: 'Amiri Quran', 'Scheherazade New', var(--font-naskh), serif;
+    line-height: 1.95;
+    text-wrap: balance;
+  }
+  .qp-mark {
+    margin-inline-start: 10px;
+    color: #c8a45d;
+  }
+  .qp-tr {
+    margin: 0;
+    max-inline-size: 62ch;
+    font-size: calc(var(--qr-scale, 1) * clamp(17px, 1.9vw, 30px));
+    line-height: 1.75;
+    color: #b9c4bd;
+    text-wrap: balance;
+  }
+  /* The silent letters keep their own tone against the dark ground. */
+  .qp[data-silent='on'] .silent {
+    color: #5f7a6e;
+  }
+  .qp-foot {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: 0 clamp(16px, 4vw, 56px) clamp(16px, 2.4vw, 28px);
+  }
+  .qp-track {
+    block-size: 3px;
+    border-radius: 2px;
+    background: rgba(247, 243, 232, 0.14);
+    overflow: hidden;
+  }
+  .qp-fill {
+    block-size: 100%;
+    background: #c8a45d;
+    transition: inline-size var(--duration-base) var(--ease-standard);
+  }
+  .qp-nav {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .qp-step {
+    display: grid;
+    place-items: center;
+    block-size: 52px;
+    min-inline-size: 64px;
+    color: #f7f3e8;
+    background: rgba(247, 243, 232, 0.08);
+    border: 0;
+    border-radius: 999px;
+    cursor: pointer;
+  }
+  .qp-step:hover {
+    background: rgba(247, 243, 232, 0.16);
+  }
+  .qp-keys {
+    flex: 1;
+    margin: 0;
+    text-align: center;
+    font-size: 13px;
+    color: #b9c4bd;
   }
 
   /* ── The mushaf ───────────────────────────────────────────────────────

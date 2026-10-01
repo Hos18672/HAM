@@ -115,7 +115,8 @@ test.describe('qibla', () => {
     const bearing = page.locator('.fact-rule[data-lead="true"]');
     await expect(bearing.getByText(/136,[67]°/)).toBeVisible();
     await expect(bearing.getByText('Südosten', { exact: false })).toBeVisible();
-    await expect(page.getByText(/3.637/)).toBeVisible();
+    // Scoped for the same reason: the map prints distances of its own.
+    await expect(page.locator('.fact-rule').getByText(/3.637/)).toBeVisible();
 
     // The rose is an image with an accessible name, not a decorative blob.
     await expect(page.getByRole('img', { name: /Kompassrose/ })).toBeVisible();
@@ -296,15 +297,19 @@ test.describe('the qibla from where you are', () => {
 
     const scale = page.locator('.qibla-map .reader-size-value');
     await expect(scale).toHaveText(/km/);
-    for (let i = 0; i < 12; i += 1) {
-      await page.getByRole('button', { name: 'Näher heran' }).click();
-    }
-    // All the way in, the rings are metres: a plan of the room, not a map.
+
+    // In as far as it goes — counted by the button rather than by a number
+    // here, so adding a step to the ladder does not break the test.
+    const closer = page.getByRole('button', { name: 'Näher heran' });
+    for (let i = 0; i < 40 && (await closer.isEnabled()); i += 1) await closer.click();
+    await expect(closer).toBeDisabled();
+
+    // All the way in, the rings are metres: a plan of the ground you are
+    // standing on, not a map of anywhere.
     await expect(scale).toHaveText(/m$/);
     // Mecca is long gone, but the direction is not: the distance is written
     // at the end of the arrow instead.
     await expect(map.getByText(/nach Mekka/)).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Näher heran' })).toBeDisabled();
   });
 
   test('is drawn in the page, with nothing fetched from a tile server', async ({ page }) => {

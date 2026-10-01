@@ -4828,6 +4828,17 @@
      plain images placed by transform — no map library, nothing of theirs
      running in the page. Their attribution is required and is in the
      corner. */
+  /* The frame holds the map and its attribution side by side, so the credit
+     can sit over the map's corner while staying outside it: the map carries
+     `role="img"`, which may hold no focusable content. */
+  .qibla-street-frame {
+    position: relative;
+    /* The frame is the grid item now, and `.qibla-map` centres its items by
+       their content width — so the frame has to claim the row, or the map
+       inside it resolves its 100% against nothing and measures zero. */
+    inline-size: 100%;
+    border-radius: 16px;
+  }
   .qibla-street {
     position: relative;
     inline-size: 100%;

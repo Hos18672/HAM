@@ -134,7 +134,9 @@ test.describe('qibla', () => {
     // The facts row again — the rose repeats the reading, see above.
     const bearing = page.locator('.fact-rule[data-lead="true"]');
     await expect(bearing.getByText(/119,0°/)).toBeVisible({ timeout: 15_000 });
-    await expect(page.getByText('Von Ihrem Standort aus')).toBeVisible();
+    // Exactly: the street map's hint sentence contains the same phrase, and
+    // a bare `getByText` matches substrings. This is about the kicker.
+    await expect(page.getByText('Von Ihrem Standort aus', { exact: true })).toBeVisible();
 
     await page.getByRole('button', { name: 'Zurück zum Vereinshaus' }).click();
     await expect(bearing.getByText(/136,[67]°/)).toBeVisible();
@@ -329,8 +331,12 @@ test.describe('the qibla from where you are', () => {
       if (url.host !== '127.0.0.1:3100' && url.protocol !== 'data:') outside.push(request.url());
     });
     await page.locator('.qibla-map-svg').scrollIntoViewIfNeeded();
+    // Redrawn a few times, to be sure it is the drawing and not the first
+    // paint that is being checked. Inwards, because the map opens one step
+    // short of the widest span there is — half a globe — so there is room
+    // in this direction and almost none in the other.
     for (let i = 0; i < 3; i += 1) {
-      await page.getByRole('button', { name: 'Weiter weg' }).click();
+      await page.getByRole('button', { name: 'Näher heran' }).click();
     }
     await page.waitForTimeout(1_500);
     expect(outside).toEqual([]);
@@ -377,8 +383,27 @@ test.describe('the qibla on the street', () => {
     expect(x2).toBeGreaterThan(x1);
     expect(y2).toBeGreaterThan(y1);
 
-    // OpenStreetMap's licence asks for the credit, and it is there.
-    await expect(street.getByText('© OpenStreetMap')).toBeVisible();
+    // OpenStreetMap's licence asks for the credit, and it is there — beside
+    // the map in the markup, because the map is a `role="img"` and may hold
+    // no focusable content, but over it on the screen, which is what the
+    // licence is asking for. Both halves of that are checked.
+    const credit = page.locator('.qibla-street-frame').getByText('© OpenStreetMap');
+    await expect(credit).toBeVisible();
+    // Both boxes in one read: the page rises its sections in as they are
+    // scrolled to, and two measurements taken a frame apart would differ by
+    // whatever was left of that movement.
+    const inside = await page.evaluate(() => {
+      const box = (sel: string) => document.querySelector(sel)!.getBoundingClientRect();
+      const over = box('.qibla-attribution');
+      const under = box('.qibla-street');
+      return (
+        over.left >= under.left - 1 &&
+        over.top >= under.top - 1 &&
+        over.right <= under.right + 1 &&
+        over.bottom <= under.bottom + 1
+      );
+    });
+    expect(inside).toBe(true);
   });
 
   test('says so and draws it itself when the tiles cannot be had', async ({ page }) => {

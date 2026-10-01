@@ -175,92 +175,97 @@ export function QiblaStreet({
 
   return (
     <div className="qibla-map">
-      <div
-        ref={frame}
-        className="qibla-street"
-        role="img"
-        aria-label={`${t('streetLabel')}: ${formatBearing(bearing, locale)}°`}
-        onPointerDown={onPointerDown}
-        onPointerMove={onPointerMove}
-        onPointerUp={endDrag}
-        onPointerCancel={endDrag}
-      >
-        {tiles.map((tile) => (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            key={tile.key}
-            src={`${TILES}/${tile.z}/${tile.x}/${tile.y}.png`}
-            alt=""
-            width={TILE}
-            height={TILE}
-            draggable={false}
-            loading="lazy"
-            className="qibla-tile"
-            style={{ transform: `translate(${tile.left}px, ${tile.top}px)` }}
-            onLoad={() => setTilesWork(true)}
-            onError={() => setTilesWork((works) => works ?? false)}
-          />
-        ))}
+      {/* The frame, so the attribution can sit over the corner of the map
+          without living *inside* it: a `role="img"` must hold no focusable
+          content, and OpenStreetMap's credit is a link. */}
+      <div className="qibla-street-frame">
+        <div
+          ref={frame}
+          className="qibla-street"
+          role="img"
+          aria-label={`${t('streetLabel')}: ${formatBearing(bearing, locale)}°`}
+          onPointerDown={onPointerDown}
+          onPointerMove={onPointerMove}
+          onPointerUp={endDrag}
+          onPointerCancel={endDrag}
+        >
+          {tiles.map((tile) => (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              key={tile.key}
+              src={`${TILES}/${tile.z}/${tile.x}/${tile.y}.png`}
+              alt=""
+              width={TILE}
+              height={TILE}
+              draggable={false}
+              loading="lazy"
+              className="qibla-tile"
+              style={{ transform: `translate(${tile.left}px, ${tile.top}px)` }}
+              onLoad={() => setTilesWork(true)}
+              onError={() => setTilesWork((works) => works ?? false)}
+            />
+          ))}
 
-        {/* The direction, out of the reader's own feet. */}
-        {me ? (
-          <svg className="qibla-street-layer" viewBox={`0 0 ${size.width} ${size.height}`}>
-            <defs>
-              <linearGradient id="qibla-street-ray" x1="0" y1="0" x2="1" y2="0">
-                <stop offset="0%" stopColor="var(--goldInk)" stopOpacity="0.5" />
-                <stop offset="100%" stopColor="var(--gold)" />
-              </linearGradient>
-            </defs>
-            <line
-              x1={me.x}
-              y1={me.y}
-              x2={me.x + Math.cos(theta) * reach}
-              y2={me.y + Math.sin(theta) * reach}
-              stroke="#ffffff"
-              strokeOpacity="0.85"
-              strokeWidth="8"
-              strokeLinecap="round"
-            />
-            <line
-              x1={me.x}
-              y1={me.y}
-              x2={me.x + Math.cos(theta) * reach}
-              y2={me.y + Math.sin(theta) * reach}
-              stroke="url(#qibla-street-ray)"
-              strokeWidth="4"
-              strokeLinecap="round"
-            />
-            {/* The Kaaba rides on the line, near the reader: it stands for
+          {/* The direction, out of the reader's own feet. */}
+          {me ? (
+            <svg className="qibla-street-layer" viewBox={`0 0 ${size.width} ${size.height}`}>
+              <defs>
+                <linearGradient id="qibla-street-ray" x1="0" y1="0" x2="1" y2="0">
+                  <stop offset="0%" stopColor="var(--goldInk)" stopOpacity="0.5" />
+                  <stop offset="100%" stopColor="var(--gold)" />
+                </linearGradient>
+              </defs>
+              <line
+                x1={me.x}
+                y1={me.y}
+                x2={me.x + Math.cos(theta) * reach}
+                y2={me.y + Math.sin(theta) * reach}
+                stroke="#ffffff"
+                strokeOpacity="0.85"
+                strokeWidth="8"
+                strokeLinecap="round"
+              />
+              <line
+                x1={me.x}
+                y1={me.y}
+                x2={me.x + Math.cos(theta) * reach}
+                y2={me.y + Math.sin(theta) * reach}
+                stroke="url(#qibla-street-ray)"
+                strokeWidth="4"
+                strokeLinecap="round"
+              />
+              {/* The Kaaba rides on the line, near the reader: it stands for
                 where the line goes, not for a place on this map. */}
-            <g
-              transform={`translate(${me.x + Math.cos(theta) * 74} ${me.y + Math.sin(theta) * 74})`}
-            >
-              <circle r="17" fill="var(--card)" opacity="0.95" />
-              <circle r="17" fill="none" stroke="var(--gold)" strokeWidth="1.5" />
-              <g transform="scale(0.72)">
-                <KaabaGlyph />
+              <g
+                transform={`translate(${me.x + Math.cos(theta) * 74} ${me.y + Math.sin(theta) * 74})`}
+              >
+                <circle r="17" fill="var(--card)" opacity="0.95" />
+                <circle r="17" fill="none" stroke="var(--gold)" strokeWidth="1.5" />
+                <g transform="scale(0.72)">
+                  <KaabaGlyph />
+                </g>
               </g>
-            </g>
-            <g transform={`translate(${me.x} ${me.y})`}>
-              <circle r="13" fill="var(--card)" opacity="0.95" />
-              <circle r="13" fill="none" stroke="var(--green)" strokeWidth="2" />
-              <HomeGlyph />
-            </g>
-          </svg>
-        ) : null}
+              <g transform={`translate(${me.x} ${me.y})`}>
+                <circle r="13" fill="var(--card)" opacity="0.95" />
+                <circle r="13" fill="none" stroke="var(--green)" strokeWidth="2" />
+                <HomeGlyph />
+              </g>
+            </svg>
+          ) : null}
 
-        {/* North, as a paper compass would show it — turning with the phone
+          {/* North, as a paper compass would show it — turning with the phone
             where the phone knows which way it faces. */}
-        <div className="qibla-street-rose" aria-hidden="true">
-          <svg
-            viewBox="-20 -20 40 40"
-            style={{ transform: `rotate(${headingLive ? -heading : 0}deg)` }}
-          >
-            <circle r="18" fill="var(--card)" stroke="var(--line)" strokeWidth="1" />
-            <path d="M0 -14 L4.5 2 L0 -1.5 Z" fill="var(--color-accent-2-text)" />
-            <path d="M0 14 L-4.5 -2 L0 1.5 Z" fill="var(--color-ink-muted)" />
-            <path d="M0 -14 L-4.5 2 L0 -1.5 Z" fill="var(--goldInk)" />
-          </svg>
+          <div className="qibla-street-rose" aria-hidden="true">
+            <svg
+              viewBox="-20 -20 40 40"
+              style={{ transform: `rotate(${headingLive ? -heading : 0}deg)` }}
+            >
+              <circle r="18" fill="var(--card)" stroke="var(--line)" strokeWidth="1" />
+              <path d="M0 -14 L4.5 2 L0 -1.5 Z" fill="var(--color-accent-2-text)" />
+              <path d="M0 14 L-4.5 -2 L0 1.5 Z" fill="var(--color-ink-muted)" />
+              <path d="M0 -14 L-4.5 2 L0 -1.5 Z" fill="var(--goldInk)" />
+            </svg>
+          </div>
         </div>
 
         <p className="qibla-attribution">

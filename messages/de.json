@@ -215,7 +215,21 @@
     "zoom": "Vergrößerung",
     "zoomIn": "Näher heran",
     "zoomOut": "Weiter weg",
-    "recentre": "Ansicht zurücksetzen"
+    "recentre": "Ansicht zurücksetzen",
+    "hereKicker": "Von Ihrem Standort aus",
+    "hereTitle": "Wohin Sie sich wenden",
+    "hereLabel": "Karte mit Ihrem Standort in der Mitte und der Gebetsrichtung",
+    "hereHint": "Sie stehen in der Mitte. Der goldene Pfeil zeigt die Gebetsrichtung — die Ringe geben die Entfernung an.",
+    "headingUp": "In Blickrichtung drehen",
+    "northUp": "Norden nach oben",
+    "viewHere": "Mein Standort",
+    "viewWorld": "Weltkugel",
+    "view": "Ansicht",
+    "metres": "m",
+    "scale": "Maßstab",
+    "closer": "Näher heran",
+    "wider": "Weiter weg",
+    "toMecca": "nach Mekka"
   },
   "prayer": {
     "title": "Gebetszeiten",
@@ -482,6 +496,9 @@
     "larger": "Schrift vergrößern",
     "smaller": "Schrift verkleinern",
     "turnHint": "Zum Blättern wischen oder die Pfeiltasten verwenden — nach links geht es weiter, wie im arabischen Buch.",
-    "turnHintDua": "Zum nächsten Bittgebet wischen oder die Pfeiltasten verwenden."
+    "turnHintDua": "Zum nächsten Bittgebet wischen oder die Pfeiltasten verwenden.",
+    "presentation": "Präsentation",
+    "exitPresentation": "Präsentation beenden",
+    "presentationHint": "Präsentationsmodus: Leertaste oder Pfeiltasten blättern, Esc beendet."
   }
 }

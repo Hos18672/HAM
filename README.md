@@ -305,9 +305,23 @@ association house) and the WGS84 geodesic distance (≈3 637 km — about 3 km
 shorter than the spherical figure, which over that path is worth being accurate
 about).
 
-### The qibla map carries its own world
+### The qibla map is centred on the person looking at it
 
-The qibla page draws a globe, not a flat map, because the direction of prayer
+The map that opens puts **you** in the middle — a house at the centre of the
+disc, your own place — and the qibla is a straight gold arrow out of it. That
+is what somebody standing in a room wants to know, and it is drawn on the one
+projection where it is honestly true: **azimuthal equidistant about your own
+position** (`lib/local-map.ts`), on which every straight line out of the centre
+is the initial bearing of a great circle and every distance along it is to
+scale. Zoom in and the rings are metres and it is a plan of the ground you are
+on; zoom out and the coastlines arrive and the Kaaba appears at the end of the
+same unbent line. With the compass running the whole map turns with the phone,
+so the arrow points where you must physically face.
+
+Behind it, for anyone who wants to see _why_ that line is not the one a flat
+map would draw, is the globe:
+
+The globe is a globe and not a flat map because the direction of prayer
 is the bearing of a great circle and a great circle is straight on no flat map
 there is — on the Mercator that prayer apps print, the line from Vienna to
 Mecca bends visibly south of where you must actually face.
@@ -322,9 +336,53 @@ therefore works on the static preview and on a bad connection, and `lib/globe.
 ts` (orthographic projection, great circles, horizon clipping along the rim) is
 pure arithmetic with unit tests.
 
-The trade is resolution: the outline is continental, so the map zooms to about
-a sixth of the globe and no further. It shows where you are on the earth and
-which way the qibla runs from there, not which street you are standing in.
+The trade is resolution: the outline is continental, so neither map can show
+which street you are standing in. Zoomed right in, the local map is rings and
+an arrow on bare ground — which is still the whole answer, because the answer
+is a direction.
+
+### A turn of the page is not a visit to the page
+
+The mushaf is a book, and turning its page must not be a page load. The data
+comes from `/api/quran/page/[page]` — or, where there is no server, from a file
+the preview snapshot writes out for all 604 pages — and the address is then
+corrected with `replaceState`, which Next treats as a shallow update and does
+not re-render the route. So **only the sheet is drawn again**: the whole
+screen, the chosen text size and the reader's place all survive the turn. They
+did not before: on the static preview a turn fell through to loading the entire
+site page afresh, which is why fullscreen never lasted past one page.
+
+The turn itself is paper (`components/site/use-paper-turn.ts`). A deck of two
+sheets: the one in hand hangs on the spine — the right-hand edge, this being a
+book read right to left — and swings about it in 3D while the page underneath
+comes into view, so the turn reveals rather than replaces. The angle is written
+straight onto the element frame by frame rather than held in React state: a
+turn is sixty frames, and sixty renders of a page of the Quran is sixty frames
+dropped. It is CSS 3D transforms, not a WebGL scene — a page of justified
+Arabic has to stay selectable, searchable text, which it cannot be inside a
+canvas. Under `prefers-reduced-motion` there is no sheet in the air at all.
+
+### Reading on a phone, and reading to a room
+
+`components/site/use-reader.ts` is shared by the mushaf and the du'a reader,
+because it is the same reading. It gives both the whole screen, a text size the
+reader chooses and keeps, and the turn under the thumb. Two things learnt the
+hard way are written into it: fullscreen is requested of `document.documentElement`
+rather than the reader's own element, because a browser leaves fullscreen the
+moment the element it was showing is taken out of the page; and the state is
+handed to the next copy of the reader as it _changes_, not on unmount, because
+React mounts the new copy before unmounting the old one.
+
+**Presentation** is the same reader sized for a hall: one page, type scaled to
+the room, the translation drawer and the running notes gone, and the toolbar
+fading out three seconds after the last hand — returning at any movement, and
+at any focus, so a keyboard never chases something invisible. Space, page up
+and page down turn the page, which is what a presenter's remote sends.
+
+In fullscreen on a narrow screen the toolbar **wraps**; it does not slide. A
+control half off the edge of the screen reads as broken, and nobody guesses
+that a toolbar scrolls. The words on the two icon buttons are hidden from the
+eye and kept for a screen reader, which still needs their names.
 
 ### The du'a texts are in the code, not the database
 

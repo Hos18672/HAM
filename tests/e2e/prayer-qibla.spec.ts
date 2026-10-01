@@ -261,9 +261,69 @@ test.describe('qibla', () => {
   });
 });
 
+/**
+ * The map that answers the question people actually arrive with: standing
+ * here, which way do I turn? The reader is in the middle of it and the qibla
+ * is a straight line out of them, which is true on this projection and on
+ * almost no other.
+ */
+test.describe('the qibla from where you are', () => {
+  test('opens on your own place, with the direction out of it', async ({ page }) => {
+    await page.goto('/de/qibla');
+    const map = page.locator('.qibla-map-svg');
+    await map.scrollIntoViewIfNeeded();
+
+    // You are in the middle, named.
+    await expect(map.getByText('Vereinshaus')).toBeVisible();
+    // And Mecca is on the map at the scale it opens at, so the line can be
+    // seen to go somewhere.
+    await expect.poll(() => map.getByText('Mekka').count(), { timeout: 10_000 }).toBe(1);
+
+    // The arrow leaves the centre at the computed bearing. Vienna's qibla is
+    // a little south of east, so the far end is right of and below the
+    // middle — which is the one thing a wrong projection would get wrong.
+    const ray = map.locator('line').last();
+    const x2 = Number(await ray.getAttribute('x2'));
+    const y2 = Number(await ray.getAttribute('y2'));
+    expect(x2).toBeGreaterThan(0);
+    expect(y2).toBeGreaterThan(0);
+  });
+
+  test('zooms down to the ground you are standing on', async ({ page }) => {
+    await page.goto('/de/qibla');
+    const map = page.locator('.qibla-map-svg');
+    await map.scrollIntoViewIfNeeded();
+
+    const scale = page.locator('.qibla-map .reader-size-value');
+    await expect(scale).toHaveText(/km/);
+    for (let i = 0; i < 12; i += 1) {
+      await page.getByRole('button', { name: 'Näher heran' }).click();
+    }
+    // All the way in, the rings are metres: a plan of the room, not a map.
+    await expect(scale).toHaveText(/m$/);
+    // Mecca is long gone, but the direction is not: the distance is written
+    // at the end of the arrow instead.
+    await expect(map.getByText(/nach Mekka/)).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Näher heran' })).toBeDisabled();
+  });
+
+  test('is drawn in the page, with nothing fetched from a tile server', async ({ page }) => {
+    const outside: string[] = [];
+    page.on('request', (request) => {
+      const url = new URL(request.url());
+      if (url.host !== '127.0.0.1:3100' && url.protocol !== 'data:') outside.push(request.url());
+    });
+    await page.goto('/de/qibla');
+    await page.locator('.qibla-map-svg').scrollIntoViewIfNeeded();
+    await page.waitForTimeout(1_500);
+    expect(outside).toEqual([]);
+  });
+});
+
 test.describe('the qibla globe', () => {
   test('draws the world, both places and the way between them', async ({ page }) => {
     await page.goto('/de/qibla');
+    await page.getByRole('button', { name: 'Weltkugel' }).click();
     const globe = page.locator('.qibla-globe');
     await globe.scrollIntoViewIfNeeded();
 
@@ -285,6 +345,7 @@ test.describe('the qibla globe', () => {
 
   test('turns under the pointer and comes back', async ({ page }) => {
     await page.goto('/de/qibla');
+    await page.getByRole('button', { name: 'Weltkugel' }).click();
     const globe = page.locator('.qibla-globe');
     await globe.scrollIntoViewIfNeeded();
     await expect.poll(() => globe.locator('path').count(), { timeout: 10_000 }).toBeGreaterThan(5);

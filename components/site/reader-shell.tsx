@@ -30,6 +30,8 @@ export function ReaderShell({
       ref={reader.shellRef}
       className="reader-shell"
       data-full={reader.full ? 'true' : undefined}
+      data-present={reader.presenting ? 'true' : undefined}
+      data-idle={reader.presenting && reader.idle ? 'true' : undefined}
       style={{ ...style, '--reader-scale': reader.scale } as CSSProperties}
     >
       {children}

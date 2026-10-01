@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import {
   Compass as CompassIcon,
+  GlobeHemisphereEast,
   MapPin,
   ArrowCounterClockwise,
 } from '@phosphor-icons/react/dist/ssr';
@@ -12,6 +13,7 @@ import { formatBearing, formatDistanceKm } from '@/lib/i18n/format';
 import { Button } from '../ui/button';
 import { PatternPlate } from './ornaments';
 import { QiblaMap } from './qibla-map';
+import { QiblaHere } from './qibla-here';
 import type { Locale } from '@/lib/i18n/config';
 
 /** A device orientation event that also carries the iOS compass heading. */
@@ -43,6 +45,8 @@ export function Compass({ locale }: { locale: Locale }) {
   const [geo, setGeo] = useState<GeoState>('house');
   const [compass, setCompass] = useState<CompassState>('idle');
   const [heading, setHeading] = useState(0);
+  // Which map: the one centred on the reader, or the globe behind it.
+  const [view, setView] = useState<'here' | 'world'>('here');
 
   /* ── Live heading ─────────────────────────────────────────────────────── */
   const onOrientation = useCallback((event: CompassEvent) => {
@@ -329,23 +333,62 @@ export function Compass({ locale }: { locale: Locale }) {
         </div>
       </div>
 
-      {/* The same direction on a map of the world, which is where a bearing
-          in degrees becomes a thing you can see. */}
+      {/* The direction on a map. Two of them: the one that answers "which
+          way do I turn", with the reader in the middle of it, and — for
+          anyone who wants to see why the line is not the one a flat map
+          would draw — the same direction on the globe. The first is the
+          one that opens, because it is the question people came with. */}
       <div className="surf" data-rise style={{ display: 'grid', gap: 'var(--space-4)' }}>
         <PatternPlate opacity={0.22} />
-        <div style={{ position: 'relative' }}>
-          <p className="kicker" style={{ color: 'var(--color-accent-2-text)' }}>
-            {t('mapKicker')}
-          </p>
-          <h2 style={{ marginBlockStart: 'var(--space-1)' }}>{t('mapTitle')}</h2>
+        <div style={{ position: 'relative', display: 'grid', gap: 'var(--space-3)' }}>
+          <div>
+            <p className="kicker" style={{ color: 'var(--color-accent-2-text)' }}>
+              {view === 'here' ? t('hereKicker') : t('mapKicker')}
+            </p>
+            <h2 style={{ marginBlockStart: 'var(--space-1)' }}>
+              {view === 'here' ? t('hereTitle') : t('mapTitle')}
+            </h2>
+          </div>
+          <div className="qibla-view-switch" role="group" aria-label={t('view')}>
+            <button
+              type="button"
+              className="mushaf-switch reader-full-btn"
+              aria-pressed={view === 'here'}
+              onClick={() => setView('here')}
+            >
+              <MapPin size={17} weight="duotone" aria-hidden="true" />
+              {t('viewHere')}
+            </button>
+            <button
+              type="button"
+              className="mushaf-switch reader-full-btn"
+              aria-pressed={view === 'world'}
+              onClick={() => setView('world')}
+            >
+              <GlobeHemisphereEast size={17} weight="duotone" aria-hidden="true" />
+              {t('viewWorld')}
+            </button>
+          </div>
         </div>
-        <QiblaMap
-          origin={origin}
-          bearing={qibla.bearing}
-          distanceKm={qibla.distanceKm}
-          locale={locale}
-          originLabel={geo === 'located' ? t('youAreHere') : t('theHouse')}
-        />
+        {view === 'here' ? (
+          <QiblaHere
+            origin={origin}
+            bearing={qibla.bearing}
+            distanceKm={qibla.distanceKm}
+            locale={locale}
+            originLabel={geo === 'located' ? t('youAreHere') : t('theHouse')}
+            heading={heading}
+            headingLive={compass === 'active'}
+          />
+        ) : (
+          <QiblaMap
+            origin={origin}
+            bearing={qibla.bearing}
+            distanceKm={qibla.distanceKm}
+            locale={locale}
+            originLabel={geo === 'located' ? t('youAreHere') : t('theHouse')}
+          />
+        )}
       </div>
     </div>
   );

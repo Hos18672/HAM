@@ -78,6 +78,54 @@ test.describe('the du‘as', () => {
     await expect(shell).not.toHaveAttribute('data-full', 'true');
   });
 
+  test('on a phone, no control is cut off at the edge of the screen', async ({ page }) => {
+    // What the owner reported, with a screenshot: in fullscreen the toolbar
+    // ran off the right-hand edge and the fullscreen button was sliced in
+    // half. It wraps now instead of sliding.
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto('/de/duas/faraj');
+    await page.getByRole('button', { name: 'Vollbild', exact: true }).click();
+    await expect(page.locator('.reader-shell')).toHaveAttribute('data-full', 'true');
+
+    const width = page.viewportSize()!.width;
+    const controls = page.locator('.mushaf-toolbar button');
+    const count = await controls.count();
+    expect(count).toBeGreaterThan(2);
+    for (let i = 0; i < count; i += 1) {
+      const box = (await controls.nth(i).boundingBox())!;
+      const label = await controls.nth(i).innerText();
+      expect(box.x, label).toBeGreaterThanOrEqual(-0.5);
+      expect(box.x + box.width, label).toBeLessThanOrEqual(width + 0.5);
+    }
+
+    // And the bar is a bar, not a third of the screen.
+    const bar = (await page.locator('.mushaf-toolbar').boundingBox())!;
+    expect(bar.height).toBeLessThan(844 / 4);
+  });
+
+  test('presents to a room: bigger type, and the controls get out of the way', async ({ page }) => {
+    await page.goto('/de/duas/faraj');
+    const size = () =>
+      page.evaluate(() => getComputedStyle(document.querySelector('.dua-ar')!).fontSize);
+    const before = parseFloat(await size());
+
+    await page.getByRole('button', { name: 'Präsentation', exact: true }).click();
+    const shell = page.locator('.reader-shell');
+    // Presenting is the whole screen too: there is no presentation in a box
+    // halfway down a page.
+    await expect(shell).toHaveAttribute('data-present', 'true');
+    await expect(shell).toHaveAttribute('data-full', 'true');
+    expect(parseFloat(await size())).toBeGreaterThan(before);
+
+    // Left alone, the toolbar fades — and it is still there for a hand or a
+    // keyboard, which is why it fades rather than going away.
+    await expect(shell).toHaveAttribute('data-idle', 'true', { timeout: 15_000 });
+    await expect(page.getByRole('button', { name: 'Schrift vergrößern' })).toBeVisible();
+
+    await page.getByRole('button', { name: 'Präsentation beenden' }).click();
+    await expect(shell).not.toHaveAttribute('data-present', 'true');
+  });
+
   test('a swipe turns to the next du‘a and stays in fullscreen', async ({ page }) => {
     await page.goto('/de/duas/tawassul');
     await page.getByRole('button', { name: 'Vollbild', exact: true }).click();

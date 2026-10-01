@@ -346,7 +346,7 @@ function BearingArc({
 }
 
 /** The Kaaba, drawn around (0, 0) at about 30 units across. */
-function KaabaGlyph() {
+export function KaabaGlyph() {
   const gold = 'var(--gold)';
   return (
     <g strokeLinejoin="round">

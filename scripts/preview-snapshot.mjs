@@ -29,6 +29,8 @@ import { dirname, join } from 'node:path';
 const ORIGIN = process.env.PREVIEW_ORIGIN ?? 'http://127.0.0.1:3100';
 const BASE_PATH = process.env.PREVIEW_BASE_PATH ?? '';
 const OUT = process.env.PREVIEW_OUT ?? 'preview';
+/** The mushaf this site uses: 604 pages, as the Medina printing has it. */
+const QURAN_PAGES = 604;
 
 /** The locales, read from the app rather than repeated here. */
 async function readLocales() {
@@ -47,8 +49,39 @@ async function readRoutes() {
   // /quran/page/ — nested, so the listing above does not reach them. On the
   // live site the reader turns pages by asking the server; here there is no
   // server, so every page has to be a file.
-  const quranPages = Array.from({ length: 604 }, (_, i) => `/quran/page/${i + 1}`);
+  const quranPages = Array.from({ length: QURAN_PAGES }, (_, i) => `/quran/page/${i + 1}`);
   return ['', ...segments.map((segment) => `/${segment}`), ...quranPages];
+}
+
+/**
+ * The reader turns pages by asking `/api/quran/page/[page]`, and only the
+ * book is drawn again — the whole screen, the chosen size and the reader's
+ * place all survive a turn because nothing else renders.
+ *
+ * There is no API on a static host, so the same answers are written out as
+ * files here and the reader fetches those instead (see `mushaf-reader`).
+ * Without them a turn fell back to loading the entire site page afresh,
+ * which is exactly what the reader was built not to do.
+ */
+async function writeQuranData(locales) {
+  let written = 0;
+  for (const locale of locales) {
+    const numbers = Array.from({ length: QURAN_PAGES }, (_, i) => i + 1);
+    // A few at a time: 604 pages at once is a thundering herd on a dev-sized
+    // database, and one at a time takes minutes.
+    const workers = Array.from({ length: 8 }, async () => {
+      for (let n = numbers.shift(); n !== undefined; n = numbers.shift()) {
+        const response = await fetch(`${ORIGIN}${BASE_PATH}/api/quran/page/${n}?locale=${locale}`);
+        if (response.status !== 200) {
+          throw new Error(`quran page ${n} (${locale}) returned ${response.status}`);
+        }
+        await writeFileAt(join(OUT, 'quran-data', locale, `${n}.json`), await response.text());
+        written += 1;
+      }
+    });
+    await Promise.all(workers);
+  }
+  return written;
 }
 
 /**
@@ -96,6 +129,8 @@ async function main() {
       pages += 1;
     }
   }
+
+  const quranData = await writeQuranData(locales);
 
   // The icons, which are routes built from `app/icon.*` rather than files in
   // public/. Fetched as bytes, not text: one of them is a PNG, and reading a
@@ -147,7 +182,10 @@ async function main() {
   // directories beginning with an underscore — _next among them.
   await writeFileAt(join(OUT, '.nojekyll'), '');
 
-  console.log(`preview: ${pages} pages (${locales.length} locales × ${routes.length} routes)`);
+  console.log(
+    `preview: ${pages} pages (${locales.length} locales × ${routes.length} routes), ` +
+      `${quranData} mushaf pages as data`,
+  );
 }
 
 await main();

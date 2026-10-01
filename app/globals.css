@@ -171,6 +171,11 @@
   --map-coast: rgba(11, 93, 59, 0.5);
   --map-border: rgba(11, 93, 59, 0.2);
   --map-grid: rgba(11, 93, 59, 0.11);
+  /* The local map: the ground you are standing on, and the rings that give
+     it a scale — stronger than the globe's graticule, because up close they
+     are the only thing on the map besides the arrow. */
+  --map-sea-top: #f1f6f0;
+  --map-ring: rgba(11, 93, 59, 0.3);
   --micro: #052a1d;
   /* The band colour as channels, so the skyline can fade into it at any
      alpha, and one step deeper for the shadow the city casts on it. */
@@ -411,6 +416,8 @@
   --map-coast: rgba(220, 187, 123, 0.45);
   --map-border: rgba(220, 187, 123, 0.18);
   --map-grid: rgba(220, 187, 123, 0.12);
+  --map-sea-top: #0a3226;
+  --map-ring: rgba(220, 187, 123, 0.3);
   --glass: rgba(6, 33, 26, 0.86);
   --micro: #04180f;
   --micro-rgb: 4 24 15;
@@ -3545,6 +3552,45 @@
   .reader-shell[data-full='true'] .mushaf-field-wide {
     inline-size: 14rem;
   }
+  /* Where the bar will not fit on one line, it wraps rather than sliding:
+     a control half off the edge of the screen reads as broken, and a
+     reader cannot be expected to guess that a toolbar scrolls. The words
+     on the buttons go instead of the buttons — hidden from the eye, kept
+     for a screen reader, which still needs their names. */
+  @media (max-width: 64rem) {
+    .reader-shell[data-full='true'] .mushaf-toolbar {
+      flex-wrap: wrap;
+      overflow-x: visible;
+    }
+    .reader-shell[data-full='true'] .mushaf-toolbar > * {
+      flex: 0 1 auto;
+    }
+    .reader-shell[data-full='true'] .mushaf-field {
+      flex: 1 1 8.5rem;
+      inline-size: auto;
+    }
+    .reader-shell[data-full='true'] .mushaf-field-wide {
+      flex: 1 1 11rem;
+      inline-size: auto;
+    }
+    .reader-shell[data-full='true'] .mushaf-switch {
+      flex: 0 0 auto;
+      justify-content: center;
+    }
+    .reader-shell[data-full='true'] .reader-full-btn .reader-btn-label {
+      position: absolute;
+      inline-size: 1px;
+      block-size: 1px;
+      padding: 0;
+      overflow: hidden;
+      clip-path: inset(50%);
+      white-space: nowrap;
+    }
+    .reader-shell[data-full='true'] .reader-full-btn {
+      inline-size: 44px;
+      padding-inline: 0;
+    }
+  }
   .reader-shell[data-full='true'] .mushaf-stage,
   .reader-shell[data-full='true'] .mushaf-banner-wrap {
     scroll-margin-block-start: 88px;
@@ -3613,6 +3659,143 @@
     margin-block-start: calc(-1 * var(--space-3));
     text-align: center;
     color: var(--color-ink-faint);
+  }
+
+  /* ── The turn, as paper ───────────────────────────────────────────────
+     A deck of two sheets. The one in hand hangs on the spine — the right
+     edge, this being a book read right to left — and swings about it; the
+     one under it is already in place, so the turn reveals rather than
+     replaces. The angle is written onto the leaf frame by frame from
+     `use-paper-turn`; nothing here animates on its own. */
+  .mushaf-deck {
+    position: relative;
+    perspective: 2200px;
+    perspective-origin: 85% 50%;
+  }
+  .mushaf-leaf {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    transform-origin: 100% 50%;
+    transform-style: preserve-3d;
+    will-change: transform;
+    pointer-events: none;
+  }
+  :root[dir='ltr'] .mushaf-leaf,
+  :root[dir='rtl'] .mushaf-leaf {
+    /* The spine is the book's, not the interface's: a mushaf is bound on
+       the right whichever way the rest of the site reads. */
+    transform-origin: 100% 50%;
+  }
+  .mushaf-leaf-face,
+  .mushaf-leaf-back,
+  .mushaf-leaf-shade {
+    position: absolute;
+    inset: 0;
+    backface-visibility: hidden;
+  }
+  .mushaf-leaf-back {
+    max-inline-size: 48rem;
+    margin-inline: auto;
+    background: var(--card);
+    border: var(--rule-hair) solid var(--line);
+    border-radius: 8px;
+    transform: rotateY(180deg);
+  }
+  /* The sheet darkens as it comes up off the page and lightens as it lies
+     down again, deepest at the spine where a real page would curl. */
+  .mushaf-leaf-shade {
+    max-inline-size: 48rem;
+    margin-inline: auto;
+    border-radius: 8px;
+    background: linear-gradient(
+      to left,
+      rgba(20, 30, 25, 0.35) 0%,
+      rgba(20, 30, 25, 0.12) 28%,
+      rgba(20, 30, 25, 0) 70%
+    );
+    opacity: var(--leaf-shade, 0);
+  }
+  /* While a sheet is in the air the deck is one picture, not two columns of
+     text to be read: the page underneath keeps still. */
+  .mushaf-stage[data-turning='true'] .mushaf-deck > .mushaf {
+    user-select: none;
+  }
+  .mushaf-turn-blank {
+    visibility: hidden;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    /* No sheet in the air: the page is simply the next one. */
+    .mushaf-leaf {
+      display: none;
+    }
+  }
+
+  /* ── Big screens and the hall ──────────────────────────────────────────
+     A monitor is not a large phone: given the room, the page grows with it
+     rather than sitting in a column down the middle. Presentation goes
+     further — one page, type sized to the back of the room, and the
+     controls out of sight until a hand comes near. */
+  @media (min-width: 90rem) {
+    .mushaf {
+      max-inline-size: 56rem;
+    }
+    .reader-shell[data-full='true'] .mushaf,
+    .reader-shell[data-full='true'] .mushaf-leaf-back,
+    .reader-shell[data-full='true'] .mushaf-leaf-shade {
+      max-inline-size: 64rem;
+    }
+    .reader-shell[data-full='true'] .mushaf-body {
+      font-size: calc(1.95rem * var(--reader-scale, 1));
+    }
+  }
+
+  .reader-shell[data-present='true'] {
+    padding-block-start: var(--space-3);
+    background: var(--paper);
+  }
+  .reader-shell[data-present='true'] .mushaf,
+  .reader-shell[data-present='true'] .mushaf-leaf-back,
+  .reader-shell[data-present='true'] .mushaf-leaf-shade,
+  .reader-shell[data-present='true'] .dua-sheet {
+    max-inline-size: min(96vw, 80rem);
+  }
+  .reader-shell[data-present='true'] .mushaf-body {
+    font-size: calc(clamp(1.7rem, 2.9vw, 3.4rem) * var(--reader-scale, 1));
+    line-height: 2.1;
+  }
+  .reader-shell[data-present='true'] .dua-ar {
+    font-size: calc(clamp(1.5rem, 2.4vw, 2.8rem) * var(--reader-scale, 1));
+  }
+  .reader-shell[data-present='true'] .dua-tr {
+    font-size: calc(clamp(1rem, 1.3vw, 1.5rem) * var(--reader-scale, 1));
+  }
+  /* Nothing in a presentation but the text: the running notes, the
+     translation drawer and the hint belong to a reader with a page in
+     their hands, not to a room. */
+  .reader-shell[data-present='true'] .mushaf-translation,
+  .reader-shell[data-present='true'] .reader-hint,
+  .reader-shell[data-present='true'] .mushaf-turn {
+    display: none;
+  }
+  .reader-shell[data-present='true'] .mushaf-toolbar {
+    transition: opacity var(--duration-base) var(--ease-standard);
+  }
+  .reader-shell[data-idle='true'] .mushaf-toolbar {
+    opacity: 0;
+  }
+  /* …but never out of reach of a keyboard, and never for long: any
+     movement at all brings it back (see `use-reader`). */
+  .reader-shell[data-idle='true'] .mushaf-toolbar:focus-within,
+  .reader-shell[data-idle='true'] .mushaf-toolbar:hover {
+    opacity: 1;
+  }
+  .reader-present-btn[aria-pressed='true'] {
+    background: var(--gold);
+    color: var(--paper);
+  }
+  .reader-present-btn[aria-pressed='true'] > svg {
+    color: inherit;
   }
 
   /* ── A du'a, read in full ───────────────────────────────────────────────
@@ -3786,6 +3969,31 @@
     stroke: var(--card);
     stroke-width: 2.4px;
     stroke-linejoin: round;
+  }
+  /* ── The map centred on the reader ───────────────────────────────────
+     Same frame as the globe, but nothing is dragged: you are in the middle
+     and the middle is the point. */
+  .qibla-map-svg {
+    inline-size: min(100%, 29rem);
+    block-size: auto;
+    user-select: none;
+    -webkit-user-select: none;
+    filter: drop-shadow(0 18px 30px rgba(20, 40, 30, 0.18));
+  }
+  .qibla-here-cardinal {
+    font-family: var(--font-sans);
+    font-size: 9px;
+    font-weight: var(--weight-semibold);
+    fill: var(--color-ink-muted);
+  }
+  .qibla-here-cardinal[data-north='true'] {
+    fill: var(--goldInk);
+  }
+  .qibla-view-switch {
+    position: relative;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
   }
   .qibla-map-controls {
     display: flex;

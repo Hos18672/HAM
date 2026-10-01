@@ -1,7 +1,14 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { CornersIn, CornersOut, Minus, Plus, TextAa } from '@phosphor-icons/react/dist/ssr';
+import {
+  CornersIn,
+  CornersOut,
+  Minus,
+  Plus,
+  Presentation,
+  TextAa,
+} from '@phosphor-icons/react/dist/ssr';
 import { digits } from '@/lib/i18n/format';
 import type { Locale } from '@/lib/i18n/config';
 import type { Reader } from './use-reader';
@@ -56,7 +63,26 @@ export function ReaderControls({ reader, locale }: { reader: Reader; locale: Loc
         ) : (
           <CornersOut size={17} weight="duotone" aria-hidden="true" />
         )}
-        {reader.full ? t('exitFullscreen') : t('fullscreen')}
+        {/* The word is the button's name to a screen reader whether or not
+            there is room to show it: on a narrow screen in fullscreen it is
+            hidden rather than dropped, so nothing is cut off at the edge. */}
+        <span className="reader-btn-label">
+          {reader.full ? t('exitFullscreen') : t('fullscreen')}
+        </span>
+      </button>
+
+      {/* For the hall and for a large monitor: one page, type sized to the
+          room, and the controls out of the way until a hand comes near. */}
+      <button
+        type="button"
+        className="mushaf-switch reader-full-btn reader-present-btn"
+        aria-pressed={reader.presenting}
+        onClick={reader.togglePresenting}
+      >
+        <Presentation size={17} weight="duotone" aria-hidden="true" />
+        <span className="reader-btn-label">
+          {reader.presenting ? t('exitPresentation') : t('presentation')}
+        </span>
       </button>
     </>
   );

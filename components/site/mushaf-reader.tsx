@@ -15,27 +15,18 @@ import { digits } from '@/lib/i18n/format';
 import { BASMALA, JUZ_COUNT, PAGE_COUNT } from '@/lib/quran-constants';
 import { Rosette } from './ornaments';
 import { useReader } from './use-reader';
+import { usePaperTurn } from './use-paper-turn';
 import { ReaderControls } from './reader-controls';
 import { ReaderShell } from './reader-shell';
 import type { MushafPage, PageAyah } from '@/lib/quran';
 import type { Locale } from '@/lib/i18n/config';
 
-/**
- * Pages fetched so far, kept outside the component. Changing the page number
- * in the address bar makes Next remount the route's client tree with the page
- * it was first rendered for; the reader then reads the address and takes the
- * page it names from here, instead of jumping back.
- */
+/** Pages fetched so far, kept across turns — and across readers. */
 const loaded = new Map<string, MushafPage>();
 /** Empty on the live site; the sub-path on the GitHub Pages preview. */
 const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH ?? '';
 const pending = new Map<string, Promise<MushafPage>>();
-/**
- * What to bring into view once the new page is on screen. Outside the
- * component for the same reason as `loaded`: the turn remounts it, and a
- * scroll aimed at the old copy of the book scrolls nothing.
- */
-let scrollTarget: string | null = null;
+
 const pageFromUrl = () => {
   if (typeof window === 'undefined') return null;
   const match = /\/quran\/page\/(\d+)/.exec(window.location.pathname);
@@ -45,12 +36,17 @@ const pageFromUrl = () => {
 /**
  * The Quran as a book, one page at a time.
  *
- * The first page arrives with the site page. After that, turning a page swaps
- * only the book: the next page's data comes from `/api/quran/page/[n]`
- * (cached for a month), the address bar is updated so every page can still
- * be linked to and the back button still goes back a page, and nothing else
- * on the site page renders again. The pages either side are fetched ahead,
- * so a turn is usually instant.
+ * **Only the book turns.** The page's data comes from `/api/quran/page/[n]`
+ * on the live site and from a file the preview snapshot writes out
+ * (`quran-data/<locale>/<n>.json`) where there is no server, and the address
+ * is then corrected with `replaceState`, which Next treats as a shallow
+ * update and does not navigate. Nothing else on the site page renders again,
+ * and nothing — the whole screen, the chosen size, the reader's place — is
+ * lost on a turn. It used to load the whole page afresh on the preview,
+ * which is where that was most obvious.
+ *
+ * The pages either side are fetched ahead, so a turn is usually instant, and
+ * the turn itself is a sheet of paper: see `use-paper-turn`.
  */
 export function MushafReader({
   initialPage,
@@ -75,8 +71,6 @@ export function MushafReader({
   const [loading, setLoading] = useState(false);
   const [failed, setFailed] = useState(false);
   const [marked, setMarked] = useState(true);
-  const [scrollTick, setScrollTick] = useState(0);
-  const bookRef = useRef<HTMLDivElement>(null);
 
   const fetchPage = useCallback(
     (n: number): Promise<MushafPage> => {
@@ -85,7 +79,14 @@ export function MushafReader({
       if (done) return Promise.resolve(done);
       let entry = pending.get(key);
       if (!entry) {
-        entry = fetch(`${BASE_PATH}/api/quran/page/${n}?locale=${locale}`)
+        // On the preview there is no server to ask: the snapshot writes the
+        // same answer out as a file beside the pages (see
+        // `scripts/preview-snapshot.mjs`), so a turn is a fetch there too
+        // rather than a fresh load of the whole site page.
+        const url = BASE_PATH
+          ? `${BASE_PATH}/quran-data/${locale}/${n}.json`
+          : `/api/quran/page/${n}?locale=${locale}`;
+        entry = fetch(url)
           .then((response) => {
             if (!response.ok) throw new Error(String(response.status));
             return response.json() as Promise<MushafPage>;
@@ -107,47 +108,55 @@ export function MushafReader({
     [locale],
   );
 
-  const show = useCallback(
-    async (n: number, history: 'push' | 'none' = 'push', hash = '') => {
-      if (n < 1 || n > PAGE_COUNT) return;
+  /** Have the page in hand, ready to be drawn. */
+  const prepare = useCallback(
+    async (n: number) => {
+      if (n < 1 || n > PAGE_COUNT) return false;
+      if (loaded.has(`${locale}:${n}`)) return true;
       setLoading(true);
-      setFailed(false);
       try {
-        const data = await fetchPage(n);
-        setPage(data);
-        if (history === 'push') {
-          window.history.pushState({ quranPage: n }, '', pageUrl(n, hash));
-        }
-        // The new page comes into view on its own: the surah asked for, or
-        // else the top of the book, wherever the reader had scrolled to. Done
-        // once the page is on screen (see `scrollTarget`).
-        scrollTarget = hash ? hash.slice(1) : 'mushaf';
-        setScrollTick((tick) => tick + 1);
+        await fetchPage(n);
+        setFailed(false);
+        return true;
       } catch {
-        // No page data to be had — on the static preview there is no server
-        // to ask — so open the page itself, which is there as a file.
-        if (history === 'push') {
-          // Anchored at the book, so the page opens on it rather than at the
-          // top of the site page.
-          window.location.assign(pageUrl(n, hash || '#mushaf'));
-          return;
-        }
         setFailed(true);
+        return false;
       } finally {
         setLoading(false);
       }
     },
-    [fetchPage, pageUrl],
+    [fetchPage, locale],
   );
 
-  // After a turn — in this copy of the reader or the one it remounted as —
-  // bring the new page into view.
-  useEffect(() => {
-    if (!scrollTarget) return;
-    const id = scrollTarget;
-    scrollTarget = null;
-    requestAnimationFrame(() => document.getElementById(id)?.scrollIntoView({ block: 'start' }));
-  }, [page, scrollTick]);
+  /**
+   * Put a page in place. The address is corrected rather than pushed:
+   * `replaceState` is a shallow update, so the route is not re-rendered and
+   * the reader keeps its screen, its size and its place.
+   */
+  const commit = useCallback(
+    (n: number) => {
+      const data = loaded.get(`${locale}:${n}`);
+      if (!data) return;
+      setPage(data);
+      window.history.replaceState(null, '', pageUrl(n));
+    },
+    [locale, pageUrl],
+  );
+
+  /** Go somewhere named — a surah, a juz, a page typed in. No animation. */
+  const show = useCallback(
+    async (n: number, hash = '') => {
+      if (!(await prepare(n))) return;
+      commit(n);
+      const id = hash ? hash.slice(1) : 'mushaf';
+      requestAnimationFrame(() =>
+        requestAnimationFrame(() =>
+          document.getElementById(id)?.scrollIntoView({ block: 'start' }),
+        ),
+      );
+    },
+    [commit, prepare],
+  );
 
   // Fetch the neighbours ahead of the reader.
   useEffect(() => {
@@ -155,27 +164,49 @@ export function MushafReader({
     if (page.number > 1) fetchPage(page.number - 1).catch(() => {});
   }, [page.number, fetchPage]);
 
-  // Back and forward buttons of the browser.
+  // The address may be stepped through with the back button, which is a
+  // real navigation only when it leaves the reader; within it, catch up.
   useEffect(() => {
     const onPop = () => {
-      const match = /\/quran\/page\/(\d+)/.exec(window.location.pathname);
-      if (match) void show(Number(match[1]), 'none');
+      const n = pageFromUrl();
+      if (n !== null && n !== page.number) void show(n);
     };
     window.addEventListener('popstate', onPop);
     return () => window.removeEventListener('popstate', onPop);
-  }, [show]);
+  }, [page.number, show]);
 
-  // The arrow keys turn the page as an Arabic book turns: left goes on.
+  /** The sheet that swings on the spine. */
+  const inBook = useCallback((n: number) => n >= 1 && n <= PAGE_COUNT, []);
+  const paper = usePaperTurn({ page: page.number, canGo: inBook, prepare, commit });
+
+  // The whole screen, the size of the letters, and the room. The turn is
+  // the paper's: `use-paper-turn` has the gesture, because it draws the
+  // sheet as it goes.
+  const reader = useReader({ storageKey: 'quran' });
+
+  // The keys turn the page as an Arabic book turns: left goes on. Presenting
+  // adds the keys a presenter's remote sends — page up and page down, and
+  // the space bar, which belongs to the scroll at every other time.
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
       const el = event.target as HTMLElement | null;
-      if (el && /^(INPUT|SELECT|TEXTAREA)$/.test(el.tagName)) return;
-      if (event.key === 'ArrowLeft') void show(page.number + 1);
-      if (event.key === 'ArrowRight') void show(page.number - 1);
+      // Typing belongs to the field, and the space bar belongs to whatever
+      // button has focus — it is how a button is pressed. Everything else
+      // is the book's, so the presenter's remote still works with the
+      // button they just clicked still focused.
+      if (el?.closest('input, select, textarea, [contenteditable]')) return;
+      const onControl = Boolean(el?.closest('button, a, summary'));
+      const remote = reader.presenting;
+      const space = remote && !onControl && event.key === ' ';
+      const onwards = event.key === 'ArrowLeft' || space || (remote && event.key === 'PageDown');
+      const back = event.key === 'ArrowRight' || (remote && event.key === 'PageUp');
+      if (!onwards && !back) return;
+      event.preventDefault();
+      paper.turn(page.number + (onwards ? 1 : -1));
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [page.number, show]);
+  }, [page.number, paper, reader.presenting]);
 
   // The silent-letter switch, remembered per reader as a convenience only.
   useEffect(() => {
@@ -202,12 +233,28 @@ export function MushafReader({
   );
   const n = page.number;
 
-  // The whole screen, the size of the letters, and the turn under the thumb.
-  const reader = useReader({
-    storageKey: 'quran',
-    onNext: n < PAGE_COUNT ? () => void show(n + 1) : undefined,
-    onPrevious: n > 1 ? () => void show(n - 1) : undefined,
+  // The two pages on the deck. Going on, the sheet in hand is the one being
+  // read and the next page is revealed under it; going back, the sheet is
+  // the page coming over and the one being read lies under it.
+  const leafPage = paper.turning
+    ? paper.direction === 1
+      ? page
+      : (loaded.get(`${locale}:${paper.to}`) ?? null)
+    : null;
+  const underPage =
+    paper.turning && paper.direction === 1 ? (loaded.get(`${locale}:${paper.to}`) ?? page) : page;
+  const pageProps = (shown: MushafPage) => ({
+    page: shown,
+    locale,
+    juzLabel: t('juz', { n: digits(shown.ayahs[0]!.juz, locale) }),
+    pageLabel: t('pageOf', { n: digits(shown.number, locale) }),
   });
+  const turnProps = {
+    next: n < PAGE_COUNT ? () => paper.turn(n + 1) : undefined,
+    previous: n > 1 ? () => paper.turn(n - 1) : undefined,
+    nextLabel: t('nextPage'),
+    previousLabel: t('previousPage'),
+  };
 
   return (
     // `minmax(0, 1fr)`: a grid column otherwise grows to its widest content,
@@ -246,7 +293,7 @@ export function MushafReader({
               empty={t('none')}
               onPick={(s) => {
                 close();
-                void show(surahPage[s] ?? n, 'push', `#surah-${s}`);
+                void show(surahPage[s] ?? n, `#surah-${s}`);
               }}
             />
           )}
@@ -307,27 +354,45 @@ export function MushafReader({
         <ReaderControls reader={reader} locale={locale} />
       </div>
 
-      {/* The book. */}
+      {/* The book, on a deck of two sheets so that a turn is a turn: the
+          page in hand swings on the spine — the right-hand edge, this being
+          a book read right to left — and the page under it comes into view
+          as it goes. Only these two sheets are drawn again on a turn;
+          nothing else on the site renders. */}
       <div
-        ref={bookRef}
+        ref={paper.stageRef}
         id="mushaf"
         className="mushaf-stage"
         data-silent={marked ? 'on' : 'off'}
+        data-turning={paper.turning ? 'true' : undefined}
         aria-busy={loading}
-        {...reader.swipe}
+        {...paper.gesture}
       >
-        <MushafPageView
-          page={page}
-          locale={locale}
-          juzLabel={t('juz', { n: digits(first.juz, locale) })}
-          pageLabel={t('pageOf', { n: digits(n, locale) })}
-          turn={{
-            next: n < PAGE_COUNT ? () => void show(n + 1) : undefined,
-            previous: n > 1 ? () => void show(n - 1) : undefined,
-            nextLabel: t('nextPage'),
-            previousLabel: t('previousPage'),
-          }}
-        />
+        <div className="mushaf-deck">
+          <MushafPageView
+            {...pageProps(underPage)}
+            turn={underPage === page ? turnProps : undefined}
+            inert={underPage !== page}
+          />
+          {leafPage ? (
+            <div
+              ref={paper.leafRef}
+              className="mushaf-leaf"
+              aria-hidden="true"
+              // Where the sheet starts, written here rather than waiting for
+              // the first frame: coming back it stands upright, and a frame
+              // of it lying flat would show the new page before the turn.
+              style={{ transform: paper.direction === 1 ? 'rotateY(0deg)' : 'rotateY(180deg)' }}
+            >
+              <div className="mushaf-leaf-face">
+                <MushafPageView {...pageProps(leafPage)} />
+              </div>
+              {/* The back of the sheet: blank paper, as it is in a book. */}
+              <div className="mushaf-leaf-back" />
+              <div className="mushaf-leaf-shade" />
+            </div>
+          ) : null}
+        </div>
       </div>
 
       {/* How to turn a page, for a reader who would not think to try. */}
@@ -589,12 +654,16 @@ function MushafPageView({
   juzLabel,
   pageLabel,
   turn,
+  inert = false,
 }: {
   page: MushafPage;
   locale: Locale;
   juzLabel: string;
   pageLabel: string;
-  turn: { next?: () => void; previous?: () => void; nextLabel: string; previousLabel: string };
+  /** Absent on a sheet that is only being turned past. */
+  turn?: { next?: () => void; previous?: () => void; nextLabel: string; previousLabel: string };
+  /** A page on the deck that is not the one being read: not for the cursor. */
+  inert?: boolean;
 }) {
   const blocks: Block[] = [];
   for (const ayah of page.ayahs) {
@@ -606,7 +675,7 @@ function MushafPageView({
   const headSurah = page.surahs[page.ayahs[0]!.surah];
 
   return (
-    <article className="mushaf" aria-label={pageLabel}>
+    <article className="mushaf" aria-label={pageLabel} aria-hidden={inert || undefined}>
       <Rosette className="mushaf-corner" />
       <Rosette className="mushaf-corner" />
       <Rosette className="mushaf-corner" />
@@ -661,25 +730,33 @@ function MushafPageView({
       {/* The page turns sit on the page itself, either side of its number —
           in the order an Arabic book turns: onwards to the left. */}
       <footer className="mushaf-foot" dir="rtl">
-        <button
-          type="button"
-          className="mushaf-turn"
-          onClick={turn.previous}
-          disabled={!turn.previous}
-          aria-label={turn.previousLabel}
-        >
-          <CaretRight size={18} weight="bold" aria-hidden="true" />
-        </button>
+        {turn ? (
+          <button
+            type="button"
+            className="mushaf-turn"
+            onClick={turn.previous}
+            disabled={!turn.previous}
+            aria-label={turn.previousLabel}
+          >
+            <CaretRight size={18} weight="bold" aria-hidden="true" />
+          </button>
+        ) : (
+          <span className="mushaf-turn mushaf-turn-blank" aria-hidden="true" />
+        )}
         <span className="mushaf-folio">{digits(page.number, locale)}</span>
-        <button
-          type="button"
-          className="mushaf-turn"
-          onClick={turn.next}
-          disabled={!turn.next}
-          aria-label={turn.nextLabel}
-        >
-          <CaretLeft size={18} weight="bold" aria-hidden="true" />
-        </button>
+        {turn ? (
+          <button
+            type="button"
+            className="mushaf-turn"
+            onClick={turn.next}
+            disabled={!turn.next}
+            aria-label={turn.nextLabel}
+          >
+            <CaretLeft size={18} weight="bold" aria-hidden="true" />
+          </button>
+        ) : (
+          <span className="mushaf-turn mushaf-turn-blank" aria-hidden="true" />
+        )}
       </footer>
     </article>
   );

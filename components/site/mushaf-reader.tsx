@@ -13,6 +13,7 @@ import {
 } from '@phosphor-icons/react/dist/ssr';
 import { digits } from '@/lib/i18n/format';
 import { BASMALA, JUZ_COUNT, PAGE_COUNT } from '@/lib/quran-constants';
+import { Rosette } from './ornaments';
 import { useReader } from './use-reader';
 import { ReaderControls } from './reader-controls';
 import { ReaderShell } from './reader-shell';
@@ -581,21 +582,6 @@ const arabicIndic = (n: number) =>
   String(n).replace(/[0-9]/g, (d) => String.fromCharCode(0x0660 + Number(d)));
 
 type Block = { kind: 'banner'; surah: number } | { kind: 'text'; ayahs: PageAyah[] };
-
-/** An eight-pointed star, the ornament at the frame's corners and the banner's ends. */
-function Rosette({ className }: { className: string }) {
-  return (
-    <svg className={className} viewBox="-12 -12 24 24" aria-hidden="true" focusable="false">
-      <path
-        d="M0-11 3-3 11 0 3 3 0 11-3 3-11 0-3-3Z M-7.8-7.8 0-4.2 7.8-7.8 4.2 0 7.8 7.8 0 4.2-7.8 7.8-4.2 0Z"
-        fill="currentColor"
-        fillRule="nonzero"
-        opacity="0.9"
-      />
-      <circle r="2.2" fill="var(--card)" />
-    </svg>
-  );
-}
 
 function MushafPageView({
   page,

@@ -326,7 +326,18 @@
       "ziyara": "Ziyarat",
       "taqib": "Taʿqibat"
     },
-    "note": "Die vollständigen Texte liegen im Haus auf — arabisch mit deutscher und persischer Übersetzung. Sprechen Sie uns gerne an."
+    "note": "Die vollständigen Texte stehen hier — arabisch, mit persischer und deutscher Übersetzung Zeile für Zeile. Die deutschen Übertragungen sind Arbeitsfassungen des Vereins; Hinweise auf Fehler nehmen wir dankbar entgegen.",
+    "readFull": "Vollständigen Text lesen",
+    "allDuas": "Alle Bittgebete",
+    "showTranslation": "Übersetzung",
+    "previousDua": "Vorheriges Bittgebet",
+    "nextDua": "Nächstes Bittgebet",
+    "textSource": "Textgrundlage",
+    "textOrigin": {
+      "mafatih": "Arabisch und persische Übersetzung nach Mafatih al-Dschinan. Die deutsche Übertragung stammt vom Verein und ist eine Arbeitsfassung — Hinweise auf Fehler sind willkommen.",
+      "ziyarat": "Arabisch nach den überlieferten Ziyarat-Sammlungen. Die persische und die deutsche Übertragung stammen vom Verein und sind Arbeitsfassungen.",
+      "house": "Zusammengestellt vom Verein."
+    }
   },
   "support": {
     "membership": "Mitgliedschaft",
@@ -470,6 +481,7 @@
     "textSize": "Schriftgröße",
     "larger": "Schrift vergrößern",
     "smaller": "Schrift verkleinern",
-    "turnHint": "Zum Blättern wischen oder die Pfeiltasten verwenden — nach links geht es weiter, wie im arabischen Buch."
+    "turnHint": "Zum Blättern wischen oder die Pfeiltasten verwenden — nach links geht es weiter, wie im arabischen Buch.",
+    "turnHintDua": "Zum nächsten Bittgebet wischen oder die Pfeiltasten verwenden."
   }
 }

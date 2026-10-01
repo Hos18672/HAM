@@ -1,4 +1,7 @@
+import Link from 'next/link';
 import { getTranslations } from 'next-intl/server';
+import { ArrowRight } from '@phosphor-icons/react/dist/ssr';
+import { duaText } from '@/lib/dua-texts';
 import { Card } from '../ui/card';
 import { EditableText } from '@/components/editable/editable-text';
 import type { Locale } from '@/lib/i18n/config';
@@ -92,6 +95,15 @@ export async function DuaCard({ dua, locale }: { dua: DuaEntry; locale: Locale }
         multiline
         rise
       />
+
+      {/* The text itself, where there is one. The card is a card; this is
+          the way in to the reading. */}
+      {duaText(dua.slug) ? (
+        <Link href={`/${locale}/duas/${dua.slug}`} className="dua-open">
+          {t('readFull')}
+          <ArrowRight size={15} weight="bold" aria-hidden="true" className="mirror" />
+        </Link>
+      ) : null}
 
       {/* The two facts, under the design's hairline: the label held at a fixed
           width so the values line up down the card. */}

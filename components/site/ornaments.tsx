@@ -450,3 +450,22 @@ export function ViennaLine() {
     </svg>
   );
 }
+
+/**
+ * An eight-pointed star — the ornament at a sheet's corners and at the ends
+ * of a surah banner. Shared by the mushaf and the du'a reader, which are the
+ * same kind of page.
+ */
+export function Rosette({ className }: { className: string }) {
+  return (
+    <svg className={className} viewBox="-12 -12 24 24" aria-hidden="true" focusable="false">
+      <path
+        d="M0-11 3-3 11 0 3 3 0 11-3 3-11 0-3-3Z M-7.8-7.8 0-4.2 7.8-7.8 4.2 0 7.8 7.8 0 4.2-7.8 7.8-4.2 0Z"
+        fill="currentColor"
+        fillRule="nonzero"
+        opacity="0.9"
+      />
+      <circle r="2.2" fill="var(--card)" />
+    </svg>
+  );
+}

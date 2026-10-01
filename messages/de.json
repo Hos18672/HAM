@@ -229,7 +229,15 @@
     "scale": "Maßstab",
     "closer": "Näher heran",
     "wider": "Weiter weg",
-    "toMecca": "nach Mekka"
+    "toMecca": "nach Mekka",
+    "viewStreet": "Karte",
+    "streetLabel": "Straßenkarte mit Ihrem Standort und der Gebetsrichtung",
+    "streetHint": "Der goldene Pfeil zeigt von Ihrem Standort aus in die Gebetsrichtung. Karte verschieben: ziehen. Kartendaten von OpenStreetMap — dabei wird Ihre IP-Adresse an deren Server übermittelt.",
+    "streetKicker": "In Ihrer Straße",
+    "streetTitle": "Die Richtung vor Ort",
+    "mapOffline": "Die Straßenkarte konnte nicht geladen werden. Die Richtung stimmt trotzdem — hier ohne Kartenmaterial.",
+    "recentreMe": "Zurück zu meinem Standort",
+    "headingOn": "Kompass aktiv"
   },
   "prayer": {
     "title": "Gebetszeiten",
@@ -487,7 +495,8 @@
     "readAsBook": "Als Buch lesen",
     "pageShort": "Seite {n}",
     "markSilentShort": "Stumme Buchstaben",
-    "go": "Öffnen"
+    "go": "Öffnen",
+    "translationShort": "Übersetzung"
   },
   "reader": {
     "fullscreen": "Vollbild",

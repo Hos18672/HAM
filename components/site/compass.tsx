@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import {
   Compass as CompassIcon,
   GlobeHemisphereEast,
+  MapTrifold,
   MapPin,
   ArrowCounterClockwise,
 } from '@phosphor-icons/react/dist/ssr';
@@ -14,6 +15,7 @@ import { Button } from '../ui/button';
 import { PatternPlate } from './ornaments';
 import { QiblaMap } from './qibla-map';
 import { QiblaHere } from './qibla-here';
+import { QiblaStreet } from './qibla-street';
 import type { Locale } from '@/lib/i18n/config';
 
 /** A device orientation event that also carries the iOS compass heading. */
@@ -45,8 +47,14 @@ export function Compass({ locale }: { locale: Locale }) {
   const [geo, setGeo] = useState<GeoState>('house');
   const [compass, setCompass] = useState<CompassState>('idle');
   const [heading, setHeading] = useState(0);
-  // Which map: the one centred on the reader, or the globe behind it.
-  const [view, setView] = useState<'here' | 'world'>('here');
+  /**
+   * Which map. The street is what somebody standing in a doorway actually
+   * needs — the direction against the buildings in front of them — so it is
+   * what opens. Behind it: the same thing drawn from data we carry
+   * ourselves, which needs nothing from anybody, and the globe, which shows
+   * why the line is not the one a flat map would draw.
+   */
+  const [view, setView] = useState<'street' | 'here' | 'world'>('street');
 
   /* ── Live heading ─────────────────────────────────────────────────────── */
   const onOrientation = useCallback((event: CompassEvent) => {
@@ -343,13 +351,30 @@ export function Compass({ locale }: { locale: Locale }) {
         <div style={{ position: 'relative', display: 'grid', gap: 'var(--space-3)' }}>
           <div>
             <p className="kicker" style={{ color: 'var(--color-accent-2-text)' }}>
-              {view === 'here' ? t('hereKicker') : t('mapKicker')}
+              {view === 'street'
+                ? t('streetKicker')
+                : view === 'here'
+                  ? t('hereKicker')
+                  : t('mapKicker')}
             </p>
             <h2 style={{ marginBlockStart: 'var(--space-1)' }}>
-              {view === 'here' ? t('hereTitle') : t('mapTitle')}
+              {view === 'street'
+                ? t('streetTitle')
+                : view === 'here'
+                  ? t('hereTitle')
+                  : t('mapTitle')}
             </h2>
           </div>
           <div className="qibla-view-switch" role="group" aria-label={t('view')}>
+            <button
+              type="button"
+              className="mushaf-switch reader-full-btn"
+              aria-pressed={view === 'street'}
+              onClick={() => setView('street')}
+            >
+              <MapTrifold size={17} weight="duotone" aria-hidden="true" />
+              {t('viewStreet')}
+            </button>
             <button
               type="button"
               className="mushaf-switch reader-full-btn"
@@ -370,7 +395,17 @@ export function Compass({ locale }: { locale: Locale }) {
             </button>
           </div>
         </div>
-        {view === 'here' ? (
+        {view === 'street' ? (
+          <QiblaStreet
+            origin={origin}
+            bearing={qibla.bearing}
+            distanceKm={qibla.distanceKm}
+            locale={locale}
+            originLabel={geo === 'located' ? t('youAreHere') : t('theHouse')}
+            heading={heading}
+            headingLive={compass === 'active'}
+          />
+        ) : view === 'here' ? (
           <QiblaHere
             origin={origin}
             bearing={qibla.bearing}

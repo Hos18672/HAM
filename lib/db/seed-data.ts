@@ -1231,10 +1231,30 @@ export const DUAS: {
     },
   },
   {
+    slug: 'ziyarat-arbain',
+    category: 'ziyara',
+    arabicTitle: 'زِيارَة الأَرْبَعين',
+    sort: 8,
+    fa: {
+      title: 'زیارت اربعین',
+      summary:
+        'زیارت امام حسین (ع) در چهلمین روز پس از عاشورا؛ از امام صادق (ع) به روایت صفوان جمّال.',
+      whenToRead: 'روز اربعین، بیستم صفر',
+      source: 'مصباح المتهجّد، شیخ طوسی',
+    },
+    de: {
+      title: 'Ziyarat al-Arbaʿin',
+      summary:
+        'Der Gruß an Imam Husain (a.) am vierzigsten Tag nach Aschura — überliefert von Imam as-Sadiq (a.) durch Safwan al-Dschammal.',
+      whenToRead: 'Am Tag von Arbaʿin, dem 20. Safar',
+      source: 'Misbah al-Mutahadschdschid, Schaich at-Tusi',
+    },
+  },
+  {
     slug: 'ziyarat-jamia-kabira',
     category: 'ziyara',
     arabicTitle: 'الزِيارَة الجامِعَة الكَبيرَة',
-    sort: 8,
+    sort: 9,
     fa: {
       title: 'زیارت جامعهٔ کبیره',
       summary: 'زیارتی که برای همهٔ ائمه (ع) خوانده می‌شود؛ از امام هادی (ع) نقل شده است.',
@@ -1253,7 +1273,7 @@ export const DUAS: {
     slug: 'ziyarat-warith',
     category: 'ziyara',
     arabicTitle: 'زِيارَة وارِث',
-    sort: 9,
+    sort: 10,
     fa: {
       title: 'زیارت وارث',
       summary: 'سلامی که امام حسین (ع) را وارث آدم، نوح، ابراهیم، موسی و عیسی (ع) می‌خواند.',
@@ -1272,7 +1292,7 @@ export const DUAS: {
     slug: 'ziyarat-al-yasin',
     category: 'ziyara',
     arabicTitle: 'زِيارَة آل ياسين',
-    sort: 10,
+    sort: 11,
     fa: {
       title: 'زیارت آل یاسین',
       summary: 'سلام بر امام زمان (عج) در قالب شهادت‌نامه‌ای بند به بند.',
@@ -1291,7 +1311,7 @@ export const DUAS: {
     slug: 'tasbih-al-zahra',
     category: 'taqib',
     arabicTitle: 'تَسبيح الزَهراء (س)',
-    sort: 11,
+    sort: 12,
     fa: {
       title: 'تسبیح حضرت زهرا (س)',
       summary:

@@ -71,6 +71,8 @@ export function MushafReader({
   const [loading, setLoading] = useState(false);
   const [failed, setFailed] = useState(false);
   const [marked, setMarked] = useState(true);
+  /** Whether each verse carries its translation under it. */
+  const [translated, setTranslated] = useState(false);
 
   const fetchPage = useCallback(
     (n: number): Promise<MushafPage> => {
@@ -129,16 +131,31 @@ export function MushafReader({
   );
 
   /**
-   * Put a page in place. The address is corrected rather than pushed:
-   * `replaceState` is a shallow update, so the route is not re-rendered and
-   * the reader keeps its screen, its size and its place.
+   * Put a page in place, and say so in the address bar.
+   *
+   * Through `History.prototype` on purpose, not through `history.replaceState`.
+   * Next replaces that method with one that tells its router the path has
+   * changed, and the router then rebuilds the route's whole subtree: measured
+   * on the preview, every turn threw away the page shell and built it again —
+   * the page-in animation replayed, every scroll reveal re-armed, and the
+   * reader itself was rebuilt from nothing. That is the "it renders the whole
+   * page" this was supposed to have fixed.
+   *
+   * Turning a leaf of the mushaf is not a navigation. The route is the same
+   * page of the site before and after; only the reader's place in the book
+   * has moved, and the address says where that is the way a bookmark does.
+   * So the address is written and the router is left alone.
+   *
+   * The current entry's state object is passed back unchanged — it is the
+   * router's own, and overwriting it with null would lose what the browser
+   * needs to restore this entry on the way back.
    */
   const commit = useCallback(
     (n: number) => {
       const data = loaded.get(`${locale}:${n}`);
       if (!data) return;
       setPage(data);
-      window.history.replaceState(null, '', pageUrl(n));
+      History.prototype.replaceState.call(window.history, window.history.state, '', pageUrl(n));
     },
     [locale, pageUrl],
   );
@@ -208,14 +225,24 @@ export function MushafReader({
     return () => window.removeEventListener('keydown', onKey);
   }, [page.number, paper, reader.presenting]);
 
-  // The silent-letter switch, remembered per reader as a convenience only.
+  // The two reading switches, remembered per reader as a convenience only.
   useEffect(() => {
     try {
       if (localStorage.getItem('quran-silent') === 'off') setMarked(false);
+      if (localStorage.getItem('quran-translated') === 'on') setTranslated(true);
     } catch {
       /* storage unavailable */
     }
   }, []);
+  function toggleTranslated() {
+    const next = !translated;
+    setTranslated(next);
+    try {
+      localStorage.setItem('quran-translated', next ? 'on' : 'off');
+    } catch {
+      /* storage unavailable */
+    }
+  }
   function toggleMarked() {
     const next = !marked;
     setMarked(next);
@@ -246,6 +273,7 @@ export function MushafReader({
   const pageProps = (shown: MushafPage) => ({
     page: shown,
     locale,
+    translated,
     juzLabel: t('juz', { n: digits(shown.ayahs[0]!.juz, locale) }),
     pageLabel: t('pageOf', { n: digits(shown.number, locale) }),
   });
@@ -267,91 +295,120 @@ export function MushafReader({
         gap: 'var(--space-5)',
       }}
     >
-      {/* The toolbar: where to go, and every reading option there is — the
-          same bar whether the book is on the page or filling the screen. */}
+      {/* The toolbar, in two bands: where to go, and how to read. Kept
+          deliberately small — it sits above the page on a phone, and every
+          row it takes is a row of the Quran the reader cannot see. The same
+          bar whether the book is on the page or filling the screen. */}
       <div className="mushaf-toolbar">
-        <Picker
-          className="mushaf-field-wide"
-          icon={<BookOpen size={18} weight="duotone" aria-hidden="true" />}
-          label={t('surahSelect')}
-          value={
-            <>
-              <span className="mushaf-pick-num">{digits(currentSurah, locale)}</span>
-              <span lang="ar" className="mushaf-pick-ar">
-                {surahs[currentSurah - 1]?.name}
-              </span>
-              <span className="mushaf-pick-latin">{surahs[currentSurah - 1]?.transliteration}</span>
-            </>
-          }
-        >
-          {(close) => (
-            <SurahList
-              surahs={surahs}
-              current={currentSurah}
-              locale={locale}
-              placeholder={t('searchPlaceholder')}
-              empty={t('none')}
-              onPick={(s) => {
-                close();
-                void show(surahPage[s] ?? n, `#surah-${s}`);
-              }}
-            />
-          )}
-        </Picker>
-        <Picker
-          icon={<Stack size={18} weight="duotone" aria-hidden="true" />}
-          label={t('juzSelect')}
-          value={t('juz', { n: digits(first.juz, locale) })}
-        >
-          {(close) => (
-            <div className="mushaf-juz-grid">
-              {Array.from({ length: JUZ_COUNT }, (_, i) => i + 1).map((juz) => (
-                <button
-                  key={juz}
-                  type="button"
-                  className="mushaf-juz"
-                  aria-current={juz === first.juz ? 'true' : undefined}
-                  onClick={() => {
-                    close();
-                    void show(juzPage[juz] ?? n);
-                  }}
-                >
-                  {digits(juz, locale)}
-                </button>
-              ))}
-            </div>
-          )}
-        </Picker>
-        <Picker
-          icon={<Files size={18} weight="duotone" aria-hidden="true" />}
-          label={t('pageSelect')}
-          value={t('pageShort', { n: digits(n, locale) })}
-        >
-          {(close) => (
-            <PageJump
-              current={n}
-              locale={locale}
-              goLabel={t('go')}
-              label={t('pageSelect')}
-              onPick={(p) => {
-                close();
-                void show(p);
-              }}
-            />
-          )}
-        </Picker>
-        <button
-          type="button"
-          role="switch"
-          aria-checked={marked}
-          className="mushaf-switch"
-          onClick={toggleMarked}
-          title={t('silentLegend')}
-        >
-          <span className="mushaf-switch-track" aria-hidden="true" />
-          {t('markSilentShort')}
-        </button>
-        <ReaderControls reader={reader} locale={locale} />
+        <div className="mushaf-bar-row">
+          <Picker
+            className="mushaf-field-wide"
+            icon={<BookOpen size={18} weight="duotone" aria-hidden="true" />}
+            label={t('surahSelect')}
+            value={
+              <>
+                <span className="mushaf-pick-num">{digits(currentSurah, locale)}</span>
+                <span lang="ar" className="mushaf-pick-ar">
+                  {shortName(surahs[currentSurah - 1]?.name ?? '')}
+                </span>
+                <span className="mushaf-pick-latin">
+                  {surahs[currentSurah - 1]?.transliteration}
+                </span>
+              </>
+            }
+          >
+            {(close) => (
+              <SurahList
+                surahs={surahs}
+                current={currentSurah}
+                locale={locale}
+                placeholder={t('searchPlaceholder')}
+                empty={t('none')}
+                onPick={(s) => {
+                  close();
+                  void show(surahPage[s] ?? n, `#surah-${s}`);
+                }}
+              />
+            )}
+          </Picker>
+          <Picker
+            icon={<Stack size={18} weight="duotone" aria-hidden="true" />}
+            label={t('juzSelect')}
+            value={t('juz', { n: digits(first.juz, locale) })}
+          >
+            {(close) => (
+              <div className="mushaf-juz-grid">
+                {Array.from({ length: JUZ_COUNT }, (_, i) => i + 1).map((juz) => (
+                  <button
+                    key={juz}
+                    type="button"
+                    className="mushaf-juz"
+                    aria-current={juz === first.juz ? 'true' : undefined}
+                    onClick={() => {
+                      close();
+                      void show(juzPage[juz] ?? n);
+                    }}
+                  >
+                    {digits(juz, locale)}
+                  </button>
+                ))}
+              </div>
+            )}
+          </Picker>
+          <Picker
+            icon={<Files size={18} weight="duotone" aria-hidden="true" />}
+            label={t('pageSelect')}
+            value={t('pageShort', { n: digits(n, locale) })}
+          >
+            {(close) => (
+              <PageJump
+                current={n}
+                locale={locale}
+                goLabel={t('go')}
+                label={t('pageSelect')}
+                onPick={(p) => {
+                  close();
+                  void show(p);
+                }}
+              />
+            )}
+          </Picker>
+        </div>
+
+        <div className="mushaf-bar-row mushaf-bar-read">
+          <button
+            type="button"
+            role="switch"
+            aria-checked={translated}
+            className="mushaf-switch"
+            onClick={toggleTranslated}
+            title={t('translationToggle')}
+          >
+            <span className="mushaf-switch-track" aria-hidden="true" />
+            {t('translationShort')}
+          </button>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={marked}
+            className="mushaf-switch"
+            onClick={toggleMarked}
+            title={t('silentLegend')}
+          >
+            <span className="mushaf-switch-track" aria-hidden="true" />
+            <span className="mushaf-silent-word">{t('markSilentShort')}</span>
+            {/* On a narrow bar the words give way to the thing itself. */}
+            <span className="mushaf-silent-mark" lang="ar" aria-hidden="true">
+              ٱ
+            </span>
+          </button>
+          {/* Grouped, so that where the band has to break it breaks here
+              and the line below is a row of its own rather than two
+              buttons left over. */}
+          <div className="mushaf-bar-tools">
+            <ReaderControls reader={reader} locale={locale} />
+          </div>
+        </div>
       </div>
 
       {/* The book, on a deck of two sheets so that a turn is a turn: the
@@ -417,21 +474,6 @@ export function MushafReader({
           {t('silentLegend')}
         </p>
       ) : null}
-
-      {/* The translation, under the page: the page stays a page of the book. */}
-      <details className="mushaf-translation">
-        <summary>{t('translationToggle')}</summary>
-        <ol>
-          {page.ayahs.map((ayah) => (
-            <li key={`${ayah.surah}:${ayah.number}`}>
-              <span className="mushaf-translation-ref">
-                {digits(`${ayah.surah}:${ayah.number}`, locale)}
-              </span>
-              <span>{ayah.translation}</span>
-            </li>
-          ))}
-        </ol>
-      </details>
     </ReaderShell>
   );
 }
@@ -505,6 +547,18 @@ function Picker({
 }
 
 /** Bare letters, for matching names however they are typed. */
+/**
+ * The surah's name without the word "surah" in front of it.
+ *
+ * On the button that opens the list there is room for the name and little
+ * else, and the book beside it has already said what kind of thing this
+ * is. The list itself keeps the full name.
+ */
+function shortName(name: string): string {
+  const [first, ...rest] = name.split(/\s+/);
+  return rest.length > 0 && bare(first ?? '') === 'سورة' ? rest.join(' ') : name;
+}
+
 const bare = (text: string) =>
   text
     .replace(/[\u0610-\u061A\u064B-\u065F\u0670\u06D6-\u06ED]/g, '')
@@ -646,7 +700,10 @@ function PageJump({
 const arabicIndic = (n: number) =>
   String(n).replace(/[0-9]/g, (d) => String.fromCharCode(0x0660 + Number(d)));
 
-type Block = { kind: 'banner'; surah: number } | { kind: 'text'; ayahs: PageAyah[] };
+type Block =
+  | { kind: 'banner'; surah: number }
+  | { kind: 'text'; ayahs: PageAyah[] }
+  | { kind: 'translation'; ayah: PageAyah };
 
 function MushafPageView({
   page,
@@ -654,23 +711,37 @@ function MushafPageView({
   juzLabel,
   pageLabel,
   turn,
+  translated = false,
   inert = false,
 }: {
   page: MushafPage;
   locale: Locale;
   juzLabel: string;
   pageLabel: string;
+  /** Whether each verse carries its own translation under it. */
+  translated?: boolean;
   /** Absent on a sheet that is only being turned past. */
   turn?: { next?: () => void; previous?: () => void; nextLabel: string; previousLabel: string };
   /** A page on the deck that is not the one being read: not for the cursor. */
   inert?: boolean;
 }) {
+  /**
+   * The page, in the order it is read.
+   *
+   * Without the translation it is a page of the mushaf: the verses run on
+   * into one another, justified line to line, as they are printed. With it,
+   * each verse stands alone and its translation sits directly under it —
+   * the two read together, which is the whole point of having it. A
+   * translation gathered at the foot of the page is a glossary, and nobody
+   * reads a glossary alongside the text.
+   */
   const blocks: Block[] = [];
   for (const ayah of page.ayahs) {
     if (ayah.number === 1) blocks.push({ kind: 'banner', surah: ayah.surah });
     const last = blocks[blocks.length - 1];
-    if (last?.kind === 'text') last.ayahs.push(ayah);
+    if (!translated && last?.kind === 'text') last.ayahs.push(ayah);
     else blocks.push({ kind: 'text', ayahs: [ayah] });
+    if (translated) blocks.push({ kind: 'translation', ayah });
   }
   const headSurah = page.surahs[page.ayahs[0]!.surah];
 
@@ -689,9 +760,21 @@ function MushafPageView({
         <span>{juzLabel}</span>
       </header>
 
-      <div className="mushaf-body" lang="ar" dir="rtl">
+      <div className="mushaf-body" lang="ar" dir="rtl" data-translated={translated ? 'on' : 'off'}>
         {blocks.map((block, index) =>
-          block.kind === 'banner' ? (
+          block.kind === 'translation' ? (
+            <p
+              key={`r${block.ayah.surah}:${block.ayah.number}`}
+              className="mushaf-tr"
+              lang={locale}
+              dir={locale === 'fa' ? 'rtl' : 'ltr'}
+            >
+              <span className="mushaf-tr-ref" aria-hidden="true">
+                {digits(block.ayah.number, locale)}
+              </span>
+              {block.ayah.translation}
+            </p>
+          ) : block.kind === 'banner' ? (
             <div key={`b${block.surah}`} id={`surah-${block.surah}`} className="mushaf-banner-wrap">
               <p className="mushaf-banner">
                 <Rosette className="mushaf-banner-star" />

@@ -40,6 +40,22 @@ async function readLocales() {
   return [...match[1].matchAll(/'([^']+)'/g)].map((m) => m[1]);
 }
 
+/**
+ * The du'as that have a page of their own, read from the texts themselves.
+ *
+ * They live under a nested dynamic segment, so the directory listing below
+ * does not reach them: before this, every "read the full text" link on the
+ * preview led to a 404, which is the whole du'a section unusable.
+ */
+async function readDuaSlugs() {
+  const source = await readFile('lib/dua-texts/index.ts', 'utf8');
+  const table = source.match(/const TEXTS: Record<string, DuaText> = \{([\s\S]*?)\n\};/);
+  if (!table) throw new Error('could not read the du’a slugs from lib/dua-texts/index.ts');
+  const slugs = [...table[1].matchAll(/^\s*'?([a-z0-9-]+)'?:/gm)].map((m) => m[1]);
+  if (slugs.length === 0) throw new Error('no du’a slugs found in lib/dua-texts/index.ts');
+  return slugs;
+}
+
 /** Every public page, read from the routes that exist. */
 async function readRoutes() {
   const entries = await readdir('app/[locale]/(site)', { withFileTypes: true });
@@ -50,7 +66,8 @@ async function readRoutes() {
   // live site the reader turns pages by asking the server; here there is no
   // server, so every page has to be a file.
   const quranPages = Array.from({ length: QURAN_PAGES }, (_, i) => `/quran/page/${i + 1}`);
-  return ['', ...segments.map((segment) => `/${segment}`), ...quranPages];
+  const duas = (await readDuaSlugs()).map((slug) => `/duas/${slug}`);
+  return ['', ...segments.map((segment) => `/${segment}`), ...duas, ...quranPages];
 }
 
 /**

@@ -4,10 +4,19 @@ import createNextIntlPlugin from 'next-intl/plugin';
 const withNextIntl = createNextIntlPlugin('./lib/i18n/request.ts');
 
 /**
- * Content Security Policy. No third-party origins at all: fonts are self-hosted,
- * icons ship in the bundle, and there is no analytics. `img-src` allows the
- * Supabase Storage origin because uploaded media is served from there.
+ * Content Security Policy. Almost no third-party origins: fonts are
+ * self-hosted, icons ship in the bundle, and there is no analytics anywhere.
+ *
+ * `img-src` allows two: the Supabase Storage origin, because uploaded media
+ * is served from there, and OpenStreetMap's tile server, because the qibla
+ * page draws the direction on the reader's own street and no amount of data
+ * we carry ourselves can show which way that is against the buildings in
+ * front of them. Images only — no script, no stylesheet, no frame — so the
+ * tile server learns the reader's address and roughly where they are
+ * looking, and nothing else. The privacy page says so, and the page falls
+ * back to a map drawn from our own data when the tiles cannot be had.
  */
+const TILE_ORIGIN = 'https://tile.openstreetmap.org';
 const supabaseOrigin = (() => {
   try {
     return process.env.SUPABASE_URL ? new URL(process.env.SUPABASE_URL).origin : '';
@@ -24,7 +33,7 @@ const csp = [
   // 'unsafe-eval' there, the client bundle never hydrates and nothing responds.
   `script-src 'self' 'unsafe-inline'${process.env.NODE_ENV === 'development' ? " 'unsafe-eval'" : ''}`,
   "style-src 'self' 'unsafe-inline'",
-  `img-src 'self' data: blob:${supabaseOrigin ? ' ' + supabaseOrigin : ''}`,
+  `img-src 'self' data: blob: ${TILE_ORIGIN}${supabaseOrigin ? ' ' + supabaseOrigin : ''}`,
   "font-src 'self'",
   `connect-src 'self'${supabaseOrigin ? ' ' + supabaseOrigin : ''}`,
   "frame-ancestors 'none'",

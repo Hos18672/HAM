@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { DUA_TEXT_SLUGS, duaText, isRubric } from '@/lib/dua-texts';
+import { DUAS } from '@/lib/db/seed-data';
 
 /**
  * The texts are data, and the one thing data of this size gets wrong is a
@@ -48,5 +49,32 @@ describe('The du’a texts', () => {
     for (const line of sections) {
       expect(line[2], line[2].slice(0, 40)).toContain('Rette uns vor dem Feuer');
     }
+  });
+
+  /**
+   * A du'a needs two halves to have a page: the text, which lives in the
+   * code, and the catalogue entry — title, when to read it, where it comes
+   * from — which lives in the database. With only one of them the page is a
+   * 404, and nothing says so: Ziyarat al-Arbaʿin shipped that way, its full
+   * text written and translated but with no entry to open it from.
+   */
+  it('has a catalogue entry for every text, and a text for every entry', () => {
+    const seeded = DUAS.map((dua) => dua.slug);
+    for (const slug of DUA_TEXT_SLUGS) {
+      expect(seeded, `${slug} has a text but no catalogue entry — its page 404s`).toContain(slug);
+    }
+    // The other way round is allowed: an entry may describe a du'a whose
+    // text is not here yet, and the card then simply does not offer to open
+    // it. What must never happen is an entry that promises a page it cannot
+    // give, so the ones that are listed as readable are checked here.
+    for (const slug of seeded) {
+      if (!DUA_TEXT_SLUGS.includes(slug)) continue;
+      expect(duaText(slug), slug).not.toBeNull();
+    }
+  });
+
+  it('gives every du’a its own place in the order', () => {
+    const sorts = DUAS.map((dua) => dua.sort);
+    expect(new Set(sorts).size, 'two du’as share a sort order').toBe(sorts.length);
   });
 });

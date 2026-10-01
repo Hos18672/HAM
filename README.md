@@ -305,7 +305,31 @@ association house) and the WGS84 geodesic distance (≈3 637 km — about 3 km
 shorter than the spherical figure, which over that path is worth being accurate
 about).
 
-### The qibla map is centred on the person looking at it
+### The qibla map is the street you are standing in
+
+The view that opens is a street map — OpenStreetMap's own tiles — with your
+position in the middle and a gold arrow leaving it in the direction of
+prayer. That is the one thing a drawing from our own data cannot give: a
+bearing is only usable if you can see it **against the buildings in front of
+you**.
+
+The arrow may be drawn as a straight line because Mercator is conformal — it
+preserves angles at a point — so the initial bearing of the great circle,
+which is what the qibla is, leaves your position at that very angle on the
+screen (`lib/slippy.ts`). There is no map library: the tiles are plain
+`<img>` elements placed by transform, so nothing of theirs runs in the page.
+
+**What it costs, plainly**: the tile server is told the reader's IP address
+and, from the tiles asked for, roughly which patch of the earth they are
+looking at. No script, no cookie, no identifier of ours. It is the only
+third-party request this site makes from the browser, `img-src` in the CSP
+allows that one host and nothing else, the privacy page says so in both
+languages, and an e2e test walks every public page and fails if anything
+else ever appears. For a reader who would rather ask nobody, the two views
+behind it need no network at all — and when the tiles cannot be had the page
+falls back to them by itself and says why.
+
+### Behind it, a map centred on the person looking at it
 
 The map that opens puts **you** in the middle — a house at the centre of the
 disc, your own place — and the qibla is a straight gold arrow out of it. That

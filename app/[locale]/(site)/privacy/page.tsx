@@ -25,11 +25,14 @@ export async function generateMetadata({
  * Privacy policy.
  *
  * This text describes what the application actually does — there is no
- * analytics, no tracker, no font CDN and no third-party embed anywhere in the
- * codebase, so the policy can say so plainly. The one outside service the
- * server itself calls is the Aladhan prayer-times API (`lib/aladhan`), and the
- * section on location says exactly what reaches it. If any of that changes,
- * this page has to change with it.
+ * analytics, no tracker and no font CDN anywhere in the codebase, so the
+ * policy can say so plainly. Two outside services are named because two are
+ * used: the Aladhan prayer-times API, which the *server* calls (`lib/aladhan`),
+ * and OpenStreetMap's tiles, which the *reader's browser* fetches on the qibla
+ * map (`components/site/qibla-street`) — the only third-party request this
+ * site makes from the browser, and the section on location says exactly what
+ * reaches them and how to avoid it. If any of that changes, this page has to
+ * change with it.
  */
 export default async function PrivacyPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
@@ -91,6 +94,8 @@ export default async function PrivacyPage({ params }: { params: Promise<{ locale
           title: 'Standort und Kompass',
           body: [
             'Auf der Qibla-Seite können Sie Ihren Standort freigeben, um die Gebetsrichtung von Ihrem Aufenthaltsort aus zu berechnen. Diese Berechnung findet ausschließlich in Ihrem Browser statt. Ihr Standort wird dabei weder an uns noch an Dritte übermittelt.',
+            'Die Kartenansicht dieser Seite zeigt Ihre Umgebung mit Kartenkacheln von OpenStreetMap (openstreetmap.org). Diese Bilder lädt Ihr Browser direkt bei deren Server; dabei erfährt OpenStreetMap Ihre IP-Adresse und — aus den angeforderten Kacheln — ungefähr, welchen Ausschnitt der Erde Sie ansehen. Es werden ausschließlich Bilder angefordert: kein Skript, kein Cookie, keine Kennung von uns. Ihre genauen Koordinaten werden nicht übermittelt.',
+            'Wenn Sie das nicht möchten: Die Ansichten „Mein Standort“ und „Weltkugel“ auf derselben Seite zeigen dieselbe Richtung und werden vollständig aus Daten gezeichnet, die diese Seite selbst mitbringt — dabei verlässt keine einzige Anfrage unseren Server.',
             'Auf der Seite der Gebetszeiten können Sie Ihren Standort ebenfalls freigeben, um die Zeiten für Ihren Aufenthaltsort zu sehen. Dafür sendet Ihr Browser Ihre Koordinaten, auf etwa einen Kilometer gerundet, zusammen mit Ihrer Zeitzone an unseren Server, der damit die Zeiten bei Aladhan abfragt. Die Koordinaten werden nur für diese Abfrage verwendet und weder von uns gespeichert noch mit Ihrer Person verknüpft. Zum Schutz vor Missbrauch zählen wir die Abfragen je Prüfwert Ihrer IP-Adresse (siehe oben) für eine Stunde.',
           ],
         },
@@ -151,6 +156,8 @@ export default async function PrivacyPage({ params }: { params: Promise<{ locale
           title: 'موقعیت مکانی و قطب‌نما',
           body: [
             'در صفحهٔ قبله می‌توانید موقعیت خود را در اختیار بگذارید تا جهت قبله از محل شما محاسبه شود. این محاسبه تنها در مرورگر شما انجام می‌گیرد و موقعیت شما نه به ما و نه به کسی دیگر فرستاده می‌شود.',
+            'نمای نقشهٔ این صفحه محیط اطراف شما را با کاشی‌های نقشهٔ OpenStreetMap (openstreetmap.org) نشان می‌دهد. این تصویرها را مرورگر شما مستقیم از سرور آنان می‌گیرد و در این میان OpenStreetMap نشانی IP شما و — از روی کاشی‌های درخواستی — تقریباً محدوده‌ای را که می‌بینید می‌داند. تنها تصویر درخواست می‌شود: نه اسکریپتی، نه کوکی‌ای و نه شناسه‌ای از سوی ما. مختصات دقیق شما فرستاده نمی‌شود.',
+            'اگر این را نمی‌خواهید: نماهای «موقعیت من» و «کرهٔ زمین» در همان صفحه همان جهت را نشان می‌دهند و تماماً از داده‌هایی رسم می‌شوند که خود این صفحه همراه دارد؛ در آن حالت هیچ درخواستی بیرون نمی‌رود.',
             'در صفحهٔ اوقات شرعی نیز می‌توانید موقعیت خود را در اختیار بگذارید تا اوقات محل خود را ببینید. برای این کار مرورگر شما مختصات شما را، گردشده تا حدود یک کیلومتر، همراه با منطقهٔ زمانی‌تان به سرور ما می‌فرستد و سرور با آن اوقات را از Aladhan می‌پرسد. این مختصات تنها برای همین درخواست به کار می‌رود، نزد ما ذخیره نمی‌شود و به شخص شما پیوند نمی‌خورد. برای جلوگیری از سوءاستفاده، شمار درخواست‌ها را بر پایهٔ مقدار کنترلی نشانی IP شما (بالا را ببینید) برای یک ساعت می‌شماریم.',
           ],
         },

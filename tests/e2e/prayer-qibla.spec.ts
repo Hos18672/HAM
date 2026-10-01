@@ -271,6 +271,7 @@ test.describe('qibla', () => {
 test.describe('the qibla from where you are', () => {
   test('opens on your own place, with the direction out of it', async ({ page }) => {
     await page.goto('/de/qibla');
+    await page.getByRole('button', { name: 'Mein Standort' }).click();
     const map = page.locator('.qibla-map-svg');
     await map.scrollIntoViewIfNeeded();
 
@@ -292,6 +293,7 @@ test.describe('the qibla from where you are', () => {
 
   test('zooms down to the ground you are standing on', async ({ page }) => {
     await page.goto('/de/qibla');
+    await page.getByRole('button', { name: 'Mein Standort' }).click();
     const map = page.locator('.qibla-map-svg');
     await map.scrollIntoViewIfNeeded();
 
@@ -312,16 +314,105 @@ test.describe('the qibla from where you are', () => {
     await expect(map.getByText(/nach Mekka/)).toBeVisible();
   });
 
-  test('is drawn in the page, with nothing fetched from a tile server', async ({ page }) => {
+  test('is drawn in the page, with nothing fetched from anywhere', async ({ page }) => {
+    await page.goto('/de/qibla');
+    await page.getByRole('button', { name: 'Mein Standort' }).click();
+    await page.locator('.qibla-map-svg').waitFor();
+
+    // Counted only from here: the street map opens first and fetches its
+    // tiles, which is its business. What is being checked is that *this*
+    // view asks for nothing — it is the one for a reader who would rather
+    // nobody were told where they are.
     const outside: string[] = [];
     page.on('request', (request) => {
       const url = new URL(request.url());
       if (url.host !== '127.0.0.1:3100' && url.protocol !== 'data:') outside.push(request.url());
     });
-    await page.goto('/de/qibla');
     await page.locator('.qibla-map-svg').scrollIntoViewIfNeeded();
+    for (let i = 0; i < 3; i += 1) {
+      await page.getByRole('button', { name: 'Weiter weg' }).click();
+    }
     await page.waitForTimeout(1_500);
     expect(outside).toEqual([]);
+  });
+});
+
+/**
+ * The street map, which is what the page opens on: the direction drawn over
+ * the reader's own surroundings, because a bearing is only usable if you can
+ * see it against the buildings in front of you.
+ *
+ * The tiles are stubbed with a single pixel. The run must not trouble
+ * OpenStreetMap's servers, and whether their map is reachable from a CI
+ * runner is not something this suite should depend on.
+ */
+test.describe('the qibla on the street', () => {
+  const PIXEL = Buffer.from(
+    'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
+    'base64',
+  );
+
+  test('opens on the street, with tiles and the arrow over them', async ({ page }) => {
+    const asked: string[] = [];
+    await page.route('https://tile.openstreetmap.org/**', (route, request) => {
+      asked.push(request.url());
+      return route.fulfill({ contentType: 'image/png', body: PIXEL });
+    });
+
+    await page.goto('/de/qibla');
+    const street = page.locator('.qibla-street');
+    await street.scrollIntoViewIfNeeded();
+    await expect(street).toBeVisible();
+
+    // Tiles are asked for, and only from the one host the policy names.
+    await expect.poll(() => asked.length, { timeout: 10_000 }).toBeGreaterThan(3);
+    for (const url of asked) expect(url).toMatch(/^https:\/\/tile\.openstreetmap\.org\/\d+\//);
+
+    // The direction is drawn over them, and Vienna's qibla runs south-east:
+    // the far end of the ray is right of and below the reader.
+    const ray = street.locator('line').last();
+    const [x1, y1, x2, y2] = await Promise.all(
+      ['x1', 'y1', 'x2', 'y2'].map(async (a) => Number(await ray.getAttribute(a))),
+    );
+    expect(x2).toBeGreaterThan(x1);
+    expect(y2).toBeGreaterThan(y1);
+
+    // OpenStreetMap's licence asks for the credit, and it is there.
+    await expect(street.getByText('© OpenStreetMap')).toBeVisible();
+  });
+
+  test('says so and draws it itself when the tiles cannot be had', async ({ page }) => {
+    await page.route('https://tile.openstreetmap.org/**', (route) => route.abort());
+
+    await page.goto('/de/qibla');
+    await expect(page.locator('.qibla-fallback')).toBeVisible({ timeout: 10_000 });
+    // Not a blank square and not a lie: it says the map is missing and then
+    // gives the same direction, drawn from what the page carries.
+    await expect(page.getByText(/Straßenkarte konnte nicht geladen werden/)).toBeVisible();
+    await expect(page.locator('.qibla-map-svg')).toBeVisible();
+  });
+
+  test('moves under the hand and comes back', async ({ page }) => {
+    await page.route('https://tile.openstreetmap.org/**', (route) =>
+      route.fulfill({ contentType: 'image/png', body: PIXEL }),
+    );
+    await page.goto('/de/qibla');
+    const street = page.locator('.qibla-street');
+    await street.scrollIntoViewIfNeeded();
+    await expect(street).toBeVisible();
+
+    const recentre = page.getByRole('button', { name: 'Zurück zu meinem Standort' });
+    await expect(recentre).toBeDisabled();
+
+    const box = (await street.boundingBox())!;
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(box.x + box.width / 2 + 90, box.y + box.height / 2 + 60, { steps: 6 });
+    await page.mouse.up();
+
+    await expect(recentre).toBeEnabled();
+    await recentre.click();
+    await expect(recentre).toBeDisabled();
   });
 });
 

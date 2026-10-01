@@ -164,20 +164,41 @@ test.describe('public site', () => {
     expect(headers['x-content-type-options']).toBe('nosniff');
   });
 
-  test('loads no third-party resources at all', async ({ page }) => {
-    const external: string[] = [];
+  test('asks nobody but the tile server, and only on the qibla page', async ({ page }) => {
+    // One transparent pixel, so the map behaves as if the tiles arrived and
+    // the run never actually troubles OpenStreetMap's servers.
+    const PIXEL = Buffer.from(
+      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
+      'base64',
+    );
+    await page.route('https://tile.openstreetmap.org/**', (route) =>
+      route.fulfill({ contentType: 'image/png', body: PIXEL }),
+    );
+
+    const external: { path: string; url: string }[] = [];
+    let where = '';
     page.on('request', (request) => {
       const url = new URL(request.url());
       if (!url.hostname.includes('127.0.0.1') && !url.hostname.includes('localhost')) {
-        external.push(request.url());
+        external.push({ path: where, url: request.url() });
       }
     });
 
-    await page.goto('/de');
-    await page.waitForLoadState('networkidle');
-    // No font CDN, no analytics, no embeds — which is what lets the privacy
-    // policy say there is nothing to consent to.
-    expect(external).toEqual([]);
+    for (const path of PUBLIC_PATHS) {
+      where = path;
+      await page.goto(`/de${path}`);
+      await page.waitForLoadState('networkidle');
+    }
+
+    // No font CDN, no analytics, no embeds, anywhere. The single exception
+    // is the map on the qibla page, which fetches OpenStreetMap's tiles as
+    // plain images — nothing else of theirs runs in the page, and the
+    // privacy policy says so. If anything else ever appears here, the
+    // policy has stopped being true.
+    const unexpected = external.filter(
+      (r) => !(r.path === '/qibla' && r.url.startsWith('https://tile.openstreetmap.org/')),
+    );
+    expect(unexpected).toEqual([]);
   });
 });
 

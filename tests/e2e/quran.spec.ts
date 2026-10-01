@@ -114,6 +114,32 @@ test.describe('the mushaf', () => {
     await expect.poll(size).toBe(bigger);
   });
 
+  test('puts each verse’s translation under that verse', async ({ page }) => {
+    // Off by default: the page is a page of the mushaf first.
+    await expect(page.locator('.mushaf-tr')).toHaveCount(0);
+
+    await page.getByRole('switch', { name: 'Übersetzung' }).click();
+    const verses = page.locator('.mushaf-text');
+    const lines = page.locator('.mushaf-tr');
+    await expect.poll(() => lines.count()).toBeGreaterThan(0);
+    // One rendering per verse, and each immediately after its own verse —
+    // not gathered at the foot of the page, where nobody reads them.
+    expect(await lines.count()).toBe(await verses.count());
+    const order = await page.evaluate(() =>
+      [...document.querySelectorAll('.mushaf-text, .mushaf-tr')].map((el) =>
+        el.classList.contains('mushaf-tr') ? 'tr' : 'ar',
+      ),
+    );
+    expect(order.join(' ')).toMatch(/^ar tr( ar tr)*$/);
+
+    // And the choice is the reader's: it survives a turn and a reload.
+    await page.keyboard.press('ArrowLeft');
+    await expect(page).toHaveURL(/\/quran\/page\/2$/);
+    await expect.poll(() => lines.count()).toBeGreaterThan(0);
+    await page.reload();
+    await expect.poll(() => lines.count()).toBeGreaterThan(0);
+  });
+
   test('on a phone, no control is cut off in fullscreen', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.getByRole('button', { name: 'Vollbild', exact: true }).click();
@@ -128,6 +154,12 @@ test.describe('the mushaf', () => {
       expect(box.x).toBeGreaterThanOrEqual(-0.5);
       expect(box.x + box.width).toBeLessThanOrEqual(width + 0.5);
     }
+
+    // And it stays small. The bar sits above the page on a phone, so every
+    // row it takes is a row of the Quran the reader cannot see; it had
+    // grown to four rows and most of the top of the screen.
+    const bar = (await page.locator('.mushaf-toolbar').boundingBox())!;
+    expect(bar.height).toBeLessThan(150);
   });
 
   test('presents to a room', async ({ page }) => {

@@ -3677,29 +3677,18 @@
   .dua-lines[data-translated='off'] .dua-tr {
     display: none;
   }
-  /* "Then say a hundred times" — an instruction, not words to recite. */
+  /* "Then say a hundred times" — an instruction, not words to recite. Set
+     as a note rather than a heading: several of them are whole sentences,
+     and a sentence in small capitals is not read, it is deciphered. */
   .dua-rubric {
-    display: flex;
-    align-items: center;
-    gap: var(--space-3);
-    font-size: var(--text-xs);
-    letter-spacing: var(--tracking-kicker);
-    text-transform: uppercase;
-    font-weight: var(--weight-semibold);
-    color: var(--goldInk);
-  }
-  :root[dir='rtl'] .dua-rubric {
-    text-transform: none;
-    letter-spacing: 0;
+    padding: var(--space-2) var(--space-3);
+    background: rgba(176, 138, 69, 0.09);
+    border-inline-start: 2px solid var(--gold);
+    border-radius: 8px;
     font-size: var(--text-sm);
-  }
-  .dua-rubric::before,
-  .dua-rubric::after {
-    content: '';
-    flex: 1;
-    block-size: 1px;
-    background: var(--gold);
-    opacity: 0.5;
+    font-weight: var(--weight-semibold);
+    line-height: var(--leading-normal);
+    color: var(--goldInk);
   }
   .dua-foot-title {
     flex: 1;

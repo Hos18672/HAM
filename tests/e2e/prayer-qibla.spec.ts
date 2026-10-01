@@ -77,14 +77,18 @@ test.describe('prayer times', () => {
   });
 
   test('puts a commemoration on the Gregorian day its Hijri date falls on', async ({ page }) => {
-    // 13 Rajab 1448 — Imam Ali's birthday — is 22 December 2026.
+    // 13 Rajab 1448 — Imam Ali's birthday — is 23 December 2026: Wednesday
+    // the 2nd of Dey 1405, as the Iranian calendar has it and as this site
+    // reckons (`lib/hijri-iran`). Umm al-Qura, which ICU ships and which
+    // this page used to read, puts it on the 22nd; that is the error, not
+    // the fixture.
     await page.goto('/de/prayer?y=2026&m=12');
     const cell = page
       .locator('table.cal-grid')
       .getByRole('cell')
       .filter({ hasText: 'Geburtstag Imam Alis' })
       .first();
-    await expect(cell).toContainText('22');
+    await expect(cell).toContainText('23');
     // …and the Hijri day number printed beneath it.
     await expect(cell).toContainText('13');
   });
@@ -254,6 +258,52 @@ test.describe('qibla', () => {
     await observe('deviceorientation', 200, false);
     await page.waitForTimeout(300);
     expect(await rotation()).toBe('-270');
+  });
+});
+
+test.describe('the qibla globe', () => {
+  test('draws the world, both places and the way between them', async ({ page }) => {
+    await page.goto('/de/qibla');
+    const globe = page.locator('.qibla-globe');
+    await globe.scrollIntoViewIfNeeded();
+
+    // The outline is a separate chunk, fetched once the map is on screen.
+    await expect.poll(() => globe.locator('path').count(), { timeout: 10_000 }).toBeGreaterThan(5);
+
+    // The two ends of the arc are labelled, and the arc itself is drawn.
+    await expect(globe.getByText('Vereinshaus')).toBeVisible();
+    await expect(globe.getByText('Mekka')).toBeVisible();
+
+    const drawn = await page.evaluate(() =>
+      [...document.querySelectorAll('.qibla-globe path')].map(
+        (p) => (p.getAttribute('d') ?? '').length,
+      ),
+    );
+    // Land, borders, graticule and the arc — none of them empty.
+    expect(Math.max(...drawn)).toBeGreaterThan(5_000);
+  });
+
+  test('turns under the pointer and comes back', async ({ page }) => {
+    await page.goto('/de/qibla');
+    const globe = page.locator('.qibla-globe');
+    await globe.scrollIntoViewIfNeeded();
+    await expect.poll(() => globe.locator('path').count(), { timeout: 10_000 }).toBeGreaterThan(5);
+
+    const arc = () =>
+      page.evaluate(
+        () => document.querySelectorAll('.qibla-globe path')[3]?.getAttribute('d') ?? '',
+      );
+    const before = await arc();
+
+    const box = (await globe.boundingBox())!;
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(box.x + box.width / 2 + 80, box.y + box.height / 2 + 30, { steps: 6 });
+    await page.mouse.up();
+    await expect.poll(arc).not.toBe(before);
+
+    await page.getByRole('button', { name: 'Ansicht zurücksetzen' }).click();
+    await expect.poll(arc).toBe(before);
   });
 });
 

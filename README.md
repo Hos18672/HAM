@@ -326,6 +326,27 @@ The trade is resolution: the outline is continental, so the map zooms to about
 a sixth of the globe and no further. It shows where you are on the earth and
 which way the qibla runs from there, not which street you are standing in.
 
+### The du'a texts are in the code, not the database
+
+`lib/dua-texts/` holds thirteen full texts — one file per du'a, one line of
+source per line of prayer, as `[arabic, persian, german]`. They live in the
+code and not in the database, as the Quran does and unlike everything the
+editors keep, because they are scripture rather than editorial content:
+nobody is going to reword Du'a Kumail from the admin screen.
+
+- **Arabic and Persian** for the nine from Mafatih al-Jinan come from a
+  published digital edition of it; the three ziyarat (Warith, Al Yasin, the
+  Jamia Kabira) come from the Arabic ziyarat collections, segmented into the
+  clauses they are read in.
+- **German is the house's own working translation**, made line by line
+  against the Arabic with the Persian beside it. The page says so, under
+  "Textgrundlage". **Corrections are welcome and are a one-line diff** in the
+  file named after the du'a; `tests/unit/dua-texts.test.ts` checks that no
+  line ever loses a translation.
+
+Adding a du'a means adding a file, a line in `lib/dua-texts/index.ts`, and a
+row in the `duas` seed with the same slug.
+
 ### The lunar calendar is Iran's, not Saudi Arabia's
 
 Every runtime ships ICU, and ICU's Hijri calendar is the **Umm al-Qura** table

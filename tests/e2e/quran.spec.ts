@@ -86,10 +86,12 @@ test.describe('the mushaf', () => {
         clientY: y,
         bubbles: true,
       });
-    await send('pointerdown', box.x + box.width - 40);
-    await send('pointermove', box.x + box.width - 160);
-    await send('pointermove', box.x + 40);
-    await send('pointerup', box.x + 40);
+    // Left to right: the finished leaf carried over the spine, which is
+    // the hand a reader of a mushaf already has.
+    await send('pointerdown', box.x + 40);
+    await send('pointermove', box.x + 160);
+    await send('pointermove', box.x + box.width - 40);
+    await send('pointerup', box.x + box.width - 40);
 
     await expect(page).toHaveURL(/\/quran\/page\/2$/);
     // The reader asked for the whole screen and still has it — this is the

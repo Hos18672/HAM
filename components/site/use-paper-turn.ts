@@ -6,8 +6,11 @@ import { useCallback, useEffect, useRef, useState } from 'react';
  * Turning a page like paper.
  *
  * The leaf is a real sheet: it hangs on the spine — the right-hand edge, this
- * being a book read right to left — and swings about it. Dragging moves it
- * under the finger; letting go either carries it over or lets it fall back.
+ * being a book bound on the right — and swings about it. So onwards is a
+ * sweep from left to right, which is the hand a reader of a mushaf already
+ * has: you take the leaf you have finished and carry it over the spine.
+ * Dragging moves it under the finger; letting go either carries it over or
+ * lets it fall back.
  * Past ninety degrees its back is towards the reader and `backface-visibility`
  * takes it out of sight, which is what a turning page does.
  *
@@ -25,7 +28,7 @@ const DURATION_MS = 460;
 export interface PaperTurn {
   /** The page the leaf is turning to, or null at rest. */
   to: number | null;
-  /** 1 going on (leftwards), -1 going back. */
+  /** 1 going on (the sheet sweeps rightwards), -1 going back. */
   direction: 1 | -1;
   /** True from the first movement until the new page is in place. */
   turning: boolean;
@@ -180,8 +183,12 @@ export function usePaperTurn({
           return;
         }
         d.axis = 'across';
-        // Leftwards is onwards, as the buttons under the page have it.
-        const direction: 1 | -1 = dx < 0 ? 1 : -1;
+        // Onwards is a sweep to the right: the mushaf is bound on the
+        // right, so the sheet you have finished is the one on the left, and
+        // you carry it over the spine to the right to reach the next page.
+        // That is the hand a reader already has, and it is the way the leaf
+        // swings here — it hangs on the right and sweeps right.
+        const direction: 1 | -1 = dx > 0 ? 1 : -1;
         const to = direction === 1 ? page + 1 : page - 1;
         if (!canGo(to)) {
           drag.current = null;
@@ -197,7 +204,7 @@ export function usePaperTurn({
       if (d.axis !== 'across' || d.to === null) return;
 
       const width = stageRef.current?.getBoundingClientRect().width || 1;
-      place(clamp((d.direction === 1 ? -dx : dx) / width), d.direction);
+      place(clamp((d.direction === 1 ? dx : -dx) / width), d.direction);
       d.lastX = event.clientX;
       d.lastAt = Date.now();
     },
@@ -216,7 +223,7 @@ export function usePaperTurn({
 
       const width = stageRef.current?.getBoundingClientRect().width || 1;
       const dx = event.clientX - d.x;
-      const progress = clamp((d.direction === 1 ? -dx : dx) / width);
+      const progress = clamp((d.direction === 1 ? dx : -dx) / width);
       const elapsed = Math.max(1, Date.now() - d.lastAt);
       const speed = Math.abs(event.clientX - d.lastX) / elapsed;
       const flung = speed > COMMIT_SPEED && progress > 0.08;

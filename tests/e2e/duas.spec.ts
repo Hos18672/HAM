@@ -135,8 +135,8 @@ test.describe('the du‘as', () => {
     const box = (await stage.boundingBox())!;
     const y = box.y + Math.min(box.height / 2, 300);
     for (const [type, x] of [
-      ['pointerdown', 320],
-      ['pointerup', 60],
+      ['pointerdown', 60],
+      ['pointerup', 320],
     ] as const) {
       await stage.dispatchEvent(type, {
         pointerId: 1,
@@ -148,8 +148,10 @@ test.describe('the du‘as', () => {
       });
     }
 
-    // Leftwards is onwards, as in the mushaf; and the reader does not fall
-    // out of fullscreen on the way, although the turn remounts it.
+    // Carried rightwards is onwards, as in the mushaf — these are bound on
+    // the right, so the leaf you have finished goes over the spine. And the
+    // reader does not fall out of fullscreen on the way, although the turn
+    // remounts it.
     await expect(page).toHaveURL(/\/de\/duas\/nudba$/);
     await expect(page.locator('.reader-shell')).toHaveAttribute('data-full', 'true');
   });

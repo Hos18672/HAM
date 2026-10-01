@@ -55,7 +55,8 @@ export function DuaReader({
 
   const reader = useReader({
     storageKey: 'dua',
-    // Leftwards is onwards, as in the mushaf: these are read right to left.
+    // Carried rightwards is onwards, as in the mushaf: bound on the right,
+    // the leaf you have finished goes over the spine.
     onNext: next ? () => go(next) : undefined,
     onPrevious: previous ? () => go(previous) : undefined,
   });

@@ -354,8 +354,12 @@ site page afresh, which is why fullscreen never lasted past one page.
 
 The turn itself is paper (`components/site/use-paper-turn.ts`). A deck of two
 sheets: the one in hand hangs on the spine — the right-hand edge, this being a
-book read right to left — and swings about it in 3D while the page underneath
-comes into view, so the turn reveals rather than replaces. The angle is written
+book bound on the right — and swings about it in 3D while the page underneath
+comes into view, so the turn reveals rather than replaces. **Onwards is a
+sweep from left to right**, because that is the hand: you take the leaf you
+have finished, on the left, and carry it over the spine. (The next page still
+_lies_ to the left, which is why the arrow keys read the other way round —
+they name a side, the swipe names a movement of the hand.) The angle is written
 straight onto the element frame by frame rather than held in React state: a
 turn is sixty frames, and sixty renders of a page of the Quran is sixty frames
 dropped. It is CSS 3D transforms, not a WebGL scene — a page of justified

@@ -495,8 +495,8 @@
     "textSize": "Schriftgröße",
     "larger": "Schrift vergrößern",
     "smaller": "Schrift verkleinern",
-    "turnHint": "Zum Blättern wischen oder die Pfeiltasten verwenden — nach links geht es weiter, wie im arabischen Buch.",
-    "turnHintDua": "Zum nächsten Bittgebet wischen oder die Pfeiltasten verwenden.",
+    "turnHint": "Zum Blättern wischen oder die Pfeiltasten verwenden — nach rechts wischen blättert weiter, so wie man im arabischen Buch das gelesene Blatt über den Bund legt.",
+    "turnHintDua": "Nach rechts wischen oder die Pfeiltasten verwenden, um zum nächsten Bittgebet zu gelangen.",
     "presentation": "Präsentation",
     "exitPresentation": "Präsentation beenden",
     "presentationHint": "Präsentationsmodus: Leertaste oder Pfeiltasten blättern, Esc beendet."

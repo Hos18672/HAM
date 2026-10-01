@@ -90,7 +90,7 @@ export function useReader({
 }: {
   /** Where the chosen text size is remembered, per reader. */
   storageKey: string;
-  /** Onwards — leftwards, the way an Arabic book turns. */
+  /** Onwards — the sheet carried rightwards, the way an Arabic book turns. */
   onNext?: () => void;
   onPrevious?: () => void;
 }): Reader {
@@ -293,9 +293,12 @@ export function useReader({
       // Somebody who was marking a verse is not asking for the next page.
       if (window.getSelection()?.toString()) return;
 
-      // Leftwards is onwards, as the buttons under the page have it and as
-      // the arrow keys do: in an Arabic book the next page lies to the left.
-      if (across < 0) onNext?.();
+      // Onwards is a sweep to the right, as it is in the hand: these are
+      // bound on the right, so the leaf you have finished is the one on the
+      // left and you carry it over the spine to the right. The next page
+      // lies to the left — which is why the arrow keys read the other way
+      // round, those naming a side rather than a movement of the hand.
+      if (across > 0) onNext?.();
       else onPrevious?.();
     },
     [onNext, onPrevious],

@@ -114,6 +114,50 @@ test.describe('the du‘as', () => {
     await expect(page.getByRole('heading', { level: 1 })).toContainText('Ziyarat');
   });
 
+  test('opens the du‘a from anywhere on its card', async ({ page }) => {
+    await page.goto('/de/duas');
+    const card = page.locator('.dua').first();
+    const box = (await card.boundingBox())!;
+    // Pressed well away from the words that say so — the whole card is the
+    // way in. Through the locator, which scrolls to it first: at this width
+    // the card starts below the fold.
+    await card.click({ position: { x: box.width / 2, y: box.height * 0.4 } });
+    await expect(page).toHaveURL(/\/de\/duas\/[a-z-]+$/);
+  });
+
+  test('the card has no empty band above its kicker', async ({ page }) => {
+    // The ghosted Arabic title is decoration and had no rule of its own, so
+    // the SVG was laid out in the flow and pushed everything down.
+    await page.goto('/de/duas');
+    const gap = await page.evaluate(() => {
+      const card = document.querySelector('.dua')!;
+      const kicker = card.querySelector('.kicker')!;
+      return kicker.getBoundingClientRect().top - card.getBoundingClientRect().top;
+    });
+    expect(gap).toBeLessThan(40);
+    expect(
+      await page
+        .locator('.dua-ghost')
+        .first()
+        .evaluate((el) => getComputedStyle(el).position),
+    ).toBe('absolute');
+  });
+
+  test('sets the Basmala apart at the head of a du‘a', async ({ page }) => {
+    await page.goto('/de/duas/kumail');
+    await hydrated(page);
+    await page.getByRole('button', { name: 'Am Stück' }).click();
+
+    // On its own line and unnumbered, as it is at the head of a surah: it
+    // opens the text rather than being the first thing said in it.
+    const bism = page.locator('.dua-flow-bism');
+    await expect(bism).toBeVisible();
+    await expect(bism).toContainText('بِسْمِ');
+    await expect(bism).not.toContainText('۝');
+    // So the first number the passage shows is the second line's.
+    await expect(page.locator('.dua-flow-ar .qr-mark').first()).toContainText('2');
+  });
+
   test('reads line by line or at a stretch, as the mushaf does', async ({ page }) => {
     await page.goto('/de/duas/faraj');
     await hydrated(page);

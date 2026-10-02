@@ -750,7 +750,7 @@ function SurahHead({
   );
 }
 
-function Arabic({ ayah }: { ayah: PageAyah }) {
+function Arabic({ ayah, mark = true }: { ayah: PageAyah; mark?: boolean }) {
   return (
     <>
       {ayah.segments.map((segment, i) =>
@@ -762,10 +762,12 @@ function Arabic({ ayah }: { ayah: PageAyah }) {
           <span key={i}>{segment.text}</span>
         ),
       )}
-      <span className="qr-mark">
-        {'۝'}
-        {arabicIndic(ayah.number)}
-      </span>
+      {mark ? (
+        <span className="qr-mark">
+          {'۝'}
+          {arabicIndic(ayah.number)}
+        </span>
+      ) : null}
     </>
   );
 }
@@ -935,13 +937,15 @@ function MushafView({
 function Ayah({
   ayah,
   at,
+  mark = true,
   onPresentFrom,
 }: {
   ayah: PageAyah;
   at: number;
+  mark?: boolean;
   onPresentFrom?: (index: number) => void;
 }) {
-  if (!onPresentFrom) return <Arabic ayah={ayah} />;
+  if (!onPresentFrom) return <Arabic ayah={ayah} mark={mark} />;
   return (
     <span
       className="qr-sheet-ayah"
@@ -955,7 +959,7 @@ function Ayah({
         }
       }}
     >
-      <Arabic ayah={ayah} />
+      <Arabic ayah={ayah} mark={mark} />
     </span>
   );
 }
@@ -1009,7 +1013,12 @@ function Sheet({
               justified line. It stands alone here, as it is printed. */}
           {block.opens && block.surah === 1 ? (
             <p lang="ar" dir="rtl" className="qr-sheet-text qr-sheet-alone">
-              <Ayah ayah={block.ayahs[0]!} at={(index += 1)} onPresentFrom={onPresentFrom} />
+              <Ayah
+                ayah={block.ayahs[0]!}
+                at={(index += 1)}
+                mark={false}
+                onPresentFrom={onPresentFrom}
+              />
             </p>
           ) : null}
           <p lang="ar" dir="rtl" className="qr-sheet-text">

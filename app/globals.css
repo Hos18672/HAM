@@ -4776,6 +4776,15 @@
      with its last line centred, each line closed by its number. */
   .dua-flow {
     padding-block-start: var(--space-3);
+    /* Held off the frame: justified to both margins, the text was setting
+       its words against the gold rule down each side. */
+    padding-inline: var(--space-2);
+  }
+  /* The Basmala opens a du'a as it opens a surah: on a line of its own, and
+     unnumbered — it is the opening, not the first thing said. */
+  .dua-flow-bism {
+    margin: 0 0 var(--space-2);
+    text-align: center;
   }
   .dua-flow-ar {
     text-align: justify;
@@ -4907,6 +4916,48 @@
   }
   .dua-back:hover {
     color: var(--gold);
+  }
+  /* The Arabic title, ghosted behind the card's words. It is decoration and
+     must take no room — but it had no rule of its own at all, so the SVG was
+     laid out in the flow and left an empty band across the top of every
+     card. Behind the content, at z-index 0 rather than -1: the card is an
+     isolated stacking context and -1 would put it behind the card itself. */
+  .dua-ghost {
+    position: absolute;
+    z-index: 0;
+    inset-block-end: -6px;
+    inset-inline-end: 0;
+    inline-size: min(100%, 20rem);
+    block-size: auto;
+    opacity: 0.07;
+    pointer-events: none;
+  }
+  /* Everything but the link rides above the ghost. The link is put back to
+     static on purpose, against `.card > *`, which positions every child:
+     the overlay has to resolve against the card to cover it, and a
+     positioned link made itself the containing block, so the overlay
+     covered the words and nothing else. */
+  .dua > :not(.dua-ghost):not(.dua-open) {
+    position: relative;
+    z-index: 1;
+  }
+  .dua > .dua-open {
+    position: static;
+  }
+  /* The whole card opens the du'a, not only the words that say so: the link
+     stretches over the card, and keeps being the one link a screen reader
+     and the keyboard find. */
+  .dua:has(.dua-open) {
+    cursor: pointer;
+  }
+  .dua-open::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+  }
+  .dua:has(.dua-open:hover) {
+    border-color: var(--gold);
   }
   .dua-open {
     display: inline-flex;

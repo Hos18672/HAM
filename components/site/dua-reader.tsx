@@ -37,6 +37,21 @@ import { Fixed } from './reader-fixed';
  * the page's reveal again from the top.
  */
 
+/**
+ * Whether a line is the Basmala, whatever marks it carries: the du'as spell
+ * it with a superscript alef where the Quran spells it with a dagger one,
+ * and either way it opens the text rather than being the first thing said
+ * in it. Compared with the marks stripped, as the mushaf does it.
+ */
+const bare = (text: string) =>
+  text
+    .replace(/[\u0610-\u061A\u064B-\u065F\u0670\u06D6-\u06ED]/g, '')
+    .replace(/\u0671/g, '\u0627')
+    .replace(/\s+/g, ' ')
+    .trim();
+const BASMALA_BARE = bare('بسم الله الرحمن الرحيم');
+const isBasmala = (text: string) => bare(text).startsWith(BASMALA_BARE);
+
 /** Kept outside the component, so a turn does not throw the texts away. */
 const loaded = new Map<string, DuaPayload>();
 const pending = new Map<string, Promise<DuaPayload>>();
@@ -258,6 +273,9 @@ export function DuaReader({
     return () => window.removeEventListener('keydown', onKey);
   }, [presenting, step, toggleTranslated, turn, next, previous, reader, present]);
 
+  const firstSpoken = dua.lines.findIndex((entry) => entry[0] !== null);
+  const opensWithBasmala = firstSpoken >= 0 && isBasmala(dua.lines[firstSpoken]![0] as string);
+
   const here = spoken[Math.min(line, spoken.length - 1)];
   let number = 0;
   let numbered = 0;
@@ -455,11 +473,17 @@ export function DuaReader({
                  instructions and not words to say. Clicking anywhere in it
                  presents from that line. */
               <div className="dua-flow" data-translated={translated ? 'on' : 'off'}>
+                {opensWithBasmala ? (
+                  <p className="dua-ar dua-flow-bism" lang="ar" dir="rtl">
+                    {dua.lines[firstSpoken]![0]}
+                  </p>
+                ) : null}
                 <p className="dua-ar dua-flow-ar" lang="ar" dir="rtl">
                   {dua.lines.map((entry, index) => {
                     const [arabic] = entry;
                     if (arabic === null) return null;
                     number += 1;
+                    if (opensWithBasmala && index === firstSpoken) return null;
                     const from = number - 1;
                     return (
                       <span

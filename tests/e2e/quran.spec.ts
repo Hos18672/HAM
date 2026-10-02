@@ -23,6 +23,17 @@ const mark = (page: Page) =>
 const kept = (page: Page) =>
   page.evaluate(() => (window as unknown as { __kept?: string }).__kept ?? null);
 
+/**
+ * Wait until the reader's own effects have run.
+ *
+ * `.qr-fixed` is the portal the fixed furniture is mounted into, and it is
+ * rendered only after the client has mounted — so its presence says the
+ * key listener is attached. Without this a `keyboard.press` straight after
+ * a reload can land before hydration and be dropped, which is exactly how
+ * the full-screen test failed on CI and never here.
+ */
+const hydrated = (page: Page) => expect(page.locator('.qr-fixed')).toBeAttached();
+
 test.describe('the Quran reader', () => {
   test.beforeEach(async ({ page }) => {
     const response = await page.goto(ENTRY);
@@ -32,6 +43,7 @@ test.describe('the Quran reader', () => {
     );
     await expect(page.locator('.qr-bar')).toBeVisible();
     await expect(page.locator('.qr-ar').first()).toBeVisible();
+    await hydrated(page);
   });
 
   test('opens verse by verse, each with its translation under it', async ({ page }) => {
@@ -53,6 +65,7 @@ test.describe('the Quran reader', () => {
 
     // …and the choice is the reader's: it survives a reload.
     await page.reload();
+    await hydrated(page);
     await expect(page.locator('.qr-sheet')).toBeVisible();
 
     await page.getByRole('button', { name: 'Vers für Vers' }).click();
@@ -103,6 +116,7 @@ test.describe('the Quran reader', () => {
     expect(bigger).toBeGreaterThan(before);
 
     await page.reload();
+    await hydrated(page);
     await expect.poll(async () => parseFloat(await size())).toBe(bigger);
   });
 
@@ -192,6 +206,7 @@ test.describe('the Quran reader', () => {
   test('gives the Quran the screen, and says each thing once', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.reload();
+    await hydrated(page);
     await page.keyboard.press('f');
     await expect(page.locator('.page-head-band')).toBeHidden();
 
@@ -217,6 +232,7 @@ test.describe('the Quran reader', () => {
   test('gives a phone a presentation bar it can hold', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.reload();
+    await hydrated(page);
     await page.getByRole('button', { name: 'Einstellungen' }).click();
     await page.getByRole('button', { name: 'Präsentation' }).first().click();
     await expect(page.locator('.qp')).toBeVisible();
@@ -238,6 +254,7 @@ test.describe('the Quran reader', () => {
   test('folds its controls away on a phone, and nothing is cut off', async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 812 });
     await page.reload();
+    await hydrated(page);
     await expect(page.locator('.qr-bar')).toBeVisible();
 
     // Only the three stay out; the rest are behind the first of them.

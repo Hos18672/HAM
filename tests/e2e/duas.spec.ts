@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 
 /**
  * The du'a reader, which is also the Quran's: the whole screen, the size of
@@ -6,6 +6,13 @@ import { test, expect } from '@playwright/test';
  * exercised here — it is rendered from an API this environment cannot reach —
  * so the shared behaviour is checked where the text is carried in the page.
  */
+/**
+ * Wait until the reader's own effects have run: `.qr-fixed` is the portal
+ * its fixed furniture mounts into, and it appears only after the client
+ * has mounted. A click or a key that lands before that is dropped.
+ */
+const hydrated = (page: Page) => expect(page.locator('.qr-fixed')).toBeAttached();
+
 test.describe('the du‘as', () => {
   test('lists them and opens one in full', async ({ page }) => {
     await page.goto('/de/duas');
@@ -13,6 +20,7 @@ test.describe('the du‘as', () => {
     await expect(open.first()).toBeVisible();
 
     await page.goto('/de/duas/faraj');
+    await hydrated(page);
     await expect(page.getByRole('heading', { level: 1 })).toContainText('Faradsch');
 
     // Every line is the Arabic with the German under it.
@@ -34,6 +42,7 @@ test.describe('the du‘as', () => {
 
   test('hides and shows the translation', async ({ page }) => {
     await page.goto('/de/duas/faraj');
+    await hydrated(page);
     const translation = page.locator('.dua-tr').first();
     await expect(translation).toBeVisible();
     await page.getByRole('switch', { name: 'Übersetzung' }).click();
@@ -44,6 +53,7 @@ test.describe('the du‘as', () => {
 
   test('sets the text size, and remembers it', async ({ page }) => {
     await page.goto('/de/duas/faraj');
+    await hydrated(page);
     const size = () =>
       page.evaluate(() => getComputedStyle(document.querySelector('.dua-ar')!).fontSize);
     const before = await size();
@@ -61,6 +71,7 @@ test.describe('the du‘as', () => {
 
   test('fills the screen the way the Quran does', async ({ page }) => {
     await page.goto('/de/duas/faraj');
+    await hydrated(page);
     const band = page.locator('.page-head-band');
     await expect(band).toBeVisible();
 
@@ -88,6 +99,7 @@ test.describe('the du‘as', () => {
     // half. It is the Quran's bar now, which folds instead of sliding.
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto('/de/duas/faraj');
+    await hydrated(page);
     await page.locator('.qr-compact .qr-chip').nth(1).click();
     await expect(page.locator('html')).toHaveAttribute('data-reader-full', 'true');
 
@@ -105,6 +117,7 @@ test.describe('the du‘as', () => {
 
   test('presents a line at a time, on the Quran’s overlay', async ({ page }) => {
     await page.goto('/de/duas/faraj');
+    await hydrated(page);
     await page.getByRole('button', { name: 'Präsentation', exact: true }).first().click();
 
     // The same overlay: the dark green ground, one line of the du'a on it,
@@ -131,12 +144,14 @@ test.describe('the du‘as', () => {
 
   test('presents from the line that was asked for', async ({ page }) => {
     await page.goto('/de/duas/faraj');
+    await hydrated(page);
     await page.getByRole('button', { name: 'Ab hier präsentieren' }).nth(2).click();
     await expect(page.locator('.qp-pos')).toHaveText('Zeile 3 von 14');
   });
 
   test('a swipe turns to the next du‘a and stays in fullscreen', async ({ page }) => {
     await page.goto('/de/duas/tawassul');
+    await hydrated(page);
     await page.getByRole('button', { name: 'Vollbild', exact: true }).click();
     await expect(page.locator('html')).toHaveAttribute('data-reader-full', 'true');
 

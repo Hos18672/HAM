@@ -154,14 +154,60 @@ test.describe('the Quran reader', () => {
 
   test('fills the screen, and the site stands down while it does', async ({ page }) => {
     const header = page.locator('.hc-header');
+    const band = page.locator('.page-head-band');
     await expect(header).toBeVisible();
+    await expect(band).toBeVisible();
+
     await page.keyboard.press('f');
     await expect(header).toBeHidden();
+    // The page's own green band goes too. Leaving it in meant the top of a
+    // "full screen" phone was the title of the page, not the Quran.
+    await expect(band).toBeHidden();
     await expect(page.locator('.qr-notes')).toBeHidden();
-    // The reader itself stays, bar and all.
-    await expect(page.locator('.qr-bar')).toBeVisible();
+    await expect(page.locator('.footer-city')).toBeHidden();
+
+    // The reader itself stays, bar and all — and the bar is opaque, because
+    // the page scrolls directly under it.
+    const bar = page.locator('.qr-bar');
+    await expect(bar).toBeVisible();
+    const glass = await bar.evaluate((el) => {
+      const style = getComputedStyle(el);
+      return { alpha: style.backgroundColor, blur: style.backdropFilter };
+    });
+    expect(glass.alpha).not.toMatch(/rgba\([^)]*,\s*0?\.\d+\s*\)/);
+    expect(glass.blur).toBe('none');
+
+    // Nothing above the reader to scroll back to.
+    expect(
+      await page.evaluate(() =>
+        Math.round(document.querySelector('.qr-bar')!.getBoundingClientRect().top),
+      ),
+    ).toBeLessThanOrEqual(1);
+
     await page.keyboard.press('f');
     await expect(header).toBeVisible();
+    await expect(band).toBeVisible();
+  });
+
+  test('gives a phone a presentation bar it can hold', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.reload();
+    await page.getByRole('button', { name: 'Einstellungen' }).click();
+    await page.getByRole('button', { name: 'Präsentation' }).first().click();
+    await expect(page.locator('.qp')).toBeVisible();
+
+    // The surah's name and the position get a line of their own, rather
+    // than a column four characters wide with the tools beside it.
+    const where = (await page.locator('.qp-where').boundingBox())!;
+    expect(where.width).toBeGreaterThan(260);
+
+    // Every control is on the screen and big enough for a thumb.
+    for (const button of await page.locator('.qp button').all()) {
+      const box = (await button.boundingBox())!;
+      expect(box.x).toBeGreaterThanOrEqual(-0.5);
+      expect(box.x + box.width).toBeLessThanOrEqual(390.5);
+      expect(Math.min(box.width, box.height)).toBeGreaterThanOrEqual(40);
+    }
   });
 
   test('folds its controls away on a phone, and nothing is cut off', async ({ page }) => {

@@ -109,25 +109,30 @@ export function QuranPresent({
           </span>
           <span className="qp-pos">{position}</span>
         </div>
-        <button
-          type="button"
-          className="qp-btn"
-          aria-pressed={translated}
-          onClick={onToggleTranslated}
-          title={t('translationToggle')}
-          aria-label={t('translationToggle')}
-        >
-          <Translate size={20} weight="duotone" aria-hidden="true" />
-        </button>
-        <button type="button" className="qp-btn" onClick={onSmaller} aria-label={t('smaller')}>
-          <Minus size={16} weight="bold" aria-hidden="true" />
-        </button>
-        <button type="button" className="qp-btn" onClick={onLarger} aria-label={t('larger')}>
-          <Plus size={16} weight="bold" aria-hidden="true" />
-        </button>
-        <button type="button" className="qp-btn" onClick={onClose} aria-label={t('exitPresent')}>
-          <X size={20} weight="duotone" aria-hidden="true" />
-        </button>
+        {/* Kept together, so that on a narrow screen they drop to a row of
+            their own instead of squeezing the surah's name into a column
+            four characters wide. */}
+        <div className="qp-tools">
+          <button
+            type="button"
+            className="qp-btn"
+            aria-pressed={translated}
+            onClick={onToggleTranslated}
+            title={t('translationToggle')}
+            aria-label={t('translationToggle')}
+          >
+            <Translate size={20} weight="duotone" aria-hidden="true" />
+          </button>
+          <button type="button" className="qp-btn" onClick={onSmaller} aria-label={t('smaller')}>
+            <Minus size={16} weight="bold" aria-hidden="true" />
+          </button>
+          <button type="button" className="qp-btn" onClick={onLarger} aria-label={t('larger')}>
+            <Plus size={16} weight="bold" aria-hidden="true" />
+          </button>
+          <button type="button" className="qp-btn" onClick={onClose} aria-label={t('exitPresent')}>
+            <X size={20} weight="duotone" aria-hidden="true" />
+          </button>
+        </div>
       </div>
 
       {/* The stage itself advances: in a hall the nearest control is the

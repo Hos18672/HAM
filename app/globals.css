@@ -3501,15 +3501,43 @@
   }
 
   /* ── Filling the screen ──────────────────────────────────────────────── */
-  /* The reader and nothing else: the site's own header, its footer and the
-     notes all stand down, and the page behind does not scroll away. */
+  /* The reader and nothing else. The site's header, the page's own green
+     band, the footer and the notes all stand down — the band especially,
+     because leaving it in meant the top of a "full screen" phone was still
+     the title of the page and half the screen was not the Quran. Nothing
+     is left above or below the reader to scroll to, which is what full
+     screen has to mean on a phone: the Fullscreen API is refused outright
+     on iOS, so the page itself is the only thing that can fill the screen. */
   :root[data-quran-full='true'] .hc-header,
+  :root[data-quran-full='true'] .page-head-band,
   :root[data-quran-full='true'] .footer-city,
   :root[data-quran-full='true'] .qr-notes {
     display: none;
   }
+  :root[data-quran-full='true'] .mushaf-section {
+    padding-block: 0;
+  }
+  /* Opaque, both of them: the page scrolls directly under the bar and the
+     foot now, and frosted glass over Arabic set at this size is a smear. */
+  :root[data-quran-full='true'] .qr-bar,
+  :root[data-quran-full='true'] .qr-foot {
+    background: var(--paper);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
   :root[data-quran-full='true'] .qr-bar {
     max-inline-size: none;
+    padding-block-start: calc(12px + env(safe-area-inset-top));
+  }
+  /* And the page takes the room the site gave back. */
+  :root[data-quran-full='true'] .qr-main {
+    max-inline-size: none;
+    padding-inline: clamp(8px, 2vw, 32px);
+  }
+  :root[data-quran-full='true'] .qr-paper,
+  :root[data-quran-full='true'] .qr-leaf-back,
+  :root[data-quran-full='true'] .qr-leaf-shade {
+    max-inline-size: 64rem;
   }
 
   /* ── Presentation ────────────────────────────────────────────────────── */
@@ -3525,16 +3553,28 @@
   .qp-top {
     display: flex;
     align-items: center;
-    gap: 16px;
+    flex-wrap: wrap;
+    gap: 10px 16px;
     padding: clamp(14px, 2.4vw, 28px) clamp(16px, 4vw, 56px);
+    padding-block-start: calc(clamp(14px, 2.4vw, 28px) + env(safe-area-inset-top));
   }
+  /* Sixteen rems is what the surah's name and the position need to sit on
+     one line. Below that the tools drop to a row of their own, rather than
+     the name being squeezed into a column and wrapping five times — which
+     is what a phone used to do with it. */
   .qp-where {
-    flex: 1;
+    flex: 1 1 16rem;
     min-inline-size: 0;
     display: flex;
     align-items: baseline;
-    gap: 16px;
+    gap: 4px 16px;
     flex-wrap: wrap;
+  }
+  .qp-tools {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-inline-start: auto;
   }
   .qp-surah {
     font-family: 'Scheherazade New', var(--font-naskh), serif;
@@ -3614,6 +3654,7 @@
     flex-direction: column;
     gap: 14px;
     padding: 0 clamp(16px, 4vw, 56px) clamp(16px, 2.4vw, 28px);
+    padding-block-end: calc(clamp(16px, 2.4vw, 28px) + env(safe-area-inset-bottom));
   }
   .qp-track {
     block-size: 3px;
@@ -3629,6 +3670,7 @@
   .qp-nav {
     display: flex;
     align-items: center;
+    justify-content: space-between;
     gap: 12px;
   }
   .qp-step {
@@ -3651,6 +3693,14 @@
     text-align: center;
     font-size: 13px;
     color: #b9c4bd;
+  }
+  /* A phone has no Esc key and no clicker. The hint is for the hall; on a
+     touch screen it was two wrapped lines of instructions for keys that do
+     not exist, wedged between the only two controls that do. */
+  @media (hover: none) and (pointer: coarse) {
+    .qp-keys {
+      display: none;
+    }
   }
 
   /* ── The mushaf ───────────────────────────────────────────────────────

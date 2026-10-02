@@ -3107,10 +3107,19 @@
   /* The sheet's head: the juz at one end and the surah's cartouche filling
      the rest. One band where there were two, and the Quran starts that much
      higher up the page. */
-  .qr-head-band {
+  .qr-paper .mushaf-head {
     gap: var(--space-2);
+    /* No rule under the cartouche and none over the folio: the sheet's own
+       gold frame is the only line this page needs, and the first line of
+       the Quran was running into the one above it. */
     padding-block-end: 0;
     border-block-end: 0;
+    margin-block-end: var(--space-4);
+  }
+  .qr-paper .mushaf-foot {
+    margin-block-start: var(--space-3);
+    padding-block-start: 0;
+    border-block-start: 0;
   }
   .qr-head-juz {
     flex: none;
@@ -3126,8 +3135,6 @@
   }
   .qr-paper .mushaf-foot {
     justify-content: center;
-    margin-block-start: var(--space-1);
-    padding-block-start: 6px;
   }
   .qr-failed {
     display: flex;
@@ -3228,8 +3235,11 @@
     line-height: 2.25;
     text-align: right;
   }
+  /* The verse-end sign, with room either side of it. It had space before
+     it and none after, so the first word of the next verse started flush
+     against the number of the one that had just ended. */
   .qr-mark {
-    margin-inline-start: 6px;
+    margin-inline: 6px 10px;
     color: var(--goldInk);
   }
   .qr-tr {

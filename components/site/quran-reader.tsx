@@ -367,14 +367,8 @@ export function QuranReader({
     turn(n + (dx > 0 ? 1 : -1));
   };
 
-  /* ── What the bar says ────────────────────────────────────────────────── */
   const first = page.ayahs[0];
   const blocks = useMemo(() => groupBySurah(page), [page]);
-  const lastSurah = blocks[blocks.length - 1];
-  const head = {
-    name: lastSurah ? (page.surahs[lastSurah.surah]?.name ?? '') : '',
-    latin: blocks.map((b) => page.surahs[b.surah]?.transliteration ?? '').join(' · '),
-  };
   const arSize = `calc(${settings.scale} * clamp(1.3rem, 3.6vw, 1.95rem))`;
   const scrubAt = scrub ?? n;
 
@@ -386,19 +380,12 @@ export function QuranReader({
       data-silent={settings.silent ? 'on' : 'off'}
       style={{ ['--qr-ar' as string]: arSize, ['--qr-scale' as string]: settings.scale }}
     >
-      {/* ── Where you are, and every choice there is ───────────────────── */}
+      {/* ── Every choice there is ──────────────────────────────────────
+          And nothing else. The bar used to name the surah as well, which
+          the page's own running head already does a finger's width below
+          it — on a real surah's name it took a second row of the bar to
+          say it twice. */}
       <div className="qr-bar">
-        <div className="qr-head">
-          <p lang="ar" dir="rtl" className="qr-head-name">
-            {head.name}
-          </p>
-          {/* Only the transliteration, for a reader who cannot read the
-              Arabic name beside it. The juz is in the page's running head,
-              and the page number is on the page and under the slider — it
-              was printed three times. */}
-          <p className="qr-head-meta">{head.latin}</p>
-        </div>
-
         {/* On a narrow screen only these three stay out; the rest fold
             behind the first of them. */}
         <div className="qr-compact">

@@ -2912,46 +2912,21 @@
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 10px 14px;
+    gap: 8px 12px;
     max-inline-size: 1200px;
     margin-inline: auto;
-    padding: 12px clamp(16px, 4vw, 40px);
+    padding: 8px clamp(12px, 3.5vw, 40px);
     background: var(--glass);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     border-block-end: var(--rule-hair) solid var(--line);
   }
-  /* The title takes the width of its own words and no more: growing into
-     the rest of the line pushed every control onto a row below it. When
-     the words do not fit beside the controls it takes a line of its own,
-     rather than being squeezed into a column and ellipsised — a surah
-     whose name is cut short is not a surah anybody can find. */
-  .qr-head {
-    flex: 0 1 auto;
-    min-inline-size: 0;
-    display: flex;
-    align-items: baseline;
-    gap: 10px;
-    flex-wrap: wrap;
-  }
-  .qr-head-name {
-    margin: 0;
-    font-family: 'Scheherazade New', var(--font-naskh), serif;
-    font-size: clamp(19px, 2.2vw, 28px);
-    line-height: 1.45;
-    color: var(--head);
-  }
-  .qr-head-meta {
-    margin: 0;
-    font-size: 13px;
-    color: var(--color-ink-muted);
-  }
-
   /* The three that stay out on a narrow screen; the rest fold behind the
      first of them. */
   .qr-compact {
     display: flex;
     gap: 8px;
+    margin-inline-start: auto;
   }
   .qr-controls {
     display: none;
@@ -3432,10 +3407,10 @@
   .qr-foot-inner {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
     max-inline-size: 900px;
     margin-inline: auto;
-    padding: 10px clamp(12px, 3vw, 24px);
+    padding: 6px clamp(10px, 3vw, 24px);
   }
   .qr-step {
     display: inline-flex;
@@ -3539,8 +3514,8 @@
   }
   :root[data-quran-full='true'] .qr-bar {
     max-inline-size: none;
-    padding-block: 10px;
-    padding-block-start: calc(10px + env(safe-area-inset-top));
+    padding-block: 6px;
+    padding-block-start: calc(6px + env(safe-area-inset-top));
   }
   /* And the page takes the room the site gave back — the whole of it. In
      full screen the margins are the one thing nobody came for: the gap

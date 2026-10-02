@@ -195,13 +195,15 @@ test.describe('the Quran reader', () => {
     await page.keyboard.press('f');
     await expect(page.locator('.page-head-band')).toBeHidden();
 
-    // The bar names the surah and nothing the page already names: the juz
-    // is in the running head, the page number on the page and under the
-    // slider. It used to print the page number a third time.
-    const head = (await page.locator('.qr-head').textContent()) ?? '';
-    expect(head).not.toMatch(/Seite/);
-    expect(head).not.toMatch(/Teil/);
-    await expect(page.locator('.qr-bar')).toContainText('Al-Baqara');
+    // The bar is controls and nothing else. It used to name the surah, the
+    // juz and the page — all three of which the page itself says, the
+    // first two in its running head and the last on the page and under
+    // the slider. (Its selects still hold every surah and juz as options,
+    // so this asks for the title block itself, not for the words.)
+    await expect(page.locator('.qr-head')).toHaveCount(0);
+    await expect(page.locator('.qr-bar').getByRole('paragraph')).toHaveCount(0);
+    // The page still says both, where a printed page says them.
+    await expect(page.locator('.qr-paper > .mushaf-head')).toContainText('Teil');
 
     // And what is left of the screen is the Quran's.
     const room = await page.evaluate(() => {
@@ -209,7 +211,7 @@ test.describe('the Quran reader', () => {
       const foot = document.querySelector('.qr-foot')!.getBoundingClientRect().height;
       return (window.innerHeight - bar - foot) / window.innerHeight;
     });
-    expect(room).toBeGreaterThan(0.8);
+    expect(room).toBeGreaterThan(0.85);
   });
 
   test('gives a phone a presentation bar it can hold', async ({ page }) => {

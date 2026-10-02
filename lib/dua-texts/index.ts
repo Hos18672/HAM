@@ -1,4 +1,4 @@
-import type { DuaText, Line } from './types';
+import type { DuaCategory, DuaPayload, DuaStub, DuaText, Line } from './types';
 import { KUMAIL } from './kumail';
 import { TAWASSUL } from './tawassul';
 import { NUDBA } from './nudba';
@@ -13,7 +13,7 @@ import { ZIYARAT_AL_YASIN } from './ziyarat-al-yasin';
 import { ZIYARAT_JAMIA_KABIRA } from './ziyarat-jamia-kabira';
 import { TASBIH_AL_ZAHRA } from './tasbih-al-zahra';
 
-export type { Line, DuaText };
+export type { Line, DuaText, DuaCategory, DuaPayload, DuaStub };
 
 /**
  * The full texts, by the slug the database knows each du'a as.

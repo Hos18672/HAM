@@ -102,6 +102,26 @@ async function writeQuranData(locales) {
 }
 
 /**
+ * The same for the du'as, which the reader now turns the same way: it asks
+ * `/api/duas/[slug]`, and on a static host there is nothing to ask. Thirteen
+ * texts in two languages, so no need to go at them in parallel.
+ */
+async function writeDuaData(locales, slugs) {
+  let written = 0;
+  for (const locale of locales) {
+    for (const slug of slugs) {
+      const response = await fetch(`${ORIGIN}${BASE_PATH}/api/duas/${slug}?locale=${locale}`);
+      if (response.status !== 200) {
+        throw new Error(`du'a ${slug} (${locale}) returned ${response.status}`);
+      }
+      await writeFileAt(join(OUT, 'dua-data', locale, `${slug}.json`), await response.text());
+      written += 1;
+    }
+  }
+  return written;
+}
+
+/**
  * A preview must never outrank the real site once it exists, so every page
  * carries `noindex` and robots.txt refuses the lot.
  */
@@ -148,6 +168,7 @@ async function main() {
   }
 
   const quranData = await writeQuranData(locales);
+  const duaData = await writeDuaData(locales, await readDuaSlugs());
 
   // The icons, which are routes built from `app/icon.*` rather than files in
   // public/. Fetched as bytes, not text: one of them is a PNG, and reading a
@@ -201,7 +222,7 @@ async function main() {
 
   console.log(
     `preview: ${pages} pages (${locales.length} locales × ${routes.length} routes), ` +
-      `${quranData} mushaf pages as data`,
+      `${quranData} mushaf pages and ${duaData} du'as as data`,
   );
 }
 

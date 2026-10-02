@@ -69,6 +69,51 @@ test.describe('the du‘as', () => {
     await expect.poll(size).toBe(bigger);
   });
 
+  test('turns to the next du‘a without visiting the page again', async ({ page }) => {
+    await page.goto('/de/duas/faraj');
+    await hydrated(page);
+    // Something only a fresh load of the whole page would clear.
+    await page.evaluate(() => {
+      (window as unknown as { __kept?: string }).__kept = 'here';
+    });
+
+    await page
+      .getByRole('button', { name: /Nächstes/ })
+      .first()
+      .click();
+
+    // The whole du'a is replaced — its band, its words and its facts — and
+    // the address with it, but the page itself was never loaded again.
+    await expect(page).toHaveURL(/\/de\/duas\/jawshan-kabir$/);
+    await expect(page.getByRole('heading', { level: 1 })).toContainText('Dschauschan');
+    await expect(page.locator('.qr-foot-title')).toHaveText('Dschauschan Kabir');
+    expect(await page.evaluate(() => (window as unknown as { __kept?: string }).__kept)).toBe(
+      'here',
+    );
+  });
+
+  test('picks a du‘a from the bar, and filters the list by kind', async ({ page }) => {
+    await page.goto('/de/duas/faraj');
+    await hydrated(page);
+    // On a wide screen the controls are already out; the settings button
+    // that folds them away belongs to a narrow one.
+    const picker = page.locator('.qr-select select').first();
+    await expect(picker).toBeVisible();
+    const all = await picker.locator('option').count();
+    expect(all).toBeGreaterThan(8);
+
+    // The filter narrows what the picker offers, as the juz narrows the
+    // mushaf's surahs.
+    await page.locator('.qr-select select').nth(1).selectOption('ziyara');
+    const some = await picker.locator('option').count();
+    expect(some).toBeLessThan(all);
+    expect(some).toBeGreaterThan(0);
+
+    await picker.selectOption({ index: 0 });
+    await expect(page).toHaveURL(/\/de\/duas\//);
+    await expect(page.getByRole('heading', { level: 1 })).toContainText('Ziyarat');
+  });
+
   test('fills the screen the way the Quran does', async ({ page }) => {
     await page.goto('/de/duas/faraj');
     await hydrated(page);

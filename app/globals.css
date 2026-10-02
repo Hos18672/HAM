@@ -3491,6 +3491,16 @@
     cursor: pointer;
   }
   /* The du'a's foot says which du'a, where the Quran's says which page. */
+  /* The column the du'a page used to wrap its reader in. */
+  .dua-body {
+    max-inline-size: 58rem;
+    margin-inline: auto;
+    padding-inline: var(--page-gutter, clamp(16px, 4vw, 40px));
+  }
+  :root[data-reader-full='true'] .dua-body {
+    max-inline-size: none;
+    padding-inline: 0;
+  }
   .qr-foot-title {
     flex: 1;
     min-inline-size: 0;
@@ -4826,10 +4836,28 @@
     color: var(--goldInk);
   }
 
+  /* The du'a's own heading band, which the reader now renders because it
+     turns with the text. These were inline styles on the route. */
+  .dua-kicker {
+    margin-block-start: 18px;
+    color: var(--gold);
+  }
+  .dua-title {
+    margin-block-start: 14px;
+    font-size: clamp(30px, 4.4vw, 52px);
+    line-height: 1.08;
+    color: var(--bandHead);
+  }
+  .dua-lede {
+    margin-block-start: 16px;
+    color: var(--bandDim);
+  }
   .dua-head-ar {
+    margin-block-start: 10px;
     font-family: 'Scheherazade New', var(--font-naskh), serif;
     font-size: clamp(20px, 2.6vw, 28px);
     line-height: 1.6;
+    color: var(--gold);
   }
   .dua-back {
     display: inline-flex;

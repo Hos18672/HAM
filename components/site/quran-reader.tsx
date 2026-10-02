@@ -692,13 +692,13 @@ function Paper({
       <Rosette className="mushaf-corner" />
       <Rosette className="mushaf-corner" />
 
-      {/* One band. The head used to name the surah and the cartouche
-          beneath it name it again, two rows deep, before a word of the
-          Quran — so the cartouche *is* the head now, with the juz beside
-          it. A surah that opens further down the page still gets its own
-          cartouche where it opens. */}
+      {/* The head is the cartouche and nothing else. It used to name the
+          surah and have the cartouche beneath it name it again, two rows
+          deep; then the two became one band with the juz beside them, and
+          the juz has gone to the foot with the page number, where the
+          page's own facts belong. A surah that opens further down the
+          page still gets its own cartouche where it opens. */}
       <header className="mushaf-head qr-head-band">
-        <span className="qr-head-juz">{t('juz', { n: digits(first?.juz ?? 1, locale) })}</span>
         <h2 className="qr-banner mushaf-banner" lang="ar" dir="rtl">
           <Rosette className="mushaf-banner-star" />
           <span>{first ? page.surahs[first.surah]?.name : ''}</span>
@@ -708,8 +708,10 @@ function Paper({
 
       {children}
 
+      {/* Which page, and which thirtieth of the book it falls in. */}
       <footer className="mushaf-foot">
         <span className="mushaf-folio">{digits(page.number, locale)}</span>
+        <span className="qr-foot-juz">{t('juz', { n: digits(first?.juz ?? 1, locale) })}</span>
       </footer>
     </article>
   );

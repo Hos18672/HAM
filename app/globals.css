@@ -3126,9 +3126,6 @@
     padding-block-start: 0;
     border-block-start: 0;
   }
-  .qr-head-juz {
-    flex: none;
-  }
   .qr-head-band .mushaf-banner {
     flex: 1;
     min-inline-size: 0;
@@ -3140,6 +3137,13 @@
   }
   .qr-paper .mushaf-foot {
     justify-content: center;
+    gap: var(--space-3);
+  }
+  /* Beside the folio: the juz on a page of the Quran, the kind of text on
+     a du'a. It sat at the head, where it was the one thing between the
+     cartouche and the card's edge. */
+  .qr-foot-juz {
+    font-weight: var(--weight-regular);
   }
   .qr-failed {
     display: flex;

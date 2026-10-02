@@ -218,7 +218,8 @@ test.describe('the Quran reader', () => {
     await expect(page.locator('.qr-head')).toHaveCount(0);
     await expect(page.locator('.qr-bar').getByRole('paragraph')).toHaveCount(0);
     // The page still says both, where a printed page says them.
-    await expect(page.locator('.qr-paper > .mushaf-head')).toContainText('Teil');
+    await expect(page.locator('.qr-paper .mushaf-foot')).toContainText('Teil');
+    await expect(page.locator('.qr-paper > .mushaf-head')).not.toContainText('Teil');
 
     // And what is left of the screen is the Quran's.
     const room = await page.evaluate(() => {

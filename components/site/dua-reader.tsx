@@ -407,7 +407,6 @@ export function DuaReader({
             <Rosette className="mushaf-corner" />
 
             <header className="mushaf-head qr-head-band">
-              <span className="qr-head-juz">{t(`category.${dua.category}`)}</span>
               <h2 className="qr-banner mushaf-banner" lang="ar" dir="rtl">
                 <Rosette className="mushaf-banner-star" />
                 <span>{dua.arabicTitle}</span>
@@ -451,8 +450,10 @@ export function DuaReader({
               })}
             </ol>
 
+            {/* How many lines there are, and what kind of text this is. */}
             <footer className="mushaf-foot">
               <span className="mushaf-folio">{digits(spoken.length, locale)}</span>
+              <span className="qr-foot-juz">{t(`category.${dua.category}`)}</span>
             </footer>
           </article>
 

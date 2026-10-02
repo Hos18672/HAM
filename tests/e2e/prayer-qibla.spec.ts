@@ -122,6 +122,31 @@ test.describe('qibla', () => {
     await expect(page.getByRole('img', { name: /Kompassrose/ })).toBeVisible();
   });
 
+  test('opens on where the reader is, not on the house', async ({ page, context }) => {
+    await context.grantPermissions(['geolocation']);
+    await context.setGeolocation({ latitude: 51.5074, longitude: -0.1278 }); // London
+
+    // Nothing is pressed: somebody who has come to this page is standing
+    // somewhere and wants the direction from there.
+    await page.goto('/de/qibla');
+    const bearing = page.locator('.fact-rule[data-lead="true"]');
+    await expect(bearing.getByText(/119,0°/)).toBeVisible({ timeout: 15_000 });
+    await expect(bearing.getByText(/136,[67]°/)).toBeHidden();
+
+    // The house is still a press away, and still true.
+    await page.getByRole('button', { name: 'Zurück zum Vereinshaus' }).click();
+    await expect(bearing.getByText(/136,[67]°/)).toBeVisible();
+  });
+
+  test('falls back to the house when the location is refused, and says so', async ({ page }) => {
+    // No permission granted: the browser refuses, and the page neither
+    // hangs on it nor pretends the reader is in Hernals without saying so.
+    await page.goto('/de/qibla');
+    const bearing = page.locator('.fact-rule[data-lead="true"]');
+    await expect(bearing.getByText(/136,[67]°/)).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByRole('button', { name: 'Meinen Standort verwenden' })).toBeVisible();
+  });
+
   test('recomputes from a granted location and returns to the house', async ({ page, context }) => {
     // Mecca itself: the bearing becomes meaningless and the distance zero,
     // which is an unambiguous signal that the recomputation happened.

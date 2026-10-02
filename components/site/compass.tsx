@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import {
   Compass as CompassIcon,
@@ -45,6 +45,7 @@ export function Compass({ locale }: { locale: Locale }) {
   const [origin, setOrigin] = useState<Coordinates>(HOUSE);
   const qibla = useMemo(() => qiblaFrom(origin), [origin]);
   const [geo, setGeo] = useState<GeoState>('house');
+
   const [compass, setCompass] = useState<CompassState>('idle');
   const [heading, setHeading] = useState(0);
   /**
@@ -114,7 +115,7 @@ export function Compass({ locale }: { locale: Locale }) {
   }
 
   /* ── Position ─────────────────────────────────────────────────────────── */
-  function useMyLocation() {
+  const locateMe = useCallback(() => {
     if (typeof navigator === 'undefined' || !navigator.geolocation) {
       setGeo('unsupported');
       return;
@@ -131,7 +132,24 @@ export function Compass({ locale }: { locale: Locale }) {
       (error) => setGeo(error.code === error.PERMISSION_DENIED ? 'denied' : 'failed'),
       { enableHighAccuracy: true, timeout: 10_000, maximumAge: 60_000 },
     );
-  }
+  }, []);
+
+  /**
+   * Asked for as the page opens, because somebody who has come to this page
+   * is standing somewhere and wants to know which way to turn from *there*.
+   * The house is the fallback, not the starting point: refuse the browser's
+   * prompt, or have no sensor at all, and the page says so and shows the
+   * direction from Hernals, which is still a true qibla and still useful.
+   *
+   * Once only, and never again after the reader has asked for the house
+   * back — that is a choice, and the page does not argue with it.
+   */
+  const asked = useRef(false);
+  useEffect(() => {
+    if (asked.current) return;
+    asked.current = true;
+    locateMe();
+  }, [locateMe]);
 
   function backToHouse() {
     setOrigin(HOUSE);
@@ -209,11 +227,7 @@ export function Compass({ locale }: { locale: Locale }) {
               <CompassIcon size={18} weight="duotone" aria-hidden="true" />
               {compass === 'active' ? t('compassActive') : t('activateCompass')}
             </Button>
-            <Button
-              onClick={useMyLocation}
-              loading={geo === 'locating'}
-              disabled={geo === 'locating'}
-            >
+            <Button onClick={locateMe} loading={geo === 'locating'} disabled={geo === 'locating'}>
               <MapPin size={18} weight="duotone" aria-hidden="true" />
               {t('useMyLocation')}
             </Button>

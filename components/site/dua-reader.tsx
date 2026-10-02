@@ -17,7 +17,7 @@ import {
   SlidersHorizontal,
   Translate,
 } from '@phosphor-icons/react/dist/ssr';
-import { digits } from '@/lib/i18n/format';
+import { arabicIndic, digits } from '@/lib/i18n/format';
 import type { DuaCategory, DuaPayload, DuaStub } from '@/lib/dua-texts';
 import type { Locale } from '@/lib/i18n/config';
 import { PatternPlate, Ring, Rosette } from './ornaments';
@@ -519,7 +519,7 @@ export function DuaReader({
                         {line.arabic}
                         <span className="qr-mark" aria-hidden="true">
                           {'\u06DD'}
-                          {digits(line.number, locale)}
+                          {arabicIndic(line.number)}
                         </span>{' '}
                       </span>
                     );

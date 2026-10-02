@@ -1,7 +1,7 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { digits } from '@/lib/i18n/format';
+import { arabicIndic, digits } from '@/lib/i18n/format';
 import { BASMALA } from '@/lib/quran-constants';
 import { PresentOverlay } from './present-overlay';
 import type { PageAyah, SurahInfo } from '@/lib/quran';
@@ -15,9 +15,6 @@ import type { Locale } from '@/lib/i18n/config';
  * wall, and the other way round is unreadable from the back — the Basmala
  * where a surah opens, and the verse-end sign.
  */
-
-const arabicIndic = (n: number) =>
-  String(n).replace(/[0-9]/g, (d) => String.fromCharCode(0x0660 + Number(d)));
 
 /** The step the Arabic is set at, by how much of it there is. */
 export function verseSize(length: number): string {

@@ -227,6 +227,12 @@ test.describe('the Quran reader', () => {
     const alone = page.locator('.qr-sheet-alone');
     await expect(alone).toBeVisible();
     await expect(alone).toContainText('بِسْمِ');
+    // And it keeps its number, which is what makes the verse after it two
+    // rather than a page that starts counting at two.
+    await expect(alone.locator('.qr-mark')).toHaveText('۝١');
+    await expect(page.locator('.qr-sheet-alone + .qr-sheet-text .qr-mark').first()).toHaveText(
+      '۝٢',
+    );
     // And what follows it starts after it, not beside it.
     const [first, rest] = await page.evaluate(() => {
       const a = document.querySelector('.qr-sheet-alone')!.getBoundingClientRect();

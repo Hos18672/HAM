@@ -17,7 +17,7 @@ import {
   Sun,
   Translate,
 } from '@phosphor-icons/react/dist/ssr';
-import { digits } from '@/lib/i18n/format';
+import { arabicIndic, digits } from '@/lib/i18n/format';
 import { BASMALA, JUZ_COUNT, PAGE_COUNT } from '@/lib/quran-constants';
 import { Rosette } from './ornaments';
 import { Fixed } from './reader-fixed';
@@ -55,9 +55,6 @@ const pending = new Map<string, Promise<MushafPage>>();
 /** A finger has to travel this far across, and mostly across, to turn. */
 const SWIPE_DISTANCE = 70;
 const SWIPE_STRAIGHTNESS = 1.5;
-
-const arabicIndic = (n: number) =>
-  String(n).replace(/[0-9]/g, (d) => String.fromCharCode(0x0660 + Number(d)));
 
 const pageFromUrl = () => {
   if (typeof window === 'undefined') return null;
@@ -751,7 +748,7 @@ function SurahHead({
   );
 }
 
-function Arabic({ ayah, mark = true }: { ayah: PageAyah; mark?: boolean }) {
+function Arabic({ ayah }: { ayah: PageAyah }) {
   return (
     <>
       {ayah.segments.map((segment, i) =>
@@ -763,12 +760,10 @@ function Arabic({ ayah, mark = true }: { ayah: PageAyah; mark?: boolean }) {
           <span key={i}>{segment.text}</span>
         ),
       )}
-      {mark ? (
-        <span className="qr-mark">
-          {'۝'}
-          {arabicIndic(ayah.number)}
-        </span>
-      ) : null}
+      <span className="qr-mark">
+        {'۝'}
+        {arabicIndic(ayah.number)}
+      </span>
     </>
   );
 }
@@ -938,15 +933,13 @@ function MushafView({
 function Ayah({
   ayah,
   at,
-  mark = true,
   onPresentFrom,
 }: {
   ayah: PageAyah;
   at: number;
-  mark?: boolean;
   onPresentFrom?: (index: number) => void;
 }) {
-  if (!onPresentFrom) return <Arabic ayah={ayah} mark={mark} />;
+  if (!onPresentFrom) return <Arabic ayah={ayah} />;
   return (
     <span
       className="qr-sheet-ayah"
@@ -960,7 +953,7 @@ function Ayah({
         }
       }}
     >
-      <Arabic ayah={ayah} mark={mark} />
+      <Arabic ayah={ayah} />
     </span>
   );
 }
@@ -1011,15 +1004,12 @@ function Sheet({
               into verse one as it is elsewhere, so it is not taken off and
               set on its own line as it is elsewhere either, and it ran on
               into "ٱلْحَمْدُ" with the opening of the Quran halfway along a
-              justified line. It stands alone here, as it is printed. */}
+              justified line. It stands alone here, as it is printed — and
+              it keeps its ۝١, which is what makes the verse after it ۝٢
+              rather than a page that starts counting at two. */}
           {block.opens && block.surah === 1 ? (
             <p lang="ar" dir="rtl" className="qr-sheet-text qr-sheet-alone">
-              <Ayah
-                ayah={block.ayahs[0]!}
-                at={(index += 1)}
-                mark={false}
-                onPresentFrom={onPresentFrom}
-              />
+              <Ayah ayah={block.ayahs[0]!} at={(index += 1)} onPresentFrom={onPresentFrom} />
             </p>
           ) : null}
           <p lang="ar" dir="rtl" className="qr-sheet-text">

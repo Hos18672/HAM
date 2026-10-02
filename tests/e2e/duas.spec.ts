@@ -155,8 +155,9 @@ test.describe('the du‘as', () => {
     await expect(bism).toContainText('بِسْمِ');
     await expect(bism).not.toContainText('۝');
     // And the line after it is the first, not the second: the opening is
-    // not one of the du'a's lines.
-    await expect(page.locator('.dua-flow-ar .qr-mark').first()).toContainText('1');
+    // not one of the du'a's lines. The numeral inside the sign is
+    // Arabic-Indic on the German page too — it belongs to the Arabic.
+    await expect(page.locator('.dua-flow-ar .qr-mark').first()).toHaveText('۝١');
 
     // And the same line by line: the opening set apart, the prayer's first
     // line numbered one.

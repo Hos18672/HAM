@@ -601,3 +601,13 @@ Recorded here rather than left implicit:
 5. **Submission retention.** 24 months for archived messages, seven years for
    membership records where Austrian tax and association law requires it. The
    privacy policy states both, and **Posteingang** enforces the first.
+6. **Verse and line numbers.** Numbers set inside an Arabic text are Arabic-
+   Indic on the German pages too: a verse-end sign (U+06DD) is an Arabic glyph
+   that encloses the numeral following it, and a Latin digit neither fits
+   inside it nor sits the right way round in a line that runs right to left.
+   The numbers in the interface around the text — the folio, the pills beside
+   each line, the superscripts in the translation — follow the page's own
+   language. Al-Fatiha's Basmala carries its ۝١, as the Medina mushaf prints
+   it: it is that surah's first verse, counted, unlike the Basmala over every
+   other surah, which is not. A du'a's Basmala is likewise not one of its
+   lines, so the prayer's first line is numbered one.

@@ -13,6 +13,17 @@ export function digits(value: string | number, locale: Locale): string {
   return locale === 'fa' ? toPersianDigits(s) : s;
 }
 
+/**
+ * Arabic-Indic numerals, whatever the page's language. The numbers set
+ * *inside* an Arabic text belong to that text and not to the interface
+ * around it: a verse-end sign is an Arabic glyph that encloses the numeral
+ * following it, and a Latin digit neither fits inside it nor sits the right
+ * way round in a line that runs right to left.
+ */
+export function arabicIndic(value: number): string {
+  return String(value).replace(/[0-9]/g, (d) => String.fromCharCode(0x0660 + Number(d)));
+}
+
 export function formatNumber(value: number, locale: Locale): string {
   return new Intl.NumberFormat(intlLocale[locale], {
     numberingSystem: locale === 'fa' ? 'arabext' : 'latn',

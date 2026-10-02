@@ -531,6 +531,13 @@
     "turnHintDua": "برای رفتن به دعای بعدی به سمت راست بکشید یا از کلیدهای جهت‌دار استفاده کنید.",
     "presentation": "حالت ارائه",
     "exitPresentation": "خروج از حالت ارائه",
-    "presentationHint": "حالت ارائه: با کلید فاصله یا کلیدهای جهت‌دار ورق بزنید؛ Esc برای خروج."
+    "presentationHint": "حالت ارائه: با کلید فاصله یا کلیدهای جهت‌دار ورق بزنید؛ Esc برای خروج.",
+    "presentFrom": "ارائه از اینجا",
+    "presentKeys": "← سطر بعد · → سطر قبل · T ترجمه · Esc خروج",
+    "nextLine": "سطر بعد",
+    "previousLine": "سطر قبل",
+    "lineOf": "سطر {n} از {of}",
+    "translationToggle": "ترجمه",
+    "settings": "تنظیمات"
   }
 }

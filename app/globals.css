@@ -3104,6 +3104,26 @@
      the du'a reader, so there is one printed page on this site and not two.
      Its foot holds nothing but the folio here — the page turns are in the
      bar along the bottom of the window. */
+  /* The sheet's head: the juz at one end and the surah's cartouche filling
+     the rest. One band where there were two, and the Quran starts that much
+     higher up the page. */
+  .qr-head-band {
+    gap: var(--space-2);
+    padding-block-end: 0;
+    border-block-end: 0;
+  }
+  .qr-head-juz {
+    flex: none;
+  }
+  .qr-head-band .mushaf-banner {
+    flex: 1;
+    min-inline-size: 0;
+  }
+  /* A surah that opens further down the page keeps its own cartouche; the
+     first on the page has the head's, and only its facts line is left. */
+  .qr-surah[data-bannerless='true'] {
+    padding-block: 0 10px;
+  }
   .qr-paper .mushaf-foot {
     justify-content: center;
     margin-block-start: var(--space-1);
@@ -3455,6 +3475,19 @@
     accent-color: var(--green);
     cursor: pointer;
   }
+  /* The du'a's foot says which du'a, where the Quran's says which page. */
+  .qr-foot-title {
+    flex: 1;
+    min-inline-size: 0;
+    margin: 0;
+    text-align: center;
+    font-size: 13px;
+    font-weight: var(--weight-semibold);
+    color: var(--goldInk);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
   .qr-slider-label {
     flex: none;
     margin: 0;
@@ -3486,24 +3519,26 @@
      is left above or below the reader to scroll to, which is what full
      screen has to mean on a phone: the Fullscreen API is refused outright
      on iOS, so the page itself is the only thing that can fill the screen. */
-  :root[data-quran-full='true'] .hc-header,
-  :root[data-quran-full='true'] .page-head-band,
-  :root[data-quran-full='true'] .footer-city,
-  :root[data-quran-full='true'] .qr-notes {
+  :root[data-reader-full='true'] .hc-header,
+  :root[data-reader-full='true'] .page-head-band,
+  :root[data-reader-full='true'] .footer-city,
+  :root[data-reader-full='true'] .qr-notes,
+  :root[data-reader-full='true'] .reader-hint,
+  :root[data-reader-full='true'] .dua-facts {
     display: none;
   }
-  :root[data-quran-full='true'] .mushaf-section {
+  :root[data-reader-full='true'] .mushaf-section {
     padding-block: 0;
   }
   /* Opaque, both of them: the page scrolls directly under the bar and the
      foot now, and frosted glass over Arabic set at this size is a smear. */
-  :root[data-quran-full='true'] .qr-bar,
-  :root[data-quran-full='true'] .qr-foot {
+  :root[data-reader-full='true'] .qr-bar,
+  :root[data-reader-full='true'] .qr-foot {
     background: var(--paper);
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
   }
-  :root[data-quran-full='true'] .qr-bar {
+  :root[data-reader-full='true'] .qr-bar {
     max-inline-size: none;
     padding-block: 6px;
     padding-block-start: calc(6px + env(safe-area-inset-top));
@@ -3513,20 +3548,25 @@
      above the sheet comes down to eight points, the sheet's own head
      padding with it, and the empty paper under it to just enough to clear
      the foot. */
-  :root[data-quran-full='true'] .qr {
+  :root[data-reader-full='true'] .qr {
     padding-block-end: 76px;
   }
-  :root[data-quran-full='true'] .qr-main {
+  :root[data-reader-full='true'] .qr-main {
     max-inline-size: none;
     padding: 8px clamp(8px, 2vw, 32px) 0;
   }
-  :root[data-quran-full='true'] .qr-paper {
+  :root[data-reader-full='true'] .qr-paper {
     padding-block: 14px 20px;
   }
-  :root[data-quran-full='true'] .qr-paper,
-  :root[data-quran-full='true'] .qr-leaf-back,
-  :root[data-quran-full='true'] .qr-leaf-shade {
+  :root[data-reader-full='true'] .qr-paper,
+  :root[data-reader-full='true'] .qr-leaf-back,
+  :root[data-reader-full='true'] .qr-leaf-shade {
     max-inline-size: 64rem;
+  }
+  /* The du'a page wraps its reader in a measured column; in full screen
+     the reader's own gutters are the only ones wanted. */
+  :root[data-reader-full='true'] .mushaf-section > .page {
+    padding-inline: 0;
   }
 
   /* ── Presentation ────────────────────────────────────────────────────── */
@@ -4694,7 +4734,6 @@
      under it. Same frame, same corners, same controls: somebody who has
      learnt to read the Quran on this site already knows this page. */
   .dua-sheet {
-    max-inline-size: 46rem;
     text-align: start;
   }
   .dua-lines {

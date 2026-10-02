@@ -59,79 +59,88 @@ test.describe('the du‘as', () => {
     await expect.poll(size).toBe(bigger);
   });
 
-  test('fills the screen, keeps every control, and leaves again', async ({ page }) => {
+  test('fills the screen the way the Quran does', async ({ page }) => {
     await page.goto('/de/duas/faraj');
-    const shell = page.locator('.reader-shell');
-    await expect(shell)
-      .toHaveAttribute('data-full', /^$/, { timeout: 1 })
-      .catch(() => {});
+    const band = page.locator('.page-head-band');
+    await expect(band).toBeVisible();
 
     await page.getByRole('button', { name: 'Vollbild', exact: true }).click();
-    await expect(shell).toHaveAttribute('data-full', 'true');
-    // Fixed to the viewport — not to the section it happens to sit in.
-    expect(await shell.evaluate((el) => getComputedStyle(el).position)).toBe('fixed');
-    // The toolbar comes along, so nothing is given up by filling the screen.
+    // The same root flag the Quran sets, and the same furniture standing
+    // down: the site's header, the page's green band, its footer and the
+    // du'a's own facts list.
+    await expect(page.locator('html')).toHaveAttribute('data-reader-full', 'true');
+    await expect(band).toBeHidden();
+    await expect(page.locator('.dua-facts')).toBeHidden();
+    await expect(page.locator('.footer-city')).toBeHidden();
+
+    // The bar comes along, so nothing is given up by filling the screen.
     await expect(page.getByRole('switch', { name: 'Übersetzung' })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Schrift vergrößern' })).toBeVisible();
 
-    await page.getByRole('button', { name: 'Vollbild verlassen' }).click();
-    await expect(shell).not.toHaveAttribute('data-full', 'true');
+    await page.getByRole('button', { name: 'Vollbild verlassen' }).first().click();
+    await expect(page.locator('html')).not.toHaveAttribute('data-reader-full', 'true');
+    await expect(band).toBeVisible();
   });
 
   test('on a phone, no control is cut off at the edge of the screen', async ({ page }) => {
     // What the owner reported, with a screenshot: in fullscreen the toolbar
     // ran off the right-hand edge and the fullscreen button was sliced in
-    // half. It wraps now instead of sliding.
+    // half. It is the Quran's bar now, which folds instead of sliding.
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto('/de/duas/faraj');
-    await page.getByRole('button', { name: 'Vollbild', exact: true }).click();
-    await expect(page.locator('.reader-shell')).toHaveAttribute('data-full', 'true');
+    await page.locator('.qr-compact .qr-chip').nth(1).click();
+    await expect(page.locator('html')).toHaveAttribute('data-reader-full', 'true');
 
-    const width = page.viewportSize()!.width;
-    const controls = page.locator('.mushaf-toolbar button');
-    const count = await controls.count();
-    expect(count).toBeGreaterThan(2);
-    for (let i = 0; i < count; i += 1) {
-      const box = (await controls.nth(i).boundingBox())!;
-      const label = await controls.nth(i).innerText();
-      expect(box.x, label).toBeGreaterThanOrEqual(-0.5);
-      expect(box.x + box.width, label).toBeLessThanOrEqual(width + 0.5);
+    for (const control of await page.locator('.qr-bar button').all()) {
+      const box = await control.boundingBox();
+      if (!box) continue;
+      expect(box.x).toBeGreaterThanOrEqual(-0.5);
+      expect(box.x + box.width).toBeLessThanOrEqual(390.5);
     }
 
-    // And the bar is a bar, not a third of the screen.
-    const bar = (await page.locator('.mushaf-toolbar').boundingBox())!;
-    expect(bar.height).toBeLessThan(844 / 4);
+    // And the bar is a bar, not a quarter of the screen.
+    const bar = (await page.locator('.qr-bar').boundingBox())!;
+    expect(bar.height).toBeLessThan(844 / 8);
   });
 
-  test('presents to a room: bigger type, and the controls get out of the way', async ({ page }) => {
+  test('presents a line at a time, on the Quran’s overlay', async ({ page }) => {
     await page.goto('/de/duas/faraj');
-    const size = () =>
-      page.evaluate(() => getComputedStyle(document.querySelector('.dua-ar')!).fontSize);
-    const before = parseFloat(await size());
+    await page.getByRole('button', { name: 'Präsentation', exact: true }).first().click();
 
-    await page.getByRole('button', { name: 'Präsentation', exact: true }).click();
-    const shell = page.locator('.reader-shell');
-    // Presenting is the whole screen too: there is no presentation in a box
-    // halfway down a page.
-    await expect(shell).toHaveAttribute('data-present', 'true');
-    await expect(shell).toHaveAttribute('data-full', 'true');
-    expect(parseFloat(await size())).toBeGreaterThan(before);
+    // The same overlay: the dark green ground, one line of the du'a on it,
+    // and where in the du'a that line is.
+    const overlay = page.locator('.qp');
+    await expect(overlay).toBeVisible();
+    expect(await overlay.evaluate((el) => getComputedStyle(el).backgroundColor)).toBe(
+      'rgb(6, 33, 26)',
+    );
+    await expect(page.locator('.qp-pos')).toHaveText('Zeile 1 von 14');
+    await expect(page.locator('.qp-ar')).toContainText('بِسْمِ');
+    await expect(page.locator('.qp-tr')).toContainText('Im Namen Gottes');
 
-    // Left alone, the toolbar fades — and it is still there for a hand or a
-    // keyboard, which is why it fades rather than going away.
-    await expect(shell).toHaveAttribute('data-idle', 'true', { timeout: 15_000 });
-    await expect(page.getByRole('button', { name: 'Schrift vergrößern' })).toBeVisible();
+    // A clicker's keys step through it, and the end of one line is the
+    // start of the next.
+    await page.keyboard.press('ArrowLeft');
+    await expect(page.locator('.qp-pos')).toHaveText('Zeile 2 von 14');
+    await page.keyboard.press('ArrowRight');
+    await expect(page.locator('.qp-pos')).toHaveText('Zeile 1 von 14');
 
-    await page.getByRole('button', { name: 'Präsentation beenden' }).click();
-    await expect(shell).not.toHaveAttribute('data-present', 'true');
+    await page.keyboard.press('Escape');
+    await expect(overlay).toBeHidden();
+  });
+
+  test('presents from the line that was asked for', async ({ page }) => {
+    await page.goto('/de/duas/faraj');
+    await page.getByRole('button', { name: 'Ab hier präsentieren' }).nth(2).click();
+    await expect(page.locator('.qp-pos')).toHaveText('Zeile 3 von 14');
   });
 
   test('a swipe turns to the next du‘a and stays in fullscreen', async ({ page }) => {
     await page.goto('/de/duas/tawassul');
     await page.getByRole('button', { name: 'Vollbild', exact: true }).click();
-    await expect(page.locator('.reader-shell')).toHaveAttribute('data-full', 'true');
+    await expect(page.locator('html')).toHaveAttribute('data-reader-full', 'true');
 
-    const stage = page.locator('.mushaf-stage');
+    const stage = page.locator('.qr-main');
     const box = (await stage.boundingBox())!;
     const y = box.y + Math.min(box.height / 2, 300);
     for (const [type, x] of [
@@ -153,6 +162,6 @@ test.describe('the du‘as', () => {
     // reader does not fall out of fullscreen on the way, although the turn
     // remounts it.
     await expect(page).toHaveURL(/\/de\/duas\/nudba$/);
-    await expect(page.locator('.reader-shell')).toHaveAttribute('data-full', 'true');
+    await expect(page.locator('html')).toHaveAttribute('data-reader-full', 'true');
   });
 });

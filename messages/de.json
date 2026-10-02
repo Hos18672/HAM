@@ -531,6 +531,13 @@
     "turnHintDua": "Nach rechts wischen oder die Pfeiltasten verwenden, um zum nächsten Bittgebet zu gelangen.",
     "presentation": "Präsentation",
     "exitPresentation": "Präsentation beenden",
-    "presentationHint": "Präsentationsmodus: Leertaste oder Pfeiltasten blättern, Esc beendet."
+    "presentationHint": "Präsentationsmodus: Leertaste oder Pfeiltasten blättern, Esc beendet.",
+    "presentFrom": "Ab hier präsentieren",
+    "presentKeys": "← nächste Zeile · → vorherige Zeile · T Übersetzung · Esc beenden",
+    "nextLine": "Nächste Zeile",
+    "previousLine": "Vorherige Zeile",
+    "lineOf": "Zeile {n} von {of}",
+    "translationToggle": "Übersetzung",
+    "settings": "Einstellungen"
   }
 }

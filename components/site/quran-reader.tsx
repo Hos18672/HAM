@@ -1,7 +1,6 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
-import { createPortal } from 'react-dom';
 import { useTranslations } from 'next-intl';
 import {
   BookOpen,
@@ -21,6 +20,7 @@ import {
 import { digits } from '@/lib/i18n/format';
 import { BASMALA, JUZ_COUNT, PAGE_COUNT } from '@/lib/quran-constants';
 import { Rosette } from './ornaments';
+import { Fixed } from './reader-fixed';
 import { usePaperTurn } from './use-paper-turn';
 import { useQuranSettings, rememberPage } from './use-quran-settings';
 import { QuranPresent } from './quran-present';
@@ -64,46 +64,6 @@ const pageFromUrl = () => {
   const match = /\/quran\/page\/(\d+)/.exec(window.location.pathname);
   return match ? Number(match[1]) : null;
 };
-
-/**
- * The furniture that is fixed to the viewport: the arrows either side, the
- * bar along the foot and the presentation overlay.
- *
- * Portalled to the body because it must be. The site reveals each page with
- * an animation, and the wrapper it animates keeps a transform — an element
- * with a transform is the containing block for anything `position: fixed`
- * inside it, so the foot was pinned to the bottom of the *page*, two
- * thousand pixels below the window, rather than to the window. React keeps
- * the state of children it moves, so nothing is lost on the way.
- *
- * The custom properties come along by hand: a portal escapes the reader's
- * element, and with it the cascade that was carrying them.
- */
-function Fixed({
-  children,
-  scale,
-  arSize,
-  silent,
-}: {
-  children: ReactNode;
-  scale: number;
-  arSize: string;
-  silent: boolean;
-}) {
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
-  if (!mounted) return null;
-  return createPortal(
-    <div
-      className="qr-fixed"
-      data-silent={silent ? 'on' : 'off'}
-      style={{ ['--qr-ar' as string]: arSize, ['--qr-scale' as string]: scale }}
-    >
-      {children}
-    </div>,
-    document.body,
-  );
-}
 
 export function QuranReader({
   initialPage,
@@ -280,10 +240,10 @@ export function QuranReader({
   // its footer and the notes under the page all stand down.
   useEffect(() => {
     const root = document.documentElement;
-    if (full || presenting) root.dataset.quranFull = 'true';
-    else delete root.dataset.quranFull;
+    if (full || presenting) root.dataset.readerFull = 'true';
+    else delete root.dataset.readerFull;
     return () => {
-      delete root.dataset.quranFull;
+      delete root.dataset.readerFull;
     };
   }, [full, presenting]);
 
@@ -732,12 +692,18 @@ function Paper({
       <Rosette className="mushaf-corner" />
       <Rosette className="mushaf-corner" />
 
-      <header className="mushaf-head">
-        <span lang="ar" dir="rtl">
-          {first ? page.surahs[first.surah]?.name : ''}
-        </span>
-        <span className="mushaf-head-mark" aria-hidden="true" />
-        <span>{t('juz', { n: digits(first?.juz ?? 1, locale) })}</span>
+      {/* One band. The head used to name the surah and the cartouche
+          beneath it name it again, two rows deep, before a word of the
+          Quran — so the cartouche *is* the head now, with the juz beside
+          it. A surah that opens further down the page still gets its own
+          cartouche where it opens. */}
+      <header className="mushaf-head qr-head-band">
+        <span className="qr-head-juz">{t('juz', { n: digits(first?.juz ?? 1, locale) })}</span>
+        <h2 className="qr-banner mushaf-banner" lang="ar" dir="rtl">
+          <Rosette className="mushaf-banner-star" />
+          <span>{first ? page.surahs[first.surah]?.name : ''}</span>
+          <Rosette className="mushaf-banner-star" />
+        </h2>
       </header>
 
       {children}
@@ -753,20 +719,24 @@ function SurahHead({
   surah,
   locale,
   meta,
+  banner,
 }: {
   surah: SurahInfo | undefined;
   locale: Locale;
   meta: string;
+  banner: boolean;
 }) {
   return (
-    <header className="qr-surah">
-      <div className="qr-banner mushaf-banner-wrap">
-        <h2 lang="ar" dir="rtl" className="mushaf-banner">
-          <Rosette className="mushaf-banner-star" />
-          <span>{surah?.name}</span>
-          <Rosette className="mushaf-banner-star" />
-        </h2>
-      </div>
+    <header className="qr-surah" data-bannerless={banner ? undefined : 'true'}>
+      {banner ? (
+        <div className="qr-banner mushaf-banner-wrap">
+          <h2 lang="ar" dir="rtl" className="mushaf-banner">
+            <Rosette className="mushaf-banner-star" />
+            <span>{surah?.name}</span>
+            <Rosette className="mushaf-banner-star" />
+          </h2>
+        </div>
+      ) : null}
       <p className="qr-surah-meta">{meta}</p>
       <span className="visually-hidden">{digits(surah?.number ?? 0, locale)}</span>
     </header>
@@ -828,6 +798,10 @@ function VerseView({
                 <SurahHead
                   surah={surah}
                   locale={locale}
+                  // The head of the sheet already carries this one's
+                  // cartouche; only the ones opening further down need
+                  // their own.
+                  banner={block !== blocks[0]}
                   meta={[
                     digits(block.surah, locale),
                     surah?.transliteration,
@@ -973,13 +947,16 @@ function Sheet({
         <div key={`${block.surah}-${block.ayahs[0]?.number}`} id={`surah-${block.surah}`}>
           {block.opens ? (
             <>
-              <div className="qr-banner mushaf-banner-wrap">
-                <h2 lang="ar" dir="rtl" className="mushaf-banner">
-                  <Rosette className="mushaf-banner-star" />
-                  <span>{page.surahs[block.surah]?.name}</span>
-                  <Rosette className="mushaf-banner-star" />
-                </h2>
-              </div>
+              {/* Not for the first: the sheet's head is its cartouche. */}
+              {block === blocks[0] ? null : (
+                <div className="qr-banner mushaf-banner-wrap">
+                  <h2 lang="ar" dir="rtl" className="mushaf-banner">
+                    <Rosette className="mushaf-banner-star" />
+                    <span>{page.surahs[block.surah]?.name}</span>
+                    <Rosette className="mushaf-banner-star" />
+                  </h2>
+                </div>
+              )}
               {opensWithBasmala(block) ? (
                 <p lang="ar" dir="rtl" className="qr-bism">
                   {BASMALA}

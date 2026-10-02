@@ -538,6 +538,11 @@
     "previousLine": "سطر قبل",
     "lineOf": "سطر {n} از {of}",
     "translationToggle": "ترجمه",
-    "settings": "تنظیمات"
+    "settings": "تنظیمات",
+    "viewSelect": "نما",
+    "viewLines": "سطر به سطر",
+    "viewFlow": "یکپارچه",
+    "allKinds": "همهٔ گونه‌ها",
+    "unavailable": "این متن بارگذاری نشد."
   }
 }

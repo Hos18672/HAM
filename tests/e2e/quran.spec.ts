@@ -203,6 +203,39 @@ test.describe('the Quran reader', () => {
     await expect(band).toBeVisible();
   });
 
+  test('names the surah where it begins, and not on every page of it', async ({ page }) => {
+    // Page 2 opens al-Baqara; page 3 carries it on. A surah runs for pages
+    // — al-Baqara for forty-eight — and the cartouche is an opening, not a
+    // label to repeat at the head of each one.
+    await page.locator('.qr-seg button').nth(1).click();
+    await expect(page.locator('.qr-paper > .mushaf-head')).toBeVisible();
+
+    await page.goto('/de/quran/page/3');
+    await hydrated(page);
+    await expect(page.locator('.qr-sheet, .qr-verses')).toBeVisible();
+    await expect(page.locator('.qr-paper > .mushaf-head')).toHaveCount(0);
+  });
+
+  test('sets al-Fatiha’s Basmala on a line of its own', async ({ page }) => {
+    // It *is* the first verse there, so it is not taken off and set apart
+    // as it is in every other surah — and it ran on into al-Hamdu with the
+    // opening of the Quran halfway along a justified line.
+    await page.goto('/de/quran/page/1');
+    await hydrated(page);
+    await page.locator('.qr-seg button').nth(1).click();
+
+    const alone = page.locator('.qr-sheet-alone');
+    await expect(alone).toBeVisible();
+    await expect(alone).toContainText('بِسْمِ');
+    // And what follows it starts after it, not beside it.
+    const [first, rest] = await page.evaluate(() => {
+      const a = document.querySelector('.qr-sheet-alone')!.getBoundingClientRect();
+      const b = document.querySelector('.qr-sheet-alone + .qr-sheet-text')!.getBoundingClientRect();
+      return [a.bottom, b.top];
+    });
+    expect(rest).toBeGreaterThanOrEqual(first - 1);
+  });
+
   test('gives the Quran the screen, and says each thing once', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.reload();

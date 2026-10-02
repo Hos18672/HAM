@@ -10,7 +10,7 @@ import {
   CaretRight,
   CornersIn,
   CornersOut,
-  Funnel,
+  ListNumbers,
   Minus,
   Plus,
   Presentation,
@@ -182,6 +182,30 @@ export function DuaReader({
     [shown, catalogue, at, dua.slug],
   );
 
+  /**
+   * Line by line, or the whole du'a at a stretch — the same choice the
+   * mushaf offers between its two views. One is for learning a text, the
+   * other for reciting it, and which a reader wants does not change from
+   * one du'a to the next, so it is remembered.
+   */
+  const [flow, setFlow] = useState(false);
+  useEffect(() => {
+    try {
+      if (localStorage.getItem('dua-view') === 'flow') setFlow(true);
+    } catch {
+      /* storage unavailable */
+    }
+  }, []);
+  const setView = useCallback((on: boolean) => {
+    setFlow(on);
+    try {
+      localStorage.setItem('dua-view', on ? 'flow' : 'lines');
+    } catch {
+      /* storage unavailable */
+    }
+  }, []);
+
+  /** The controls that fold away on a narrow screen. */
   const [open, setOpen] = useState(false);
 
   const present = useCallback((from = 0) => {
@@ -236,6 +260,7 @@ export function DuaReader({
 
   const here = spoken[Math.min(line, spoken.length - 1)];
   let number = 0;
+  let numbered = 0;
   const column = locale === 'fa' ? 1 : 2;
 
   return (
@@ -249,6 +274,7 @@ export function DuaReader({
         {
           ['--qr-scale' as string]: reader.scale,
           ['--reader-scale' as string]: reader.scale,
+          ['--qr-ar' as string]: `calc(${reader.scale} * clamp(1.3rem, 3.6vw, 1.95rem))`,
         } as React.CSSProperties
       }
     >
@@ -313,7 +339,6 @@ export function DuaReader({
             {/* Which du'a, and which kind — the mushaf's surah and juz
                 pickers, for a shelf of texts rather than a book. */}
             <label className="qr-select">
-              <BookOpen size={17} weight="duotone" aria-hidden="true" />
               <span className="visually-hidden">{t('allDuas')}</span>
               <select value={dua.slug} onChange={(event) => void turn(event.target.value)}>
                 {options.map((entry) => (
@@ -325,18 +350,28 @@ export function DuaReader({
             </label>
 
             <label className="qr-select qr-select-narrow">
-              <Funnel size={17} weight="duotone" aria-hidden="true" />
               <span className="visually-hidden">{t('filterByCategory')}</span>
               <select
                 value={filter}
                 onChange={(event) => setFilter(event.target.value as DuaCategory | 'all')}
               >
-                <option value="all">{t('none')}</option>
+                <option value="all">{tReader('allKinds')}</option>
                 <option value="dua">{t('category.dua')}</option>
                 <option value="ziyara">{t('category.ziyara')}</option>
                 <option value="taqib">{t('category.taqib')}</option>
               </select>
             </label>
+
+            <div className="qr-seg" role="group" aria-label={tReader('viewSelect')}>
+              <button type="button" aria-pressed={!flow} onClick={() => setView(false)}>
+                <ListNumbers size={17} weight="duotone" aria-hidden="true" />
+                {tReader('viewLines')}
+              </button>
+              <button type="button" aria-pressed={flow} onClick={() => setView(true)}>
+                <BookOpen size={17} weight="duotone" aria-hidden="true" />
+                {tReader('viewFlow')}
+              </button>
+            </div>
 
             <button
               type="button"
@@ -399,7 +434,7 @@ export function DuaReader({
 
         {/* ── The sheet ────────────────────────────────────────────────── */}
         <div className="qr-main" {...reader.swipe}>
-          {failed ? <p className="qr-failed">{t('none')}</p> : null}
+          {failed ? <p className="qr-failed">{tReader('unavailable')}</p> : null}
           <article className="mushaf qr-paper dua-sheet" aria-label={dua.title}>
             <Rosette className="mushaf-corner" />
             <Rosette className="mushaf-corner" />
@@ -414,41 +449,95 @@ export function DuaReader({
               </h2>
             </header>
 
-            <ol className="dua-lines" data-translated={translated ? 'on' : 'off'}>
-              {dua.lines.map((entry, index) => {
-                const [arabic] = entry;
-                const rendering = entry[column] ?? '';
-                if (arabic === null) {
+            {flow ? (
+              /* At a stretch: the whole du'a as one passage, the way it is
+                 recited, with the rubrics still set apart because they are
+                 instructions and not words to say. Clicking anywhere in it
+                 presents from that line. */
+              <div className="dua-flow" data-translated={translated ? 'on' : 'off'}>
+                <p className="dua-ar dua-flow-ar" lang="ar" dir="rtl">
+                  {dua.lines.map((entry, index) => {
+                    const [arabic] = entry;
+                    if (arabic === null) return null;
+                    number += 1;
+                    const from = number - 1;
+                    return (
+                      <span
+                        key={index}
+                        className="qr-sheet-ayah"
+                        role="button"
+                        tabIndex={0}
+                        onClick={() => present(from)}
+                        onKeyDown={(event) => {
+                          if (event.key === 'Enter' || event.key === ' ') {
+                            event.preventDefault();
+                            present(from);
+                          }
+                        }}
+                      >
+                        {arabic}
+                        <span className="qr-mark" aria-hidden="true">
+                          {'\u06DD'}
+                          {digits(number, locale)}
+                        </span>{' '}
+                      </span>
+                    );
+                  })}
+                </p>
+                {translated ? (
+                  <div className="qr-mushaf-tr">
+                    <p className="qr-mushaf-tr-head">{t('showTranslation')}</p>
+                    <p>
+                      {dua.lines.map((entry, index) =>
+                        entry[column] ? (
+                          <span key={index}>
+                            {entry[0] === null ? null : <sup>{digits(++numbered, locale)}</sup>}
+                            {entry[column]}{' '}
+                          </span>
+                        ) : null,
+                      )}
+                    </p>
+                  </div>
+                ) : null}
+              </div>
+            ) : (
+              <ol className="dua-lines" data-translated={translated ? 'on' : 'off'}>
+                {dua.lines.map((entry, index) => {
+                  const [arabic] = entry;
+                  const rendering = entry[column] ?? '';
+                  if (arabic === null) {
+                    return (
+                      <li key={index} className="dua-rubric">
+                        {rendering}
+                      </li>
+                    );
+                  }
+                  number += 1;
+                  const from = number - 1;
                   return (
-                    <li key={index} className="dua-rubric">
-                      {rendering}
+                    <li key={index} className="dua-line">
+                      <div className="qr-verse-top">
+                        <span className="qr-pill">{digits(number, locale)}</span>
+                        <button
+                          type="button"
+                          className="qr-from"
+                          onClick={() => present(from)}
+                          aria-label={tReader('presentFrom')}
+                          title={tReader('presentFrom')}
+                        >
+                          <Presentation size={18} weight="duotone" aria-hidden="true" />
+                          <span className="qr-from-word">{tReader('presentFrom')}</span>
+                        </button>
+                      </div>
+                      <p className="dua-ar" lang="ar" dir="rtl">
+                        {arabic}
+                      </p>
+                      {rendering ? <p className="dua-tr">{rendering}</p> : null}
                     </li>
                   );
-                }
-                number += 1;
-                const from = number - 1;
-                return (
-                  <li key={index} className="dua-line">
-                    <div className="qr-verse-top">
-                      <span className="qr-pill">{digits(number, locale)}</span>
-                      <button
-                        type="button"
-                        className="qr-from"
-                        onClick={() => present(from)}
-                        title={tReader('presentFrom')}
-                      >
-                        <Presentation size={18} weight="duotone" aria-hidden="true" />
-                        <span>{tReader('presentFrom')}</span>
-                      </button>
-                    </div>
-                    <p className="dua-ar" lang="ar" dir="rtl">
-                      {arabic}
-                    </p>
-                    {rendering ? <p className="dua-tr">{rendering}</p> : null}
-                  </li>
-                );
-              })}
-            </ol>
+                })}
+              </ol>
+            )}
 
             {/* How many lines there are, and what kind of text this is. */}
             <footer className="mushaf-foot">

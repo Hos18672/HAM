@@ -538,6 +538,11 @@
     "previousLine": "Vorherige Zeile",
     "lineOf": "Zeile {n} von {of}",
     "translationToggle": "Übersetzung",
-    "settings": "Einstellungen"
+    "settings": "Einstellungen",
+    "viewSelect": "Ansicht",
+    "viewLines": "Zeile für Zeile",
+    "viewFlow": "Am Stück",
+    "allKinds": "Alle Arten",
+    "unavailable": "Dieser Text konnte nicht geladen werden."
   }
 }

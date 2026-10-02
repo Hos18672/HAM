@@ -675,12 +675,15 @@ function Paper({
   locale,
   className,
   label,
+  opensHere,
   children,
 }: {
   page: MushafPage;
   locale: Locale;
   className: string;
   label: string;
+  /** Whether the surah this page opens in begins on this page. */
+  opensHere: boolean;
   children: ReactNode;
 }) {
   const t = useTranslations('quran');
@@ -692,19 +695,21 @@ function Paper({
       <Rosette className="mushaf-corner" />
       <Rosette className="mushaf-corner" />
 
-      {/* The head is the cartouche and nothing else. It used to name the
-          surah and have the cartouche beneath it name it again, two rows
-          deep; then the two became one band with the juz beside them, and
-          the juz has gone to the foot with the page number, where the
-          page's own facts belong. A surah that opens further down the
-          page still gets its own cartouche where it opens. */}
-      <header className="mushaf-head qr-head-band">
-        <h2 className="qr-banner mushaf-banner" lang="ar" dir="rtl">
-          <Rosette className="mushaf-banner-star" />
-          <span>{first ? page.surahs[first.surah]?.name : ''}</span>
-          <Rosette className="mushaf-banner-star" />
-        </h2>
-      </header>
+      {/* The cartouche where the surah begins, and only there. A surah
+          runs for pages — al-Baqara for forty-eight — and naming it again
+          at the head of every one of them is a label, not an opening: the
+          page where it starts should be the page that announces it. A
+          surah that begins further down a page still gets its own
+          cartouche where it begins. */}
+      {opensHere ? (
+        <header className="mushaf-head qr-head-band">
+          <h2 className="qr-banner mushaf-banner" lang="ar" dir="rtl">
+            <Rosette className="mushaf-banner-star" />
+            <span>{first ? page.surahs[first.surah]?.name : ''}</span>
+            <Rosette className="mushaf-banner-star" />
+          </h2>
+        </header>
+      ) : null}
 
       {children}
 
@@ -790,6 +795,7 @@ function VerseView({
       locale={locale}
       className="qr-verses"
       label={t('pageOf', { n: digits(page.number, locale) })}
+      opensHere={blocks[0]?.opens ?? false}
     >
       {blocks.map((block) => {
         const surah = page.surahs[block.surah];
@@ -800,9 +806,9 @@ function VerseView({
                 <SurahHead
                   surah={surah}
                   locale={locale}
-                  // The head of the sheet already carries this one's
-                  // cartouche; only the ones opening further down need
-                  // their own.
+                  // The sheet's head carries the cartouche for the surah
+                  // that begins this page; every other opening needs its
+                  // own, here where it happens.
                   banner={block !== blocks[0]}
                   meta={[
                     digits(block.surah, locale),
@@ -925,6 +931,35 @@ function MushafView({
   );
 }
 
+/** One verse of the printed page: the words, and a press to present them. */
+function Ayah({
+  ayah,
+  at,
+  onPresentFrom,
+}: {
+  ayah: PageAyah;
+  at: number;
+  onPresentFrom?: (index: number) => void;
+}) {
+  if (!onPresentFrom) return <Arabic ayah={ayah} />;
+  return (
+    <span
+      className="qr-sheet-ayah"
+      role="button"
+      tabIndex={0}
+      onClick={() => onPresentFrom(at)}
+      onKeyDown={(event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          onPresentFrom(at);
+        }
+      }}
+    >
+      <Arabic ayah={ayah} />
+    </span>
+  );
+}
+
 function Sheet({
   page,
   blocks,
@@ -944,6 +979,7 @@ function Sheet({
       locale={locale}
       className="qr-sheet"
       label={t('pageOf', { n: digits(page.number, locale) })}
+      opensHere={blocks[0]?.opens ?? false}
     >
       {blocks.map((block) => (
         <div key={`${block.surah}-${block.ayahs[0]?.number}`} id={`surah-${block.surah}`}>
@@ -966,8 +1002,18 @@ function Sheet({
               ) : null}
             </>
           ) : null}
+          {/* Al-Fatiha's first verse *is* the Basmala — it is not folded
+              into verse one as it is elsewhere, so it is not taken off and
+              set on its own line as it is elsewhere either, and it ran on
+              into "ٱلْحَمْدُ" with the opening of the Quran halfway along a
+              justified line. It stands alone here, as it is printed. */}
+          {block.opens && block.surah === 1 ? (
+            <p lang="ar" dir="rtl" className="qr-sheet-text qr-sheet-alone">
+              <Ayah ayah={block.ayahs[0]!} at={(index += 1)} onPresentFrom={onPresentFrom} />
+            </p>
+          ) : null}
           <p lang="ar" dir="rtl" className="qr-sheet-text">
-            {block.ayahs.map((ayah) => {
+            {(block.opens && block.surah === 1 ? block.ayahs.slice(1) : block.ayahs).map((ayah) => {
               index += 1;
               const from = index;
               return onPresentFrom ? (

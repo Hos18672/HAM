@@ -114,6 +114,30 @@ test.describe('the du‘as', () => {
     await expect(page.getByRole('heading', { level: 1 })).toContainText('Ziyarat');
   });
 
+  test('reads line by line or at a stretch, as the mushaf does', async ({ page }) => {
+    await page.goto('/de/duas/faraj');
+    await hydrated(page);
+
+    // Line by line is what opens: numbered, each with its rendering under it.
+    await expect(page.locator('.dua-lines')).toBeVisible();
+    await expect(page.locator('.dua-flow')).toHaveCount(0);
+
+    await page.getByRole('button', { name: 'Am Stück' }).click();
+    await expect(page.locator('.dua-flow')).toBeVisible();
+    await expect(page.locator('.dua-lines')).toHaveCount(0);
+    // One passage, and the translation gathered under it.
+    await expect(page.locator('.dua-flow-ar')).toContainText('بِسْمِ');
+    await expect(page.locator('.qr-mushaf-tr')).toContainText('Im Namen Gottes');
+
+    // The choice is the reader's, not the page's: it survives a reload.
+    await page.reload();
+    await hydrated(page);
+    await expect(page.locator('.dua-flow')).toBeVisible();
+
+    await page.getByRole('button', { name: 'Zeile für Zeile' }).click();
+    await expect(page.locator('.dua-lines')).toBeVisible();
+  });
+
   test('fills the screen the way the Quran does', async ({ page }) => {
     await page.goto('/de/duas/faraj');
     await hydrated(page);

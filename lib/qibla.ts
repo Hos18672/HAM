@@ -145,3 +145,48 @@ export function qiblaFrom(from: Coordinates = HOUSE): QiblaResult {
     cardinal: cardinalFor(bearing),
   };
 }
+
+/**
+ * The great circle from one place to another, as `count + 1` points.
+ *
+ * Interpolated along the arc itself (spherical linear interpolation), not
+ * between the two sets of coordinates: on a map the shortest way from Vienna
+ * to Mecca is a curve, and a straight line drawn between the endpoints is a
+ * different route altogether. The arrow on the street map may still be drawn
+ * straight — Mercator preserves angles at a point, so a short line leaves at
+ * the true initial bearing — but a line spanning a third of the globe may not.
+ *
+ * Degenerate cases: two points at the same place, or exactly antipodal, have
+ * no single arc between them, so the endpoints are returned as they are.
+ */
+export function greatCirclePath(
+  from: Coordinates,
+  to: Coordinates = KAABA,
+  count = 96,
+): Coordinates[] {
+  const phi1 = from.latitude * DEG;
+  const lam1 = from.longitude * DEG;
+  const phi2 = to.latitude * DEG;
+  const lam2 = to.longitude * DEG;
+
+  const cosDelta =
+    Math.sin(phi1) * Math.sin(phi2) + Math.cos(phi1) * Math.cos(phi2) * Math.cos(lam2 - lam1);
+  const delta = Math.acos(Math.min(1, Math.max(-1, cosDelta)));
+  const sinDelta = Math.sin(delta);
+  if (!Number.isFinite(delta) || sinDelta === 0) return [from, to];
+
+  const out: Coordinates[] = [];
+  for (let i = 0; i <= count; i += 1) {
+    const f = i / count;
+    const a = Math.sin((1 - f) * delta) / sinDelta;
+    const b = Math.sin(f * delta) / sinDelta;
+    const x = a * Math.cos(phi1) * Math.cos(lam1) + b * Math.cos(phi2) * Math.cos(lam2);
+    const y = a * Math.cos(phi1) * Math.sin(lam1) + b * Math.cos(phi2) * Math.sin(lam2);
+    const z = a * Math.sin(phi1) + b * Math.sin(phi2);
+    out.push({
+      latitude: Math.atan2(z, Math.hypot(x, y)) / DEG,
+      longitude: Math.atan2(y, x) / DEG,
+    });
+  }
+  return out;
+}

@@ -3,8 +3,8 @@ import { notFound } from 'next/navigation';
 
 import { requireLocale } from '@/lib/i18n/locale-param';
 import { getPageHeader } from '@/lib/db/queries/content';
-import { PageHead } from '@/components/site/page-head';
-import { Compass } from '@/components/site/compass';
+import { EditableText } from '@/components/editable/editable-text';
+import { Qibla } from '@/components/site/qibla';
 import { pageMetadata } from '@/lib/page-meta';
 import { locales } from '@/lib/i18n/config';
 
@@ -29,13 +29,48 @@ export default async function QiblaPage({ params }: { params: Promise<{ locale: 
   if (!header) notFound();
 
   return (
-    <>
-      <PageHead header={header} locale={typed} />
-      <section className="section" data-rise>
-        <div className="page">
-          <Compass locale={typed} />
+    /**
+     * The one page that does not open with the green band every other page
+     * opens with. A compass is an instrument: it is only useful if it is on
+     * the screen when you arrive, and the band plus the stage under it do
+     * not both fit on a phone. The band's own words are still here, set as
+     * a title row, and still edited in the same place.
+     */
+    <section className="section section-tight qibla-section" data-rise>
+      <div className="page">
+        <div className="qibla-head">
+          <div className="qibla-head-words">
+            <EditableText
+              as="span"
+              entity="page"
+              id={header.id}
+              field="kicker"
+              locale={typed}
+              value={header.kicker}
+              className="kicker"
+              style={{ color: 'var(--goldInk)' }}
+            />
+            <EditableText
+              as="h1"
+              entity="page"
+              id={header.id}
+              field="title"
+              locale={typed}
+              value={header.title}
+            />
+          </div>
+          <EditableText
+            as="p"
+            entity="page"
+            id={header.id}
+            field="lead"
+            locale={typed}
+            value={header.lead}
+            className="qibla-head-lede"
+          />
         </div>
-      </section>
-    </>
+        <Qibla locale={typed} />
+      </div>
+    </section>
   );
 }

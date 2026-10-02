@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import AxeBuilder from '@axe-core/playwright';
 
 test.describe('prayer times', () => {
   test('shows seven times, a next prayer and both calendars', async ({ page }) => {
@@ -102,104 +103,19 @@ test.describe('prayer times', () => {
   });
 });
 
-test.describe('qibla', () => {
-  test('shows the computed direction from the association house', async ({ page }) => {
-    await page.goto('/de/qibla');
-
-    // The figure the design specifies: ≈136.6° south-east, ≈3 637 km.
-    //
-    // Scoped to the facts row on purpose: the design also prints the reading
-    // in the middle of the rose, so the bearing appears twice on the page —
-    // once as a figure to read, once on the dial. The second is aria-hidden,
-    // but it is still text, so an unscoped match is ambiguous.
-    const bearing = page.locator('.fact-rule[data-lead="true"]');
-    await expect(bearing.getByText(/136,[67]°/)).toBeVisible();
-    await expect(bearing.getByText('Südosten', { exact: false })).toBeVisible();
-    // Scoped for the same reason: the map prints distances of its own.
-    await expect(page.locator('.fact-rule').getByText(/3.637/)).toBeVisible();
-
-    // The rose is an image with an accessible name, not a decorative blob.
-    await expect(page.getByRole('img', { name: /Kompassrose/ })).toBeVisible();
-  });
-
-  test('opens on where the reader is, not on the house', async ({ page, context }) => {
-    await context.grantPermissions(['geolocation']);
-    await context.setGeolocation({ latitude: 51.5074, longitude: -0.1278 }); // London
-
-    // Nothing is pressed: somebody who has come to this page is standing
-    // somewhere and wants the direction from there.
-    await page.goto('/de/qibla');
-    const bearing = page.locator('.fact-rule[data-lead="true"]');
-    await expect(bearing.getByText(/119,0°/)).toBeVisible({ timeout: 15_000 });
-    await expect(bearing.getByText(/136,[67]°/)).toBeHidden();
-
-    // The house is still a press away, and still true.
-    await page.getByRole('button', { name: 'Zurück zum Vereinshaus' }).click();
-    await expect(bearing.getByText(/136,[67]°/)).toBeVisible();
-  });
-
-  test('falls back to the house when the location is refused, and says so', async ({ page }) => {
-    // No permission granted: the browser refuses, and the page neither
-    // hangs on it nor pretends the reader is in Hernals without saying so.
-    await page.goto('/de/qibla');
-    const bearing = page.locator('.fact-rule[data-lead="true"]');
-    await expect(bearing.getByText(/136,[67]°/)).toBeVisible({ timeout: 15_000 });
-    // Asked for in two places now — on the compass card and beside the map
-    // — so that whichever one the reader has scrolled to, the way out of
-    // Hernals is in front of them.
-    await expect(page.getByRole('button', { name: 'Meinen Standort verwenden' })).toHaveCount(2);
-    await expect(page.locator('.qibla-origin-ask')).toBeVisible();
-  });
-
-  test('recomputes from a granted location and returns to the house', async ({ page, context }) => {
-    // Mecca itself: the bearing becomes meaningless and the distance zero,
-    // which is an unambiguous signal that the recomputation happened.
-    await context.grantPermissions(['geolocation']);
-    await context.setGeolocation({ latitude: 51.5074, longitude: -0.1278 }); // London
-
-    await page.goto('/de/qibla');
-    await page.getByRole('button', { name: 'Meinen Standort verwenden' }).first().click();
-
-    // The facts row again — the rose repeats the reading, see above.
-    const bearing = page.locator('.fact-rule[data-lead="true"]');
-    await expect(bearing.getByText(/119,0°/)).toBeVisible({ timeout: 15_000 });
-    // Exactly: the street map's hint sentence contains the same phrase, and
-    // a bare `getByText` matches substrings. This is about the kicker.
-    await expect(page.getByText('Von Ihrem Standort aus', { exact: true })).toBeVisible();
-
-    await page.getByRole('button', { name: 'Zurück zum Vereinshaus' }).click();
-    await expect(bearing.getByText(/136,[67]°/)).toBeVisible();
-  });
-
-  test('states plainly when the compass is unavailable', async ({ page }) => {
-    await page.goto('/de/qibla');
-    // A desktop runner has no magnetometer, so activating must say something
-    // rather than leaving a needle pointing somewhere arbitrary.
-    await page.getByRole('button', { name: 'Kompass aktivieren' }).click();
-
-    // Three outcomes are legitimate and none of them is silent: a browser that
-    // hands over the sensor flips the button to "Kompass aktiv"; one without
-    // the API says so; one that gates it behind a permission and refuses says
-    // that instead. What must never happen is nothing at all.
-    //
-    // `exact` is not optional here. Playwright matches an accessible name as a
-    // case-insensitive *substring* by default, and "Kompass aktiv" is a
-    // substring of "Kompass aktivieren" — so without it this passes on the
-    // unclicked button and asserts nothing whatsoever.
-    const activeButton = page.getByRole('button', { name: 'Kompass aktiv', exact: true });
-    const unsupported = page.getByText('stellt keinen Kompass zur Verfügung');
-    const denied = page.getByText('Ohne Freigabe kann der Kompass nicht gelesen werden');
-    await expect(activeButton.or(unsupported).or(denied).first()).toBeVisible();
-  });
-
-  test('turns the rose only on an absolute heading', async ({ page }) => {
-    /**
-     * Put the page on the footing this feature is written for: a device whose
-     * orientation sensor exists and has been allowed. Both ways a desktop
-     * runner falls short of that are covered below, and a browser that already
-     * hands the sensor over is left alone.
-     */
-    await page.addInitScript(() => {
+/**
+ * The qibla page: one stage with three tabs, and the figures beside it.
+ *
+ * What the page promises, in order of how much it needs from the visitor:
+ * the computed direction, which is always right and asks for nothing; their
+ * own position, if they offer it; and a live heading, if the device has a
+ * magnetometer. Each of the three is checked here, and so is what the page
+ * says when one of them is not available.
+ */
+test.describe('the qibla', () => {
+  /** A device whose orientation sensor exists and has been allowed. */
+  const withSensor = (page: import('@playwright/test').Page) =>
+    page.addInitScript(() => {
       const existing = (
         window as unknown as {
           DeviceOrientationEvent?: { requestPermission?: () => Promise<string> };
@@ -207,8 +123,8 @@ test.describe('qibla', () => {
       ).DeviceOrientationEvent;
 
       // A browser that gates the sensor behind a permission refuses it on a
-      // headless runner, and the component then correctly reports the compass
-      // as denied and never subscribes — leaving nothing to test. Granting it
+      // headless runner, and the page then correctly reports the compass as
+      // denied and never subscribes — leaving nothing to test. Granting it
       // stands in for the visitor tapping "allow".
       if (existing) {
         if (typeof existing.requestPermission === 'function') {
@@ -243,20 +159,111 @@ test.describe('qibla', () => {
       });
     });
 
+  /** One olive pixel, so the tile layer reports success without the network. */
+  const stubTiles = (page: import('@playwright/test').Page) =>
+    page.route('https://tile.openstreetmap.org/**', (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: 'image/png',
+        body: Buffer.from(
+          'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==',
+          'base64',
+        ),
+      }),
+    );
+
+  test('shows the computed direction from the association house', async ({ page }) => {
+    await page.goto('/de/qibla');
+
+    // 136.7° and about 3 637 km: the great-circle qibla from Hernals. It
+    // needs no permission and no sensor, so it is on the page from the start.
+    await expect(page.locator('.qibla-figure-value').first()).toHaveText('136,7°');
+    await expect(page.locator('.qibla-figure-value').nth(1)).toHaveText(/3\s?637/);
+    await expect(page.locator('.qibla-origin')).toContainText('Vereinshaus');
+    await expect(page.locator('.qibla-deg')).toHaveText('136,7°');
+  });
+
+  test('opens on where the reader is, not on the house', async ({ page, context }) => {
+    await context.grantPermissions(['geolocation']);
+    // Graz: far enough from Vienna that the bearing is visibly different.
+    await context.setGeolocation({ latitude: 47.0707, longitude: 15.4395 });
+    await page.goto('/de/qibla');
+
+    await expect(page.locator('.qibla-origin')).toContainText('Ihrem Standort');
+    await expect(page.locator('.qibla-figure-value').first()).not.toHaveText('136,7°');
+    await expect(page.getByRole('button', { name: 'Mein Standort' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+  });
+
+  test('falls back to the house when the location is refused, and says so', async ({ page }) => {
+    // Refused outright, rather than left to a headless runner's own
+    // behaviour: cleared permissions there neither grant nor deny, so the
+    // page sits in "locating" and the test would be measuring the timeout.
+    await page.addInitScript(() => {
+      Object.defineProperty(navigator.geolocation, 'getCurrentPosition', {
+        configurable: true,
+        value: (_ok: PositionCallback, fail?: PositionErrorCallback) =>
+          fail?.({
+            code: 1,
+            message: 'denied',
+            PERMISSION_DENIED: 1,
+            POSITION_UNAVAILABLE: 2,
+            TIMEOUT: 3,
+          } as GeolocationPositionError),
+      });
+    });
+    await page.goto('/de/qibla');
+
+    // The direction is still the house's, and the page says why.
+    await expect(page.locator('.qibla-figure-value').first()).toHaveText('136,7°');
+    await expect(page.locator('.qibla-geo-note')).toBeVisible();
+    await expect(page.locator('.qibla-origin')).toContainText('Vereinshaus');
+  });
+
+  test('recomputes from a granted location and returns to the house', async ({ page, context }) => {
+    await context.grantPermissions(['geolocation']);
+    await context.setGeolocation({ latitude: 47.0707, longitude: 15.4395 });
+    await page.goto('/de/qibla');
+    await expect(page.locator('.qibla-origin')).toContainText('Ihrem Standort');
+
+    await page.getByRole('button', { name: 'Vereinshaus' }).click();
+    await expect(page.locator('.qibla-figure-value').first()).toHaveText('136,7°');
+    await expect(page.locator('.qibla-origin')).toContainText('Vereinshaus');
+  });
+
+  test('states plainly when the compass is unavailable', async ({ page }) => {
     await page.goto('/de/qibla');
     await page.getByRole('button', { name: 'Kompass aktivieren' }).click();
-    // `exact`, for the reason given in the test above: without it this matches
-    // the unclicked button and the rest of the test runs against a compass
-    // that was never activated.
+
+    // Three outcomes are legitimate and none of them is silent: a browser
+    // that hands over the sensor flips the button to "Kompass aktiv"; one
+    // without the API, or one that gates it and refuses, says so in the
+    // status under the dial or in the hint. What must never happen is
+    // nothing at all.
+    //
+    // `exact` is not optional here. Playwright matches an accessible name as
+    // a case-insensitive *substring* by default, and "Kompass aktiv" is a
+    // substring of "Kompass aktivieren" — so without it this passes on the
+    // unclicked button and asserts nothing whatsoever.
+    const active = page.getByRole('button', { name: 'Kompass aktiv', exact: true });
+    const noSensor = page.getByText('Kein Kompass-Sensor');
+    const denied = page.getByText('Ohne Freigabe kann der Kompass nicht gelesen werden');
+    await expect(active.or(noSensor).or(denied).first()).toBeVisible({ timeout: 10_000 });
+  });
+
+  test('turns the rose only on an absolute heading', async ({ page }) => {
+    await withSensor(page);
+    await page.goto('/de/qibla');
+    await page.getByRole('button', { name: 'Kompass aktivieren' }).click();
     await expect(page.getByRole('button', { name: 'Kompass aktiv', exact: true })).toBeVisible();
 
-    const rose = page.getByRole('img', { name: /Kompassrose/ });
+    // The rose is the group inside the dial; the needle turns within it.
+    const rose = page.locator('.qibla-svg > g').first();
     const rotation = async () =>
       (await rose.getAttribute('style'))?.match(/rotate\((-?[\d.]+)deg\)/)?.[1];
 
-    // One orientation reading, built with the constructor a browser uses, and
-    // everything the page saw of it reported together so a failure names which
-    // link broke rather than only printing a rotation.
     const observe = async (type: string, alpha: number, absolute: boolean) =>
       page
         .evaluate(
@@ -266,255 +273,191 @@ test.describe('qibla', () => {
               reachedAListener = true;
             };
             window.addEventListener(type, probe, true);
-            const event = new DeviceOrientationEvent(type, { alpha, absolute });
-            window.dispatchEvent(event);
+            window.dispatchEvent(new DeviceOrientationEvent(type, { alpha, absolute }));
             window.removeEventListener(type, probe, true);
-            return { reachedAListener, alpha: event.alpha, absolute: event.absolute };
+            return { reachedAListener };
           },
           { type, alpha, absolute },
         )
         .then(async (seen) => ({ ...seen, rotation: await rotation() }));
 
     // An absolute reading is a real compass heading: the rose counter-rotates.
-    //
-    // The dispatch happens *inside* the poll on purpose. The listener is
-    // attached by an effect that runs after the button flips to "Kompass
-    // aktiv", so firing once and then polling races hydration.
+    // The dispatch happens *inside* the poll on purpose — the listener is
+    // attached by an effect, so firing once and then polling races it.
     await expect
       .poll(() => observe('deviceorientationabsolute', 90, true))
-      .toMatchObject({ reachedAListener: true, alpha: 90, absolute: true, rotation: '-270' });
+      .toMatchObject({ reachedAListener: true, rotation: '-270' });
 
     // Chrome on Android also fires a *relative* `deviceorientation`, whose
     // alpha is zeroed wherever the device happened to be pointing. Acting on
-    // it would swing the needle to an arbitrary bearing.
+    // it would swing the rose to an arbitrary bearing.
     await observe('deviceorientation', 200, false);
     await page.waitForTimeout(300);
     expect(await rotation()).toBe('-270');
   });
-});
 
-/**
- * The map that answers the question people actually arrive with: standing
- * here, which way do I turn? The reader is in the middle of it and the qibla
- * is a straight line out of them, which is true on this projection and on
- * almost no other.
- */
-test.describe('the qibla from where you are', () => {
-  test('opens on your own place, with the direction out of it', async ({ page }) => {
+  test('says which way to turn once the compass is live', async ({ page }) => {
+    await withSensor(page);
     await page.goto('/de/qibla');
-    await page.getByRole('button', { name: 'Mein Standort' }).click();
-    const map = page.locator('.qibla-map-svg');
-    await map.scrollIntoViewIfNeeded();
+    await page.getByRole('button', { name: 'Kompass aktivieren' }).click();
+    await expect(page.getByRole('button', { name: 'Kompass aktiv', exact: true })).toBeVisible();
 
-    // You are in the middle, named.
-    await expect(map.getByText('Vereinshaus')).toBeVisible();
-    // And Mecca is on the map at the scale it opens at, so the line can be
-    // seen to go somewhere.
-    await expect.poll(() => map.getByText('Mekka').count(), { timeout: 10_000 }).toBe(1);
+    const status = page.locator('.qibla-status');
+    // Facing north, with the qibla at 136.7°, the shorter way round is right.
+    await expect
+      .poll(async () => {
+        await page.evaluate(() =>
+          window.dispatchEvent(
+            new DeviceOrientationEvent('deviceorientationabsolute', { alpha: 360, absolute: true }),
+          ),
+        );
+        return status.textContent();
+      })
+      .toMatch(/Nach rechts drehen/);
 
-    // The arrow leaves the centre at the computed bearing. Vienna's qibla is
-    // a little south of east, so the far end is right of and below the
-    // middle — which is the one thing a wrong projection would get wrong.
-    const ray = map.locator('line').last();
-    const x2 = Number(await ray.getAttribute('x2'));
-    const y2 = Number(await ray.getAttribute('y2'));
-    expect(x2).toBeGreaterThan(0);
-    expect(y2).toBeGreaterThan(0);
+    // And turned to the bearing itself, it says so and goes gold.
+    await expect
+      .poll(async () => {
+        await page.evaluate(() =>
+          window.dispatchEvent(
+            new DeviceOrientationEvent('deviceorientationabsolute', {
+              alpha: 360 - 136.7,
+              absolute: true,
+            }),
+          ),
+        );
+        return status.textContent();
+      })
+      .toMatch(/Sie blicken zur Qibla/);
+    await expect(status).toHaveAttribute('data-facing', 'yes');
   });
 
-  test('zooms down to the ground you are standing on', async ({ page }) => {
+  test('moves between the three tabs, by pointer and by arrow key', async ({ page }) => {
     await page.goto('/de/qibla');
-    await page.getByRole('button', { name: 'Mein Standort' }).click();
-    const map = page.locator('.qibla-map-svg');
-    await map.scrollIntoViewIfNeeded();
+    const tabs = page.getByRole('tab');
+    await expect(tabs).toHaveCount(3);
+    await expect(tabs.nth(0)).toHaveAttribute('aria-selected', 'true');
+    await expect(page.locator('#qibla-panel-compass')).toBeVisible();
 
-    const scale = page.locator('.qibla-map .reader-size-value');
-    await expect(scale).toHaveText(/km/);
+    await page.getByRole('tab', { name: 'Anleitung' }).click();
+    await expect(page.locator('#qibla-panel-guide')).toBeVisible();
+    await expect(page.locator('#qibla-panel-compass')).toBeHidden();
+    // Three steps and the note about how the direction is worked out.
+    await expect(page.locator('.qibla-step')).toHaveCount(3);
 
-    // In as far as it goes — counted by the button rather than by a number
-    // here, so adding a step to the ladder does not break the test.
-    const closer = page.getByRole('button', { name: 'Näher heran' });
-    for (let i = 0; i < 40 && (await closer.isEnabled()); i += 1) await closer.click();
-    await expect(closer).toBeDisabled();
+    // The choice is kept in the address, so a tab can be linked to.
+    await expect.poll(() => page.evaluate(() => location.hash)).toBe('#guide');
 
-    // All the way in, the rings are metres: a plan of the ground you are
-    // standing on, not a map of anywhere.
-    await expect(scale).toHaveText(/m$/);
-    // Mecca is long gone, but the direction is not: the distance is written
-    // at the end of the arrow instead.
-    await expect(map.getByText(/nach Mekka/)).toBeVisible();
+    // And the arrows move along the row, as a tablist is expected to.
+    await page.locator('#qibla-tab-guide').focus();
+    await page.keyboard.press('ArrowRight');
+    await expect(page.locator('#qibla-panel-compass')).toBeVisible();
+    await page.keyboard.press('ArrowLeft');
+    await expect(page.locator('#qibla-panel-guide')).toBeVisible();
   });
 
-  test('is drawn in the page, with nothing fetched from anywhere', async ({ page }) => {
-    await page.goto('/de/qibla');
-    await page.getByRole('button', { name: 'Mein Standort' }).click();
-    await page.locator('.qibla-map-svg').waitFor();
-
-    // Counted only from here: the street map opens first and fetches its
-    // tiles, which is its business. What is being checked is that *this*
-    // view asks for nothing — it is the one for a reader who would rather
-    // nobody were told where they are.
-    const outside: string[] = [];
-    page.on('request', (request) => {
-      const url = new URL(request.url());
-      if (url.host !== '127.0.0.1:3100' && url.protocol !== 'data:') outside.push(request.url());
-    });
-    await page.locator('.qibla-map-svg').scrollIntoViewIfNeeded();
-    // Redrawn a few times, to be sure it is the drawing and not the first
-    // paint that is being checked. Inwards, because the map opens one step
-    // short of the widest span there is — half a globe — so there is room
-    // in this direction and almost none in the other.
-    for (let i = 0; i < 3; i += 1) {
-      await page.getByRole('button', { name: 'Näher heran' }).click();
-    }
-    await page.waitForTimeout(1_500);
-    expect(outside).toEqual([]);
-  });
-});
-
-/**
- * The street map, which is what the page opens on: the direction drawn over
- * the reader's own surroundings, because a bearing is only usable if you can
- * see it against the buildings in front of you.
- *
- * The tiles are stubbed with a single pixel. The run must not trouble
- * OpenStreetMap's servers, and whether their map is reachable from a CI
- * runner is not something this suite should depend on.
- */
-test.describe('the qibla on the street', () => {
-  const PIXEL = Buffer.from(
-    'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
-    'base64',
-  );
-
-  test('opens on the street, with tiles and the arrow over them', async ({ page }) => {
-    const asked: string[] = [];
-    await page.route('https://tile.openstreetmap.org/**', (route, request) => {
-      asked.push(request.url());
-      return route.fulfill({ contentType: 'image/png', body: PIXEL });
-    });
-
-    await page.goto('/de/qibla');
-    const street = page.locator('.qibla-street');
-    await street.scrollIntoViewIfNeeded();
-    await expect(street).toBeVisible();
-
-    // Tiles are asked for, and only from the one host the policy names.
-    await expect.poll(() => asked.length, { timeout: 10_000 }).toBeGreaterThan(3);
-    for (const url of asked) expect(url).toMatch(/^https:\/\/tile\.openstreetmap\.org\/\d+\//);
-
-    // The direction is drawn over them, and Vienna's qibla runs south-east:
-    // the far end of the ray is right of and below the reader.
-    const ray = street.locator('line').last();
-    const [x1, y1, x2, y2] = await Promise.all(
-      ['x1', 'y1', 'x2', 'y2'].map(async (a) => Number(await ray.getAttribute(a))),
+  test('opens the tab the address asks for', async ({ page }) => {
+    await page.goto('/de/qibla#guide');
+    await expect(page.locator('#qibla-panel-guide')).toBeVisible();
+    await expect(page.getByRole('tab', { name: 'Anleitung' })).toHaveAttribute(
+      'aria-selected',
+      'true',
     );
-    expect(x2).toBeGreaterThan(x1);
-    expect(y2).toBeGreaterThan(y1);
+  });
 
-    // OpenStreetMap's licence asks for the credit, and it is there — beside
-    // the map in the markup, because the map is a `role="img"` and may hold
-    // no focusable content, but over it on the screen, which is what the
-    // licence is asking for. Both halves of that are checked.
-    const credit = page.locator('.qibla-street-frame').getByText('© OpenStreetMap');
-    await expect(credit).toBeVisible();
-    // Both boxes in one read: the page rises its sections in as they are
-    // scrolled to, and two measurements taken a frame apart would differ by
-    // whatever was left of that movement.
-    const inside = await page.evaluate(() => {
-      const box = (sel: string) => document.querySelector(sel)!.getBoundingClientRect();
-      const over = box('.qibla-attribution');
-      const under = box('.qibla-street');
-      return (
-        over.left >= under.left - 1 &&
-        over.top >= under.top - 1 &&
-        over.right <= under.right + 1 &&
-        over.bottom <= under.bottom + 1
-      );
+  test('asks the tile server for nothing until the map tab is opened', async ({ page }) => {
+    const tiles: string[] = [];
+    page.on('request', (request) => {
+      if (request.url().includes('tile.openstreetmap.org')) tiles.push(request.url());
     });
-    expect(inside).toBe(true);
+    await stubTiles(page);
+    await page.goto('/de/qibla');
+    await expect(page.locator('.qibla-dial')).toBeVisible();
+    await page.waitForTimeout(600);
+    expect(tiles, 'no tile is fetched while the compass is showing').toEqual([]);
+
+    await page.getByRole('tab', { name: 'Karte' }).click();
+    await expect.poll(() => tiles.length).toBeGreaterThan(0);
+  });
+
+  test('draws the street, then the whole way to Mecca', async ({ page }) => {
+    await stubTiles(page);
+    await page.goto('/de/qibla');
+    await page.getByRole('tab', { name: 'Karte' }).click();
+    await expect(page.locator('.qibla-street')).toBeVisible();
+
+    // Close in, the straight ray out of the reader's feet is the honest
+    // drawing: Mercator preserves angles at a point.
+    await expect(page.locator('.qibla-route')).toHaveCount(0);
+
+    await page.getByRole('button', { name: 'Bis Mekka' }).click();
+    // Wide, it is not, and the great circle is drawn instead — never both.
+    await expect(page.locator('.qibla-route')).toHaveCount(1);
+    await expect(page.locator('#qibla-street-ray')).toHaveCount(0);
+
+    await page.getByRole('button', { name: 'Straße', exact: true }).click();
+    await expect(page.locator('.qibla-route')).toHaveCount(0);
   });
 
   test('says so and draws it itself when the tiles cannot be had', async ({ page }) => {
     await page.route('https://tile.openstreetmap.org/**', (route) => route.abort());
-
     await page.goto('/de/qibla');
-    await expect(page.locator('.qibla-fallback')).toBeVisible({ timeout: 10_000 });
-    // Not a blank square and not a lie: it says the map is missing and then
-    // gives the same direction, drawn from what the page carries.
-    await expect(page.getByText(/Straßenkarte konnte nicht geladen werden/)).toBeVisible();
+    await page.getByRole('tab', { name: 'Karte' }).click();
+    // The direction does not depend on anybody else's server.
+    await expect(page.getByText('konnte nicht geladen werden')).toBeVisible();
     await expect(page.locator('.qibla-map-svg')).toBeVisible();
   });
 
-  test('moves under the hand and comes back', async ({ page }) => {
-    await page.route('https://tile.openstreetmap.org/**', (route) =>
-      route.fulfill({ contentType: 'image/png', body: PIXEL }),
-    );
-    await page.goto('/de/qibla');
-    const street = page.locator('.qibla-street');
-    await street.scrollIntoViewIfNeeded();
-    await expect(street).toBeVisible();
+  test('puts the stage and the figures on one screen, in both languages', async ({ page }) => {
+    for (const [width, height] of [
+      [375, 667],
+      [768, 1024],
+      [924, 539],
+      [1440, 900],
+    ] as const) {
+      for (const locale of ['de', 'fa'] as const) {
+        await page.setViewportSize({ width, height });
+        await page.goto(`/${locale}/qibla`);
+        await expect(page.locator('.qibla-stage')).toBeVisible();
 
-    const recentre = page.getByRole('button', { name: 'Zurück zu meinem Standort' });
-    await expect(recentre).toBeDisabled();
-
-    const box = (await street.boundingBox())!;
-    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
-    await page.mouse.down();
-    await page.mouse.move(box.x + box.width / 2 + 90, box.y + box.height / 2 + 60, { steps: 6 });
-    await page.mouse.up();
-
-    await expect(recentre).toBeEnabled();
-    await recentre.click();
-    await expect(recentre).toBeDisabled();
-  });
-});
-
-test.describe('the qibla globe', () => {
-  test('draws the world, both places and the way between them', async ({ page }) => {
-    await page.goto('/de/qibla');
-    await page.getByRole('button', { name: 'Weltkugel' }).click();
-    const globe = page.locator('.qibla-globe');
-    await globe.scrollIntoViewIfNeeded();
-
-    // The outline is a separate chunk, fetched once the map is on screen.
-    await expect.poll(() => globe.locator('path').count(), { timeout: 10_000 }).toBeGreaterThan(5);
-
-    // The two ends of the arc are labelled, and the arc itself is drawn.
-    await expect(globe.getByText('Vereinshaus')).toBeVisible();
-    await expect(globe.getByText('Mekka')).toBeVisible();
-
-    const drawn = await page.evaluate(() =>
-      [...document.querySelectorAll('.qibla-globe path')].map(
-        (p) => (p.getAttribute('d') ?? '').length,
-      ),
-    );
-    // Land, borders, graticule and the arc — none of them empty.
-    expect(Math.max(...drawn)).toBeGreaterThan(5_000);
+        const fit = await page.evaluate(() => {
+          const box = (s: string) => document.querySelector(s)!.getBoundingClientRect();
+          const stage = box('.qibla-stage');
+          return {
+            stageBottom: stage.bottom,
+            factsBottom: Math.max(box('.qibla-figures').bottom, box('.qibla-go').bottom),
+            sideways: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+          };
+        });
+        const where = `${locale} ${width}x${height}`;
+        // The instrument is on the first screen everywhere.
+        expect(fit.stageBottom, `stage at ${where}`).toBeLessThanOrEqual(height + 1);
+        // And where there is room beside it, so are the figures.
+        if (width >= 900) {
+          expect(fit.factsBottom, `figures at ${where}`).toBeLessThanOrEqual(height + 1);
+        }
+        // Nothing is ever cut off at the edge.
+        expect(fit.sideways, `sideways scroll at ${where}`).toBe(0);
+      }
+    }
   });
 
-  test('turns under the pointer and comes back', async ({ page }) => {
+  test('has no axe violations, on each of the three tabs', async ({ page }) => {
+    await stubTiles(page);
     await page.goto('/de/qibla');
-    await page.getByRole('button', { name: 'Weltkugel' }).click();
-    const globe = page.locator('.qibla-globe');
-    await globe.scrollIntoViewIfNeeded();
-    await expect.poll(() => globe.locator('path').count(), { timeout: 10_000 }).toBeGreaterThan(5);
+    const audit = () =>
+      new AxeBuilder({ page })
+        .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'])
+        .analyze();
+    const say = (r: Awaited<ReturnType<typeof audit>>) =>
+      r.violations.map((v) => `${v.id} (${v.impact}): ${v.help}`).join('\n');
 
-    const arc = () =>
-      page.evaluate(
-        () => document.querySelectorAll('.qibla-globe path')[3]?.getAttribute('d') ?? '',
-      );
-    const before = await arc();
-
-    const box = (await globe.boundingBox())!;
-    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
-    await page.mouse.down();
-    await page.mouse.move(box.x + box.width / 2 + 80, box.y + box.height / 2 + 30, { steps: 6 });
-    await page.mouse.up();
-    await expect.poll(arc).not.toBe(before);
-
-    await page.getByRole('button', { name: 'Ansicht zurücksetzen' }).click();
-    await expect.poll(arc).toBe(before);
+    for (const name of ['Kompass', 'Karte', 'Anleitung']) {
+      await page.getByRole('tab', { name }).click();
+      await page.waitForTimeout(400);
+      const result = await audit();
+      expect(result.violations, `${name}\n${say(result)}`).toEqual([]);
+    }
   });
 });
 

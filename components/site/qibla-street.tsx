@@ -2,12 +2,19 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { ArrowsClockwise, Compass, Minus, Plus } from '@phosphor-icons/react/dist/ssr';
-import { type Coordinates } from '@/lib/qibla';
-import { MAX_ZOOM, MIN_ZOOM, TILE, panned, project, tilesFor } from '@/lib/slippy';
+import {
+  ArrowsClockwise,
+  Compass,
+  GlobeHemisphereEast,
+  MapTrifold,
+  Minus,
+  Plus,
+} from '@phosphor-icons/react/dist/ssr';
+import { KAABA, greatCirclePath, type Coordinates } from '@/lib/qibla';
+import { MAX_ZOOM, MIN_ZOOM, TILE, panned, project, tilesFor, unproject } from '@/lib/slippy';
 import { formatBearing, formatNumber } from '@/lib/i18n/format';
 import { QiblaHere } from './qibla-here';
-import { KaabaGlyph } from './qibla-map';
+import { KaabaGlyph } from './qibla-glyphs';
 import type { Locale } from '@/lib/i18n/config';
 
 /**
@@ -65,6 +72,13 @@ export function QiblaStreet({
   const [centre, setCentre] = useState<Coordinates>(origin);
   const [zoom, setZoom] = useState(DEFAULT_ZOOM);
   const [moved, setMoved] = useState(false);
+  /**
+   * How much of the earth is in view: the street the reader stands in, or
+   * the whole way to Mecca. Two buttons rather than a pinch, because the
+   * second is a specific view — both ends and the line between them — and
+   * no amount of zooming lands on it by hand.
+   */
+  const [span, setSpan] = useState<'street' | 'mecca'>('street');
   /** Whether a single tile has ever arrived. Until one does, we draw instead. */
   const [tilesWork, setTilesWork] = useState<boolean | null>(null);
 
@@ -101,6 +115,61 @@ export function QiblaStreet({
       y: mine.y - middle.y + size.height / 2,
     };
   }, [centre, origin, zoom, size.width, size.height]);
+
+  const toStreet = useCallback(() => {
+    setCentre(origin);
+    setZoom(DEFAULT_ZOOM);
+    setSpan('street');
+    setMoved(false);
+  }, [origin]);
+
+  /** The widest zoom at which both places still sit inside the frame. */
+  const toMecca = useCallback(() => {
+    if (size.width === 0) return;
+    let fits = MIN_ZOOM;
+    for (let z = MIN_ZOOM; z <= MAX_ZOOM; z += 1) {
+      const a = project(origin, z);
+      const b = project(KAABA, z);
+      if (Math.abs(a.x - b.x) <= size.width - 96 && Math.abs(a.y - b.y) <= size.height - 96) {
+        fits = z;
+      } else break;
+    }
+    const a = project(origin, fits);
+    const b = project(KAABA, fits);
+    setCentre(unproject({ x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 }, fits));
+    setZoom(fits);
+    setSpan('mecca');
+    setMoved(true);
+  }, [origin, size.width, size.height]);
+
+  /**
+   * The way to Mecca, as the great circle it is.
+   *
+   * Only once the view is wide enough for the difference to show: close in,
+   * Mercator preserves angles at a point, so the straight arrow out of the
+   * reader's feet leaves at the true bearing and is the honest drawing. Over
+   * a third of the globe it is not, and the curve is.
+   */
+  const route = useMemo(() => {
+    if (size.width === 0 || zoom > 8) return null;
+    const z = Math.round(zoom);
+    const middle = project(centre, z);
+    return greatCirclePath(origin, KAABA, 96)
+      .map((point) => {
+        const p = project(point, z);
+        return `${(p.x - middle.x + size.width / 2).toFixed(1)},${(p.y - middle.y + size.height / 2).toFixed(1)}`;
+      })
+      .join(' ');
+  }, [centre, origin, zoom, size.width, size.height]);
+
+  /** The Kaaba's own place on the map, once it is in view. */
+  const kaabaAt = useMemo(() => {
+    if (size.width === 0 || !route) return null;
+    const z = Math.round(zoom);
+    const middle = project(centre, z);
+    const k = project(KAABA, z);
+    return { x: k.x - middle.x + size.width / 2, y: k.y - middle.y + size.height / 2 };
+  }, [centre, zoom, size.width, size.height, route]);
 
   /* ── Dragging the map ─────────────────────────────────────────────────── */
   const drag = useRef<{ id: number; x: number; y: number } | null>(null);
@@ -210,45 +279,61 @@ export function QiblaStreet({
             />
           ))}
 
-          {/* The direction, out of the reader's own feet. */}
+          {/* The whole way, where the whole way is in view. */}
+          {route ? (
+            <svg className="qibla-street-layer" viewBox={`0 0 ${size.width} ${size.height}`}>
+              <polyline points={route} className="qibla-route-under" />
+              <polyline points={route} className="qibla-route" />
+            </svg>
+          ) : null}
+
+          {/* The direction, out of the reader's own feet. Only close in:
+              beside the drawn great circle a straight ray is a second,
+              different answer to the same question. */}
           {me ? (
             <svg className="qibla-street-layer" viewBox={`0 0 ${size.width} ${size.height}`}>
-              <defs>
-                <linearGradient id="qibla-street-ray" x1="0" y1="0" x2="1" y2="0">
-                  <stop offset="0%" stopColor="var(--goldInk)" stopOpacity="0.5" />
-                  <stop offset="100%" stopColor="var(--gold)" />
-                </linearGradient>
-              </defs>
-              <line
-                x1={me.x}
-                y1={me.y}
-                x2={me.x + Math.cos(theta) * reach}
-                y2={me.y + Math.sin(theta) * reach}
-                stroke="#ffffff"
-                strokeOpacity="0.85"
-                strokeWidth="8"
-                strokeLinecap="round"
-              />
-              <line
-                x1={me.x}
-                y1={me.y}
-                x2={me.x + Math.cos(theta) * reach}
-                y2={me.y + Math.sin(theta) * reach}
-                stroke="url(#qibla-street-ray)"
-                strokeWidth="4"
-                strokeLinecap="round"
-              />
-              {/* The Kaaba rides on the line, near the reader: it stands for
-                where the line goes, not for a place on this map. */}
-              <g
-                transform={`translate(${me.x + Math.cos(theta) * 74} ${me.y + Math.sin(theta) * 74})`}
-              >
-                <circle r="17" fill="var(--card)" opacity="0.95" />
-                <circle r="17" fill="none" stroke="var(--gold)" strokeWidth="1.5" />
-                <g transform="scale(0.72)">
-                  <KaabaGlyph />
-                </g>
-              </g>
+              {!route ? (
+                <>
+                  <defs>
+                    <linearGradient id="qibla-street-ray" x1="0" y1="0" x2="1" y2="0">
+                      <stop offset="0%" stopColor="var(--goldInk)" stopOpacity="0.5" />
+                      <stop offset="100%" stopColor="var(--gold)" />
+                    </linearGradient>
+                  </defs>
+                  <line
+                    x1={me.x}
+                    y1={me.y}
+                    x2={me.x + Math.cos(theta) * reach}
+                    y2={me.y + Math.sin(theta) * reach}
+                    stroke="#ffffff"
+                    strokeOpacity="0.85"
+                    strokeWidth="8"
+                    strokeLinecap="round"
+                  />
+                  <line
+                    x1={me.x}
+                    y1={me.y}
+                    x2={me.x + Math.cos(theta) * reach}
+                    y2={me.y + Math.sin(theta) * reach}
+                    stroke="url(#qibla-street-ray)"
+                    strokeWidth="4"
+                    strokeLinecap="round"
+                  />
+                  {/* The Kaaba rides on the line, near the reader: it stands
+                    for where the line goes, not for a place on this map.
+                    Where the map is wide enough to hold the real one, it is
+                    drawn there instead. */}
+                  <g
+                    transform={`translate(${me.x + Math.cos(theta) * 74} ${me.y + Math.sin(theta) * 74})`}
+                  >
+                    <circle r="17" fill="var(--card)" opacity="0.95" />
+                    <circle r="17" fill="none" stroke="var(--gold)" strokeWidth="1.5" />
+                    <g transform="scale(0.72)">
+                      <KaabaGlyph />
+                    </g>
+                  </g>
+                </>
+              ) : null}
               {/* The middle of the map. A dot where it is the reader —
                   the mark every map on a phone uses for "you" — and the
                   house only where it really is the house. Drawn as a
@@ -258,6 +343,18 @@ export function QiblaStreet({
                 <circle r="13" fill="var(--card)" opacity="0.95" />
                 <circle r="13" fill="none" stroke="var(--green)" strokeWidth="2" />
                 {mine ? <circle r="5.5" fill="var(--green)" /> : <HomeGlyph />}
+              </g>
+            </svg>
+          ) : null}
+
+          {kaabaAt ? (
+            <svg className="qibla-street-layer" viewBox={`0 0 ${size.width} ${size.height}`}>
+              <g transform={`translate(${kaabaAt.x} ${kaabaAt.y})`}>
+                <circle r="17" fill="var(--card)" opacity="0.95" />
+                <circle r="17" fill="none" stroke="var(--gold)" strokeWidth="1.5" />
+                <g transform="scale(0.72)">
+                  <KaabaGlyph />
+                </g>
               </g>
             </svg>
           ) : null}
@@ -278,6 +375,27 @@ export function QiblaStreet({
               <path d="M0 -14 L-4.5 2 L0 -1.5 Z" fill="var(--goldInk)" />
             </svg>
           </div>
+        </div>
+
+        <div className="qibla-span">
+          <button
+            type="button"
+            className="qibla-span-btn"
+            aria-pressed={span === 'street'}
+            onClick={toStreet}
+          >
+            <MapTrifold size={17} weight="duotone" aria-hidden="true" />
+            <span>{t('streetBtn')}</span>
+          </button>
+          <button
+            type="button"
+            className="qibla-span-btn"
+            aria-pressed={span === 'mecca'}
+            onClick={toMecca}
+          >
+            <GlobeHemisphereEast size={17} weight="duotone" aria-hidden="true" />
+            <span>{t('fitMecca')}</span>
+          </button>
         </div>
 
         <p className="qibla-attribution">

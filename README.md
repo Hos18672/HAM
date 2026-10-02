@@ -632,3 +632,30 @@ Recorded here rather than left implicit:
    Scheherazade New to 1.26 with the same five-pixel clearance the printed
    page leaves. The Arabic of the scripture and of the prayers carries that
    ink in every view, so the same words are never two colours.
+9. **The qibla page, against its reference design.** The page was rebuilt to
+   a supplied reference (`Qibla.dc.html`): one stage with three tabs —
+   compass, map, guide — and the figures beside it, fitting the first screen
+   at 375×667, 768×1024, 924×539 and 1440×900 in both languages. Four things
+   in that reference could not be copied as written, and were not:
+   - **No font CDN.** The reference loads Vazirmatn and Manrope from Google
+     Fonts. Both are already in this repository as self-hosted faces, so the
+     page has the typography the reference asks for and still makes no
+     request to a font host (see assumption 3 and the privacy page).
+   - **No Leaflet.** The reference loads Leaflet and its stylesheet from
+     unpkg. OpenStreetMap's tile host is the only third-party request this
+     site makes, and the repository already carries its own slippy-tile map
+     (`lib/slippy.ts`, unit-tested) with panning, zoom, a drawn fallback for
+     when the tiles cannot be had, and now the great-circle path
+     (`greatCirclePath` in `lib/qibla.ts`) and the two spans the reference
+     wants — the street, and the whole way to Mecca. That map is used
+     instead.
+   - **The site's own tokens.** Green, gold, deep gold, ink and the stage's
+     dark ground are the reference's values exactly, because they were
+     already this design's values. Paper and card differ by a shade
+     (`#f7f3e8` and `#fef7ed` against the reference's `#F4EFE3` and
+     `#FFFDF7`): the site's own are used, so the page does not sit a tone
+     apart from every other page.
+   - **The page head.** This is the one page that does not open with the
+     green band, because the band and the stage do not both fit on a phone.
+     The band's kicker, title and lead are still here as a title row, and
+     still edited in **Seiten** like every other page's.

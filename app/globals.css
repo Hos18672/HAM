@@ -141,6 +141,13 @@
   --paper: #f7f3e8;
   /* The disc the seal sits on. Light in both themes — see `Mark`. */
   --mark-ground: #f7f3e8;
+  /* The qibla stage. Dark in both themes: it is a lit instrument, and a
+     compass that turned pale in dark mode would be the one thing on the
+     page that did. */
+  --stage: #06211a;
+  --stage-ink: #f7f3e8;
+  /* Legible on `--green`, which lightens in dark mode. */
+  --on-green: #ffffff;
   --paper2: #ffffff;
   --card: #ffffff;
   --card2: #fbf8f1;
@@ -397,6 +404,7 @@
   /* Verbatim, [data-t="dark"]. */
   --paper: #06211a;
   --paper2: #082a20;
+  --on-green: #06211a;
   --card: #0b3125;
   --card2: #092a20;
   --ink: #efe8d8;
@@ -4463,19 +4471,6 @@
     justify-items: center;
     gap: var(--space-3);
   }
-  .qibla-globe {
-    inline-size: min(100%, 27rem);
-    block-size: auto;
-    /* The finger turns the earth; the page is scrolled beside the map. */
-    touch-action: none;
-    cursor: grab;
-    user-select: none;
-    -webkit-user-select: none;
-    filter: drop-shadow(0 18px 30px rgba(20, 40, 30, 0.18));
-  }
-  .qibla-globe:active {
-    cursor: grabbing;
-  }
   .qibla-globe-label {
     font-family: var(--font-sans);
     font-size: 7px;
@@ -4486,6 +4481,654 @@
     stroke-width: 2.4px;
     stroke-linejoin: round;
   }
+  /* ── The qibla, on one screen ─────────────────────────────────────────
+     Three ways of showing one direction — the dial, the map, the
+     instructions — as tabs of a single stage rather than sections stacked
+     down the page, so that what a reader came for is on the screen they
+     arrive at. Beside it, the figures and the one button that matters.
+
+     The stage is a fixed height rather than a ratio: its tallest content is
+     a circle, and a circle in a box of unknown height either overflows it or
+     leaves it half empty. Given a height, the dial can take whichever of the
+     two measures is smaller and always fit. */
+  .qibla {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: clamp(14px, 2vw, 22px);
+    align-items: stretch;
+  }
+  @media (min-width: 56.25rem) {
+    .qibla {
+      grid-template-columns: minmax(0, 1.55fr) minmax(320px, 1fr);
+    }
+  }
+  .qibla-stage {
+    min-inline-size: 0;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden;
+    border-radius: 24px;
+    background: var(--stage);
+    color: var(--stage-ink);
+    block-size: clamp(380px, calc(100dvh - 290px), 560px);
+  }
+  @media (min-width: 56.25rem) {
+    .qibla-stage {
+      /* The header, the title row and the privacy line are above and below
+         it; what is left of the window is the stage's. */
+      block-size: clamp(420px, calc(100dvh - 210px), 640px);
+    }
+  }
+  .qibla-tabs-row {
+    display: flex;
+    justify-content: center;
+    padding: 14px 14px 0;
+    position: relative;
+    z-index: 2;
+  }
+  .qibla-tabs {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 4px;
+    padding: 4px;
+    border-radius: 999px;
+    background: rgba(247, 243, 232, 0.08);
+    inline-size: min(100%, 440px);
+  }
+  .qibla-tab {
+    block-size: 42px;
+    border: 0;
+    border-radius: 999px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    font-size: 14px;
+    font-weight: var(--weight-bold);
+    white-space: nowrap;
+    background: transparent;
+    color: var(--stage-ink);
+    transition:
+      background var(--duration-fast) var(--ease-standard),
+      color var(--duration-fast) var(--ease-standard);
+  }
+  .qibla-tab[aria-selected='true'] {
+    background: var(--gold);
+    color: var(--stage);
+  }
+  .qibla-panel[hidden] {
+    display: none;
+  }
+  .qibla-panel-compass {
+    flex: 1;
+    min-block-size: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    padding: clamp(12px, 2vw, 24px);
+  }
+  /* The box the dial is measured against: whichever of its two sides is
+     smaller is the diameter, so the circle fits whatever is left of the
+     stage once the tabs and the status have taken theirs. */
+  .qibla-dial-fit {
+    flex: 1;
+    min-block-size: 0;
+    inline-size: 100%;
+    container-type: size;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .qibla-dial {
+    position: relative;
+    inline-size: min(100cqw, 100cqh, 440px);
+    aspect-ratio: 1;
+    container-type: inline-size;
+  }
+  .qibla-halo {
+    position: absolute;
+    inset: -6%;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(200, 164, 93, 0.35), rgba(200, 164, 93, 0) 66%);
+    opacity: 0;
+    transform: scale(0.9);
+    transition:
+      opacity var(--duration-base) var(--ease-standard),
+      transform var(--duration-base) var(--ease-standard);
+    pointer-events: none;
+  }
+  .qibla-dial[data-facing='yes'] .qibla-halo {
+    opacity: 1;
+    transform: scale(1);
+  }
+  .qibla-svg {
+    position: absolute;
+    inset: 0;
+    inline-size: 100%;
+    block-size: 100%;
+    overflow: visible;
+  }
+  .qibla-face {
+    fill: #0a2a20;
+    stroke: rgba(200, 164, 93, 0.35);
+    stroke-width: 1;
+  }
+  .qibla-hub {
+    fill: var(--stage);
+    stroke: rgba(200, 164, 93, 0.35);
+    stroke-width: 1;
+  }
+  .qibla-tick {
+    stroke: rgba(247, 243, 232, 0.45);
+  }
+  .qibla-tick-major {
+    stroke: var(--gold);
+  }
+  .qibla-rose-letter {
+    fill: #b9c4bd;
+    font-size: 19px;
+    font-weight: var(--weight-bold);
+    text-anchor: middle;
+    dominant-baseline: central;
+  }
+  .qibla-rose-north {
+    fill: var(--stage-ink);
+  }
+  .qibla-needle-wash {
+    fill: var(--gold);
+    opacity: 0.14;
+  }
+  .qibla-needle-line {
+    stroke: var(--gold);
+    stroke-width: 3;
+    stroke-linecap: round;
+  }
+  .qibla-needle-head {
+    fill: var(--gold);
+  }
+  .qibla-kaaba {
+    fill: #14120f;
+    stroke: var(--gold);
+    stroke-width: 1.4;
+  }
+  .qibla-kaaba-band {
+    stroke: var(--gold);
+    stroke-width: 1.4;
+  }
+  .qibla-you {
+    fill: var(--stage-ink);
+  }
+  /* The rose follows the reader's heading and the needle the bearing. Both
+     ease rather than snap: a magnetometer's reading jitters by a degree or
+     two at rest, and an unsmoothed dial shivers. */
+  .qibla-svg > g {
+    transition: transform var(--duration-base) var(--ease-out-expressive);
+  }
+  .qibla-needle {
+    transition: transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .qibla-dial-centre {
+    position: absolute;
+    /* Physical, not logical: this centres a readout inside a circle, and a
+       circle has no start edge. `inset-inline-start` put it half a dial to
+       the left of centre in Persian, over the western point of the rose. */
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    inline-size: 34%;
+    text-align: center;
+    pointer-events: none;
+  }
+  .qibla-deg {
+    font-size: 8.5cqw;
+    line-height: 1;
+    font-weight: var(--weight-bold);
+    color: var(--stage-ink);
+    white-space: nowrap;
+  }
+  .qibla-dial-card {
+    font-size: max(11px, 3.6cqw);
+    color: #b9c4bd;
+    white-space: nowrap;
+  }
+  .qibla-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+    padding: 9px 18px;
+    border-radius: 999px;
+    max-inline-size: 100%;
+    line-height: 1.5;
+    flex-shrink: 0;
+    font-size: 14px;
+    font-weight: var(--weight-semibold);
+    text-align: center;
+    background: rgba(247, 243, 232, 0.08);
+    color: var(--stage-ink);
+    transition:
+      background var(--duration-base) var(--ease-standard),
+      color var(--duration-base) var(--ease-standard);
+  }
+  .qibla-status[data-facing='yes'] {
+    background: var(--gold);
+    color: var(--stage);
+  }
+  /* The map is inset inside the stage rather than filling it: the tabs float
+     over a map that runs under them, and a reader dragging the map would
+     otherwise be dragging it out from behind the controls. */
+  .qibla-panel-map {
+    flex: 1;
+    min-block-size: 0;
+    position: relative;
+    margin: 14px;
+    border-radius: 16px;
+    overflow: hidden;
+  }
+  .qibla-panel-map > * {
+    block-size: 100%;
+  }
+  .qibla-panel-guide {
+    flex: 1;
+    flex-direction: column;
+    justify-content: center;
+    gap: clamp(10px, 1.6vw, 16px);
+    padding: clamp(18px, 3vw, 40px);
+    overflow-y: auto;
+  }
+  .qibla-panel-guide:not([hidden]) {
+    display: flex;
+  }
+  .qibla-step {
+    display: grid;
+    grid-template-columns: 52px minmax(0, 1fr);
+    gap: 16px;
+    align-items: center;
+    padding: clamp(14px, 2vw, 20px);
+    border-radius: 18px;
+    background: rgba(247, 243, 232, 0.06);
+  }
+  .qibla-step-mark {
+    inline-size: 52px;
+    block-size: 52px;
+    border-radius: 999px;
+    border: var(--rule-hair) solid var(--gold);
+    color: var(--gold);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .qibla-step-words {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-inline-size: 0;
+  }
+  .qibla-step-n {
+    font-size: 12px;
+    font-weight: var(--weight-bold);
+    color: var(--gold);
+  }
+  .qibla-step-text {
+    font-size: clamp(15px, 1.5vw, 17px);
+    line-height: 1.65;
+    color: var(--stage-ink);
+    text-wrap: pretty;
+  }
+  .qibla-method {
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+    margin: 4px 0 0;
+    font-size: 13px;
+    line-height: 1.7;
+    color: #b9c4bd;
+  }
+  .qibla-method > svg {
+    color: var(--gold);
+    flex-shrink: 0;
+    margin-block-start: 2px;
+  }
+
+  /* The street map inside the stage's map tab. The component is the same
+     one that used to have a section of its own, so what changes here is
+     only the frame around it: it fills the tab instead of standing in the
+     page at its own size, and its controls float over it rather than
+     sitting under it. */
+  .qibla-panel-map .qibla-map {
+    block-size: 100%;
+    grid-template-rows: minmax(0, 1fr);
+    gap: 0;
+  }
+  .qibla-panel-map .qibla-street-frame {
+    block-size: 100%;
+    min-block-size: 0;
+  }
+  .qibla-panel-map .qibla-street {
+    aspect-ratio: auto;
+    block-size: 100%;
+    max-block-size: none;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+  }
+  /* The hint and the attribution belong to the page the map used to sit in;
+     in the tab the privacy line under the stage says the same thing, and
+     the credit rides in the corner of the map itself. */
+  .qibla-panel-map .qibla-map > p.text-xs {
+    display: none;
+  }
+  .qibla-panel-map .qibla-attribution {
+    position: absolute;
+    inset-block-end: 2px;
+    inset-inline-end: 8px;
+    margin: 0;
+    z-index: 2;
+  }
+  .qibla-panel-map .qibla-map-controls {
+    position: absolute;
+    inset-block-start: 10px;
+    inset-inline-end: 10px;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
+  }
+  /* Where the drawn map stands in for tiles that could not be had, it has
+     to fit the tab too rather than keep its own square. */
+  .qibla-panel-map .qibla-map-svg {
+    block-size: 100%;
+    max-block-size: 100%;
+    inline-size: auto;
+    max-inline-size: 100%;
+  }
+  .qibla-panel-map .qibla-map .qibla-map {
+    place-content: center;
+    overflow: hidden;
+  }
+  .qibla-span {
+    position: absolute;
+    inset-inline-start: 14px;
+    inset-block-end: 14px;
+    z-index: 2;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .qibla-span-btn {
+    block-size: 40px;
+    padding-inline: 14px;
+    border: 0;
+    border-radius: 999px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13.5px;
+    font-weight: var(--weight-bold);
+    white-space: nowrap;
+    background: var(--stage);
+    color: var(--stage-ink);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+  }
+  .qibla-span-btn[aria-pressed='true'] {
+    background: var(--gold);
+    color: var(--stage);
+  }
+  /* The great circle: a soft dark line so it reads over land and sea alike,
+     and the gold dashed over it. */
+  .qibla-route-under {
+    fill: none;
+    stroke: var(--stage);
+    stroke-opacity: 0.25;
+    stroke-width: 7;
+  }
+  .qibla-route {
+    fill: none;
+    stroke: var(--gold);
+    stroke-width: 4;
+    stroke-dasharray: 2 9;
+    stroke-linecap: round;
+  }
+
+  /* ── Beside the stage ────────────────────────────────────────────────── */
+  .qibla-side {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    min-inline-size: 0;
+  }
+  .qibla-card {
+    background: var(--sheet);
+    border: var(--rule-hair) solid var(--line);
+    border-radius: 24px;
+    padding: clamp(18px, 2.4vw, 26px);
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+  .qibla-field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .qibla-field-name {
+    font-size: 12.5px;
+    font-weight: var(--weight-bold);
+    color: var(--color-ink-muted);
+  }
+  .qibla-seg {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 4px;
+    padding: 4px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--ink) 8%, transparent);
+  }
+  .qibla-seg-btn {
+    block-size: 40px;
+    border: 0;
+    border-radius: 999px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding-inline: 10px;
+    font-size: 13.5px;
+    font-weight: var(--weight-semibold);
+    white-space: nowrap;
+    min-inline-size: 0;
+    overflow: hidden;
+    background: transparent;
+    color: var(--ink);
+    transition:
+      background var(--duration-fast) var(--ease-standard),
+      color var(--duration-fast) var(--ease-standard);
+  }
+  .qibla-seg-btn > span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .qibla-seg-btn[aria-pressed='true'] {
+    background: var(--stage);
+    color: var(--stage-ink);
+  }
+  .qibla-seg-btn:disabled {
+    cursor: default;
+  }
+  .qibla-geo-note {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--color-ink-muted);
+  }
+  .qibla-figures {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+  }
+  .qibla-figure {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-inline-size: 0;
+  }
+  .qibla-figure-name {
+    font-size: 12.5px;
+    font-weight: var(--weight-bold);
+    color: var(--goldInk);
+  }
+  .qibla-figure-value {
+    font-size: clamp(26px, 3.2vw, 42px);
+    line-height: 1;
+    font-weight: var(--weight-bold);
+  }
+  .qibla-figure-unit {
+    font-size: 14px;
+    color: var(--color-ink-muted);
+  }
+  .qibla-go {
+    block-size: 52px;
+    border: 0;
+    border-radius: 999px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    font-size: 15.5px;
+    font-weight: var(--weight-bold);
+    white-space: nowrap;
+    background: var(--green);
+    color: var(--on-green);
+  }
+  .qibla-go[data-live='yes'] {
+    background: color-mix(in srgb, var(--green) 16%, transparent);
+    color: var(--green);
+    cursor: default;
+  }
+  .qibla-hint {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.7;
+    color: var(--color-ink-muted);
+    text-wrap: pretty;
+  }
+  .qibla-origin {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 0;
+    padding: 14px 18px;
+    border-radius: 18px;
+    background: color-mix(in srgb, var(--ink) 8%, transparent);
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--color-ink-muted);
+  }
+  .qibla-origin > svg {
+    color: var(--goldInk);
+    flex-shrink: 0;
+  }
+  .qibla-privacy {
+    grid-column: 1 / -1;
+    margin: 0;
+    font-size: 12px;
+    line-height: 1.7;
+    color: var(--color-ink-muted);
+    max-inline-size: 80ch;
+  }
+
+  /* The title row this page has instead of the band every other page opens
+     with: the stage has to fit on the screen under it. */
+  .qibla-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 8px 24px;
+    margin-block-end: clamp(14px, 2vw, 22px);
+  }
+  .qibla-head-words {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    /* Shrink, but never grow: with `space-between` a growing column takes
+       the whole row and puts the lede on a line of its own — fifty-seven
+       pixels the stage needed back. */
+    flex: 0 1 auto;
+    min-inline-size: 0;
+  }
+  .qibla-head h1 {
+    margin: 0;
+    font-size: clamp(26px, 3.6vw, 42px);
+    line-height: 1.15;
+    font-weight: var(--weight-bold);
+    letter-spacing: -0.01em;
+    text-wrap: balance;
+  }
+  .qibla-head-lede {
+    margin: 0;
+    flex: 0 1 44ch;
+    max-inline-size: 44ch;
+    font-size: 14.5px;
+    line-height: 1.7;
+    color: var(--color-ink-muted);
+    text-wrap: pretty;
+  }
+
+  /* A short window — a laptop in landscape, a tablet turned over — has to
+     give the instrument the room, so the page's own furniture gives way
+     first: the section's padding, then the size of the title, and only then
+     the stage's own floor. Keyed on height, because this is about how much
+     room is left and not about how wide the screen is. */
+  @media (max-height: 46rem) {
+    .qibla-section {
+      padding-block: 16px 24px;
+    }
+    .qibla-head {
+      margin-block-end: 12px;
+    }
+    .qibla-head h1 {
+      font-size: clamp(20px, 2.6vw, 28px);
+    }
+    .qibla-head-lede {
+      font-size: 13.5px;
+      flex-basis: 34ch;
+      max-inline-size: 34ch;
+    }
+    .qibla-stage {
+      block-size: clamp(280px, calc(100dvh - 200px), 640px);
+    }
+  }
+  /* A phone has the site's header above it and nothing beside it, so the
+     stage takes what is left of the first screen and the panel follows. */
+  @media (max-width: 40rem) {
+    .qibla-section {
+      padding-block: 24px 32px;
+    }
+    .qibla-head {
+      margin-block-end: 12px;
+    }
+    /* Measured, not guessed: the site's header, this page's padding and its
+       title row take 314px of a phone's first screen, so the stage takes
+       what is left and the panel begins just below the fold. `dvh` rather
+       than `vh` because a phone's address bar is part of the screen until
+       it is not. */
+    .qibla-stage {
+      block-size: clamp(330px, calc(100dvh - 322px), 560px);
+    }
+  }
+
   /* ── The qibla on the reader's own street ────────────────────────────
      OpenStreetMap's tiles with the direction drawn over them. The tiles are
      plain images placed by transform — no map library, nothing of theirs
@@ -4557,30 +5200,6 @@
     block-size: 100%;
     transition: transform var(--duration-base) linear;
   }
-  /* Said beside the map as well: why it is drawn around Hernals, and the
-     one press that changes it. */
-  .qibla-origin-note {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: baseline;
-    gap: 4px 10px;
-    margin-block-start: var(--space-2);
-    color: var(--color-ink-muted);
-  }
-  .qibla-origin-ask {
-    padding: 0;
-    font: inherit;
-    font-weight: var(--weight-semibold);
-    color: var(--color-accent-2-text);
-    background: none;
-    border: 0;
-    text-decoration: underline;
-    text-underline-offset: 3px;
-    cursor: pointer;
-  }
-  .qibla-origin-ask:hover {
-    color: var(--gold);
-  }
 
   /* Whose position the middle of the map is, said in words. The marker
      alone could only ever be guessed at. */
@@ -4639,12 +5258,6 @@
   }
   .qibla-here-cardinal[data-north='true'] {
     fill: var(--goldInk);
-  }
-  .qibla-view-switch {
-    position: relative;
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-2);
   }
   .qibla-map-controls {
     display: flex;

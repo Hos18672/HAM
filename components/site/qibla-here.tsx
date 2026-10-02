@@ -6,7 +6,7 @@ import { Compass, Minus, Plus } from '@phosphor-icons/react/dist/ssr';
 import { KAABA, type Coordinates } from '@/lib/qibla';
 import { MAX_SPAN_KM, plan, planPath, rings } from '@/lib/local-map';
 import { formatBearing, formatNumber } from '@/lib/i18n/format';
-import { KaabaGlyph } from './qibla-map';
+import { KaabaGlyph } from './qibla-glyphs';
 import type { Point } from '@/lib/world-outline';
 import type { Locale } from '@/lib/i18n/config';
 

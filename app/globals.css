@@ -3710,9 +3710,19 @@
     color: #b9c4bd;
     text-wrap: balance;
   }
-  /* The silent letters keep their own tone against the dark ground. */
+  /* Written, not pronounced: the same ink at a little over a third of its
+     strength, so from the back of a hall the letter is plainly there and
+     plainly not to be said. A tone of its own — the sage green this used
+     to be — read as a different colour rather than as the same letters
+     held back. */
   .qp[data-silent='on'] .silent {
-    color: #5f7a6e;
+    color: rgba(247, 243, 232, 0.38);
+  }
+  /* The alif that names the tool, in the overlay's own ink. */
+  .qp-btn .qr-alif {
+    font-family: 'Scheherazade New', var(--font-naskh), serif;
+    font-size: 19px;
+    line-height: 1;
   }
   .qp-foot {
     display: flex;
@@ -4781,7 +4791,19 @@
     padding-inline: var(--space-2);
   }
   /* The Basmala opens a du'a as it opens a surah: on a line of its own, and
-     unnumbered — it is the opening, not the first thing said. */
+     unnumbered — it is the opening, not the first thing said. Where the
+     lines are set out one by one: */
+  .dua-opening {
+    padding-block-end: var(--space-3);
+  }
+  /* and it keeps its rendering, centred under it rather than ruled off at
+     the side like a numbered line's. */
+  .dua-opening-tr {
+    padding-inline: 0;
+    border-inline-start: 0;
+    text-align: center;
+  }
+  /* Where it is read at a stretch: */
   .dua-flow-bism {
     margin: 0 0 var(--space-2);
     text-align: center;

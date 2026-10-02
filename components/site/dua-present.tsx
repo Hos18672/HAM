@@ -24,7 +24,7 @@ export function lineSize(length: number): string {
 export function DuaPresent({
   arabic,
   translation,
-  index,
+  number,
   count,
   arabicTitle,
   locale,
@@ -38,8 +38,9 @@ export function DuaPresent({
 }: {
   arabic: string;
   translation: string | null;
-  /** Which spoken line this is, counting from one. */
-  index: number;
+  /** The number this line is printed with, or null for the opening. */
+  number: number | null;
+  /** How many numbered lines the du'a has. */
   count: number;
   arabicTitle: string;
   locale: Locale;
@@ -57,8 +58,14 @@ export function DuaPresent({
     <PresentOverlay
       label={t('presentation')}
       heading={arabicTitle}
-      position={t('lineOf', { n: digits(index, locale), of: digits(count, locale) })}
-      progress={count ? (index / count) * 100 : 0}
+      // The Basmala opens the du'a rather than being counted in it, so it
+      // is named instead of numbered.
+      position={
+        number === null
+          ? t('opening')
+          : t('lineOf', { n: digits(number, locale), of: digits(count, locale) })
+      }
+      progress={count ? ((number ?? 0) / count) * 100 : 0}
       arabic={arabic}
       arabicSize={`calc(${scale} * ${lineSize(arabic.length)})`}
       translation={translation}

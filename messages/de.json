@@ -543,6 +543,7 @@
     "viewLines": "Zeile für Zeile",
     "viewFlow": "Am Stück",
     "allKinds": "Alle Arten",
-    "unavailable": "Dieser Text konnte nicht geladen werden."
+    "unavailable": "Dieser Text konnte nicht geladen werden.",
+    "opening": "Eröffnung"
   }
 }

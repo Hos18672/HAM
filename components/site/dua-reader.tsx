@@ -46,7 +46,12 @@ import { Fixed } from './reader-fixed';
 const bare = (text: string) =>
   text
     .replace(/[\u0610-\u061A\u064B-\u065F\u0670\u06D6-\u06ED]/g, '')
+    // The texts are not all spelled with the same letterforms: Du'a Faraj
+    // writes the Basmala with the Persian yeh where Du'a Kumail writes the
+    // Arabic one, and either is the same word. Keheh and kaf likewise.
     .replace(/\u0671/g, '\u0627')
+    .replace(/[\u06CC\u0649]/g, '\u064A')
+    .replace(/\u06A9/g, '\u0643')
     .replace(/\s+/g, ' ')
     .trim();
 const BASMALA_BARE = bare('بسم الله الرحمن الرحيم');
@@ -115,12 +120,30 @@ export function DuaReader({
   const [line, setLine] = useState(0);
 
   /** Only the spoken lines: a rubric is an instruction, not words to say. */
-  const spoken = useMemo(
-    () =>
-      dua.lines
-        .filter((l) => l[0] !== null)
-        .map((l) => ({ arabic: l[0] as string, rendering: l[locale === 'fa' ? 1 : 2] ?? '' })),
-    [dua.lines, locale],
+  const spoken = useMemo(() => {
+    const out: { arabic: string; rendering: string; number: number | null; at: number }[] = [];
+    let n = 0;
+    dua.lines.forEach((line, at) => {
+      const arabic = line[0];
+      if (arabic === null) return;
+      // The Basmala opens the du'a and is not one of its lines. Counting
+      // it made the first line of the prayer the second.
+      const opening = out.length === 0 && isBasmala(arabic);
+      out.push({
+        arabic,
+        rendering: line[locale === 'fa' ? 1 : 2] ?? '',
+        number: opening ? null : ++n,
+        at,
+      });
+    });
+    return out;
+  }, [dua.lines, locale]);
+  /** How many numbered lines there are — the Basmala is not one of them. */
+  const counted = spoken.reduce((most, l) => Math.max(most, l.number ?? 0), 0);
+  /** Each spoken line by where it sits in the text, with its step number. */
+  const bySource = useMemo(
+    () => new Map(spoken.map((line, step) => [line.at, { ...line, step }])),
+    [spoken],
   );
 
   /* ── Turning, without telling the router ────────────────────────────── */
@@ -273,12 +296,9 @@ export function DuaReader({
     return () => window.removeEventListener('keydown', onKey);
   }, [presenting, step, toggleTranslated, turn, next, previous, reader, present]);
 
-  const firstSpoken = dua.lines.findIndex((entry) => entry[0] !== null);
-  const opensWithBasmala = firstSpoken >= 0 && isBasmala(dua.lines[firstSpoken]![0] as string);
+  const opensWithBasmala = spoken[0]?.number === null;
 
   const here = spoken[Math.min(line, spoken.length - 1)];
-  let number = 0;
-  let numbered = 0;
   const column = locale === 'fa' ? 1 : 2;
 
   return (
@@ -475,34 +495,31 @@ export function DuaReader({
               <div className="dua-flow" data-translated={translated ? 'on' : 'off'}>
                 {opensWithBasmala ? (
                   <p className="dua-ar dua-flow-bism" lang="ar" dir="rtl">
-                    {dua.lines[firstSpoken]![0]}
+                    {spoken[0]!.arabic}
                   </p>
                 ) : null}
                 <p className="dua-ar dua-flow-ar" lang="ar" dir="rtl">
                   {dua.lines.map((entry, index) => {
-                    const [arabic] = entry;
-                    if (arabic === null) return null;
-                    number += 1;
-                    if (opensWithBasmala && index === firstSpoken) return null;
-                    const from = number - 1;
+                    const line = bySource.get(index);
+                    if (!line || line.number === null) return null;
                     return (
                       <span
                         key={index}
                         className="qr-sheet-ayah"
                         role="button"
                         tabIndex={0}
-                        onClick={() => present(from)}
+                        onClick={() => present(line.step)}
                         onKeyDown={(event) => {
                           if (event.key === 'Enter' || event.key === ' ') {
                             event.preventDefault();
-                            present(from);
+                            present(line.step);
                           }
                         }}
                       >
-                        {arabic}
+                        {line.arabic}
                         <span className="qr-mark" aria-hidden="true">
                           {'\u06DD'}
-                          {digits(number, locale)}
+                          {digits(line.number, locale)}
                         </span>{' '}
                       </span>
                     );
@@ -512,14 +529,16 @@ export function DuaReader({
                   <div className="qr-mushaf-tr">
                     <p className="qr-mushaf-tr-head">{t('showTranslation')}</p>
                     <p>
-                      {dua.lines.map((entry, index) =>
-                        entry[column] ? (
+                      {dua.lines.map((entry, index) => {
+                        if (!entry[column]) return null;
+                        const number = bySource.get(index)?.number ?? null;
+                        return (
                           <span key={index}>
-                            {entry[0] === null ? null : <sup>{digits(++numbered, locale)}</sup>}
+                            {number === null ? null : <sup>{digits(number, locale)}</sup>}
                             {entry[column]}{' '}
                           </span>
-                        ) : null,
-                      )}
+                        );
+                      })}
                     </p>
                   </div>
                 ) : null}
@@ -536,16 +555,27 @@ export function DuaReader({
                       </li>
                     );
                   }
-                  number += 1;
-                  const from = number - 1;
+                  const line = bySource.get(index)!;
+                  // The opening, set apart and unnumbered as it is at the
+                  // head of a surah.
+                  if (line.number === null) {
+                    return (
+                      <li key={index} className="dua-opening">
+                        <p className="dua-ar dua-flow-bism" lang="ar" dir="rtl">
+                          {arabic}
+                        </p>
+                        {rendering ? <p className="dua-tr dua-opening-tr">{rendering}</p> : null}
+                      </li>
+                    );
+                  }
                   return (
                     <li key={index} className="dua-line">
                       <div className="qr-verse-top">
-                        <span className="qr-pill">{digits(number, locale)}</span>
+                        <span className="qr-pill">{digits(line.number, locale)}</span>
                         <button
                           type="button"
                           className="qr-from"
-                          onClick={() => present(from)}
+                          onClick={() => present(line.step)}
                           aria-label={tReader('presentFrom')}
                           title={tReader('presentFrom')}
                         >
@@ -565,7 +595,7 @@ export function DuaReader({
 
             {/* How many lines there are, and what kind of text this is. */}
             <footer className="mushaf-foot">
-              <span className="mushaf-folio">{digits(spoken.length, locale)}</span>
+              <span className="mushaf-folio">{digits(counted, locale)}</span>
               <span className="qr-foot-juz">{t(`category.${dua.category}`)}</span>
             </footer>
           </article>
@@ -615,8 +645,8 @@ export function DuaReader({
           <DuaPresent
             arabic={here.arabic}
             translation={here.rendering || null}
-            index={Math.min(line, spoken.length - 1) + 1}
-            count={spoken.length}
+            number={here.number}
+            count={counted}
             arabicTitle={dua.arabicTitle}
             locale={locale}
             translated={translated}

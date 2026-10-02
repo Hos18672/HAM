@@ -23,11 +23,13 @@ test.describe('the du‘as', () => {
     await hydrated(page);
     await expect(page.getByRole('heading', { level: 1 })).toContainText('Faradsch');
 
-    // Every line is the Arabic with the German under it.
+    // The Basmala opens the du'a and is set apart; the thirteen that
+    // follow are its lines, each the Arabic with the German under it.
+    await expect(page.locator('.dua-opening .dua-ar')).toContainText('بِسْمِ');
+    await expect(page.locator('.dua-opening .dua-tr')).toContainText('Im Namen Gottes');
     const lines = page.locator('.dua-line');
-    await expect(lines).toHaveCount(14);
-    await expect(lines.first().locator('.dua-ar')).toContainText('بِسْمِ');
-    await expect(lines.first().locator('.dua-tr')).toContainText('Im Namen Gottes');
+    await expect(lines).toHaveCount(13);
+    await expect(lines.first().locator('.dua-ar')).toContainText('إِلَهِ');
 
     // And the page says where the text and the translation come from.
     await expect(page.getByText('Textgrundlage')).toBeVisible();
@@ -35,9 +37,7 @@ test.describe('the du‘as', () => {
 
   test('reads in Persian too', async ({ page }) => {
     await page.goto('/fa/duas/faraj');
-    await expect(page.locator('.dua-line').first().locator('.dua-tr')).toContainText(
-      'به نام خداوند',
-    );
+    await expect(page.locator('.dua-opening .dua-tr')).toContainText('به نام خداوند');
   });
 
   test('hides and shows the translation', async ({ page }) => {
@@ -154,8 +154,15 @@ test.describe('the du‘as', () => {
     await expect(bism).toBeVisible();
     await expect(bism).toContainText('بِسْمِ');
     await expect(bism).not.toContainText('۝');
-    // So the first number the passage shows is the second line's.
-    await expect(page.locator('.dua-flow-ar .qr-mark').first()).toContainText('2');
+    // And the line after it is the first, not the second: the opening is
+    // not one of the du'a's lines.
+    await expect(page.locator('.dua-flow-ar .qr-mark').first()).toContainText('1');
+
+    // And the same line by line: the opening set apart, the prayer's first
+    // line numbered one.
+    await page.getByRole('button', { name: 'Zeile für Zeile' }).click();
+    await expect(page.locator('.dua-opening')).toBeVisible();
+    await expect(page.locator('.dua-line .qr-pill').first()).toHaveText('1');
   });
 
   test('reads line by line or at a stretch, as the mushaf does', async ({ page }) => {
@@ -169,8 +176,9 @@ test.describe('the du‘as', () => {
     await page.getByRole('button', { name: 'Am Stück' }).click();
     await expect(page.locator('.dua-flow')).toBeVisible();
     await expect(page.locator('.dua-lines')).toHaveCount(0);
-    // One passage, and the translation gathered under it.
-    await expect(page.locator('.dua-flow-ar')).toContainText('بِسْمِ');
+    // One passage, with the Basmala still standing over it, and the
+    // translation gathered under it.
+    await expect(page.locator('.dua-flow-bism')).toContainText('بِسْمِ');
     await expect(page.locator('.qr-mushaf-tr')).toContainText('Im Namen Gottes');
 
     // The choice is the reader's, not the page's: it survives a reload.
@@ -240,16 +248,17 @@ test.describe('the du‘as', () => {
     expect(await overlay.evaluate((el) => getComputedStyle(el).backgroundColor)).toBe(
       'rgb(6, 33, 26)',
     );
-    await expect(page.locator('.qp-pos')).toHaveText('Zeile 1 von 14');
+    // The Basmala opens the du'a and is named rather than numbered.
+    await expect(page.locator('.qp-pos')).toHaveText('Eröffnung');
     await expect(page.locator('.qp-ar')).toContainText('بِسْمِ');
     await expect(page.locator('.qp-tr')).toContainText('Im Namen Gottes');
 
     // A clicker's keys step through it, and the end of one line is the
     // start of the next.
     await page.keyboard.press('ArrowLeft');
-    await expect(page.locator('.qp-pos')).toHaveText('Zeile 2 von 14');
+    await expect(page.locator('.qp-pos')).toHaveText('Zeile 1 von 13');
     await page.keyboard.press('ArrowRight');
-    await expect(page.locator('.qp-pos')).toHaveText('Zeile 1 von 14');
+    await expect(page.locator('.qp-pos')).toHaveText('Eröffnung');
 
     await page.keyboard.press('Escape');
     await expect(overlay).toBeHidden();
@@ -259,7 +268,7 @@ test.describe('the du‘as', () => {
     await page.goto('/de/duas/faraj');
     await hydrated(page);
     await page.getByRole('button', { name: 'Ab hier präsentieren' }).nth(2).click();
-    await expect(page.locator('.qp-pos')).toHaveText('Zeile 3 von 14');
+    await expect(page.locator('.qp-pos')).toHaveText('Zeile 3 von 13');
   });
 
   test('a swipe turns to the next du‘a and stays in fullscreen', async ({ page }) => {

@@ -33,9 +33,11 @@ export function PresentOverlay({
   stepLabels,
   closeLabel,
   translationLabel,
+  silentLabel,
   largerLabel,
   smallerLabel,
   onStep,
+  onToggleSilent,
   onClose,
   onToggleTranslated,
   onLarger,
@@ -61,10 +63,18 @@ export function PresentOverlay({
   stepLabels: { next: string; previous: string };
   closeLabel: string;
   translationLabel: string;
+  /** Only where there is anything to mark; see `onToggleSilent`. */
+  silentLabel?: string;
   largerLabel: string;
   smallerLabel: string;
   /** +1 onwards, -1 back; crossing whatever boundary the reader has. */
   onStep: (by: 1 | -1) => void;
+  /**
+   * Given only where the text carries the marking — the Quran's, from the
+   * tajweed edition. Without it the tool is not shown at all rather than
+   * shown doing nothing.
+   */
+  onToggleSilent?: () => void;
   onClose: () => void;
   onToggleTranslated: () => void;
   onLarger: () => void;
@@ -123,6 +133,20 @@ export function PresentOverlay({
           >
             <Translate size={20} weight="duotone" aria-hidden="true" />
           </button>
+          {onToggleSilent ? (
+            <button
+              type="button"
+              className="qp-btn"
+              aria-pressed={silent}
+              onClick={onToggleSilent}
+              title={silentLabel}
+              aria-label={silentLabel}
+            >
+              <span lang="ar" aria-hidden="true" className="qr-alif">
+                {'ٱ'}
+              </span>
+            </button>
+          ) : null}
           <button type="button" className="qp-btn" onClick={onSmaller} aria-label={smallerLabel}>
             <Minus size={16} weight="bold" aria-hidden="true" />
           </button>

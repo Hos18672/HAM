@@ -38,6 +38,7 @@ export function QuranPresent({
   onStep,
   onClose,
   onToggleTranslated,
+  onToggleSilent,
   onLarger,
   onSmaller,
 }: {
@@ -52,6 +53,7 @@ export function QuranPresent({
   onStep: (by: 1 | -1) => void;
   onClose: () => void;
   onToggleTranslated: () => void;
+  onToggleSilent: () => void;
   onLarger: () => void;
   onSmaller: () => void;
 }) {
@@ -105,11 +107,13 @@ export function QuranPresent({
       stepLabels={{ next: t('nextVerse'), previous: t('previousVerse') }}
       closeLabel={t('exitPresent')}
       translationLabel={t('translationToggle')}
+      silentLabel={t('markSilent')}
       largerLabel={t('larger')}
       smallerLabel={t('smaller')}
       onStep={onStep}
       onClose={onClose}
       onToggleTranslated={onToggleTranslated}
+      onToggleSilent={onToggleSilent}
       onLarger={onLarger}
       onSmaller={onSmaller}
     />

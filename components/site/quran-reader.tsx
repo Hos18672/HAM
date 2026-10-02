@@ -627,6 +627,7 @@ export function QuranReader({
             onStep={step}
             onClose={() => setPresenting(false)}
             onToggleTranslated={settings.toggleTranslated}
+            onToggleSilent={settings.toggleSilent}
             onLarger={settings.larger}
             onSmaller={settings.smaller}
           />

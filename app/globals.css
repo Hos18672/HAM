@@ -2912,7 +2912,7 @@
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 12px 20px;
+    gap: 10px 14px;
     max-inline-size: 1200px;
     margin-inline: auto;
     padding: 12px clamp(16px, 4vw, 40px);
@@ -2921,25 +2921,27 @@
     -webkit-backdrop-filter: blur(12px);
     border-block-end: var(--rule-hair) solid var(--line);
   }
+  /* The title takes the width of its own words and no more: growing into
+     the rest of the line pushed every control onto a row below it. When
+     the words do not fit beside the controls it takes a line of its own,
+     rather than being squeezed into a column and ellipsised — a surah
+     whose name is cut short is not a surah anybody can find. */
   .qr-head {
-    flex: 1 1 220px;
+    flex: 0 1 auto;
     min-inline-size: 0;
     display: flex;
     align-items: baseline;
-    gap: 14px;
+    gap: 10px;
     flex-wrap: wrap;
   }
   .qr-head-name {
     margin: 0;
     font-family: 'Scheherazade New', var(--font-naskh), serif;
-    font-size: clamp(24px, 3vw, 32px);
-    line-height: 1.5;
+    font-size: clamp(19px, 2.2vw, 28px);
+    line-height: 1.45;
     color: var(--head);
   }
   .qr-head-meta {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
     margin: 0;
     font-size: 13px;
     color: var(--color-ink-muted);
@@ -2965,9 +2967,12 @@
     .qr-compact {
       display: none;
     }
+    /* The controls stop being one block and become the bar's own items, so
+       they pack with the title and wrap where they actually run out of
+       room. As one block they were 1315 points wide and could never share
+       a line with anything, which cost the page a whole row of bar. */
     .qr-controls {
-      display: flex;
-      flex: 0 1 auto;
+      display: contents;
     }
   }
 
@@ -3464,12 +3469,19 @@
       display: inline;
     }
   }
+  /* The readout sits beside the slider, not under it: under it, it read as
+     a caption for the page and was the third place the page number was
+     printed. Beside it, it is plainly the control's own figure. */
   .qr-slider {
     flex: 1;
     min-inline-size: 0;
     display: flex;
-    flex-direction: column;
-    gap: 2px;
+    align-items: center;
+    gap: 10px;
+  }
+  .qr-slider input[type='range'] {
+    flex: 1;
+    min-inline-size: 0;
   }
   .qr-slider input {
     inline-size: 100%;
@@ -3478,8 +3490,8 @@
     cursor: pointer;
   }
   .qr-slider-label {
+    flex: none;
     margin: 0;
-    text-align: center;
     font-size: 12px;
     color: var(--color-ink-muted);
   }
@@ -3527,12 +3539,23 @@
   }
   :root[data-quran-full='true'] .qr-bar {
     max-inline-size: none;
-    padding-block-start: calc(12px + env(safe-area-inset-top));
+    padding-block: 10px;
+    padding-block-start: calc(10px + env(safe-area-inset-top));
   }
-  /* And the page takes the room the site gave back. */
+  /* And the page takes the room the site gave back — the whole of it. In
+     full screen the margins are the one thing nobody came for: the gap
+     above the sheet comes down to eight points, the sheet's own head
+     padding with it, and the empty paper under it to just enough to clear
+     the foot. */
+  :root[data-quran-full='true'] .qr {
+    padding-block-end: 76px;
+  }
   :root[data-quran-full='true'] .qr-main {
     max-inline-size: none;
-    padding-inline: clamp(8px, 2vw, 32px);
+    padding: 8px clamp(8px, 2vw, 32px) 0;
+  }
+  :root[data-quran-full='true'] .qr-paper {
+    padding-block: 14px 20px;
   }
   :root[data-quran-full='true'] .qr-paper,
   :root[data-quran-full='true'] .qr-leaf-back,

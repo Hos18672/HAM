@@ -189,6 +189,29 @@ test.describe('the Quran reader', () => {
     await expect(band).toBeVisible();
   });
 
+  test('gives the Quran the screen, and says each thing once', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.reload();
+    await page.keyboard.press('f');
+    await expect(page.locator('.page-head-band')).toBeHidden();
+
+    // The bar names the surah and nothing the page already names: the juz
+    // is in the running head, the page number on the page and under the
+    // slider. It used to print the page number a third time.
+    const head = (await page.locator('.qr-head').textContent()) ?? '';
+    expect(head).not.toMatch(/Seite/);
+    expect(head).not.toMatch(/Teil/);
+    await expect(page.locator('.qr-bar')).toContainText('Al-Baqara');
+
+    // And what is left of the screen is the Quran's.
+    const room = await page.evaluate(() => {
+      const bar = document.querySelector('.qr-bar')!.getBoundingClientRect().height;
+      const foot = document.querySelector('.qr-foot')!.getBoundingClientRect().height;
+      return (window.innerHeight - bar - foot) / window.innerHeight;
+    });
+    expect(room).toBeGreaterThan(0.8);
+  });
+
   test('gives a phone a presentation bar it can hold', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.reload();

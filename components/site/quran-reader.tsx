@@ -374,8 +374,6 @@ export function QuranReader({
   const head = {
     name: lastSurah ? (page.surahs[lastSurah.surah]?.name ?? '') : '',
     latin: blocks.map((b) => page.surahs[b.surah]?.transliteration ?? '').join(' · '),
-    juz: t('juz', { n: digits(first?.juz ?? 1, locale) }),
-    page: t('pageOf', { n: digits(n, locale) }),
   };
   const arSize = `calc(${settings.scale} * clamp(1.3rem, 3.6vw, 1.95rem))`;
   const scrubAt = scrub ?? n;
@@ -394,13 +392,11 @@ export function QuranReader({
           <p lang="ar" dir="rtl" className="qr-head-name">
             {head.name}
           </p>
-          <p className="qr-head-meta">
-            <span>{head.latin}</span>
-            <span aria-hidden="true">·</span>
-            <span>{head.juz}</span>
-            <span aria-hidden="true">·</span>
-            <span>{head.page}</span>
-          </p>
+          {/* Only the transliteration, for a reader who cannot read the
+              Arabic name beside it. The juz is in the page's running head,
+              and the page number is on the page and under the slider — it
+              was printed three times. */}
+          <p className="qr-head-meta">{head.latin}</p>
         </div>
 
         {/* On a narrow screen only these three stay out; the rest fold
@@ -645,6 +641,9 @@ export function QuranReader({
                 value={scrubAt}
                 dir="rtl"
                 aria-label={t('pageSelect')}
+                // Said in full to a screen reader; printed short beside the
+                // slider, where it is a readout and not a caption.
+                aria-valuetext={t('pageOf', { n: digits(scrubAt, locale) })}
                 onChange={(event) => setScrub(Number(event.target.value))}
                 // Only when it is let go: a page per pixel would ask the
                 // server for six hundred pages on one drag.
@@ -652,8 +651,8 @@ export function QuranReader({
                 onKeyUp={() => scrub !== null && void go(scrub)}
                 onTouchEnd={() => scrub !== null && void go(scrub)}
               />
-              <p className="qr-slider-label" dir={rtl ? 'rtl' : 'ltr'}>
-                {t('pageOf', { n: digits(scrubAt, locale) })}
+              <p className="qr-slider-label tabular" aria-hidden="true" dir="ltr">
+                {digits(scrubAt, locale)} / {digits(PAGE_COUNT, locale)}
               </p>
             </div>
             <button

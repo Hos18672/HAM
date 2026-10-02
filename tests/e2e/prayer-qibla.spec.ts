@@ -144,7 +144,11 @@ test.describe('qibla', () => {
     await page.goto('/de/qibla');
     const bearing = page.locator('.fact-rule[data-lead="true"]');
     await expect(bearing.getByText(/136,[67]°/)).toBeVisible({ timeout: 15_000 });
-    await expect(page.getByRole('button', { name: 'Meinen Standort verwenden' })).toBeVisible();
+    // Asked for in two places now — on the compass card and beside the map
+    // — so that whichever one the reader has scrolled to, the way out of
+    // Hernals is in front of them.
+    await expect(page.getByRole('button', { name: 'Meinen Standort verwenden' })).toHaveCount(2);
+    await expect(page.locator('.qibla-origin-ask')).toBeVisible();
   });
 
   test('recomputes from a granted location and returns to the house', async ({ page, context }) => {
@@ -154,7 +158,7 @@ test.describe('qibla', () => {
     await context.setGeolocation({ latitude: 51.5074, longitude: -0.1278 }); // London
 
     await page.goto('/de/qibla');
-    await page.getByRole('button', { name: 'Meinen Standort verwenden' }).click();
+    await page.getByRole('button', { name: 'Meinen Standort verwenden' }).first().click();
 
     // The facts row again — the rose repeats the reading, see above.
     const bearing = page.locator('.fact-rule[data-lead="true"]');

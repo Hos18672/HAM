@@ -378,6 +378,18 @@ export function Compass({ locale }: { locale: Locale }) {
                   ? t('hereTitle')
                   : t('mapTitle')}
             </h2>
+            {/* Whose position the map is drawn around, next to the map
+                rather than only in the card above it. Somebody who has
+                scrolled to the map and finds Hernals in it should be told
+                here why, and be able to do something about it here. */}
+            {geo !== 'located' ? (
+              <p className="qibla-origin-note text-xs">
+                <span>{geoMessage ?? t('fromHouse')}</span>
+                <button type="button" className="qibla-origin-ask" onClick={locateMe}>
+                  {t('useMyLocation')}
+                </button>
+              </p>
+            ) : null}
           </div>
           <div className="qibla-view-switch" role="group" aria-label={t('view')}>
             <button
@@ -415,6 +427,7 @@ export function Compass({ locale }: { locale: Locale }) {
             bearing={qibla.bearing}
             distanceKm={qibla.distanceKm}
             locale={locale}
+            mine={geo === 'located'}
             originLabel={geo === 'located' ? t('youAreHere') : t('theHouse')}
             heading={heading}
             headingLive={compass === 'active'}
@@ -425,6 +438,7 @@ export function Compass({ locale }: { locale: Locale }) {
             bearing={qibla.bearing}
             distanceKm={qibla.distanceKm}
             locale={locale}
+            mine={geo === 'located'}
             originLabel={geo === 'located' ? t('youAreHere') : t('theHouse')}
             heading={heading}
             headingLive={compass === 'active'}

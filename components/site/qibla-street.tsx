@@ -41,6 +41,7 @@ const DEFAULT_ZOOM = 17;
 
 export function QiblaStreet({
   origin,
+  mine,
   bearing,
   distanceKm,
   locale,
@@ -49,6 +50,8 @@ export function QiblaStreet({
   headingLive,
 }: {
   origin: Coordinates;
+  /** Whether the middle of the map is the reader, or the house. */
+  mine: boolean;
   bearing: number;
   distanceKm: number;
   locale: Locale;
@@ -165,6 +168,7 @@ export function QiblaStreet({
           bearing={bearing}
           distanceKm={distanceKm}
           locale={locale}
+          mine={mine}
           originLabel={originLabel}
           heading={heading}
           headingLive={headingLive}
@@ -245,13 +249,21 @@ export function QiblaStreet({
                   <KaabaGlyph />
                 </g>
               </g>
+              {/* The middle of the map. A dot where it is the reader —
+                  the mark every map on a phone uses for "you" — and the
+                  house only where it really is the house. Drawn as a
+                  house either way, it said the one thing it must never
+                  say: that the reader is standing in Hernals. */}
               <g transform={`translate(${me.x} ${me.y})`}>
                 <circle r="13" fill="var(--card)" opacity="0.95" />
                 <circle r="13" fill="none" stroke="var(--green)" strokeWidth="2" />
-                <HomeGlyph />
+                {mine ? <circle r="5.5" fill="var(--green)" /> : <HomeGlyph />}
               </g>
             </svg>
           ) : null}
+
+          {/* And said in words, because an icon on its own is a guess. */}
+          <p className="qibla-street-who">{originLabel}</p>
 
           {/* North, as a paper compass would show it — turning with the phone
             where the phone knows which way it faces. */}

@@ -53,6 +53,7 @@ function spoken(km: number, locale: Locale, metres: string, kilometres: string) 
 
 export function QiblaHere({
   origin,
+  mine,
   bearing,
   distanceKm,
   locale,
@@ -61,6 +62,8 @@ export function QiblaHere({
   headingLive,
 }: {
   origin: Coordinates;
+  /** Whether the middle of the map is the reader, or the house. */
+  mine: boolean;
   bearing: number;
   distanceKm: number;
   locale: Locale;
@@ -296,12 +299,12 @@ export function QiblaHere({
           })}
         </g>
 
-        {/* You, in the middle, and staying there however you turn. A house,
-            because that is what the middle of this map is: where you are. */}
+        {/* The middle, staying there however you turn: a dot where it is
+            the reader, the house where it is the house. */}
         <g>
           <circle r="15" fill="var(--card)" opacity="0.94" />
           <circle r="15" fill="none" stroke="var(--gold)" strokeWidth="1.2" />
-          <HomeGlyph />
+          {mine ? <circle r="6" fill="var(--green)" /> : <HomeGlyph />}
           <text className="qibla-globe-label" y={28} textAnchor="middle">
             {originLabel}
           </text>

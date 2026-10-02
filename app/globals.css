@@ -5018,6 +5018,47 @@
     block-size: 100%;
     transition: transform var(--duration-base) linear;
   }
+  /* Said beside the map as well: why it is drawn around Hernals, and the
+     one press that changes it. */
+  .qibla-origin-note {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 4px 10px;
+    margin-block-start: var(--space-2);
+    color: var(--color-ink-muted);
+  }
+  .qibla-origin-ask {
+    padding: 0;
+    font: inherit;
+    font-weight: var(--weight-semibold);
+    color: var(--color-accent-2-text);
+    background: none;
+    border: 0;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    cursor: pointer;
+  }
+  .qibla-origin-ask:hover {
+    color: var(--gold);
+  }
+
+  /* Whose position the middle of the map is, said in words. The marker
+     alone could only ever be guessed at. */
+  .qibla-street-who {
+    position: absolute;
+    inset-block-start: 10px;
+    inset-inline-end: 10px;
+    margin: 0;
+    padding: 3px 10px;
+    font-size: 12px;
+    font-weight: var(--weight-semibold);
+    color: var(--goldInk);
+    background: var(--glass);
+    border: var(--rule-hair) solid var(--line);
+    border-radius: 999px;
+    pointer-events: none;
+  }
   .qibla-attribution {
     position: absolute;
     inset-block-end: 0;

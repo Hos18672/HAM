@@ -3109,6 +3109,11 @@
      higher up the page. */
   .qr-paper .mushaf-head {
     gap: var(--space-2);
+    /* Held in off the frame. On a phone the sheet's rule sits five points
+       from the text column's edge, and the juz was pressed right up
+       against it, reading as though it were outside the card. Only the
+       head is inset — the Quran keeps the full width of the column. */
+    padding-inline: 10px;
     /* No rule under the cartouche and none over the folio: the sheet's own
        gold frame is the only line this page needs, and the first line of
        the Quran was running into the one above it. */

@@ -313,6 +313,63 @@ test.describe('the Quran reader', () => {
     await expect(page.locator('.qr-side').first()).toBeHidden();
   });
 
+  /* These two run against whatever the edition actually sends, which is the
+     only place the real markup exists — the stand-in used while building
+     cannot be trusted to carry every shape of it. */
+
+  test('prints no markup from the tajweed edition, on any page of the book', async ({ page }) => {
+    // `[g]` was printed in the middle of a verse: a rule that carries no
+    // text of its own, which the parser did not recognise. Nothing in the
+    // Quran's text is written in Latin letters, figures or brackets, so one
+    // of those on the page is markup that got through.
+    for (const number of [1, 2, 132, 134, 255, 400, 604]) {
+      await page.goto(`/de/quran/page/${number}`);
+      await hydrated(page);
+      const settings = page.getByRole('button', { name: 'Einstellungen' });
+      if (await settings.isVisible()) await settings.click();
+      await page.locator('.qr-seg button').nth(1).click();
+      const arabic = await page.locator('.qr-sheet-text').first().innerText();
+      expect(arabic.match(/[A-Za-z0-9[\]:]/g) ?? [], `page ${number}`).toEqual([]);
+    }
+  });
+
+  test('sets the words an even space apart, at every reading size', async ({ page }) => {
+    // Justified, a browser pulls the spaces apart to reach the margin, and
+    // on a line of four long Arabic words it opened holes up to 2.45em
+    // against a normal space of 0.27. The page is set flush to the right
+    // instead, so every space is the one the font draws.
+    await page.goto('/de/quran/page/132');
+    await hydrated(page);
+    const settings = page.getByRole('button', { name: 'Einstellungen' });
+    if (await settings.isVisible()) await settings.click();
+    await page.locator('.qr-seg button').nth(1).click();
+
+    const widest = () =>
+      page.evaluate(() => {
+        const host = document.querySelector('.qr-sheet-text')!;
+        const spaces: number[] = [];
+        const walk = document.createTreeWalker(host, NodeFilter.SHOW_TEXT);
+        for (let node = walk.nextNode(); node; node = walk.nextNode()) {
+          const text = node.textContent ?? '';
+          for (let i = 0; i < text.length; i += 1) {
+            if (text[i] !== ' ') continue;
+            const range = document.createRange();
+            range.setStart(node, i);
+            range.setEnd(node, i + 1);
+            const box = range.getBoundingClientRect();
+            if (box.width > 0) spaces.push(box.width);
+          }
+        }
+        return Math.max(...spaces) / parseFloat(getComputedStyle(host).fontSize);
+      });
+
+    const bigger = page.getByRole('button', { name: 'Größer' });
+    for (let step = 0; step <= 4; step += 1) {
+      if (step) await bigger.click();
+      expect(await widest(), `at size +${step}`).toBeLessThan(0.4);
+    }
+  });
+
   test('has no axe violations, reading or presenting', async ({ page }) => {
     const audit = () =>
       new AxeBuilder({ page })

@@ -21,6 +21,7 @@ export const TRANSLATION: Record<Locale, { edition: string; translator: string }
 };
 
 import { SURAH_COUNT, PAGE_COUNT, JUZ_COUNT, BASMALA } from './quran-constants';
+import { parseTajweed, type Segment } from './quran-tajweed';
 
 export { SURAH_COUNT, PAGE_COUNT, JUZ_COUNT, BASMALA };
 
@@ -145,43 +146,7 @@ export async function getSurah(number: number, locale: Locale): Promise<Surah | 
 
 /* ─── The mushaf, page by page ─────────────────────────────────────────── */
 
-/**
- * Letters that are written but not pronounced, as the API's tajweed edition
- * marks them:
- *   wasl  hamzat al-wasl — the connecting alif, silent when read on from
- *         the word before
- *   lam   the lam of the article before a "sun" letter, which is assimilated
- *   silent any other letter that is written and not sounded
- * Every other tajweed mark (the lengthenings, the nasalisations …) is dropped
- * and its text kept as it is.
- */
-export type SilentKind = 'wasl' | 'lam' | 'silent';
-const SILENT: Record<string, SilentKind> = { h: 'wasl', l: 'lam', s: 'silent' };
-
-export interface Segment {
-  text: string;
-  silent?: SilentKind;
-}
-
-/** `ذ[n[َٲ]لِكَ [h:11[ٱ]لْكِتَ…` → plain runs and marked runs. */
-export function parseTajweed(source: string): Segment[] {
-  const segments: Segment[] = [];
-  const push = (text: string, silent?: SilentKind) => {
-    if (!text) return;
-    const last = segments[segments.length - 1];
-    if (last && last.silent === silent) last.text += text;
-    else segments.push(silent ? { text, silent } : { text });
-  };
-  const tag = /\[([a-z])(?::\d+)?\[([^\]]*)\]/g;
-  let at = 0;
-  for (const match of source.replace(/^\uFEFF/, '').matchAll(tag)) {
-    push(source.replace(/^\uFEFF/, '').slice(at, match.index));
-    push(match[2] ?? '', SILENT[match[1] ?? '']);
-    at = (match.index ?? 0) + match[0].length;
-  }
-  push(source.replace(/^\uFEFF/, '').slice(at));
-  return segments;
-}
+export { parseTajweed, type Segment, type SilentKind } from './quran-tajweed';
 
 /** Take the first `count` characters off a run of segments. */
 function dropChars(segments: Segment[], count: number): Segment[] {

@@ -611,3 +611,13 @@ Recorded here rather than left implicit:
    it: it is that surah's first verse, counted, unlike the Basmala over every
    other surah, which is not. A du'a's Basmala is likewise not one of its
    lines, so the prayer's first line is numbered one.
+7. **The Quran's page is not justified.** The printed mushaf is, but it
+   justifies by stretching the letters (kashida), and no browser can: a
+   browser justifies by pulling the spaces between the words apart. Measured
+   on a real page across nine column widths and six reading sizes, that left
+   the widest space on a line between 0.86em and 2.45em against a normal
+   space of 0.27em, and only past about twenty-two letters of Arabic across
+   the column — wider than a laptop at the smallest reading size — did it
+   settle back. The text is therefore set flush to the right, as Arabic is
+   written, in both the mushaf view and a du'a read at a stretch. An e2e test
+   holds every space under 0.4em.

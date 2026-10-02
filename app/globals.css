@@ -3272,13 +3272,25 @@
     perspective: 2200px;
     perspective-origin: 85% 50%;
   }
+  /* Set flush to the right, not justified to both margins.
+
+     The printed mushaf does justify, but it does it by stretching the
+     letters — kashida — and no browser can: a browser justifies by pulling
+     the spaces between the words apart, and Arabic words are long, so a
+     line that fits four of them opens holes where the fourth would have
+     gone. Measured on a real page, across nine column widths and six
+     reading sizes: between ten and twenty-two letters of the Arabic across
+     the column, the widest space on a line runs from 0.86 up to 2.45em
+     against a normal space of 0.27em, and only past twenty-two letters
+     across — a column wider than a laptop at the smallest reading size —
+     does it settle back to 0.4. There is no width at which this page is
+     usually justified well, so it is not justified at all. */
   .qr-sheet-text {
     margin: 0 0 12px;
     font-family: 'Scheherazade New', var(--font-naskh), serif;
     font-size: var(--qr-ar);
     line-height: 2.25;
-    text-align: justify;
-    text-align-last: center;
+    text-align: start;
   }
   /* A line that stands on its own is centred, not justified: justifying
      one short line pulls its words to both margins. */
@@ -4208,9 +4220,10 @@
     margin: 0 0 var(--space-2);
     text-align: center;
   }
+  /* Flush to the right, for the reason the mushaf's page is: see
+     `.qr-sheet-text`. */
   .dua-flow-ar {
-    text-align: justify;
-    text-align-last: center;
+    text-align: start;
     line-height: 2.25;
   }
   /* On a phone the words of this button were a line of German on top of

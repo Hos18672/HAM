@@ -621,3 +621,14 @@ Recorded here rather than left implicit:
    settle back. The text is therefore set flush to the right, as Arabic is
    written, in both the mushaf view and a du'a read at a stretch. An e2e test
    holds every space under 0.4em.
+8. **The printed page is black on warm paper, set close.** The mushaf view
+   and a du'a read at a stretch are matched to a photographed printed page
+   rather than to the site's own card: ink `--sheet-ink` (near-black, a warm
+   off-white in dark mode), paper `--sheet` (a shade lighter than the page
+   behind it, so the sheet still reads as a sheet), and a line close enough
+   to the one above that the marks nearly touch. The leading was measured,
+   not guessed: the printed page sets its lines 1.21 of their own inked
+   height apart where ours stood at 1.60, and `line-height: 1.75` brings
+   Scheherazade New to 1.26 with the same five-pixel clearance the printed
+   page leaves. The Arabic of the scripture and of the prayers carries that
+   ink in every view, so the same words are never two colours.

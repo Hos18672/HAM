@@ -145,6 +145,12 @@
   --card: #ffffff;
   --card2: #fbf8f1;
   --ink: #14261d;
+  /* The sheet the Quran and the du'as are printed on, and the ink on it.
+     A printed mushaf is black on warm paper, not the site's green on the
+     white of a card: these two are what make the reader's page read as
+     paper rather than as a panel. */
+  --sheet: #fef7ed;
+  --sheet-ink: #121112;
   --ink2: #5c5548;
   --head: #073b29;
   --line: rgba(11, 93, 59, 0.15);
@@ -394,6 +400,8 @@
   --card: #0b3125;
   --card2: #092a20;
   --ink: #efe8d8;
+  --sheet: #0b3125;
+  --sheet-ink: #f7f3e8;
   --ink2: #9fb6a8;
   --head: #fbf6ea;
   --line: rgba(200, 164, 93, 0.22);
@@ -3193,6 +3201,7 @@
     font-family: 'Scheherazade New', var(--font-naskh), serif;
     font-size: var(--qr-ar);
     line-height: 2;
+    color: var(--sheet-ink);
   }
 
   .qr-verse {
@@ -3242,8 +3251,11 @@
     margin: 0;
     font-family: 'Scheherazade New', var(--font-naskh), serif;
     font-size: var(--qr-ar);
+    /* Set wider than the mushaf's page on purpose: here each verse is read
+       against its translation rather than as a line of the book. */
     line-height: 2.25;
     text-align: right;
+    color: var(--sheet-ink);
   }
   /* The verse-end sign, with room either side of it. It had space before
      it and none after, so the first word of the next verse started flush
@@ -3289,8 +3301,14 @@
     margin: 0 0 12px;
     font-family: 'Scheherazade New', var(--font-naskh), serif;
     font-size: var(--qr-ar);
-    line-height: 2.25;
+    /* Set close, the way a mushaf is. Measured against a printed page: its
+       lines sit 1.21 of their own inked height apart — the marks of one
+       line all but touching the descenders of the one above. At 2.25 ours
+       stood 1.6 apart and the page read as a web article in Arabic rather
+       than as a page of the book. */
+    line-height: 1.75;
     text-align: start;
+    color: var(--sheet-ink);
   }
   /* A line that stands on its own is centred, not justified: justifying
      one short line pulls its words to both margins. */
@@ -3830,7 +3848,7 @@
     margin-inline: auto;
     padding: clamp(26px, 4vw, 44px) clamp(22px, 4.5vw, 52px) clamp(22px, 3vw, 32px);
     background:
-      radial-gradient(120% 90% at 50% 45%, transparent 55%, rgba(176, 138, 69, 0.1)), var(--card);
+      radial-gradient(120% 90% at 50% 45%, transparent 55%, rgba(176, 138, 69, 0.1)), var(--sheet);
     border: var(--rule-hair) solid var(--line);
     border-radius: 8px;
     box-shadow:
@@ -4220,11 +4238,13 @@
     margin: 0 0 var(--space-2);
     text-align: center;
   }
-  /* Flush to the right, for the reason the mushaf's page is: see
-     `.qr-sheet-text`. */
-  .dua-flow-ar {
+  /* Flush to the right, and set as close, for the reasons the mushaf's page
+     is: see `.qr-sheet-text`. Scoped to its container because `.dua-ar`
+     carries its own colour and is declared further down the file. */
+  .dua-flow .dua-flow-ar {
     text-align: start;
-    line-height: 2.25;
+    line-height: 1.75;
+    color: var(--sheet-ink);
   }
   /* On a phone the words of this button were a line of German on top of
      every single line of a du'a that runs to a hundred of them. The icon
@@ -4265,7 +4285,7 @@
     font-family: 'Scheherazade New', var(--font-naskh), serif;
     font-size: calc(clamp(1.24rem, 3.2vw, 1.6rem) * var(--reader-scale, 1));
     line-height: 2.05;
-    color: var(--head);
+    color: var(--sheet-ink);
     text-align: start;
   }
   /* The line's number, in the gold ring the rest of the site counts with. */

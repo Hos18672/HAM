@@ -71,25 +71,9 @@
     U+2010-2011, U+204F, U+2E41, U+FB50-FDFF, U+FE70-FE74, U+FE76-FEFC;
 }
 
-/* Amiri Quran (Khaled Hosny, Open Font License), the face the reader's design
-   asks for: Amiri cut specifically for Quranic text, with the Uthmani marks
-   and the verse-end sign. Self-hosted like every other face here — the design
-   reference loads it from Google's CDN, which this site does not do. Only the
-   reader asks for it, so no other page downloads it. */
-@font-face {
-  font-family: 'Amiri Quran';
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-  src: url('../assets/fonts/amiri-quran-arabic-400-normal.woff2') format('woff2');
-  unicode-range:
-    U+0600-06FF, U+0750-077F, U+0870-088E, U+0890-0891, U+0898-08E1, U+08E3-08FF, U+200C-200E,
-    U+2010-2011, U+204F, U+2E41, U+FB50-FDFF, U+FE70-FE74, U+FE76-FEFC;
-}
-
-/* Scheherazade New (SIL, Open Font License), kept as the fallback behind
-   Amiri Quran: another Naskh drawn for Quranic text, with the same verse-end
-   sign (U+06DD) that encloses the verse number as a printed mushaf does. */
+/* Scheherazade New (SIL, Open Font License), for the Quran and the du'as: a
+   Naskh drawn for Quranic text, with the verse-end sign (U+06DD) that
+   encloses the verse number as a printed mushaf does. */
 @font-face {
   font-family: 'Scheherazade New';
   font-style: normal;
@@ -2902,10 +2886,17 @@
      study, the printed page for recitation — a bar that holds every choice,
      a foot that holds all 604 pages, and a presentation mode for a room.
 
-     The reference loads Amiri Quran and Phosphor from CDNs; both are
-     self-hosted here, as everything on this site is. Its night palette is
-     this site's own dark theme rather than a second one: a reader turning
-     the lights down means the lights. */
+     The words themselves keep the frame and the face this site has always
+     set them in: the gold double rule, the rosettes at its corners, the
+     running head, the folio in its ring, and Scheherazade New. That is the
+     one part of the reference this page does not take, on the owner's word.
+     Everything around it — the bar, the foot, the arrows, the overlay — is
+     the reference's.
+
+     Phosphor comes from a package rather than a CDN, as everything here
+     does. The reference's night palette is this site's own dark theme
+     rather than a second one: a reader turning the lights down means the
+     lights. */
   .qr {
     --qr-gold: var(--gold);
     --qr-green: var(--green);
@@ -2940,7 +2931,7 @@
   }
   .qr-head-name {
     margin: 0;
-    font-family: 'Amiri Quran', 'Scheherazade New', var(--font-naskh), serif;
+    font-family: 'Scheherazade New', var(--font-naskh), serif;
     font-size: clamp(24px, 3vw, 32px);
     line-height: 1.5;
     color: var(--head);
@@ -3028,7 +3019,7 @@
     inline-size: 40px;
   }
   .qr-alif {
-    font-family: 'Amiri Quran', 'Scheherazade New', var(--font-naskh), serif;
+    font-family: 'Scheherazade New', var(--font-naskh), serif;
     font-size: 18px;
     opacity: 0.65;
   }
@@ -3124,10 +3115,17 @@
   .qr-main {
     max-inline-size: 900px;
     margin-inline: auto;
-    padding: clamp(24px, 5vw, 56px) clamp(16px, 4vw, 40px) 40px;
+    /* Narrow at the sides, because the sheet inside brings its own margins
+       and a phone has none to spare. */
+    padding: clamp(20px, 4vw, 48px) clamp(10px, 3vw, 40px) 40px;
   }
-  .qr[data-view='mushaf'] .qr-main {
-    max-inline-size: 820px;
+
+  /* The sheet the words are printed on: `.mushaf`'s own frame, shared with
+     the du'a reader, so there is one printed page on this site and not two.
+     Its foot holds nothing but the folio here — the page turns are in the
+     bar along the bottom of the window. */
+  .qr-paper .mushaf-foot {
+    justify-content: center;
   }
   .qr-failed {
     display: flex;
@@ -3168,7 +3166,7 @@
   }
   .qr-surah-rule h2 {
     margin: 0;
-    font-family: 'Amiri Quran', 'Scheherazade New', var(--font-naskh), serif;
+    font-family: 'Scheherazade New', var(--font-naskh), serif;
     font-size: clamp(28px, 4vw, 40px);
     font-weight: 400;
     line-height: 1.6;
@@ -3181,7 +3179,7 @@
   .qr-bism {
     margin: 24px 0 0;
     text-align: center;
-    font-family: 'Amiri Quran', 'Scheherazade New', var(--font-naskh), serif;
+    font-family: 'Scheherazade New', var(--font-naskh), serif;
     font-size: var(--qr-ar);
     line-height: 2;
   }
@@ -3231,9 +3229,9 @@
   }
   .qr-ar {
     margin: 0;
-    font-family: 'Amiri Quran', 'Scheherazade New', var(--font-naskh), serif;
+    font-family: 'Scheherazade New', var(--font-naskh), serif;
     font-size: var(--qr-ar);
-    line-height: 2.15;
+    line-height: 2.25;
     text-align: right;
   }
   .qr-mark {
@@ -3260,15 +3258,6 @@
     perspective: 2200px;
     perspective-origin: 85% 50%;
   }
-  .qr-sheet {
-    padding: clamp(20px, 5vw, 64px) clamp(18px, 5vw, 64px) 28px;
-    background: var(--card);
-    border: var(--rule-hair) solid var(--line);
-    border-radius: 6px;
-    box-shadow:
-      0 1px 2px rgba(20, 38, 29, 0.06),
-      0 12px 40px rgba(20, 38, 29, 0.08);
-  }
   .qr-sheet-surah {
     margin-block: 8px 16px;
     padding-block: 10px;
@@ -3277,16 +3266,16 @@
   }
   .qr-sheet-surah h2 {
     margin: 0;
-    font-family: 'Amiri Quran', 'Scheherazade New', var(--font-naskh), serif;
+    font-family: 'Scheherazade New', var(--font-naskh), serif;
     font-size: clamp(24px, 3.4vw, 34px);
     font-weight: 400;
     line-height: 1.6;
   }
   .qr-sheet-text {
     margin: 0 0 12px;
-    font-family: 'Amiri Quran', 'Scheherazade New', var(--font-naskh), serif;
+    font-family: 'Scheherazade New', var(--font-naskh), serif;
     font-size: var(--qr-ar);
-    line-height: 2.3;
+    line-height: 2.25;
     text-align: justify;
     text-align-last: center;
   }
@@ -3297,12 +3286,6 @@
   .qr-sheet-ayah:hover,
   .qr-sheet-ayah:focus-visible {
     background: color-mix(in srgb, var(--gold) 16%, transparent);
-  }
-  .qr-folio {
-    margin: 12px 0 0;
-    text-align: center;
-    font-size: 14px;
-    color: var(--color-ink-muted);
   }
   .qr-mushaf-tr {
     display: flex;
@@ -3347,14 +3330,28 @@
     inset: 0;
     backface-visibility: hidden;
   }
+  /* The sheet in the air is the size of the sheet on the page. The deck is
+     as wide as the column and the page is not, so the back and the shadow
+     take the page's own measure — including the one it grows to on a very
+     wide screen. */
+  .qr-leaf-back,
+  .qr-leaf-shade {
+    max-inline-size: 48rem;
+    margin-inline: auto;
+    border-radius: 8px;
+  }
+  @media (min-width: 90rem) {
+    .qr-leaf-back,
+    .qr-leaf-shade {
+      max-inline-size: 56rem;
+    }
+  }
   .qr-leaf-back {
     background: var(--card);
     border: var(--rule-hair) solid var(--line);
-    border-radius: 6px;
     transform: rotateY(180deg);
   }
   .qr-leaf-shade {
-    border-radius: 6px;
     background: linear-gradient(
       to left,
       rgba(20, 30, 25, 0.35) 0%,
@@ -3540,7 +3537,7 @@
     flex-wrap: wrap;
   }
   .qp-surah {
-    font-family: 'Amiri Quran', 'Scheherazade New', var(--font-naskh), serif;
+    font-family: 'Scheherazade New', var(--font-naskh), serif;
     font-size: clamp(22px, 2.6vw, 36px);
     line-height: 1.5;
   }
@@ -3584,7 +3581,7 @@
   }
   .qp-bism {
     margin: 0;
-    font-family: 'Amiri Quran', 'Scheherazade New', var(--font-naskh), serif;
+    font-family: 'Scheherazade New', var(--font-naskh), serif;
     font-size: clamp(22px, 2.6vw, 38px);
     line-height: 1.8;
     color: #c8a45d;
@@ -3592,7 +3589,7 @@
   .qp-ar {
     margin: 0;
     max-inline-size: 1500px;
-    font-family: 'Amiri Quran', 'Scheherazade New', var(--font-naskh), serif;
+    font-family: 'Scheherazade New', var(--font-naskh), serif;
     line-height: 1.95;
     text-wrap: balance;
   }

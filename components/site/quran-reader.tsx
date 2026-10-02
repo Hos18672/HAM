@@ -20,6 +20,7 @@ import {
 } from '@phosphor-icons/react/dist/ssr';
 import { digits } from '@/lib/i18n/format';
 import { BASMALA, JUZ_COUNT, PAGE_COUNT } from '@/lib/quran-constants';
+import { Rosette } from './ornaments';
 import { usePaperTurn } from './use-paper-turn';
 import { useQuranSettings, rememberPage } from './use-quran-settings';
 import { QuranPresent } from './quran-present';
@@ -376,7 +377,7 @@ export function QuranReader({
     juz: t('juz', { n: digits(first?.juz ?? 1, locale) }),
     page: t('pageOf', { n: digits(n, locale) }),
   };
-  const arSize = `calc(${settings.scale} * clamp(26px, 3.2vw, 38px))`;
+  const arSize = `calc(${settings.scale} * clamp(1.3rem, 3.6vw, 1.95rem))`;
   const scrubAt = scrub ?? n;
 
   return (
@@ -712,6 +713,56 @@ function groupBySurah(page: MushafPage): Block[] {
 /** The Basmala stands on its own line wherever a surah opens with it. */
 const opensWithBasmala = (block: Block) => block.opens && block.surah !== 1 && block.surah !== 9;
 
+/**
+ * The sheet the words are printed on, which is the one this site has always
+ * drawn: a gold double rule with a rosette at each corner, a running head
+ * naming the surah and the juz, and the folio in its ring at the foot. The
+ * du'a reader sits in the same frame, and somebody who has read one page
+ * here knows the other.
+ *
+ * Both views use it. Verse by verse the column of verses is printed on it;
+ * in the mushaf view the continuous page is. What the frame does not carry
+ * is the page turns — those are in the bar along the bottom of the window.
+ */
+function Paper({
+  page,
+  locale,
+  className,
+  label,
+  children,
+}: {
+  page: MushafPage;
+  locale: Locale;
+  className: string;
+  label: string;
+  children: ReactNode;
+}) {
+  const t = useTranslations('quran');
+  const first = page.ayahs[0];
+  return (
+    <article className={`mushaf qr-paper ${className}`} aria-label={label}>
+      <Rosette className="mushaf-corner" />
+      <Rosette className="mushaf-corner" />
+      <Rosette className="mushaf-corner" />
+      <Rosette className="mushaf-corner" />
+
+      <header className="mushaf-head">
+        <span lang="ar" dir="rtl">
+          {first ? page.surahs[first.surah]?.name : ''}
+        </span>
+        <span className="mushaf-head-mark" aria-hidden="true" />
+        <span>{t('juz', { n: digits(first?.juz ?? 1, locale) })}</span>
+      </header>
+
+      {children}
+
+      <footer className="mushaf-foot">
+        <span className="mushaf-folio">{digits(page.number, locale)}</span>
+      </footer>
+    </article>
+  );
+}
+
 function SurahHead({
   surah,
   locale,
@@ -776,7 +827,12 @@ function VerseView({
   const t = useTranslations('quran');
   let index = -1;
   return (
-    <div className="qr-verses">
+    <Paper
+      page={page}
+      locale={locale}
+      className="qr-verses"
+      label={t('pageOf', { n: digits(page.number, locale) })}
+    >
       {blocks.map((block) => {
         const surah = page.surahs[block.surah];
         return (
@@ -833,7 +889,7 @@ function VerseView({
           </section>
         );
       })}
-    </div>
+    </Paper>
   );
 }
 
@@ -921,7 +977,12 @@ function Sheet({
   const t = useTranslations('quran');
   let index = -1;
   return (
-    <article className="qr-sheet" aria-label={t('pageOf', { n: digits(page.number, locale) })}>
+    <Paper
+      page={page}
+      locale={locale}
+      className="qr-sheet"
+      label={t('pageOf', { n: digits(page.number, locale) })}
+    >
       {blocks.map((block) => (
         <div key={`${block.surah}-${block.ayahs[0]?.number}`} id={`surah-${block.surah}`}>
           {block.opens ? (
@@ -967,7 +1028,6 @@ function Sheet({
           </p>
         </div>
       ))}
-      <p className="qr-folio">{digits(page.number, locale)}</p>
-    </article>
+    </Paper>
   );
 }

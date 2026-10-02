@@ -385,10 +385,18 @@ every pixel of the drag. The arrow keys turn the page, `F` fills the screen,
 `P` presents, `T` turns the translation on and off, and a swipe of more than
 70px does what the arrows do.
 
-The Arabic is set in **Amiri Quran**, self-hosted like every other face here.
-The reference loads it and its icons from Google's and unpkg's CDNs; this site
-loads nothing from anybody, so the font is vendored into `assets/fonts/` and
-the icons were already a package.
+The words themselves keep the frame and the face this site has always set them
+in, which is the one part of the reference this page does not take, on the
+owner's word: the sheet is `.mushaf` — a gold double rule with a rosette at
+each corner, a running head naming the surah and the juz, and the folio in its
+ring at the foot — and the Arabic is **Scheherazade New**. The du'a reader
+prints on the same sheet, so somebody who has read one page here knows the
+other. Everything around the words is the reference's: the bar, the foot, the
+arrows and the presentation overlay.
+
+The reference loads its font and its icons from Google's and unpkg's CDNs; this
+site loads nothing from anybody, so every face is vendored into `assets/fonts/`
+and the icons were already a package.
 
 #### A turn of the page is not a visit to the page
 

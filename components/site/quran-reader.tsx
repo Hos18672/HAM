@@ -760,12 +760,12 @@ function SurahHead({
 }) {
   return (
     <header className="qr-surah">
-      <div className="qr-surah-rule">
-        <span aria-hidden="true" />
-        <h2 lang="ar" dir="rtl">
-          {surah?.name}
+      <div className="qr-banner mushaf-banner-wrap">
+        <h2 lang="ar" dir="rtl" className="mushaf-banner">
+          <Rosette className="mushaf-banner-star" />
+          <span>{surah?.name}</span>
+          <Rosette className="mushaf-banner-star" />
         </h2>
-        <span aria-hidden="true" />
       </div>
       <p className="qr-surah-meta">{meta}</p>
       <span className="visually-hidden">{digits(surah?.number ?? 0, locale)}</span>
@@ -973,9 +973,11 @@ function Sheet({
         <div key={`${block.surah}-${block.ayahs[0]?.number}`} id={`surah-${block.surah}`}>
           {block.opens ? (
             <>
-              <div className="qr-sheet-surah">
-                <h2 lang="ar" dir="rtl">
-                  {page.surahs[block.surah]?.name}
+              <div className="qr-banner mushaf-banner-wrap">
+                <h2 lang="ar" dir="rtl" className="mushaf-banner">
+                  <Rosette className="mushaf-banner-star" />
+                  <span>{page.surahs[block.surah]?.name}</span>
+                  <Rosette className="mushaf-banner-star" />
                 </h2>
               </div>
               {opensWithBasmala(block) ? (

@@ -35,6 +35,16 @@ import type { ThemeValue } from './theme';
  */
 let loaderPlayed = false;
 
+/**
+ * The scene's code is requested as soon as this module is evaluated in the
+ * browser — before hydration — rather than from the effect after it, which
+ * left the first frames of the loader blank while Three.js downloaded.
+ */
+let scenePending: Promise<typeof import('@/lib/homecoming/src/mount.js')> | null = null;
+const loadScene = () => (scenePending ??= import('@/lib/homecoming/src/mount.js'));
+if (typeof window !== 'undefined' && document.documentElement.dataset.hc === 'boot')
+  void loadScene();
+
 export function HomecomingHero({
   theme,
   captionTitle,
@@ -62,7 +72,7 @@ export function HomecomingHero({
 
     // The import is dynamic so Three.js never reaches the server bundle and
     // never sits on the critical path of any other page.
-    void import('@/lib/homecoming/src/mount.js').then(({ mountHomecoming }) => {
+    void loadScene().then(({ mountHomecoming }) => {
       if (disposed || !hostRef.current) return;
 
       // The loader belongs to the first real load of the home page in a

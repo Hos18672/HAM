@@ -407,6 +407,9 @@ test.describe('the qibla', () => {
     // across the whole width and under the buttons.
     await stubTiles(page);
     for (const [width, height] of [
+      // 360 is where two Persian labels and the credit first stopped
+      // fitting on one line, and it is the commonest Android width.
+      [360, 740],
       [375, 667],
       [412, 915],
       [768, 1024],
@@ -459,6 +462,18 @@ test.describe('the qibla', () => {
           return out;
         });
         expect(clashes, `${locale} ${width}x${height}`).toEqual([]);
+
+        // And the two spans stay side by side: stacked, they read as a
+        // control that has come apart rather than a pair.
+        const rows = await page.evaluate(
+          () =>
+            new Set(
+              [...document.querySelectorAll('.qibla-span-btn')].map((e) =>
+                Math.round(e.getBoundingClientRect().top),
+              ),
+            ).size,
+        );
+        expect(rows, `span buttons wrapped at ${locale} ${width}x${height}`).toBe(1);
       }
     }
   });

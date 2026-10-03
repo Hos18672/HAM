@@ -4937,6 +4937,17 @@
       inline-size: 38px;
       padding-inline: 0;
       justify-content: center;
+      /* Round, like the north rose and the two discs of the zoom. Square
+         with a 12px radius it read as a stray box dropped on the street. */
+      border-radius: 999px;
+    }
+    /* The credit keeps its corner and the buttons sit on the line above it,
+       so the two never compete for the same width: at 360px the panel is
+       292 across, and two Persian labels beside a 100px credit do not fit —
+       they wrapped into a stack. Above it they have the whole width. */
+    .qibla-span {
+      right: 14px;
+      inset-block-end: 30px;
     }
     .qibla-span-btn {
       block-size: 36px;
@@ -5167,6 +5178,36 @@
     }
     .qibla-head {
       margin-block-end: 12px;
+    }
+    /* A step down in type across the page. The sizes above are a desktop
+       scale, and on a phone — where the whole point is that the instrument
+       is on the first screen — they spend that screen on words. */
+    .qibla-head h1 {
+      font-size: clamp(20px, 5.4vw, 26px);
+    }
+    .qibla-head-lede {
+      font-size: 13.5px;
+    }
+    .qibla-tab {
+      font-size: 13px;
+      gap: 6px;
+    }
+    .qibla-figure-value {
+      font-size: 24px;
+    }
+    .qibla-figure-name,
+    .qibla-field-name {
+      font-size: 12px;
+    }
+    .qibla-hint,
+    .qibla-geo-note {
+      font-size: 12.5px;
+    }
+    .qibla-go {
+      font-size: 15px;
+    }
+    .qibla-step-text {
+      font-size: 14.5px;
     }
     /* Measured, not guessed: the site's header, this page's padding and its
        title row take 314px of a phone's first screen, so the stage takes

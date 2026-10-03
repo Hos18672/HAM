@@ -250,11 +250,9 @@ export function Qibla({ locale }: { locale: Locale }) {
 
   const status = facing
     ? t('aligned')
-    : compass === 'unsupported'
-      ? t('noSensor')
-      : compass === 'active'
-        ? `${offBy > 0 ? t('turnRight') : t('turnLeft')} · ${digits(Math.round(Math.abs(offBy)), locale)}°`
-        : t('idleStatus');
+    : compass === 'active'
+      ? `${offBy > 0 ? t('turnRight') : t('turnLeft')} · ${digits(Math.round(Math.abs(offBy)), locale)}°`
+      : t('noSensor');
   const StatusIcon = facing
     ? CheckCircle
     : compass === 'active'
@@ -328,10 +326,25 @@ export function Qibla({ locale }: { locale: Locale }) {
               </div>
             </div>
           </div>
-          <p className="qibla-status" data-facing={facing ? 'yes' : 'no'} aria-live="polite">
-            <StatusIcon size={18} weight="duotone" aria-hidden="true" />
-            <span>{status}</span>
-          </p>
+          {/* The switch sits right under the dial it brings to life, within
+              thumb's reach; once the sensor answers, its place is taken by
+              the instruction it makes possible. */}
+          {compass === 'idle' || compass === 'denied' ? (
+            <button type="button" className="qibla-go" onClick={activateCompass}>
+              <CompassIcon size={20} weight="duotone" aria-hidden="true" />
+              <span>{t('activateCompass')}</span>
+            </button>
+          ) : (
+            <p
+              className="qibla-status"
+              data-facing={facing ? 'yes' : 'no'}
+              data-live={compass === 'active' ? 'yes' : 'no'}
+              aria-live="polite"
+            >
+              <StatusIcon size={18} weight="duotone" aria-hidden="true" />
+              <span>{status}</span>
+            </p>
+          )}
         </div>
 
         <div
@@ -432,20 +445,6 @@ export function Qibla({ locale }: { locale: Locale }) {
             </div>
           </div>
 
-          <button
-            type="button"
-            className="qibla-go"
-            data-live={compass === 'active' ? 'yes' : 'no'}
-            onClick={activateCompass}
-            disabled={compass === 'active'}
-          >
-            {compass === 'active' ? (
-              <CheckCircle size={20} weight="duotone" aria-hidden="true" />
-            ) : (
-              <CompassIcon size={20} weight="duotone" aria-hidden="true" />
-            )}
-            <span>{compass === 'active' ? t('compassActive') : t('activateCompass')}</span>
-          </button>
           <p className="qibla-hint">
             {compass === 'denied' ? t('error.denied') : t('compassHint')}
           </p>

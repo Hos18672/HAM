@@ -5094,8 +5094,13 @@
     font-size: 14px;
     color: var(--color-ink-muted);
   }
+  /* On the stage, under the dial: gold on the dark green, as the dial's own
+     accents are, so it reads as part of the instrument. */
   .qibla-go {
-    block-size: 52px;
+    block-size: 48px;
+    flex-shrink: 0;
+    max-inline-size: 100%;
+    padding-inline: 26px;
     border: 0;
     border-radius: 999px;
     cursor: pointer;
@@ -5106,13 +5111,16 @@
     font-size: 15.5px;
     font-weight: var(--weight-bold);
     white-space: nowrap;
-    background: var(--green);
-    color: var(--on-green);
+    background: var(--gold);
+    color: var(--stage);
+    transition: transform 0.12s var(--ease-standard);
   }
-  .qibla-go[data-live='yes'] {
-    background: color-mix(in srgb, var(--green) 16%, transparent);
-    color: var(--green);
-    cursor: default;
+  .qibla-go:active {
+    transform: scale(0.97);
+  }
+  .qibla-go:focus-visible {
+    outline: 2px solid var(--stage-ink);
+    outline-offset: 3px;
   }
   .qibla-hint {
     margin: 0;

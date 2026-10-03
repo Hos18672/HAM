@@ -238,16 +238,11 @@ test.describe('the qibla', () => {
     await page.getByRole('button', { name: 'Kompass aktivieren' }).click();
 
     // Three outcomes are legitimate and none of them is silent: a browser
-    // that hands over the sensor flips the button to "Kompass aktiv"; one
-    // without the API, or one that gates it and refuses, says so in the
-    // status under the dial or in the hint. What must never happen is
-    // nothing at all.
-    //
-    // `exact` is not optional here. Playwright matches an accessible name as
-    // a case-insensitive *substring* by default, and "Kompass aktiv" is a
-    // substring of "Kompass aktivieren" — so without it this passes on the
-    // unclicked button and asserts nothing whatsoever.
-    const active = page.getByRole('button', { name: 'Kompass aktiv', exact: true });
+    // that hands over the sensor swaps the button for live turn
+    // instructions; one without the API, or one that gates it and refuses,
+    // says so in the status under the dial or in the hint. What must never
+    // happen is nothing at all.
+    const active = page.locator('.qibla-status[data-live="yes"]');
     const noSensor = page.getByText('Kein Kompass-Sensor');
     const denied = page.getByText('Ohne Freigabe kann der Kompass nicht gelesen werden');
     await expect(active.or(noSensor).or(denied).first()).toBeVisible({ timeout: 10_000 });
@@ -257,7 +252,7 @@ test.describe('the qibla', () => {
     await withSensor(page);
     await page.goto('/de/qibla');
     await page.getByRole('button', { name: 'Kompass aktivieren' }).click();
-    await expect(page.getByRole('button', { name: 'Kompass aktiv', exact: true })).toBeVisible();
+    await expect(page.locator('.qibla-status[data-live="yes"]')).toBeVisible();
 
     // The rose is the group inside the dial; the needle turns within it.
     const rose = page.locator('.qibla-svg > g').first();
@@ -300,7 +295,7 @@ test.describe('the qibla', () => {
     await withSensor(page);
     await page.goto('/de/qibla');
     await page.getByRole('button', { name: 'Kompass aktivieren' }).click();
-    await expect(page.getByRole('button', { name: 'Kompass aktiv', exact: true })).toBeVisible();
+    await expect(page.locator('.qibla-status[data-live="yes"]')).toBeVisible();
 
     const status = page.locator('.qibla-status');
     // Facing north, with the qibla at 136.7°, the shorter way round is right.
@@ -569,7 +564,7 @@ test.describe('the qibla', () => {
           const stage = box('.qibla-stage');
           return {
             stageBottom: stage.bottom,
-            factsBottom: Math.max(box('.qibla-figures').bottom, box('.qibla-go').bottom),
+            factsBottom: box('.qibla-figures').bottom,
             sideways: document.documentElement.scrollWidth - document.documentElement.clientWidth,
           };
         });

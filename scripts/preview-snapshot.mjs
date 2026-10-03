@@ -24,7 +24,7 @@
  */
 import { cp, mkdir, readdir, readFile, writeFile } from 'node:fs/promises';
 import { Buffer } from 'node:buffer';
-import { dirname, join } from 'node:path';
+import { dirname, join, relative, sep } from 'node:path';
 
 const ORIGIN = process.env.PREVIEW_ORIGIN ?? 'http://127.0.0.1:3100';
 const BASE_PATH = process.env.PREVIEW_BASE_PATH ?? '';
@@ -141,6 +141,63 @@ async function writeFileAt(path, contents) {
   await writeFile(path, contents, 'utf8');
 }
 
+/**
+ * Every internal link in the snapshot, against the files the snapshot has.
+ *
+ * On a static host there is no middleware and no router to be forgiving: a
+ * link that does not name a file that exists is a 404 the visitor sees. Two
+ * kinds of mistake end up here and neither shows on the running app, which
+ * is why this check exists rather than a test of the source. An `<a href>`
+ * the app writes itself does not get the `basePath` the framework adds to
+ * what it emits, so it points outside the snapshot; and a path written
+ * without its locale is redirected by middleware in the app and by nothing
+ * at all here.
+ */
+async function checkLinks(base) {
+  const files = [];
+  const walk = async (dir) => {
+    for (const entry of await readdir(dir, { withFileTypes: true })) {
+      const path = join(dir, entry.name);
+      if (entry.isDirectory()) await walk(path);
+      else files.push('/' + relative(OUT, path).split(sep).join('/'));
+    }
+  };
+  await walk(OUT);
+
+  const have = new Set(files);
+  const resolves = (path) => {
+    if (base && !path.startsWith(base + '/') && path !== base) return false;
+    const rest = path.slice(base.length) || '/';
+    return (
+      have.has(rest) ||
+      have.has(rest.replace(/\/$/, '') + '/index.html') ||
+      have.has(rest + '/index.html')
+    );
+  };
+
+  const broken = new Map();
+  for (const file of files.filter((f) => f.endsWith('.html'))) {
+    const html = await readFile(join(OUT, file.slice(1)), 'utf8');
+    for (const [, href] of html.matchAll(/<a\b[^>]*?href="([^"]*)"/g)) {
+      if (!href.startsWith('/')) continue;
+      const path = href.split('#')[0].split('?')[0];
+      if (resolves(path)) continue;
+      if (!broken.has(path)) broken.set(path, new Set());
+      broken.get(path).add(file.replace(/\/index\.html$/, '') || '/');
+    }
+  }
+  if (broken.size === 0) return;
+
+  const say = [...broken]
+    .sort()
+    .map(([path, from]) => {
+      const pages = [...from].slice(0, 4).join(', ');
+      return `  ${path}\n      on ${from.size} page(s): ${pages}${from.size > 4 ? ' …' : ''}`;
+    })
+    .join('\n');
+  throw new Error(`the snapshot links to ${broken.size} path(s) it does not publish:\n${say}`);
+}
+
 async function main() {
   const [locales, routes] = await Promise.all([readLocales(), readRoutes()]);
   await mkdir(OUT, { recursive: true });
@@ -220,9 +277,11 @@ async function main() {
   // directories beginning with an underscore — _next among them.
   await writeFileAt(join(OUT, '.nojekyll'), '');
 
+  await checkLinks(BASE_PATH);
+
   console.log(
     `preview: ${pages} pages (${locales.length} locales × ${routes.length} routes), ` +
-      `${quranData} mushaf pages and ${duaData} du'as as data`,
+      `${quranData} mushaf pages and ${duaData} du'as as data, every link resolved`,
   );
 }
 

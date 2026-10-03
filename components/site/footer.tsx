@@ -7,7 +7,6 @@ import { EditableText } from '@/components/editable/editable-text';
 import { LocaleSwitch } from './locale-switch';
 import { PatternPlate } from './ornaments';
 import { FooterSkyline } from './footer-skyline';
-import { LinkButton } from '../ui/button';
 import { digits } from '@/lib/i18n/format';
 import type { Locale } from '@/lib/i18n/config';
 import { ASSOCIATION } from '@/lib/db/seed-data';
@@ -165,12 +164,15 @@ export async function Footer({ locale }: { locale: Locale }) {
                 alignItems: 'flex-start',
               }}
             >
-              <LinkButton href="/support" size="sm" className="btn-gold">
+              {/* The locale-aware `Link`, styled as a button: these two had
+                  no locale at all and went to `/support`, which exists in
+                  neither language. */}
+              <Link href="/support" className="btn btn-sm btn-gold">
                 {tActions('join')}
-              </LinkButton>
-              <LinkButton href="/support" size="sm" className="btn-on-scrim">
+              </Link>
+              <Link href="/support" className="btn btn-sm btn-on-scrim">
                 {tActions('donate')}
-              </LinkButton>
+              </Link>
             </div>
           </div>
         </div>

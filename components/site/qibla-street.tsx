@@ -432,14 +432,18 @@ export function QiblaStreet({
           className="mushaf-switch reader-full-btn"
           onClick={recentre}
           disabled={!moved && zoom === DEFAULT_ZOOM}
+          aria-label={t('recentreMe')}
         >
           <ArrowsClockwise size={17} weight="duotone" aria-hidden="true" />
-          {t('recentreMe')}
+          {/* The words go on a narrow map, where four pills of German over
+              the street is more furniture than map. The name stays on the
+              button for anyone not reading it with their eyes. */}
+          <span className="qibla-ctl-word">{t('recentreMe')}</span>
         </button>
         {headingLive ? (
           <span className="mushaf-switch reader-full-btn" aria-live="polite">
             <Compass size={17} weight="duotone" aria-hidden="true" />
-            {t('headingOn')}
+            <span className="qibla-ctl-word">{t('headingOn')}</span>
           </span>
         ) : null}
       </div>

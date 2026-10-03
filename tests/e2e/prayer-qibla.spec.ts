@@ -399,6 +399,70 @@ test.describe('the qibla', () => {
     await expect(page.locator('.qibla-route')).toHaveCount(0);
   });
 
+  test('keeps the map\u2019s furniture out of its own way, in both languages', async ({ page }) => {
+    // Everything on the map floats over it, and the map is a hand across on
+    // a phone. Two of these pieces take physical corners rather than logical
+    // ones, because the map itself is never mirrored: Persian used to put
+    // the zoom control on top of the north rose, and stretch the credit
+    // across the whole width and under the buttons.
+    await stubTiles(page);
+    for (const [width, height] of [
+      [375, 667],
+      [412, 915],
+      [768, 1024],
+      [1440, 900],
+    ] as const) {
+      for (const locale of ['de', 'fa'] as const) {
+        await page.setViewportSize({ width, height });
+        await page.goto(`/${locale}/qibla#map`);
+        await expect(page.locator('.qibla-street')).toBeVisible();
+
+        const clashes = await page.evaluate(() => {
+          const names = [
+            '.qibla-street-rose',
+            '.reader-size',
+            '.qibla-map-controls > button',
+            '.qibla-street-who',
+            '.qibla-span',
+            '.qibla-attribution',
+          ];
+          const boxes = names
+            .map((name) => {
+              const el = document.querySelector(name);
+              if (!el || getComputedStyle(el).display === 'none') return null;
+              return { name, box: el.getBoundingClientRect() };
+            })
+            .filter((x): x is { name: string; box: DOMRect } => x !== null);
+
+          const panel = document.querySelector('.qibla-panel-map')!.getBoundingClientRect();
+          const out: string[] = [];
+          for (let i = 0; i < boxes.length; i += 1) {
+            const a = boxes[i]!;
+            if (
+              a.box.right > panel.right + 1 ||
+              a.box.left < panel.left - 1 ||
+              a.box.bottom > panel.bottom + 1 ||
+              a.box.top < panel.top - 1
+            )
+              out.push(`${a.name} outside the map`);
+            for (let j = i + 1; j < boxes.length; j += 1) {
+              const b = boxes[j]!;
+              if (
+                a.box.left < b.box.right - 1 &&
+                b.box.left < a.box.right - 1 &&
+                a.box.top < b.box.bottom - 1 &&
+                b.box.top < a.box.bottom - 1
+              )
+                out.push(`${a.name} over ${b.name}`);
+            }
+          }
+          return out;
+        });
+        expect(clashes, `${locale} ${width}x${height}`).toEqual([]);
+      }
+    }
+  });
+
   test('says so and draws it itself when the tiles cannot be had', async ({ page }) => {
     await page.route('https://tile.openstreetmap.org/**', (route) => route.abort());
     await page.goto('/de/qibla');

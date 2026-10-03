@@ -4825,17 +4825,32 @@
   .qibla-panel-map .qibla-map > p.text-xs {
     display: none;
   }
+  /* Which place the direction is taken from is the side panel's to say, and
+     it says it twice already — in the segmented control and in the card
+     under it. Inside the tab it only lands on the zoom control. */
+  .qibla-panel-map .qibla-street-who {
+    display: none;
+  }
+  /* The map's own furniture keeps physical corners, not logical ones. The
+     map is a picture of fixed geography and is set `direction: ltr` so it
+     is never mirrored; the controls sit outside it, where Persian would
+     flip them onto the north rose inside it. North stays top-left and the
+     zoom stays top-right in both languages, as on every map. */
   .qibla-panel-map .qibla-attribution {
     position: absolute;
     inset-block-end: 2px;
-    inset-inline-end: 8px;
+    /* The rule it overrides pins the credit by `inset-inline-end`, which in
+       Persian is the left edge — left and right both set stretch the box
+       across the map and under the buttons. Cleared first, then pinned. */
+    inset-inline: auto;
+    right: 8px;
     margin: 0;
     z-index: 2;
   }
   .qibla-panel-map .qibla-map-controls {
     position: absolute;
     inset-block-start: 10px;
-    inset-inline-end: 10px;
+    right: 10px;
     z-index: 2;
     display: flex;
     flex-direction: column;
@@ -4856,8 +4871,12 @@
   }
   .qibla-span {
     position: absolute;
-    inset-inline-start: 14px;
+    left: 14px;
     inset-block-end: 14px;
+    /* The credit owns the opposite corner, so the buttons are given the rest
+       of the line and wrap upward when the panel is too narrow to hold both
+       of them beside it — rather than sliding under it. */
+    right: 120px;
     z-index: 2;
     display: flex;
     flex-wrap: wrap;
@@ -4897,6 +4916,36 @@
     stroke-width: 4;
     stroke-dasharray: 2 9;
     stroke-linecap: round;
+  }
+
+  /* On a phone the map panel is about a hand across, and the furniture that
+     used to sit in a row under a full-width map now floats on top of it.
+     Four pills of German over the street is more furniture than map, so the
+     words go and the icons carry it; the names stay on the controls for
+     anyone not reading them with their eyes. */
+  @media (max-width: 40rem) {
+    .qibla-panel-map .qibla-ctl-word {
+      position: absolute;
+      inline-size: 1px;
+      block-size: 1px;
+      padding: 0;
+      overflow: hidden;
+      clip-path: inset(50%);
+      white-space: nowrap;
+    }
+    .qibla-panel-map .qibla-map-controls .reader-full-btn {
+      inline-size: 38px;
+      padding-inline: 0;
+      justify-content: center;
+    }
+    .qibla-span-btn {
+      block-size: 36px;
+      padding-inline: 12px;
+      font-size: 13px;
+    }
+    .qibla-panel-map .qibla-attribution {
+      font-size: 10px;
+    }
   }
 
   /* ── Beside the stage ────────────────────────────────────────────────── */

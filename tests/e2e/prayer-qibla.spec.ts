@@ -356,6 +356,43 @@ test.describe('the qibla', () => {
     await expect(page.locator('#qibla-panel-guide')).toBeVisible();
   });
 
+  test('lets the guide be read from its first step to its last', async ({ page }) => {
+    // The guide is centred in the stage, and on a phone it is taller than
+    // the stage. A flex column centred with `justify-content` puts half of
+    // that overflow *above* the scroll origin, where `scrollTop` is already
+    // zero: no scrolling, no keyboard and no scrollbar can reach it, and
+    // the first step simply is not readable. Auto margins centre without
+    // that. Both ends are checked, because the fix for one end is the kind
+    // that loses the other.
+    for (const [width, height] of [
+      [360, 740],
+      [375, 667],
+      [412, 915],
+      [924, 539],
+      [1440, 900],
+    ] as const) {
+      for (const locale of ['de', 'fa'] as const) {
+        await page.setViewportSize({ width, height });
+        await page.goto(`/${locale}/qibla#guide`);
+        await expect(page.locator('.qibla-panel-guide')).toBeVisible();
+
+        const reach = await page.evaluate(() => {
+          const panel = document.querySelector('.qibla-panel-guide')!;
+          const first = document.querySelector('.qibla-step')!;
+          const last = document.querySelector('.qibla-method')!;
+          panel.scrollTop = 0;
+          const top = first.getBoundingClientRect().top - panel.getBoundingClientRect().top;
+          panel.scrollTop = panel.scrollHeight;
+          const bottom = last.getBoundingClientRect().bottom - panel.getBoundingClientRect().bottom;
+          return { top: Math.round(top), bottom: Math.round(bottom) };
+        });
+        const where = `${locale} ${width}x${height}`;
+        expect(reach.top, `first step above the guide at ${where}`).toBeGreaterThanOrEqual(-1);
+        expect(reach.bottom, `last line below the guide at ${where}`).toBeLessThanOrEqual(1);
+      }
+    }
+  });
+
   test('opens the tab the address asks for', async ({ page }) => {
     await page.goto('/de/qibla#guide');
     await expect(page.locator('#qibla-panel-guide')).toBeVisible();

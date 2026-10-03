@@ -4735,13 +4735,26 @@
   .qibla-panel-map > * {
     block-size: 100%;
   }
+  /* Centred by auto margins rather than by `justify-content`, because this
+     panel also scrolls. A centred flex column distributes its overflow to
+     both ends, and the half above the start is unreachable: `scrollTop` is
+     already 0 there, so no scrolling, no keyboard and no scrollbar can
+     reach it. On a phone that put the first step twenty-four pixels off
+     the top of the panel with no way back to it. Auto margins centre the
+     group while there is room and collapse to nothing when there is not. */
   .qibla-panel-guide {
     flex: 1;
     flex-direction: column;
-    justify-content: center;
+    justify-content: flex-start;
     gap: clamp(10px, 1.6vw, 16px);
     padding: clamp(18px, 3vw, 40px);
     overflow-y: auto;
+  }
+  .qibla-panel-guide > :first-child {
+    margin-block-start: auto;
+  }
+  .qibla-panel-guide > :last-child {
+    margin-block-end: auto;
   }
   .qibla-panel-guide:not([hidden]) {
     display: flex;
@@ -5233,6 +5246,25 @@
     }
     .qibla-step-text {
       font-size: 14.5px;
+    }
+    /* Forty pixels over the stage is what made the guide scroll at all;
+       the cards give it back. */
+    .qibla-panel-guide {
+      padding: 14px;
+      gap: 8px;
+    }
+    .qibla-step {
+      grid-template-columns: 44px minmax(0, 1fr);
+      gap: 12px;
+      padding: 12px;
+      border-radius: 14px;
+    }
+    .qibla-step-mark {
+      inline-size: 44px;
+      block-size: 44px;
+    }
+    .qibla-method {
+      font-size: 12.5px;
     }
     /* Measured, not guessed: the site's header, this page's padding and its
        title row take 314px of a phone's first screen, so the stage takes

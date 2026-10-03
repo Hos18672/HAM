@@ -27,6 +27,36 @@ export const NAV: NavEntry[] = [
   { href: '/contact', key: 'contact', primary: false },
 ];
 
+/**
+ * The header's groups. Four to five top-level items instead of thirteen:
+ * each group is a dropdown on wide screens and a collapsible section in the
+ * phone menu; a group with `href` is a direct link. Every page in `NAV` but
+ * home appears in exactly one group, so nothing is unreachable from the
+ * header (home is the logo).
+ */
+export interface NavGroup {
+  /** Key into the `nav` namespace for the group's label. */
+  key: string;
+  href?: string;
+  items?: NavEntry[];
+}
+
+const entry = (key: string) => NAV.find((e) => e.key === key)!;
+
+export const NAV_GROUPS: NavGroup[] = [
+  { key: 'groupHouse', items: [entry('about'), entry('community'), entry('gallery')] },
+  {
+    key: 'groupOffers',
+    items: [entry('courses'), entry('activities'), entry('culture'), entry('sport')],
+  },
+  { key: 'events', href: '/events' },
+  {
+    key: 'groupFaith',
+    items: [entry('prayer'), entry('quran'), entry('duas'), entry('qibla')],
+  },
+  { key: 'contact', href: '/contact' },
+];
+
 export const LEGAL_NAV: NavEntry[] = [
   { href: '/privacy', key: 'privacy', primary: false },
   { href: '/imprint', key: 'imprint', primary: false },

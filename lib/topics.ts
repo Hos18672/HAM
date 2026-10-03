@@ -1,0 +1,28 @@
+/**
+ * The one list of contact topics. Every `?topic=` link on the site uses one of
+ * these keys, the contact form offers exactly these, and the schema accepts
+ * nothing else — so a link can never pre-select a topic the form lacks.
+ */
+export const TOPICS = [
+  'general',
+  'course',
+  'event',
+  'sport',
+  'volunteer',
+  'help',
+  'membership',
+  'donation',
+] as const;
+
+export type Topic = (typeof TOPICS)[number];
+
+export function isTopic(value: unknown): value is Topic {
+  return typeof value === 'string' && (TOPICS as readonly string[]).includes(value);
+}
+
+/** The contact page's address, with the topic (and the item it is about). */
+export function contactHref(locale: string, topic: Topic, id?: string): string {
+  const query = new URLSearchParams({ topic });
+  if (id) query.set('id', id);
+  return `/${locale}/contact?${query.toString()}`;
+}

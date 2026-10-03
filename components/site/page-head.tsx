@@ -1,4 +1,7 @@
 import type { ReactNode } from 'react';
+import { getTranslations } from 'next-intl/server';
+import { CaretRight } from '@phosphor-icons/react/dist/ssr';
+import { Link } from '@/lib/i18n/navigation';
 import { Words } from './words';
 import { PatternPlate, Ring } from './ornaments';
 import { EditableText } from '@/components/editable/editable-text';
@@ -14,7 +17,9 @@ import type { PageHeader } from '@/lib/db/queries/content';
  * lead under it. It is the one piece of furniture every page shares, and it is
  * what tells you at a glance that you have arrived somewhere.
  */
-export function PageHead({ header, locale }: { header: PageHeader; locale: Locale }) {
+export async function PageHead({ header, locale }: { header: PageHeader; locale: Locale }) {
+  const tNav = await getTranslations({ locale, namespace: 'nav' });
+  const here = tNav.has(header.key) ? tNav(header.key) : header.title;
   return (
     <header className="section-band page-head-band" data-rise>
       <PatternPlate tiling="shesh" drift opacity={0.7} />
@@ -22,23 +27,21 @@ export function PageHead({ header, locale }: { header: PageHeader; locale: Local
 
       <div className="page" style={{ position: 'relative' }}>
         <div style={{ maxInlineSize: '32em' }}>
-          <div className="flex items-center gap-3">
-            {/* The ring and dot: the design's mark for a page kicker. */}
-            <svg width="22" height="22" viewBox="0 0 26 26" aria-hidden="true" focusable="false">
-              <circle cx="13" cy="13" r="10.5" fill="none" stroke="var(--gold)" strokeWidth="1.2" />
-              <circle cx="13" cy="13" r="3.6" fill="var(--gold)" />
-            </svg>
-            <EditableText
-              as="span"
-              entity="page"
-              id={header.id}
-              field="kicker"
-              locale={locale}
-              value={header.kicker}
-              className="kicker"
-              style={{ color: 'var(--gold)' }}
-            />
-          </div>
+          {/* A breadcrumb rather than a kicker: the kicker only ever repeated
+              the title under it, while this says where the page sits. */}
+          <nav aria-label={tNav('breadcrumb')} className="crumbs">
+            <ol>
+              <li>
+                <Link href="/">{tNav('home')}</Link>
+              </li>
+              <li aria-hidden="true" className="crumbs-sep">
+                <CaretRight size={12} weight="bold" className="mirror" />
+              </li>
+              <li>
+                <span aria-current="page">{here}</span>
+              </li>
+            </ol>
+          </nav>
 
           <EditableText
             as="h1"

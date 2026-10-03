@@ -13,7 +13,12 @@ import {
   getSettings,
 } from '@/lib/db/queries/content';
 import { SectionHead } from '@/components/site/page-head';
-import { EventCard } from '@/components/site/event-card';
+import { EventRow } from '@/components/site/event-row';
+import { NextPrayerStrip } from '@/components/site/prayer-list';
+import { OpeningHours, Directions, HouseMap } from '@/components/site/house-info';
+import { OpenNow } from '@/components/site/open-now';
+import { getPrayerDay } from '@/lib/prayer-page';
+import { FACTS } from '@/lib/site-facts';
 import { CourseCard } from '@/components/site/course-card';
 import { EditableText } from '@/components/editable/editable-text';
 import { EditableEntry, EditableAdd } from '@/components/editable/editable-list';
@@ -23,10 +28,13 @@ import { LinkButton } from '@/components/ui/button';
 import { Icon } from '@/components/site/icon';
 import { HomecomingHero } from '@/components/site/homecoming-hero';
 import { delay } from '@/components/site/motion';
-import { ViennaPanorama, PatternPlate, Eye } from '@/components/site/ornaments';
+import { Eye } from '@/components/site/ornaments';
 import { organizationJsonLd, JsonLd } from '@/lib/seo';
 import { readTheme } from '@/lib/preferences';
 import { isLocale, locales } from '@/lib/i18n/config';
+
+/** The next-prayer strip is rendered with the page; the browser keeps it current. */
+export const revalidate = 3600;
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -62,6 +70,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
     getCourses(typed, 3),
     getSettings(),
   ]);
+  const prayerDay = await getPrayerDay(new Date());
 
   if (!header) notFound();
 
@@ -69,8 +78,8 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
   const tActions = await getTranslations({ locale, namespace: 'actions' });
   const tNav = await getTranslations({ locale, namespace: 'nav' });
   const tEvents = await getTranslations({ locale, namespace: 'events' });
+  const tHouse = await getTranslations({ locale, namespace: 'house' });
 
-  const chips = blocks.hero_chips?.items ?? [];
   const tBrand = await getTranslations({ locale, namespace: 'brand' });
   // The scene starts in the theme the page is rendered in, rather than
   // gliding into it after the first frame.
@@ -165,26 +174,14 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
               {t('heroActivities')}
             </LinkButton>
           </div>
-
-          {chips.length > 0 ? (
-            <ul
-              className="flex flex-wrap gap-2"
-              style={{
-                listStyle: 'none',
-                margin: 0,
-                padding: 0,
-                marginBlockStart: 'var(--space-2)',
-              }}
-            >
-              {chips.map((chip) => (
-                <li key={chip} data-rise>
-                  <span className="chip-word">{chip}</span>
-                </li>
-              ))}
-            </ul>
-          ) : null}
         </div>
       </HomecomingHero>
+
+      {/* The next prayer — the thing most visitors open the site for — right
+          under the hero, with the way to the full page. */}
+      <div className="page home-prayer">
+        <NextPrayerStrip day={prayerDay} locale={typed} />
+      </div>
 
       {/* ── Intro statement ──────────────────────────────────────────────── */}
       <section className="section section-alt" data-rise>
@@ -228,24 +225,37 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
       <section className="section" data-rise>
         <div className="page">
           <SectionHead kicker={t('offers')} title={tNav('activities')} />
+          {/* Each area goes to the page that holds it: the whole card is the
+              link, and the arrow says so. */}
           <ul className="columns-feature" style={{ listStyle: 'none', margin: 0, padding: 0 }}>
             {offers.map((offer) => (
               <li key={offer.id} data-rise>
                 <EditableEntry entity="offer" id={offer.id} isLast={offers.length <= 1}>
-                  <Card as="article" className="h-full" plate>
+                  <Card as="article" className="card-linked h-full">
                     <CardStar>
                       <Icon name={offer.icon} size={26} />
                     </CardStar>
-                    <EditableText
-                      as="h3"
-                      entity="offer"
-                      id={offer.id}
-                      field="title"
-                      locale={typed}
-                      value={offer.title}
-                      className="card-title"
-                      words="tight"
-                    />
+                    <h3 className="card-title">
+                      {offer.href ? (
+                        <Link href={offer.href} className="card-link">
+                          <EditableText
+                            entity="offer"
+                            id={offer.id}
+                            field="title"
+                            locale={typed}
+                            value={offer.title}
+                          />
+                        </Link>
+                      ) : (
+                        <EditableText
+                          entity="offer"
+                          id={offer.id}
+                          field="title"
+                          locale={typed}
+                          value={offer.title}
+                        />
+                      )}
+                    </h3>
                     <EditableText
                       as="p"
                       entity="offer"
@@ -255,8 +265,13 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
                       value={offer.body}
                       className="card-body"
                       multiline
-                      rise
                     />
+                    {offer.href ? (
+                      <span className="card-go" aria-hidden="true">
+                        {tActions('readMore')}
+                        <ArrowRight size={16} weight="bold" className="mirror" />
+                      </span>
+                    ) : null}
                   </Card>
                 </EditableEntry>
               </li>
@@ -273,10 +288,10 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
         <section className="section" data-rise>
           <div className="page">
             <SectionHead kicker={t('upcoming')} title={tNav('events')} />
-            <ul className="columns-feature" style={{ listStyle: 'none', margin: 0, padding: 0 }}>
+            <ul className="event-list">
               {upcoming.map((event) => (
                 <li key={event.id} data-rise>
-                  <EventCard event={event} locale={typed} />
+                  <EventRow event={event} locale={typed} />
                 </li>
               ))}
             </ul>
@@ -287,7 +302,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
                 style={{ width: 'fit-content' }}
               >
                 {tActions('allEvents')}
-                <ArrowRight size={16} weight="bold" aria-hidden="true" className="rtl:rotate-180" />
+                <ArrowRight size={16} weight="bold" aria-hidden="true" className="mirror" />
               </Link>
             </p>
           </div>
@@ -319,7 +334,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
                 style={{ width: 'fit-content' }}
               >
                 {tActions('allCourses')}
-                <ArrowRight size={16} weight="bold" aria-hidden="true" className="rtl:rotate-180" />
+                <ArrowRight size={16} weight="bold" aria-hidden="true" className="mirror" />
               </Link>
             </p>
           </div>
@@ -387,42 +402,31 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
                 />
               ) : null}
 
-              <div
-                data-rise
-                style={{ ...delay(210), marginBlockStart: '30px' }}
-                className="flex flex-wrap gap-8"
-              >
-                <div>
-                  <p className="kicker">{t('address')}</p>
-                  <p
-                    style={{
-                      marginBlockStart: 'var(--space-2)',
-                      fontSize: 'var(--text-base)',
-                      lineHeight: 1.65,
-                      fontWeight: 'var(--weight-semibold)',
-                    }}
-                  >
-                    <span className="ltr-island">{settings.address}</span>
-                  </p>
+              <div data-rise style={{ ...delay(210) }} className="home-visit">
+                <p className="contact-address">
+                  <span className="ltr-island">{settings.address}</span>
+                </p>
+                <div className="contact-hours-head">
+                  <h3 className="contact-h">{tHouse('hours')}</h3>
+                  <OpenNow />
                 </div>
+                <OpeningHours locale={typed} />
+                <h3 className="contact-h" style={{ marginBlockStart: 'var(--space-3)' }}>
+                  {tHouse('directionsTitle')}
+                </h3>
+                <Directions locale={typed} />
               </div>
 
               <p data-rise style={{ ...delay(280), marginBlockStart: '32px' }}>
                 <LinkButton href={`/${locale}/contact`}>
                   {tActions('contact')}
-                  <ArrowRight
-                    size={16}
-                    weight="bold"
-                    aria-hidden="true"
-                    className="rtl:rotate-180"
-                  />
+                  <ArrowRight size={16} weight="bold" aria-hidden="true" className="mirror" />
                 </LinkButton>
               </p>
             </div>
 
-            <div className="surf" data-rise>
-              <PatternPlate opacity={0.4} />
-              <ViennaPanorama />
+            <div data-rise>
+              <HouseMap locale={typed} mapUrl={settings.mapUrl || FACTS.mapUrl} />
             </div>
           </div>
         </div>

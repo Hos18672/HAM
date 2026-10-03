@@ -2,13 +2,19 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 import { requireLocale } from '@/lib/i18n/locale-param';
-import { getPageHeader, getBlocks, getCultureCards } from '@/lib/db/queries/content';
-import { Mark, PatternPlate } from '@/components/site/ornaments';
+import {
+  getPageHeader,
+  getBlocks,
+  getCultureCards,
+  getUpcomingEvents,
+} from '@/lib/db/queries/content';
+import { ArrowRight } from '@phosphor-icons/react/dist/ssr';
+import { Link } from '@/lib/i18n/navigation';
+import { EventRow } from '@/components/site/event-row';
+import { PatternPlate } from '@/components/site/ornaments';
 import { PageHead, SectionHead } from '@/components/site/page-head';
 import { EditableText } from '@/components/editable/editable-text';
 import { EditableEntry, EditableAdd } from '@/components/editable/editable-list';
-import { Card, CardStar } from '@/components/ui/card';
-import { Tag } from '@/components/ui/tag';
 import { Icon } from '@/components/site/icon';
 import { pageMetadata } from '@/lib/page-meta';
 import { locales } from '@/lib/i18n/config';
@@ -33,100 +39,111 @@ export default async function CulturePage({ params }: { params: Promise<{ locale
   const { locale } = await params;
   const typed = requireLocale(locale);
 
-  const [header, blocks, cards] = await Promise.all([
+  const [header, blocks, cards, upcoming] = await Promise.all([
     getPageHeader('culture', typed),
     getBlocks('culture', typed),
     getCultureCards(typed),
+    getUpcomingEvents(typed, 40),
   ]);
   if (!header) notFound();
 
   const t = await getTranslations({ locale, namespace: 'culture' });
+  const tActions = await getTranslations({ locale, namespace: 'actions' });
 
-  const chips = blocks.theme_chips?.items ?? [];
+  const themes = blocks.theme_chips?.items ?? [];
+  const cultureEvents = upcoming.filter((event) => event.category === 'culture').slice(0, 4);
 
   return (
     <>
       <PageHead header={header} locale={typed} />
 
-      {/* The themes, set against a square panel — a photograph in the design,
-          ornament here. */}
-      {chips.length > 0 ? (
-        <section className="section section-alt" data-rise>
-          <div className="page">
-            <div className="split">
-              <div>
-                <SectionHead title={t('themes')} />
-                <ul
-                  className="flex flex-wrap gap-2"
-                  style={{ listStyle: 'none', margin: 0, padding: 0 }}
-                  data-rise
-                >
-                  {chips.map((chip) => (
-                    <li key={chip}>
-                      <Tag>{chip}</Tag>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              <div
-                className="frame ornament-panel"
-                style={{ aspectRatio: '1 / 1', maxBlockSize: '520px' }}
-                data-rise
-              >
-                <PatternPlate tiling="shesh" opacity={0.5} />
-                <div className="ornament-mark">
-                  <Mark className="" />
-                </div>
-              </div>
+      {/* What happens here, as a list — and the themes it draws on as plain
+          words, not chips that look like they could be pressed. */}
+      <section className="section">
+        <div className="page culture-layout">
+          <div>
+            <SectionHead title={t('formats')} />
+            <ul className="info-list info-list-single">
+              {cards.map((card, index) => (
+                <li key={card.id} data-rise>
+                  <EditableEntry entity="culture" id={card.id} isLast={cards.length <= 1}>
+                    <div className="info-item">
+                      <span className="link-row-icon">
+                        <Icon name={CULTURE_ICONS[index % CULTURE_ICONS.length]} size={24} />
+                      </span>
+                      <EditableText
+                        as="h3"
+                        entity="culture"
+                        id={card.id}
+                        field="title"
+                        locale={typed}
+                        value={card.title}
+                      />
+                      <EditableText
+                        as="p"
+                        entity="culture"
+                        id={card.id}
+                        field="body"
+                        locale={typed}
+                        value={card.body}
+                        multiline
+                      />
+                    </div>
+                  </EditableEntry>
+                </li>
+              ))}
+            </ul>
+            <div style={{ marginBlockStart: 'var(--space-4)' }}>
+              <EditableAdd entity="culture" />
             </div>
           </div>
-        </section>
-      ) : null}
 
-      <section className="section" data-rise>
+          {themes.length > 0 ? (
+            <aside className="surf culture-themes" aria-labelledby="culture-themes">
+              <PatternPlate tiling="shesh" opacity={0.35} />
+              <div style={{ position: 'relative' }}>
+                <h2 id="culture-themes" className="kicker">
+                  {t('themes')}
+                </h2>
+                <p className="culture-theme-words">
+                  {themes.map((theme, index) => (
+                    <span key={theme}>
+                      {theme}
+                      {index < themes.length - 1 ? (
+                        <span aria-hidden="true" className="culture-dot">
+                          {' · '}
+                        </span>
+                      ) : null}
+                    </span>
+                  ))}
+                </p>
+              </div>
+            </aside>
+          ) : null}
+        </div>
+      </section>
+
+      {/* What is coming up, from the events themselves. */}
+      <section className="section section-alt">
         <div className="page">
-          <ul
-            className="columns-tight plate-rota"
-            style={{ listStyle: 'none', margin: 0, padding: 0 }}
-          >
-            {cards.map((card, index) => (
-              <li key={card.id} data-rise>
-                <EditableEntry entity="culture" id={card.id} isLast={cards.length <= 1}>
-                  <Card as="article" className="h-full" plate>
-                    <CardStar>
-                      <Icon name={CULTURE_ICONS[index % CULTURE_ICONS.length]} size={24} />
-                    </CardStar>
-                    <EditableText
-                      as="h2"
-                      entity="culture"
-                      id={card.id}
-                      field="title"
-                      locale={typed}
-                      value={card.title}
-                      className="card-title"
-                      style={{ fontSize: 'var(--text-lg)', marginBlockStart: 'var(--space-2)' }}
-                      words="tight"
-                    />
-                    <EditableText
-                      as="p"
-                      entity="culture"
-                      id={card.id}
-                      field="body"
-                      locale={typed}
-                      value={card.body}
-                      className="card-body"
-                      multiline
-                      rise
-                    />
-                  </Card>
-                </EditableEntry>
-              </li>
-            ))}
-          </ul>
-          <div style={{ marginBlockStart: 'var(--space-4)' }}>
-            <EditableAdd entity="culture" />
-          </div>
+          <SectionHead title={t('upcoming')} />
+          {cultureEvents.length > 0 ? (
+            <ul className="event-list">
+              {cultureEvents.map((event) => (
+                <li key={event.id}>
+                  <EventRow event={event} locale={typed} />
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p style={{ color: 'var(--ink2)' }}>{t('noUpcoming')}</p>
+          )}
+          <p style={{ marginBlockStart: 'var(--space-4)' }}>
+            <Link href="/events" className="inline-go">
+              {tActions('allEvents')}
+              <ArrowRight size={16} weight="bold" aria-hidden="true" className="mirror" />
+            </Link>
+          </p>
         </div>
       </section>
 

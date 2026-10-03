@@ -21,7 +21,7 @@ export function FilterableList({
 }: {
   items: { key: string; category: string; node: ReactNode }[];
   label: string;
-  labelNamespace: 'courses' | 'gallery' | 'duas';
+  labelNamespace: 'courses' | 'gallery' | 'duas' | 'events' | 'sport';
   emptyMessage: string;
   className?: string;
 }) {
@@ -34,6 +34,11 @@ export function FilterableList({
   );
 
   const visible = active === 'all' ? items : items.filter((item) => item.category === active);
+  const counts = useMemo(() => {
+    const out: Record<string, number> = { all: items.length };
+    for (const item of items) out[item.category] = (out[item.category] ?? 0) + 1;
+    return out;
+  }, [items]);
 
   return (
     <div style={{ display: 'grid', gap: 'var(--space-5)' }}>
@@ -43,6 +48,7 @@ export function FilterableList({
         onChange={setActive}
         label={label}
         labelNamespace={labelNamespace}
+        counts={counts}
       />
 
       {/* Announced so a screen reader learns the list changed. A bare "7" says

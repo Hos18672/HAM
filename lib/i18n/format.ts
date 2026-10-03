@@ -102,3 +102,94 @@ export function isolate(value: string): string {
   if (!value) return value;
   return `\u2068${value}\u2069`;
 }
+
+export type DayStyle =
+  /** شنبه ۲۵ مهر ۱۴۰۵ · Samstag, 17. Oktober 2026 */
+  | 'full'
+  /** شنبه ۲۵ مهر · Samstag, 17. Oktober */
+  | 'weekday'
+  /** ۲۵ مهر ۱۴۰۵ · 17. Oktober 2026 */
+  | 'date'
+  /** ۲۵ مهر · 17. Oktober */
+  | 'dayMonth'
+  /** شنبه ۲۵ مهر، ۱۸:۰۰ · Samstag, 17. Oktober, 18:00 */
+  | 'weekdayTime'
+  /** مهر ۱۴۰۵ · Oktober 2026 */
+  | 'monthYear';
+
+/**
+ * The one date formatter for prose and labels.
+ *
+ * ICU's Persian patterns put the year first and join with a Latin comma
+ * ("۱۴۰۵ مهر ۲۳, پنجشنبه"), and the German day takes a period that has no
+ * place in Persian. So the parts are taken from ICU and laid out here:
+ * weekday · day · month · year, spaces between, and the Persian comma before
+ * a time. Persian pages read the solar calendar unless `calendar: 'gregory'`
+ * asks for the Gregorian date (used beside it on event badges).
+ */
+export function formatDay(
+  locale: Locale,
+  date: Date,
+  style: DayStyle = 'full',
+  { calendar }: { calendar?: 'gregory' } = {},
+): string {
+  const withWeekday = style === 'full' || style === 'weekday' || style === 'weekdayTime';
+  const withDay = style !== 'monthYear';
+  const withYear = style === 'full' || style === 'date' || style === 'monthYear';
+  const parts = new Intl.DateTimeFormat(intlLocale[locale], {
+    timeZone: TZ,
+    numberingSystem: locale === 'fa' ? 'arabext' : 'latn',
+    ...(calendar ? { calendar } : {}),
+    weekday: withWeekday ? 'long' : undefined,
+    day: withDay ? 'numeric' : undefined,
+    month: 'long',
+    year: withYear ? 'numeric' : undefined,
+  }).formatToParts(date);
+  const part = (type: Intl.DateTimeFormatPartTypes) =>
+    parts.find((p) => p.type === type)?.value ?? '';
+
+  let text: string;
+  if (locale === 'fa') {
+    text = [
+      withWeekday && part('weekday'),
+      withDay && part('day'),
+      part('month'),
+      withYear && part('year'),
+    ]
+      .filter(Boolean)
+      .join(' ');
+  } else {
+    const day = withDay ? `${part('day')}. ${part('month')}` : part('month');
+    text = [withWeekday && part('weekday'), withYear ? `${day} ${part('year')}` : day]
+      .filter(Boolean)
+      .join(', ');
+  }
+  if (style === 'weekdayTime')
+    text += `${locale === 'fa' ? '، ' : ', '}${formatTime(date, locale)}`;
+  return text;
+}
+
+/** "۲ ساعت و ۱۴ دقیقه" · "2 Std. 14 Min." — a countdown in words, to the minute. */
+export function formatDuration(totalSeconds: number, locale: Locale): string {
+  const minutesLeft = Math.ceil(Math.max(0, totalSeconds) / 60);
+  const h = Math.floor(minutesLeft / 60);
+  const m = minutesLeft % 60;
+  if (locale === 'fa') {
+    if (h === 0) return m === 0 ? 'کمتر از یک دقیقه' : `${digits(m, locale)} دقیقه`;
+    return m === 0
+      ? `${digits(h, locale)} ساعت`
+      : `${digits(h, locale)} ساعت و ${digits(m, locale)} دقیقه`;
+  }
+  if (h === 0) return m === 0 ? 'unter 1 Min.' : `${m} Min.`;
+  return m === 0 ? `${h} Std.` : `${h} Std. ${m} Min.`;
+}
+
+/**
+ * A span of clock times. Persian reads "۱۶:۰۰ تا ۲۰:۰۰": an en dash between
+ * two digit runs in a right-to-left line is reordered by the bidi algorithm
+ * and came out as "۲۰:۰۰–۱۶:۰۰".
+ */
+export function timeRange(start: string, end: string | null | undefined, locale: Locale): string {
+  if (!end) return digits(start, locale);
+  return locale === 'fa' ? `${digits(start, locale)} تا ${digits(end, locale)}` : `${start}–${end}`;
+}

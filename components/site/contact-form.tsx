@@ -4,14 +4,13 @@ import { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslations } from 'next-intl';
-import { CheckCircle } from '@phosphor-icons/react/dist/ssr';
+import { CheckCircle, WarningCircle } from '@phosphor-icons/react/dist/ssr';
 import { contactSchema, type ContactInput } from '@/lib/validation/forms';
+import { TOPICS, isTopic } from '@/lib/topics';
 import { submitContact } from '@/app/actions/submissions';
 import { Field, Input, Textarea, Select } from '../ui/field';
 import { Button } from '../ui/button';
 import type { Locale } from '@/lib/i18n/config';
-
-const TOPICS = ['general', 'courses', 'events', 'membership', 'volunteer', 'other'] as const;
 
 /**
  * The contact form.
@@ -20,7 +19,16 @@ const TOPICS = ['general', 'courses', 'events', 'membership', 'volunteer', 'othe
  * never disagree about what is acceptable. Error strings are catalogue keys
  * resolved in the reader's language.
  */
-export function ContactForm({ locale, defaultTopic }: { locale: Locale; defaultTopic?: string }) {
+/** Names of the things a link can be about, by topic and id. */
+export type ContactSubjects = Partial<Record<'course' | 'event' | 'sport', Record<string, string>>>;
+
+export function ContactForm({
+  locale,
+  subjects = {},
+}: {
+  locale: Locale;
+  subjects?: ContactSubjects;
+}) {
   const t = useTranslations('form');
   const tContact = useTranslations('contact');
   const tActions = useTranslations('actions');
@@ -34,6 +42,8 @@ export function ContactForm({ locale, defaultTopic }: { locale: Locale; defaultT
     handleSubmit,
     reset,
     setError,
+    setValue,
+    watch,
     formState: { errors, isSubmitting },
   } = useForm<ContactInput>({
     resolver: zodResolver(contactSchema),
@@ -41,9 +51,8 @@ export function ContactForm({ locale, defaultTopic }: { locale: Locale; defaultT
       locale,
       website: '',
       elapsed: 0,
-      topic: (TOPICS as readonly string[]).includes(defaultTopic ?? '')
-        ? (defaultTopic as ContactInput['topic'])
-        : 'general',
+      topic: 'general',
+      subject: '',
       name: '',
       email: '',
       phone: '',
@@ -51,9 +60,26 @@ export function ContactForm({ locale, defaultTopic }: { locale: Locale; defaultT
     },
   });
 
+  // The topic, and the course or event it is about, come from the link
+  // (`?topic=course&id=deutsch-a1`). Read here rather than on the server so
+  // the static preview, which has no server to read a query string, does the
+  // same thing.
   useEffect(() => {
     mountedAt.current = Date.now();
-  }, []);
+    const query = new URLSearchParams(window.location.search);
+    const topic = query.get('topic');
+    if (!isTopic(topic)) return;
+    setValue('topic', topic);
+    const id = query.get('id');
+    const names =
+      topic === 'course' || topic === 'event' || topic === 'sport' ? subjects[topic] : undefined;
+    if (id && names?.[id]) setValue('subject', names[id]);
+  }, [setValue, subjects]);
+
+  const topic = watch('topic');
+  const subject = watch('subject');
+  const showSubject =
+    topic === 'course' || topic === 'event' || topic === 'sport' || Boolean(subject);
 
   /** Resolve a schema error key through the catalogue, or show it verbatim. */
   const message = (key?: string) =>
@@ -118,14 +144,16 @@ export function ContactForm({ locale, defaultTopic }: { locale: Locale; defaultT
       })}
       style={{ display: 'grid', gap: 'var(--space-4)', maxInlineSize: '36rem' }}
     >
+      <p className="form-legend">{t('requiredLegend')}</p>
       {/* Honeypot: off-screen and out of the tab order, but a bot fills it in. */}
-      <div aria-hidden="true" className="visually-hidden">
+      <div aria-hidden="true" className="hp-field">
         <label htmlFor="contact-website">Website</label>
         <input
           id="contact-website"
           type="text"
           tabIndex={-1}
           autoComplete="off"
+          aria-hidden="true"
           {...register('website')}
         />
       </div>
@@ -164,14 +192,30 @@ export function ContactForm({ locale, defaultTopic }: { locale: Locale; defaultT
         )}
       </Field>
 
+      {showSubject ? (
+        <Field
+          label={
+            topic === 'course' || topic === 'event' || topic === 'sport'
+              ? tContact(`subjectFor.${topic}`)
+              : tContact('subject')
+          }
+          optionalLabel={t('optional')}
+          error={message(errors.subject?.message)}
+        >
+          {(props) => <Input type="text" {...props} {...register('subject')} />}
+        </Field>
+      ) : null}
+
       <Field label={t('message')} required error={message(errors.message?.message)}>
         {(props) => <Textarea rows={6} {...props} {...register('message')} />}
       </Field>
 
-      <div aria-live="polite">
-        {state === 'error' ? <p className="field-error">{t('error')}</p> : null}
-        {state === 'rate-limited' ? <p className="field-error">{t('rateLimited')}</p> : null}
-      </div>
+      {state === 'error' || state === 'rate-limited' ? (
+        <p role="alert" className="form-failed">
+          <WarningCircle size={20} weight="duotone" aria-hidden="true" />
+          {state === 'error' ? t('error') : t('rateLimited')}
+        </p>
+      ) : null}
 
       <div>
         <Button type="submit" size="lg" loading={isSubmitting} disabled={isSubmitting}>

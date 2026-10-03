@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslations } from 'next-intl';
-import { CheckCircle } from '@phosphor-icons/react/dist/ssr';
+import { CheckCircle, Check, WarningCircle } from '@phosphor-icons/react/dist/ssr';
 import {
   membershipSchema,
   donationSchema,
@@ -12,17 +12,27 @@ import {
   type DonationInput,
 } from '@/lib/validation/forms';
 import { submitMembership, submitDonation } from '@/app/actions/submissions';
-import { Field, Input, Textarea, Select } from '../ui/field';
+import { Field, Input, Textarea } from '../ui/field';
 import { Button } from '../ui/button';
 import type { Locale } from '@/lib/i18n/config';
 
 type Mode = 'membership' | 'donation';
 type Values = MembershipInput & DonationInput;
 
+export interface SupportOption {
+  value: string;
+  label: string;
+  /** Membership tiers carry a price and their benefits. */
+  price?: string;
+  benefits?: string[];
+}
+
 /**
  * One form serving both the membership tiers and the donation purposes: the
- * fields are the same but for the select, so two near-identical components
- * would only be two places to fix a bug.
+ * fields are the same but for the choice, so two near-identical components
+ * would only be two places to fix a bug. The choice is a set of radio cards
+ * at the head of the form — the tiers with their price and benefits — so
+ * there is one form per tab instead of one per tier.
  */
 export function SupportForm({
   locale,
@@ -33,8 +43,7 @@ export function SupportForm({
 }: {
   locale: Locale;
   mode: Mode;
-  /** `{ value, label }` for the tier or purpose select. */
-  options: { value: string; label: string }[];
+  options: SupportOption[];
   preselected?: string;
   compact?: boolean;
 }) {
@@ -52,6 +61,7 @@ export function SupportForm({
     register,
     handleSubmit,
     reset,
+    watch,
     formState: { errors, isSubmitting },
   } = useForm<Values>({
     // The two schemas differ only in the name of the select field, so the
@@ -79,17 +89,33 @@ export function SupportForm({
 
   if (state === 'sent') {
     return (
-      <div role="status" className="flex items-start gap-3">
-        <CheckCircle
-          size={24}
-          weight="duotone"
-          aria-hidden="true"
-          style={{ color: 'var(--color-accent)', flexShrink: 0 }}
-        />
-        <p style={{ fontWeight: 'var(--weight-semibold)' }}>{t('successMembership')}</p>
+      <div role="status" className="form-done">
+        <CheckCircle size={32} weight="duotone" aria-hidden="true" />
+        <div>
+          <p className="form-done-title">
+            {mode === 'membership' ? t('successMembership') : t('successDonation')}
+          </p>
+          <Button
+            variant="secondary"
+            size="sm"
+            style={{ marginBlockStart: 'var(--space-3)' }}
+            onClick={() => {
+              mountedAt.current = Date.now();
+              setState('idle');
+            }}
+          >
+            {tActions('retry')}
+          </Button>
+        </div>
       </div>
     );
   }
+
+  const chosen = watch(selectField as keyof Values) as string;
+  const choiceError =
+    mode === 'membership'
+      ? (errors.tier?.message as string | undefined)
+      : (errors.purpose?.message as string | undefined);
 
   return (
     <form
@@ -108,18 +134,55 @@ export function SupportForm({
       })}
       style={{ display: 'grid', gap: compact ? 'var(--space-3)' : 'var(--space-4)' }}
     >
-      <div aria-hidden="true" className="visually-hidden">
+      <div aria-hidden="true" className="hp-field">
         <label htmlFor={`${mode}-website`}>Website</label>
         <input
           id={`${mode}-website`}
           type="text"
           tabIndex={-1}
           autoComplete="off"
+          aria-hidden="true"
           {...register('website')}
         />
       </div>
 
       <input type="hidden" {...register('locale')} value={locale} />
+
+      <p className="form-legend">{t('requiredLegend')}</p>
+
+      <fieldset className="choice-set" data-kind={mode}>
+        <legend>
+          {mode === 'membership' ? tSupport('chooseTier') : tSupport('choosePurpose')}
+          <span className="field-required" aria-hidden="true">
+            {' '}
+            *
+          </span>
+        </legend>
+        <div className="choice-grid">
+          {options.map((option) => (
+            <label
+              key={option.value}
+              className="choice-card"
+              data-on={chosen === option.value ? 'true' : undefined}
+            >
+              <input type="radio" value={option.value} {...register(selectField as keyof Values)} />
+              <span className="choice-title">{option.label}</span>
+              {option.price ? <span className="choice-price">{option.price}</span> : null}
+              {option.benefits && option.benefits.length > 0 ? (
+                <ul className="choice-benefits">
+                  {option.benefits.slice(0, 3).map((benefit) => (
+                    <li key={benefit}>
+                      <Check size={14} weight="bold" aria-hidden="true" />
+                      {benefit}
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
+            </label>
+          ))}
+        </div>
+        {choiceError ? <p className="field-error">{message(choiceError)}</p> : null}
+      </fieldset>
 
       <Field label={t('name')} required error={message(errors.name?.message)}>
         {(props) => <Input type="text" autoComplete="name" {...props} {...register('name')} />}
@@ -142,26 +205,6 @@ export function SupportForm({
       </Field>
 
       <Field
-        label={mode === 'membership' ? tSupport('tier') : tSupport('purpose')}
-        required
-        error={message(
-          mode === 'membership'
-            ? (errors.tier?.message as string | undefined)
-            : (errors.purpose?.message as string | undefined),
-        )}
-      >
-        {(props) => (
-          <Select {...props} {...register(selectField as keyof Values)}>
-            {options.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </Select>
-        )}
-      </Field>
-
-      <Field
         label={t('message')}
         optionalLabel={t('optional')}
         error={message(errors.message?.message)}
@@ -169,10 +212,12 @@ export function SupportForm({
         {(props) => <Textarea rows={compact ? 3 : 5} {...props} {...register('message')} />}
       </Field>
 
-      <div aria-live="polite">
-        {state === 'error' ? <p className="field-error">{t('error')}</p> : null}
-        {state === 'rate-limited' ? <p className="field-error">{t('rateLimited')}</p> : null}
-      </div>
+      {state === 'error' || state === 'rate-limited' ? (
+        <p role="alert" className="form-failed">
+          <WarningCircle size={20} weight="duotone" aria-hidden="true" />
+          {state === 'error' ? t('error') : t('rateLimited')}
+        </p>
+      ) : null}
 
       <div>
         <Button type="submit" loading={isSubmitting} disabled={isSubmitting}>

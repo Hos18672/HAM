@@ -190,6 +190,7 @@ async function seedOffers() {
       .values({
         id: stableId('offer', String(offer.sort)),
         icon: offer.icon,
+        href: offer.href,
         sort: offer.sort,
         published: true,
       })
@@ -216,6 +217,11 @@ async function seedCourses() {
         slug: course.slug,
         category: course.category,
         level: course.level,
+        days: course.days,
+        startTime: course.startTime,
+        endTime: course.endTime,
+        rhythm: course.rhythm ?? 'weekly',
+        group: course.group,
         sort: course.sort,
         published: true,
       })
@@ -290,7 +296,16 @@ async function seedSports() {
   for (const sport of data.SPORTS) {
     const [row] = await db
       .insert(s.sports)
-      .values({ id: stableId('sport', String(sport.sort)), sort: sport.sort, published: true })
+      .values({
+        id: stableId('sport', String(sport.sort)),
+        days: sport.days,
+        startTime: sport.startTime,
+        endTime: sport.endTime,
+        rhythm: sport.rhythm ?? 'weekly',
+        group: sport.group,
+        sort: sport.sort,
+        published: true,
+      })
       .returning({ id: s.sports.id });
     if (!row) continue;
     await db.insert(s.sportTranslations).values(
@@ -367,7 +382,14 @@ async function seedWeek() {
   for (const row of data.WEEK) {
     const [inserted] = await db
       .insert(s.weekSchedule)
-      .values({ id: stableId('week', String(row.weekday)), weekday: row.weekday, sort: row.sort })
+      .values({
+        id: stableId('week', `activity-${row.sort}`),
+        weekday: row.weekday,
+        startTime: row.startTime,
+        endTime: row.endTime,
+        group: row.group,
+        sort: row.sort,
+      })
       .returning({ id: s.weekSchedule.id });
     if (!inserted) continue;
     await db.insert(s.weekTranslations).values(

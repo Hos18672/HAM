@@ -7,6 +7,8 @@ import { Icon } from './icon';
 import { EditableText } from '@/components/editable/editable-text';
 import type { Locale } from '@/lib/i18n/config';
 import type { Course } from '@/lib/db/queries/content';
+import { formatTiming } from '@/lib/schedule';
+import { contactHref } from '@/lib/topics';
 
 /**
  * The badge inside a course card's star.
@@ -35,17 +37,26 @@ export async function CourseCard({ course, locale }: { course: Course; locale: L
     ? t(`category.${course.category}`)
     : course.category;
 
+  const when = formatTiming(course, locale) || course.schedule;
+  const signUp = tActions('signUp');
+
   return (
-    <Card as="article" id={`course-${course.slug}`} className="h-full" plate>
-      {/* The design's card head: the badge at the start, the labels opposite. */}
-      <div className="flex flex-wrap items-center justify-between gap-2">
+    <Card as="article" id={`course-${course.slug}`} className="course-card h-full">
+      {/* The card head: the badge, then one tag naming the area and level
+          together — "Sprache · A1" — rather than two tags run into one. */}
+      <div className="flex items-center gap-3">
         <CardStar>
           <Icon name={CATEGORY_ICONS[course.category] ?? 'BookOpen'} size={26} />
         </CardStar>
-        <div className="flex flex-wrap items-center gap-2">
-          <Tag>{categoryLabel}</Tag>
-          {course.level ? <Tag tone="accent-2">{course.level}</Tag> : null}
-        </div>
+        <Tag>
+          {categoryLabel}
+          {course.level ? (
+            <>
+              {' · '}
+              <span className="ltr-island">{course.level}</span>
+            </>
+          ) : null}
+        </Tag>
       </div>
 
       <EditableText
@@ -57,7 +68,6 @@ export async function CourseCard({ course, locale }: { course: Course; locale: L
         value={course.title}
         className="card-title"
         style={{ marginBlockStart: 'var(--space-2)' }}
-        words="tight"
       />
 
       <EditableText
@@ -67,62 +77,72 @@ export async function CourseCard({ course, locale }: { course: Course; locale: L
         field="body"
         locale={locale}
         value={course.body}
-        className="card-body"
+        className="card-body clamp-2"
         multiline
-        rise
       />
 
-      {/* Three facts in one column, ruled off — the design sets the labels in
-          gold ink at a fixed measure so the values line up down the card. */}
-      <dl className="fact-list">
-        <div>
-          <dt>{t('targetGroup')}</dt>
-          <dd>
-            <EditableText
-              entity="course"
-              id={course.id}
-              field="targetGroup"
-              locale={locale}
-              value={course.targetGroup}
-            />
-          </dd>
-        </div>
-        <div>
-          <dt>{t('schedule')}</dt>
-          <dd>
-            <EditableText
-              entity="course"
-              id={course.id}
-              field="schedule"
-              locale={locale}
-              value={course.schedule}
-            />
-          </dd>
-        </div>
-        <div>
-          <dt>{t('languages')}</dt>
-          <dd>
-            <EditableText
-              entity="course"
-              id={course.id}
-              field="languages"
-              locale={locale}
-              value={course.languages}
-            />
-          </dd>
-        </div>
+      {/* The practicals as a compact grid: who, when, in which language, and
+          what it costs. A row with nothing in it is left out. */}
+      <dl className="meta-grid">
+        {course.targetGroup ? (
+          <div>
+            <dt>{t('targetGroup')}</dt>
+            <dd>
+              <EditableText
+                entity="course"
+                id={course.id}
+                field="targetGroup"
+                locale={locale}
+                value={course.targetGroup}
+              />
+            </dd>
+          </div>
+        ) : null}
+        {when ? (
+          <div>
+            <dt>{t('schedule')}</dt>
+            <dd>{when}</dd>
+          </div>
+        ) : null}
+        {course.languages ? (
+          <div>
+            <dt>{t('languages')}</dt>
+            <dd>
+              <EditableText
+                entity="course"
+                id={course.id}
+                field="languages"
+                locale={locale}
+                value={course.languages}
+              />
+            </dd>
+          </div>
+        ) : null}
+        {course.fee ? (
+          <div>
+            <dt>{t('fee')}</dt>
+            <dd>
+              <EditableText
+                entity="course"
+                id={course.id}
+                field="fee"
+                locale={locale}
+                value={course.fee}
+              />
+            </dd>
+          </div>
+        ) : null}
       </dl>
 
-      {/* The design closes every course card on a way in. The accessible name
-          carries the course, so seven of these are not seven "Mehr erfahren". */}
+      {/* The way in: straight to the contact form, with the course already
+          filled in. The accessible name carries the course. */}
       <LinkButton
-        href={`/${locale}/contact`}
-        variant="secondary"
+        href={contactHref(locale, 'course', course.slug)}
         size="sm"
-        aria-label={`${tActions('readMore')}: ${course.title}`}
-        style={{ marginBlockStart: 'var(--space-4)', alignSelf: 'start' }}
+        aria-label={`${signUp}: ${course.title}`}
+        style={{ marginBlockStart: 'auto', alignSelf: 'start' }}
       >
-        <span>{tActions('readMore')}</span>
+        <span>{signUp}</span>
         <ArrowRight size={16} weight="bold" aria-hidden="true" className="mirror" />
       </LinkButton>
     </Card>

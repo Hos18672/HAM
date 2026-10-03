@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { CaretLeft, CaretRight } from '@phosphor-icons/react/dist/ssr';
-import { digits, formatDate } from '@/lib/i18n/format';
+import { digits, formatDate, formatDay } from '@/lib/i18n/format';
 import { HIJRI_MONTHS } from '@/lib/hijri';
 import { toPersianDate, persianMonthName } from '@/lib/persian-date';
 import { localTimetable } from '@/lib/prayer-local';
@@ -203,20 +203,15 @@ export function HijriCalendar({
     ? (() => {
         const [cy, cm, cd] = selectedIso.split('-').map(Number) as [number, number, number];
         const p = toPersianDate(new Date(Date.UTC(cy, cm - 1, cd, 12)));
-        return `${digits(p.day, locale)}. ${persianMonthName(p.month, locale)} ${digits(p.year, locale)}`;
+        return `${locale === 'fa' ? digits(p.day, locale) : `${p.day}.`} ${persianMonthName(p.month, locale)} ${digits(p.year, locale)}`;
       })()
     : null;
 
+  // Two pieces, placed by the page's own grid: the calendar beside the
+  // day's times, and the month's table across the full width under both.
   return (
-    <div
-      style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 20rem), 1fr))',
-        gap: 'clamp(28px, 3.5vw, 56px)',
-        alignItems: 'start',
-      }}
-    >
-      <div>
+    <>
+      <section className="prayer-cal" aria-labelledby="prayer-cal-title">
         {/* The heading and the month controls share a row, as the design has
             them. The heading has to be allowed to shrink for that: at 30px
             the Hijri month plus the three controls came to more than the
@@ -238,6 +233,7 @@ export function HijriCalendar({
                 arrows move through and the month the URL names, so it has to
                 be findable by a reader moving between headings. */}
             <h2
+              id="prayer-cal-title"
               style={{
                 marginBlockStart: 'var(--space-1)',
                 fontSize: 'clamp(22px, 2.8vw, 30px)',
@@ -245,6 +241,10 @@ export function HijriCalendar({
               }}
             >
               {hijriLabel}
+              {/* Each month on its own line, and a separator a screen reader
+                  hears between them: three month names run together were
+                  being read as one long word. */}
+              <span className="visually-hidden"> · </span>
               <span
                 className="text-sm"
                 style={{
@@ -254,13 +254,16 @@ export function HijriCalendar({
                   color: 'var(--color-ink-muted)',
                 }}
               >
-                {monthLabel}
+                <span style={{ display: 'block' }}>{monthLabel}</span>
                 {persianLabel ? (
                   // Its own element, not a joined string: a middot between a
                   // Latin and an Arabic-script run lands wherever the bidi
                   // algorithm decides, which in Persian was next to the wrong
                   // number entirely.
-                  <span style={{ display: 'block' }}>{persianLabel}</span>
+                  <>
+                    <span className="visually-hidden"> · </span>
+                    <span style={{ display: 'block' }}>{persianLabel}</span>
+                  </>
                 ) : null}
               </span>
             </h2>
@@ -397,17 +400,13 @@ export function HijriCalendar({
               {selected.isToday ? t('legendToday') : t('chosenDay')}
             </p>
             <p className="cal-detail-date">
-              {formatDate(new Date(`${selected.iso}T12:00:00Z`), locale, {
-                weekday: 'long',
-                day: 'numeric',
-                month: 'long',
-                year: 'numeric',
+              {formatDay(locale, new Date(`${selected.iso}T12:00:00Z`), 'full', {
                 calendar: 'gregory',
               })}
             </p>
             {selected.hijri ? (
               <p className="cal-detail-alt">
-                {`${digits(selected.hijri.day, locale)}. ${HIJRI_MONTHS[locale][selected.hijri.month]} ${digits(selected.hijri.year, locale)}`}
+                {`${locale === 'fa' ? digits(selected.hijri.day, locale) : `${selected.hijri.day}.`} ${HIJRI_MONTHS[locale][selected.hijri.month]} ${digits(selected.hijri.year, locale)}`}
               </p>
             ) : null}
             {selectedPersian ? <p className="cal-detail-alt">{selectedPersian}</p> : null}
@@ -428,37 +427,20 @@ export function HijriCalendar({
           </div>
         ) : null}
 
-        {/* Legend for the two markers. */}
-        <div
-          className="flex flex-wrap items-center gap-4"
-          style={{ marginBlockStart: 'var(--space-3)' }}
-        >
+        {/* Legend for the two markers — a list, so its entries are read as
+            separate items rather than run together. */}
+        <div className="cal-legend">
           <p className="kicker">{t('legend')}</p>
-          <span className="flex items-center gap-2 text-sm">
-            <span
-              aria-hidden="true"
-              style={{
-                inlineSize: '14px',
-                blockSize: '14px',
-                borderRadius: '5px',
-                border: '2px solid var(--gold)',
-              }}
-            />
-            {t('legendToday')}
-          </span>
-          <span className="flex items-center gap-2 text-sm">
-            <span
-              aria-hidden="true"
-              style={{
-                inlineSize: '14px',
-                blockSize: '14px',
-                borderRadius: '5px',
-                border: 'var(--rule-hair) solid var(--gold)',
-                background: 'rgba(200, 164, 93, 0.16)',
-              }}
-            />
-            {t('legendOccasion')}
-          </span>
+          <ul>
+            <li>
+              <span className="cal-legend-mark" data-kind="today" aria-hidden="true" />
+              {t('legendToday')}
+            </li>
+            <li>
+              <span className="cal-legend-mark" data-kind="occ" aria-hidden="true" />
+              {t('legendOccasion')}
+            </li>
+          </ul>
         </div>
 
         <p
@@ -467,13 +449,13 @@ export function HijriCalendar({
         >
           {t('calendarLead')}
         </p>
-      </div>
-
-      {/* Occasions in this month, beside the grid rather than under it. */}
-      <div>
-        <p className="kicker kicker-led" style={{ color: 'var(--color-accent-2-text)' }}>
+        {/* Occasions in this month, under the grid. */}
+        <h3
+          className="kicker kicker-led"
+          style={{ marginBlockStart: 'var(--space-5)', color: 'var(--color-accent-2-text)' }}
+        >
           {t('occasions')}
-        </p>
+        </h3>
         {shown.occasions.length === 0 ? (
           <p style={{ marginBlockStart: 'var(--space-3)', color: 'var(--color-ink-muted)' }}>
             {t('occasionsNone')}
@@ -499,13 +481,12 @@ export function HijriCalendar({
                     were side by side and unconnected: a reader had to find
                     the 27th by eye. */}
                 <button type="button" onClick={() => setSelectedIso(occasion.iso)}>
-                  <span className="tabular occ-day" aria-hidden="true">
-                    {digits(occasion.gregorianDay, locale)}
+                  <span className="tabular occ-day">
+                    {formatDay(locale, new Date(`${occasion.iso}T12:00:00Z`), 'dayMonth', {
+                      calendar: 'gregory',
+                    })}
                   </span>
                   <span>
-                    <span className="visually-hidden">
-                      {digits(occasion.gregorianDay, locale)}.{' '}
-                    </span>
                     <span className="occ-name">{occasion.name}</span>
                     {occasion.note ? <span className="occ-note"> — {occasion.note}</span> : null}
                   </span>
@@ -514,10 +495,10 @@ export function HijriCalendar({
             ))}
           </ul>
         )}
-      </div>
+      </section>
 
       {/* The month's prayer times, across both columns. */}
-      <div style={{ gridColumn: '1 / -1' }}>
+      <section className="prayer-table">
         <PrayerTimetable
           timetable={timetable}
           state={timetable ? 'ready' : entry === 'failed' ? 'failed' : 'loading'}
@@ -526,8 +507,8 @@ export function HijriCalendar({
           monthLabel={monthLabel}
           locale={locale}
         />
-      </div>
-    </div>
+      </section>
+    </>
   );
 }
 

@@ -1,7 +1,8 @@
 'use client';
 
+import { useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { Printer } from '@phosphor-icons/react/dist/ssr';
+import { Printer, CaretDown } from '@phosphor-icons/react/dist/ssr';
 import { digits, formatClock } from '@/lib/i18n/format';
 import { toHijri } from '@/lib/hijri';
 import type { PrayerKey } from '@/lib/prayer-times';
@@ -36,6 +37,21 @@ export function PrayerTimetable({
   locale: Locale;
 }) {
   const t = useTranslations('prayer');
+  // Phones open on the calendar and the day's times; the month's table is
+  // one tap away. Wide screens always show it — the toggle is hidden there.
+  const [open, setOpen] = useState(false);
+
+  /** Vienna's UTC offset at noon on a day, in minutes. */
+  const offsetOn = (iso: string) => {
+    const [y, m, d] = iso.split('-').map(Number) as [number, number, number];
+    const noon = new Date(Date.UTC(y, m - 1, d, 12));
+    const local = new Intl.DateTimeFormat('en-GB', {
+      timeZone: 'Europe/Vienna',
+      hour: '2-digit',
+      hourCycle: 'h23',
+    }).format(noon);
+    return (Number(local) - 12) * 60;
+  };
 
   function print() {
     const root = document.documentElement;
@@ -55,7 +71,7 @@ export function PrayerTimetable({
 
   return (
     <div className="timetable-print">
-      <div className="flex flex-wrap items-baseline gap-3">
+      <div className="flex flex-wrap items-center gap-3">
         <div style={{ flex: '1 1 12rem', minInlineSize: 0 }}>
           <p className="kicker kicker-led" style={{ color: 'var(--color-accent-2-text)' }}>
             {t('timetable')}
@@ -73,20 +89,37 @@ export function PrayerTimetable({
             {t('timetableLead')}
           </p>
         </div>
-        <Button
-          variant="secondary"
-          size="sm"
-          className="no-print ms-auto"
-          onClick={print}
-          disabled={state !== 'ready'}
-        >
-          <Printer size={16} weight="duotone" aria-hidden="true" />
-          {t('print')}
-        </Button>
+        <div className="no-print ms-auto flex flex-wrap gap-2">
+          <Button
+            variant="secondary"
+            size="sm"
+            className="timetable-toggle"
+            aria-expanded={open}
+            aria-controls="month-timetable"
+            onClick={() => setOpen((o) => !o)}
+          >
+            <CaretDown
+              size={16}
+              weight="bold"
+              aria-hidden="true"
+              style={{ transform: open ? 'rotate(180deg)' : undefined }}
+            />
+            {open ? t('hideTable') : t('showTable')}
+          </Button>
+          <Button variant="secondary" size="sm" onClick={print} disabled={state !== 'ready'}>
+            <Printer size={16} weight="duotone" aria-hidden="true" />
+            {t('print')}
+          </Button>
+        </div>
       </div>
 
       {state === 'ready' && timetable ? (
-        <div className="table-scroll" style={{ marginBlockStart: 'var(--space-4)' }}>
+        <div
+          id="month-timetable"
+          className="table-scroll timetable-wrap"
+          data-open={open ? 'true' : 'false'}
+          style={{ marginBlockStart: 'var(--space-4)' }}
+        >
           <table className="timetable table">
             <caption className="visually-hidden">
               {t('timetable')} · {monthLabel}
@@ -103,21 +136,27 @@ export function PrayerTimetable({
               </tr>
             </thead>
             <tbody>
-              {timetable.days.map((day) => {
+              {timetable.days.map((day, index) => {
                 const [y, m, d] = day.iso.split('-').map(Number) as [number, number, number];
                 const date = new Date(Date.UTC(y, m - 1, d, 12));
                 const occasions = occasionDays.get(day.iso);
                 const isToday = day.iso === todayIso;
+                const previous = timetable.days[index - 1];
+                // The day the clocks change: its times jump by an hour
+                // against the day before, and the row says why.
+                const clockChange = previous ? offsetOn(day.iso) !== offsetOn(previous.iso) : false;
                 return (
                   <tr
                     key={day.iso}
                     data-today={isToday ? 'true' : undefined}
                     data-occ={occasions ? 'true' : undefined}
+                    data-friday={date.getUTCDay() === 5 ? 'true' : undefined}
+                    data-dst={clockChange ? 'true' : undefined}
                     aria-current={isToday ? 'date' : undefined}
-                    title={occasions?.join(', ')}
                   >
                     <th scope="row">
                       {weekday.format(date)} {digits(d, locale)}
+                      {clockChange ? <span className="timetable-dst">{t('dstNote')}</span> : null}
                       {isToday ? (
                         <span className="visually-hidden"> — {t('legendToday')}</span>
                       ) : null}
@@ -146,13 +185,6 @@ export function PrayerTimetable({
           {state === 'failed' ? t('timetableFailed') : t('timetableLoading')}
         </p>
       )}
-
-      <p
-        className="text-xs"
-        style={{ marginBlockStart: 'var(--space-3)', color: 'var(--color-ink-faint)' }}
-      >
-        {timetable?.source === 'local' ? t('sourceLocal') : t('sourceApi')} · {t('placeVienna')}
-      </p>
     </div>
   );
 }

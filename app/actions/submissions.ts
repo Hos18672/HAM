@@ -104,13 +104,16 @@ export async function submitContact(input: unknown): Promise<SubmitResult> {
   if (!parsed.success)
     return { ok: false, error: 'form.error', fields: fieldErrors(parsed.error.issues) };
 
-  const { website, elapsed, ...data } = parsed.data;
+  const { website, elapsed, subject, topic, ...data } = parsed.data;
   if (looksAutomated(website, elapsed)) return SUCCESS;
 
   const { allowed, ipHash } = await guard('contact');
   if (!allowed) return { ok: false, error: 'form.rateLimited' };
 
-  return store('contact', ipHash, data);
+  return store('contact', ipHash, {
+    ...data,
+    topic: subject ? `${topic} · ${subject}`.slice(0, 120) : topic,
+  });
 }
 
 export async function submitMembership(input: unknown): Promise<SubmitResult> {

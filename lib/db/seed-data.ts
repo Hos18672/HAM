@@ -12,22 +12,8 @@ export interface Bi<T> {
   de: T;
 }
 
-export const ASSOCIATION = {
-  nameFa: 'خانهٔ همهٔ انسان‌ها — انصار المهدی (عج)',
-  nameDe: 'Haus aller Menschen – Ansar al-Mahdi (a.j.)',
-  street: 'Sautergasse 34–38',
-  postcode: '1170',
-  city: 'Wien',
-  district: 'Hernals',
-  country: 'Österreich',
-  email: 'info@haus-aller-menschen.at',
-  phone: '+43 1 000 00 00',
-  zvr: '000000000',
-  iban: 'AT00 0000 0000 0000 0000',
-  mapUrl: 'https://www.openstreetmap.org/?mlat=48.2175&mlon=16.3260#map=17/48.2175/16.3260',
-  latitude: 48.2175,
-  longitude: 16.326,
-} as const;
+/** The fixed facts live in `lib/site-facts.ts`; this name is kept for the seed. */
+export { FACTS as ASSOCIATION } from '../site-facts';
 
 /* ─── Page headers ───────────────────────────────────────────────────────── */
 
@@ -465,12 +451,15 @@ export const BLOCKS: {
 
 export const OFFERS: {
   icon: string;
+  /** The page this area links to. */
+  href: string;
   sort: number;
   fa: { title: string; body: string };
   de: { title: string; body: string };
 }[] = [
   {
     icon: 'BookOpen',
+    href: '/courses',
     sort: 0,
     fa: {
       title: 'آموزش',
@@ -483,6 +472,7 @@ export const OFFERS: {
   },
   {
     icon: 'HandsPraying',
+    href: '/duas',
     sort: 1,
     fa: {
       title: 'معارف و دعا',
@@ -495,6 +485,7 @@ export const OFFERS: {
   },
   {
     icon: 'Volleyball',
+    href: '/sport',
     sort: 2,
     fa: {
       title: 'ورزش',
@@ -507,6 +498,7 @@ export const OFFERS: {
   },
   {
     icon: 'MaskHappy',
+    href: '/culture',
     sort: 3,
     fa: {
       title: 'فرهنگ',
@@ -519,6 +511,7 @@ export const OFFERS: {
   },
   {
     icon: 'Handshake',
+    href: '/community',
     sort: 4,
     fa: {
       title: 'مشاورهٔ اداری',
@@ -531,6 +524,7 @@ export const OFFERS: {
   },
   {
     icon: 'UsersThree',
+    href: '/courses',
     sort: 5,
     fa: {
       title: 'کودکان و نوجوانان',
@@ -549,6 +543,11 @@ export const COURSES: {
   slug: string;
   category: string;
   level: string;
+  days: string;
+  startTime: string;
+  endTime: string;
+  rhythm?: 'weekly' | 'biweekly' | 'monthly';
+  group: string;
   sort: number;
   fa: { title: string; body: string; targetGroup: string; schedule: string; languages: string };
   de: { title: string; body: string; targetGroup: string; schedule: string; languages: string };
@@ -557,6 +556,10 @@ export const COURSES: {
     slug: 'deutsch-a1',
     category: 'language',
     level: 'A1',
+    days: '1,3',
+    startTime: '17:00',
+    endTime: '18:30',
+    group: 'adults',
     sort: 0,
     fa: {
       title: 'آلمانی از پایه (A1)',
@@ -577,6 +580,10 @@ export const COURSES: {
     slug: 'deutsch-b1',
     category: 'language',
     level: 'B1',
+    days: '2',
+    startTime: '18:00',
+    endTime: '20:00',
+    group: 'adults',
     sort: 1,
     fa: {
       title: 'آلمانی پیشرفته (B1)',
@@ -597,6 +604,10 @@ export const COURSES: {
     slug: 'farsi-kinder',
     category: 'children',
     level: '',
+    days: '6',
+    startTime: '10:30',
+    endTime: '12:00',
+    group: 'kids',
     sort: 2,
     fa: {
       title: 'فارسی برای کودکان',
@@ -617,6 +628,10 @@ export const COURSES: {
     slug: 'nachhilfe',
     category: 'children',
     level: '',
+    days: '4',
+    startTime: '16:00',
+    endTime: '18:00',
+    group: 'kids',
     sort: 3,
     fa: {
       title: 'درس کمکی',
@@ -637,6 +652,10 @@ export const COURSES: {
     slug: 'quran-tajwid',
     category: 'religion',
     level: '',
+    days: '7',
+    startTime: '11:00',
+    endTime: '12:30',
+    group: 'all',
     sort: 4,
     fa: {
       title: 'قرآن و تجوید',
@@ -657,6 +676,11 @@ export const COURSES: {
     slug: 'kalligrafie',
     category: 'art',
     level: '',
+    days: '5',
+    startTime: '17:00',
+    endTime: '',
+    rhythm: 'biweekly',
+    group: 'all',
     sort: 5,
     fa: {
       title: 'کارگاه خوش‌نویسی',
@@ -677,6 +701,11 @@ export const COURSES: {
     slug: 'integration-werkstatt',
     category: 'integration',
     level: '',
+    days: '3',
+    startTime: '18:00',
+    endTime: '',
+    rhythm: 'monthly',
+    group: 'adults',
     sort: 6,
     fa: {
       title: 'کارگاه امور اداری',
@@ -698,11 +727,20 @@ export const COURSES: {
 /* ─── Sport ──────────────────────────────────────────────────────────────── */
 
 export const SPORTS: {
+  days: string;
+  startTime: string;
+  endTime: string;
+  rhythm?: 'weekly' | 'biweekly' | 'monthly';
+  group: string;
   sort: number;
   fa: { activity: string; audience: string; schedule: string };
   de: { activity: string; audience: string; schedule: string };
 }[] = [
   {
+    days: '1',
+    startTime: '19:00',
+    endTime: '21:00',
+    group: 'women',
     sort: 0,
     fa: {
       activity: 'والیبال (زنان)',
@@ -716,6 +754,10 @@ export const SPORTS: {
     },
   },
   {
+    days: '3',
+    startTime: '19:00',
+    endTime: '21:00',
+    group: 'men',
     sort: 1,
     fa: {
       activity: 'والیبال (مردان)',
@@ -729,6 +771,10 @@ export const SPORTS: {
     },
   },
   {
+    days: '5',
+    startTime: '16:00',
+    endTime: '17:30',
+    group: 'youth',
     sort: 2,
     fa: {
       activity: 'فوتسال نوجوانان',
@@ -742,6 +788,10 @@ export const SPORTS: {
     },
   },
   {
+    days: '2',
+    startTime: '10:00',
+    endTime: '11:00',
+    group: 'all',
     sort: 3,
     fa: {
       activity: 'ژیمناستیک سبک',
@@ -755,6 +805,10 @@ export const SPORTS: {
     },
   },
   {
+    days: '7',
+    startTime: '15:00',
+    endTime: '17:00',
+    group: 'family',
     sort: 4,
     fa: {
       activity: 'ساعت ورزش خانوادگی',
@@ -927,53 +981,50 @@ export const VALUES: {
 
 /* ─── Weekly schedule ────────────────────────────────────────────────────── */
 
+/**
+ * Recurring activities that are neither a course nor a sport. The weekly
+ * schedule is built from these together with the courses' and sports' own
+ * times, so no day is written down twice.
+ */
 export const WEEK: {
+  /** 0 = Sunday … 6 = Saturday. */
   weekday: number;
+  startTime: string;
+  endTime: string;
+  group: string;
   sort: number;
+  /** label = the activity; detail = a time note when there is no fixed clock time. */
   fa: { label: string; detail: string };
   de: { label: string; detail: string };
 }[] = [
   {
-    weekday: 1,
-    sort: 0,
-    fa: { label: 'دوشنبه', detail: 'آلمانی A1 · والیبال زنان' },
-    de: { label: 'Montag', detail: 'Deutsch A1 · Volleyball Frauen' },
-  },
-  {
-    weekday: 2,
-    sort: 1,
-    fa: { label: 'سه‌شنبه', detail: 'ژیمناستیک سبک · آلمانی B1' },
-    de: { label: 'Dienstag', detail: 'Leichte Gymnastik · Deutsch B1' },
-  },
-  {
-    weekday: 3,
-    sort: 2,
-    fa: { label: 'چهارشنبه', detail: 'آلمانی A1 · والیبال مردان' },
-    de: { label: 'Mittwoch', detail: 'Deutsch A1 · Volleyball Männer' },
-  },
-  {
     weekday: 4,
-    sort: 3,
-    fa: { label: 'پنجشنبه', detail: 'درس کمکی · دعای کمیل، ۲۰:۳۰' },
-    de: { label: 'Donnerstag', detail: 'Lernhilfe · Duʿa Kumail, 20:30' },
+    startTime: '20:30',
+    endTime: '',
+    group: 'all',
+    sort: 0,
+    fa: { label: 'دعای کمیل', detail: '' },
+    de: { label: 'Duʿa Kumail', detail: '' },
   },
   {
+    // TODO(content): the clock time of the Friday prayer, if it is fixed.
     weekday: 5,
-    sort: 4,
-    fa: { label: 'جمعه', detail: 'فوتسال نوجوانان · خوش‌نویسی · نماز جمعه' },
-    de: { label: 'Freitag', detail: 'Futsal Jugend · Kalligrafie · Freitagsgebet' },
+    startTime: '',
+    endTime: '',
+    group: 'all',
+    sort: 1,
+    fa: { label: 'نماز جمعه', detail: 'هنگام اذان ظهر' },
+    de: { label: 'Freitagsgebet', detail: 'zur Mittagsgebetszeit' },
   },
   {
+    // TODO(content): start and end of the Saturday afternoon programme.
     weekday: 6,
-    sort: 5,
-    fa: { label: 'شنبه', detail: 'فارسی کودکان · برنامهٔ بعدازظهر' },
-    de: { label: 'Samstag', detail: 'Persisch für Kinder · Nachmittagsprogramm' },
-  },
-  {
-    weekday: 0,
-    sort: 6,
-    fa: { label: 'یکشنبه', detail: 'قرآن و تجوید · ورزش خانوادگی' },
-    de: { label: 'Sonntag', detail: 'Koran & Tadschwid · Familiensport' },
+    startTime: '',
+    endTime: '',
+    group: 'kids',
+    sort: 2,
+    fa: { label: 'برنامهٔ بعدازظهر کودکان', detail: 'بعدازظهر' },
+    de: { label: 'Nachmittagsprogramm für Kinder', detail: 'nachmittags' },
   },
 ];
 
@@ -1683,15 +1734,35 @@ export const OCCASIONS: {
 /** Seeded relative to the install date so a fresh clone always has a populated
  *  calendar rather than an archive of dates that have already passed. */
 export function eventSeed(now = new Date()) {
+  // Wall-clock time in Vienna, whatever timezone the seed runs in. This used
+  // `setHours`, which is the server's own zone — UTC on a build machine — so
+  // the opening's 16:00 start was stored as 18:00 Vienna time while its
+  // programme still began at 16:00.
   const at = (days: number, hour: number, minute = 0) => {
-    const d = new Date(now);
-    d.setDate(d.getDate() + days);
-    d.setHours(hour, minute, 0, 0);
-    return d;
+    const day = new Date(now.getTime() + days * 86_400_000);
+    const [y, m, d] = new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'Europe/Vienna',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    })
+      .format(day)
+      .split('-')
+      .map(Number) as [number, number, number];
+    const guess = Date.UTC(y, m - 1, d, hour, minute);
+    const viennaHour = Number(
+      new Intl.DateTimeFormat('en-GB', {
+        timeZone: 'Europe/Vienna',
+        hour: '2-digit',
+        hourCycle: 'h23',
+      }).format(new Date(guess)),
+    );
+    return new Date(guess - (viennaHour - hour) * 3_600_000);
   };
 
   return [
     {
+      // TODO(content): confirm the opening's date, start and end with the board.
       slug: 'eroeffnungsfest',
       startsAt: at(14, 16),
       endsAt: at(14, 21),

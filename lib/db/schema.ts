@@ -211,6 +211,8 @@ export const offers = pgTable(
   {
     id: id(),
     icon: varchar('icon', { length: 64 }).notNull().default('Sparkle'),
+    /** The page this area of work links to ("/courses"). */
+    href: varchar('href', { length: 128 }).notNull().default(''),
     sort: sort(),
     published: published(),
   },
@@ -239,6 +241,15 @@ export const courses = pgTable(
     slug: varchar('slug', { length: 128 }).notNull().unique(),
     category: varchar('category', { length: 64 }).notNull().default('language'),
     level: varchar('level', { length: 64 }).notNull().default(''),
+    /** When it meets: ISO weekdays ("1,3" = Monday and Wednesday). */
+    days: varchar('days', { length: 16 }).notNull().default(''),
+    /** "HH:MM", Vienna time; empty when not fixed. */
+    startTime: varchar('start_time', { length: 5 }).notNull().default(''),
+    endTime: varchar('end_time', { length: 5 }).notNull().default(''),
+    /** weekly | biweekly | monthly (first of the month). */
+    rhythm: varchar('rhythm', { length: 16 }).notNull().default('weekly'),
+    /** Who it is for: all | women | men | family | kids | youth | adults. */
+    group: varchar('audience_group', { length: 16 }).notNull().default('all'),
     sort: sort(),
     published: published(),
   },
@@ -260,6 +271,8 @@ export const courseTranslations = pgTable(
     targetGroup: text('target_group').notNull().default(''),
     schedule: text('schedule').notNull().default(''),
     languages: text('languages').notNull().default(''),
+    /** "kostenlos", "30 € im Monat" — empty until known. */
+    fee: text('fee').notNull().default(''),
   },
   (t) => [primaryKey({ columns: [t.courseId, t.locale] })],
 );
@@ -330,6 +343,15 @@ export const sports = pgTable(
   'sports',
   {
     id: id(),
+    /** When it meets: ISO weekdays ("1,3" = Monday and Wednesday). */
+    days: varchar('days', { length: 16 }).notNull().default(''),
+    /** "HH:MM", Vienna time; empty when not fixed. */
+    startTime: varchar('start_time', { length: 5 }).notNull().default(''),
+    endTime: varchar('end_time', { length: 5 }).notNull().default(''),
+    /** weekly | biweekly | monthly (first of the month). */
+    rhythm: varchar('rhythm', { length: 16 }).notNull().default('weekly'),
+    /** Who it is for: all | women | men | family | kids | youth | adults. */
+    group: varchar('audience_group', { length: 16 }).notNull().default('all'),
     sort: sort(),
     published: published(),
   },
@@ -426,6 +448,9 @@ export const weekSchedule = pgTable(
     id: id(),
     /** 0 = Sunday … 6 = Saturday, matching Date#getDay(). */
     weekday: smallint('weekday').notNull().default(0),
+    startTime: varchar('start_time', { length: 5 }).notNull().default(''),
+    endTime: varchar('end_time', { length: 5 }).notNull().default(''),
+    group: varchar('audience_group', { length: 16 }).notNull().default('all'),
     sort: sort(),
   },
   (t) => [index('week_schedule_sort_idx').on(t.weekday, t.sort)],

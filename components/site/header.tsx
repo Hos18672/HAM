@@ -2,9 +2,17 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { X, MagnifyingGlass, CaretDown, ArrowRight } from '@phosphor-icons/react/dist/ssr';
+import {
+  X,
+  MagnifyingGlass,
+  CaretDown,
+  Clock,
+  CalendarDots,
+  ChatCircleText,
+  List,
+} from '@phosphor-icons/react/dist/ssr';
 import { Link, usePathname } from '@/lib/i18n/navigation';
-import { NAV, LEGAL_NAV } from './nav-links';
+import { NAV_GROUPS, LEGAL_NAV, type NavGroup } from './nav-links';
 import { ThemeToggle } from './theme-toggle';
 import { Mark, PatternPlate } from './ornaments';
 import { LocaleSwitch } from './locale-switch';
@@ -13,26 +21,40 @@ import { LinkButton } from '../ui/button';
 import type { ThemeValue } from './theme';
 import type { Locale } from '@/lib/i18n/config';
 
+/**
+ * The site header.
+ *
+ * Wide screens (≥ 1100px): the mark and name, five top-level items — three of
+ * them dropdowns grouping the thirteen pages — search, the language switch
+ * and the one ask, "become a member". The theme toggle joins them from
+ * 1280px; below that it lives in the menu and the footer.
+ *
+ * Phones and tablets: a slim 56px bar with the mark, a compact FA | DE switch
+ * and the menu button, a full-height menu sheet with the same groups as
+ * collapsible sections, and a bottom bar for the three things people come
+ * for most — prayer times, events, contact — plus the menu.
+ *
+ * The bar never changes shape or size on scroll; it only takes a shadow once
+ * it is no longer at the top of the page. A header that resizes as you start
+ * reading moves the page under your eyes.
+ */
 export function Header({ theme, locale }: { theme: ThemeValue; locale: Locale }) {
   const t = useTranslations('nav');
   const tActions = useTranslations('actions');
   const pathname = usePathname();
 
-  const [condensed, setCondensed] = useState(false);
-  const [drawerOpen, setDrawerOpen] = useState(false);
-  const [moreOpen, setMoreOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const [openGroup, setOpenGroup] = useState<string | null>(null);
   const [searchOpen, setSearchOpen] = useState(false);
 
   const searchButtonRef = useRef<HTMLButtonElement>(null);
-  const moreRef = useRef<HTMLDivElement>(null);
-  const moreButtonRef = useRef<HTMLButtonElement>(null);
-  const drawerRef = useRef<HTMLDivElement>(null);
-  const drawerButtonRef = useRef<HTMLButtonElement>(null);
+  const navRef = useRef<HTMLElement>(null);
+  const sheetRef = useRef<HTMLDivElement>(null);
+  const sheetOpenerRef = useRef<HTMLElement | null>(null);
 
-  // Condense on scroll. Passive listener, and only a boolean changes, so this
-  // never costs a layout pass.
   useEffect(() => {
-    const onScroll = () => setCondensed(window.scrollY > 24);
+    const onScroll = () => setScrolled(window.scrollY > 8);
     onScroll();
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
@@ -40,39 +62,36 @@ export function Header({ theme, locale }: { theme: ThemeValue; locale: Locale })
 
   // Any navigation closes whatever is open.
   useEffect(() => {
-    setDrawerOpen(false);
-    setMoreOpen(false);
+    setSheetOpen(false);
+    setOpenGroup(null);
   }, [pathname]);
 
-  // The drawer is a full-screen surface: lock the page behind it and trap focus.
+  // The sheet is a modal surface: lock the page behind it and trap focus.
   useEffect(() => {
-    if (!drawerOpen) return;
+    if (!sheetOpen) return;
     const previous = document.body.style.overflow;
-    // Captured here rather than read in cleanup: by the time cleanup runs the
-    // ref may already point somewhere else.
-    const opener = drawerButtonRef.current;
+    const opener = sheetOpenerRef.current;
     document.body.style.overflow = 'hidden';
-    const first = drawerRef.current?.querySelector<HTMLElement>('a, button');
-    first?.focus();
+    sheetRef.current?.querySelector<HTMLElement>('button, a')?.focus();
 
     function onKeyDown(event: KeyboardEvent) {
       if (event.key === 'Escape') {
-        setDrawerOpen(false);
+        setSheetOpen(false);
         return;
       }
-      if (event.key !== 'Tab' || !drawerRef.current) return;
-      const focusable = drawerRef.current.querySelectorAll<HTMLElement>(
-        'a[href], button:not(:disabled)',
-      );
+      if (event.key !== 'Tab' || !sheetRef.current) return;
+      const focusable = Array.from(
+        sheetRef.current.querySelectorAll<HTMLElement>('a[href], button:not(:disabled), summary'),
+      ).filter((el) => el.offsetParent !== null);
       if (focusable.length === 0) return;
-      const firstEl = focusable[0]!;
-      const lastEl = focusable[focusable.length - 1]!;
-      if (event.shiftKey && document.activeElement === firstEl) {
+      const first = focusable[0]!;
+      const last = focusable[focusable.length - 1]!;
+      if (event.shiftKey && document.activeElement === first) {
         event.preventDefault();
-        lastEl.focus();
-      } else if (!event.shiftKey && document.activeElement === lastEl) {
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
         event.preventDefault();
-        firstEl.focus();
+        first.focus();
       }
     }
 
@@ -80,38 +99,43 @@ export function Header({ theme, locale }: { theme: ThemeValue; locale: Locale })
     return () => {
       document.body.style.overflow = previous;
       document.removeEventListener('keydown', onKeyDown);
-      // Focus goes back to the control that opened the drawer. Without this a
-      // keyboard user closing it lands at the top of the document and has to
-      // tab all the way back to where they were.
       opener?.focus();
     };
-  }, [drawerOpen]);
+  }, [sheetOpen]);
 
-  // Click-away and Escape for the overflow menu.
+  // Click-away and Escape for the desktop dropdowns.
   useEffect(() => {
-    if (!moreOpen) return;
+    if (!openGroup) return;
     function onDown(event: MouseEvent) {
-      if (!moreRef.current?.contains(event.target as Node)) setMoreOpen(false);
+      if (!navRef.current?.contains(event.target as Node)) setOpenGroup(null);
     }
     function onKey(event: KeyboardEvent) {
-      if (event.key === 'Escape') setMoreOpen(false);
+      if (event.key !== 'Escape') return;
+      const button = navRef.current?.querySelector<HTMLElement>(
+        `[data-group="${openGroup}"] > button`,
+      );
+      setOpenGroup(null);
+      button?.focus();
     }
-    const opener = moreButtonRef.current;
-    const menu = moreRef.current;
     document.addEventListener('mousedown', onDown);
     document.addEventListener('keydown', onKey);
     return () => {
       document.removeEventListener('mousedown', onDown);
       document.removeEventListener('keydown', onKey);
-      // Only pull focus back if it is still inside the menu — a click on a
-      // link elsewhere on the page must not be yanked back to the button.
-      if (opener && menu?.contains(document.activeElement)) opener.focus();
     };
-  }, [moreOpen]);
+  }, [openGroup]);
 
-  const primary = NAV.filter((entry) => entry.primary);
-  const overflow = NAV.filter((entry) => !entry.primary && entry.href !== '/');
-  const isCurrent = (href: string) => pathname === href;
+  const isCurrent = (href: string) => pathname === href || pathname.startsWith(`${href}/`);
+  const groupIsCurrent = (group: NavGroup) =>
+    group.href ? isCurrent(group.href) : (group.items ?? []).some((i) => isCurrent(i.href));
+
+  function openSheet(event: React.MouseEvent<HTMLElement>) {
+    sheetOpenerRef.current = event.currentTarget;
+    setSheetOpen(true);
+  }
+
+  // The reader pages carry their own controls along the bottom edge.
+  const readerPage = /^\/(quran|duas)\/.+/.test(pathname);
 
   return (
     <>
@@ -119,266 +143,216 @@ export function Header({ theme, locale }: { theme: ThemeValue; locale: Locale })
         {t('skipToContent')}
       </a>
 
-      {/* The header is a pill and stays one. The design's own has it flush and
-          square at the top of the page and rounds it on the first scroll,
-          but a bar that changes shape as you start reading is a shape you
-          have to keep re-reading, and the corners are the thing the eye
-          fixes on. So the pill, the 8px it is pulled in by and its hairline
-          are the same at every scroll position, and only the weight changes:
-          it tightens vertically and takes a shadow once it is no longer
-          standing on the top of the page.
+      <header className="site-header hc-header" data-scrolled={scrolled ? 'true' : undefined}>
+        <div className="site-header-bar">
+          <Brand />
 
-          The 14px floor on the inset is for phones: 2vw is 7px at 360, which
-          left the pill all but touching both edges of the screen. */}
-      <header
-        className="hc-header sticky top-0"
-        style={{
-          zIndex: 'var(--z-header)',
-          padding: '8px clamp(14px, 2vw, 20px) 0',
-        }}
-      >
-        <div
-          style={{
-            position: 'relative',
-            background: 'var(--glass)',
-            backdropFilter: 'blur(18px) saturate(1.3)',
-            border: 'var(--rule-hair) solid var(--line)',
-            borderRadius: 'var(--radius-pill)',
-            boxShadow: condensed ? '0 20px 44px -26px rgba(7, 59, 41, 0.5)' : 'none',
-            transition: 'box-shadow 0.45s ease',
-          }}
-        >
-          <PatternPlate opacity={0.18} rounded />
-          <div
-            className="flex items-center gap-2"
-            style={{
-              position: 'relative',
-              maxInlineSize: '1320px',
-              marginInline: 'auto',
-              padding: `${condensed ? '8px' : '15px'} clamp(16px, 4vw, 48px)`,
-              transition: 'padding 0.45s var(--ease-out-expressive)',
-            }}
-          >
-            <Brand condensed={condensed} />
-
-            {/* The desktop nav appears at the width it actually fits.
-
-                Measured rather than chosen: masthead, seven items, the two
-                chrome discs and the language switch need about 1180px once
-                the bar's gutters are counted. `lg` — 1024px — was 140px short
-                of that and pushed the bar off the side of the page. */}
-            <nav className="nav ms-auto hidden min-[1180px]:flex" aria-label={t('primary')}>
-              {primary.map((entry) => (
-                <Link
-                  key={entry.href}
-                  href={entry.href}
-                  className="nav-link"
-                  aria-current={isCurrent(entry.href) ? 'page' : undefined}
-                >
-                  {t(entry.key)}
-                </Link>
-              ))}
-
-              <div className="relative" ref={moreRef}>
-                <button
-                  type="button"
-                  ref={moreButtonRef}
-                  className="nav-link"
-                  aria-expanded={moreOpen}
-                  aria-haspopup="true"
-                  onClick={() => setMoreOpen((open) => !open)}
-                >
-                  {t('more')}
-                  <CaretDown
-                    size={14}
-                    weight="bold"
-                    aria-hidden="true"
-                    className="caret"
-                    style={{ marginInlineStart: 'var(--space-1)' }}
-                  />
-                </button>
-                <div
-                  className="pop absolute"
-                  data-open={moreOpen ? 'true' : 'false'}
-                  style={{
-                    insetInlineEnd: 0,
-                    insetBlockStart: 'calc(100% + var(--space-1))',
-                    minInlineSize: '14rem',
-                    background: 'var(--card)',
-                    border: 'var(--rule-hair) solid var(--line)',
-                    borderRadius: 'var(--radius-soft)',
-                    boxShadow: 'var(--shadow)',
-                    padding: 'var(--space-1)',
-                    display: 'grid',
-                    zIndex: 'var(--z-header)',
-                  }}
-                >
-                  {overflow.map((entry) => (
+          <nav ref={navRef} className="main-nav" aria-label={t('primary')}>
+            <ul>
+              {NAV_GROUPS.map((group) =>
+                group.href ? (
+                  <li key={group.key}>
                     <Link
-                      key={entry.href}
-                      href={entry.href}
-                      className="nav-link pop-item"
-                      aria-current={isCurrent(entry.href) ? 'page' : undefined}
+                      href={group.href}
+                      className="nav-link"
+                      aria-current={isCurrent(group.href) ? 'page' : undefined}
                     >
-                      {t(entry.key)}
+                      {t(group.key)}
                     </Link>
-                  ))}
-                </div>
-              </div>
-            </nav>
+                  </li>
+                ) : (
+                  <li key={group.key} className="nav-group" data-group={group.key}>
+                    <button
+                      type="button"
+                      className="nav-link"
+                      data-current={groupIsCurrent(group) ? 'true' : undefined}
+                      aria-expanded={openGroup === group.key}
+                      aria-controls={`menu-${group.key}`}
+                      onClick={() => setOpenGroup((g) => (g === group.key ? null : group.key))}
+                    >
+                      {t(group.key)}
+                      <CaretDown size={13} weight="bold" aria-hidden="true" className="caret" />
+                    </button>
+                    <ul
+                      id={`menu-${group.key}`}
+                      className="nav-menu"
+                      hidden={openGroup !== group.key}
+                    >
+                      {group.items!.map((item) => (
+                        <li key={item.href}>
+                          <Link
+                            href={item.href}
+                            className="nav-menu-item"
+                            aria-current={isCurrent(item.href) ? 'page' : undefined}
+                          >
+                            {t(item.key)}
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  </li>
+                ),
+              )}
+            </ul>
+          </nav>
 
-            <div className="ms-auto flex items-center gap-2 min-[1180px]:ms-2">
-              <button
-                type="button"
-                ref={searchButtonRef}
-                className="chrome-btn"
-                aria-label={tActions('openSearch')}
-                aria-expanded={searchOpen}
-                onClick={() => setSearchOpen(true)}
-              >
-                <MagnifyingGlass size={20} weight="duotone" aria-hidden="true" />
-              </button>
-
+          <div className="site-header-tools">
+            <button
+              type="button"
+              ref={searchButtonRef}
+              className="chrome-btn header-search"
+              aria-label={tActions('openSearch')}
+              aria-expanded={searchOpen}
+              onClick={() => setSearchOpen(true)}
+            >
+              <MagnifyingGlass size={20} weight="duotone" aria-hidden="true" />
+            </button>
+            <span className="header-theme">
               <ThemeToggle theme={theme} />
-              <LocaleSwitch className="hidden sm:flex" />
-
-              {/* The ask, only where there is room for it.
-
-                  The measurement, not a breakpoint off the shelf: the
-                  masthead, the seven nav items, the two discs and the
-                  language switch come to about 1240px of content plus the
-                  bar's own gutters, so below ~1360px this is what has to go.
-                  The drawer and the footer both carry it regardless. */}
-              <LinkButton
-                href={`/${locale}/support`}
-                size="sm"
-                className="hidden min-[1360px]:inline-flex"
-              >
-                {t('support')}
-              </LinkButton>
-
-              <button
-                type="button"
-                className="burger min-[1180px]:hidden"
-                ref={drawerButtonRef}
-                aria-label={drawerOpen ? t('closeMenu') : t('openMenu')}
-                aria-expanded={drawerOpen}
-                onClick={() => setDrawerOpen((open) => !open)}
-              >
-                <span className="burger-ring" aria-hidden="true" />
-                <span className="bars" aria-hidden="true">
-                  <i />
-                  <i />
-                  <i />
-                </span>
-              </button>
-            </div>
+            </span>
+            <LocaleSwitch compact className="header-locale" />
+            <LinkButton href={`/${locale}/support#member`} size="sm" className="header-cta">
+              {t('join')}
+            </LinkButton>
+            <button
+              type="button"
+              className="chrome-btn header-burger"
+              aria-label={t('openMenu')}
+              aria-expanded={sheetOpen}
+              aria-controls="menu-sheet"
+              onClick={openSheet}
+            >
+              <List size={22} weight="bold" aria-hidden="true" />
+            </button>
           </div>
         </div>
       </header>
 
-      {drawerOpen ? (
-        <>
-          {/* The scrim. The design's menu is a panel, not a sheet: the page
-              stays visible behind it, softened, and a click out here closes
-              the menu the same way Escape does. */}
-          <div
-            className="drawer-scrim fixed inset-0 min-[1180px]:hidden"
-            style={{ zIndex: 'calc(var(--z-drawer) - 1)' }}
-            aria-hidden="true"
-            onClick={() => setDrawerOpen(false)}
-          />
-
-          <div
-            ref={drawerRef}
-            id="mobile-drawer"
-            className="drawer drawer-panel fixed min-[1180px]:hidden"
-            style={{ zIndex: 'var(--z-drawer)' }}
-            role="dialog"
-            aria-modal="true"
-            aria-label={t('menu')}
-          >
-            <PatternPlate opacity={0.5} rounded />
-
-            <div style={{ position: 'relative' }}>
-              <p className="drawer-head">
-                {t('primary')}
-                <span aria-hidden="true" />
-                <button
-                  type="button"
-                  className="chrome-btn"
-                  aria-label={t('closeMenu')}
-                  onClick={() => setDrawerOpen(false)}
-                >
-                  <X size={20} weight="bold" aria-hidden="true" />
-                </button>
-              </p>
-
-              <nav
-                aria-label={t('primary')}
-                style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))',
-                  gap: '4px 28px',
-                }}
-              >
-                {NAV.map((entry, index) => (
-                  <Link
-                    key={entry.href}
-                    href={entry.href}
-                    className="drawer-item"
-                    aria-current={isCurrent(entry.href) ? 'page' : undefined}
-                    style={{ animationDelay: `${index * 40}ms` }}
-                  >
-                    <span className="drawer-dot" aria-hidden="true" />
-                    <span>{t(entry.key)}</span>
-                    <ArrowRight
-                      size={15}
-                      weight="bold"
-                      aria-hidden="true"
-                      className="mirror drawer-go"
-                    />
-                  </Link>
-                ))}
-              </nav>
-
-              <div
-                style={{
-                  marginBlockStart: 'var(--space-4)',
-                  paddingBlockStart: 'var(--space-4)',
-                  borderBlockStart: 'var(--rule-hair) solid var(--line)',
-                  display: 'grid',
-                  gap: 'var(--space-2)',
-                }}
-              >
-                {LEGAL_NAV.map((entry) => (
-                  <Link
-                    key={entry.href}
-                    href={entry.href}
-                    className="drawer-item drawer-item-quiet"
-                  >
-                    <span>{t(entry.key)}</span>
-                  </Link>
-                ))}
-              </div>
-
-              <LocaleSwitch style={{ marginBlockStart: 'var(--space-4)', inlineSize: '100%' }} />
-
-              <LinkButton
-                href={`/${locale}/support`}
-                className="btn-gold"
-                style={{
-                  marginBlockStart: 'var(--space-3)',
-                  inlineSize: '100%',
-                  justifyContent: 'center',
-                }}
-              >
-                {t('support')}
-              </LinkButton>
-            </div>
+      {sheetOpen ? (
+        <div
+          ref={sheetRef}
+          id="menu-sheet"
+          className="menu-sheet"
+          role="dialog"
+          aria-modal="true"
+          aria-label={t('menu')}
+        >
+          <PatternPlate opacity={0.35} />
+          <div className="menu-sheet-head">
+            <Brand />
+            <button
+              type="button"
+              className="chrome-btn"
+              aria-label={t('closeMenu')}
+              onClick={() => setSheetOpen(false)}
+            >
+              <X size={20} weight="bold" aria-hidden="true" />
+            </button>
           </div>
-        </>
+
+          <div className="menu-sheet-body">
+            <button
+              type="button"
+              className="menu-sheet-search"
+              onClick={() => {
+                setSheetOpen(false);
+                setSearchOpen(true);
+              }}
+            >
+              <MagnifyingGlass size={20} weight="duotone" aria-hidden="true" />
+              {tActions('search')}
+            </button>
+
+            <nav aria-label={t('primary')}>
+              <ul className="menu-sheet-groups">
+                {NAV_GROUPS.map((group) =>
+                  group.href ? (
+                    <li key={group.key}>
+                      <Link
+                        href={group.href}
+                        className="menu-sheet-link menu-sheet-top"
+                        aria-current={isCurrent(group.href) ? 'page' : undefined}
+                      >
+                        {t(group.key)}
+                      </Link>
+                    </li>
+                  ) : (
+                    <li key={group.key}>
+                      <details open={groupIsCurrent(group) || undefined}>
+                        <summary className="menu-sheet-top">
+                          {t(group.key)}
+                          <CaretDown size={16} weight="bold" aria-hidden="true" className="caret" />
+                        </summary>
+                        <ul>
+                          {group.items!.map((item) => (
+                            <li key={item.href}>
+                              <Link
+                                href={item.href}
+                                className="menu-sheet-link"
+                                aria-current={isCurrent(item.href) ? 'page' : undefined}
+                              >
+                                {t(item.key)}
+                              </Link>
+                            </li>
+                          ))}
+                        </ul>
+                      </details>
+                    </li>
+                  ),
+                )}
+              </ul>
+            </nav>
+
+            <div className="menu-sheet-extra">
+              <LocaleSwitch />
+              <ThemeToggle theme={theme} />
+            </div>
+            <ul className="menu-sheet-legal">
+              {LEGAL_NAV.map((entry) => (
+                <li key={entry.href}>
+                  <Link href={entry.href}>{t(entry.key)}</Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* The two asks, pinned to the bottom of the sheet. */}
+          <div className="menu-sheet-cta">
+            <LinkButton href={`/${locale}/support#member`} className="btn-gold">
+              {t('join')}
+            </LinkButton>
+            <LinkButton href={`/${locale}/support#donate`} variant="secondary">
+              {t('donate')}
+            </LinkButton>
+          </div>
+        </div>
       ) : null}
+
+      {readerPage ? null : (
+        <nav className="bottom-bar" aria-label={t('bottomBar')}>
+          <Link href="/prayer" aria-current={isCurrent('/prayer') ? 'page' : undefined}>
+            <Clock size={22} weight="duotone" aria-hidden="true" />
+            <span>{t('prayer')}</span>
+          </Link>
+          <Link href="/events" aria-current={isCurrent('/events') ? 'page' : undefined}>
+            <CalendarDots size={22} weight="duotone" aria-hidden="true" />
+            <span>{t('events')}</span>
+          </Link>
+          <Link href="/contact" aria-current={isCurrent('/contact') ? 'page' : undefined}>
+            <ChatCircleText size={22} weight="duotone" aria-hidden="true" />
+            <span>{t('contact')}</span>
+          </Link>
+          <button
+            type="button"
+            aria-expanded={sheetOpen}
+            aria-controls="menu-sheet"
+            onClick={openSheet}
+          >
+            <List size={22} weight="bold" aria-hidden="true" />
+            <span>{t('menu')}</span>
+          </button>
+        </nav>
+      )}
 
       <SearchPopup
         open={searchOpen}
@@ -390,62 +364,17 @@ export function Header({ theme, locale }: { theme: ThemeValue; locale: Locale })
   );
 }
 
-function Brand({ condensed }: { condensed: boolean }) {
+function Brand() {
   const t = useTranslations('brand');
   return (
-    <Link
-      href="/"
-      className="brand flex items-center"
-      // Below 480px the name is not rendered, so the link would otherwise be
-      // an aria-hidden drawing and nothing else. The label is the same string
-      // the masthead shows when there is room for it.
-      aria-label={t('name')}
-      style={{
-        textDecoration: 'none',
-        color: 'var(--color-ink)',
-        lineHeight: 1.1,
-        gap: '14px',
-        flex: '0 0 auto',
-        minInlineSize: 0,
-      }}
-    >
-      {/* The mark and the ring that settles around it on hover. The wrapper
-          shrinks with the bar, and the ring is hung off it rather than off the
-          link, so it stays a circle around the mark alone. */}
-      <span
-        style={{
-          position: 'relative',
-          display: 'block',
-          inlineSize: condensed ? '34px' : '44px',
-          blockSize: condensed ? '34px' : '44px',
-          flex: '0 0 auto',
-          transition:
-            'inline-size 0.5s var(--ease-out-expressive), block-size 0.5s var(--ease-out-expressive)',
-        }}
-      >
+    <Link href="/" className="brand" aria-label={t('name')}>
+      <span className="brand-mark">
         <span className="brand-ring" aria-hidden="true" />
         <Mark />
       </span>
-
-      {/* On a phone the mark stands alone: the name, the two chrome discs and
-          the menu control do not fit on one line under about 480px, and the
-          mark is the part that still says whose house this is. */}
-      <span className="hidden flex-col min-[480px]:flex" style={{ minInlineSize: 0 }}>
-        <span
-          style={{
-            fontSize: condensed ? 'var(--text-base)' : 'var(--text-lg)',
-            fontWeight: 'var(--weight-bold)',
-            letterSpacing: 'var(--tracking-tight)',
-            transition: 'font-size var(--duration-base) var(--ease-standard)',
-          }}
-        >
-          {t('name')}
-        </span>
-        {!condensed ? (
-          <span className="kicker" style={{ marginBlockStart: '2px' }}>
-            {t('sub')}
-          </span>
-        ) : null}
+      <span className="brand-text">
+        <span className="brand-name">{t('name')}</span>
+        <span className="brand-sub">{t('sub')}</span>
       </span>
     </Link>
   );

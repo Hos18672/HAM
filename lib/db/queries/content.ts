@@ -4,6 +4,7 @@ import { unstable_cache } from 'next/cache';
 import { db } from '../index';
 import type { Locale } from '../../i18n/config';
 import * as s from '../schema';
+import { known } from '../../site-facts';
 
 /**
  * Public read queries.
@@ -88,9 +89,10 @@ export const getSettings = cached(
         defaultTheme: row.defaultTheme,
         showOpeningEvent: row.showOpeningEvent,
         contactEmail: row.contactEmail,
-        phone: row.phone,
+        // Placeholder values seeded by earlier builds read as missing.
+        phone: known(row.phone),
         address: row.address,
-        iban: row.iban,
+        iban: known(row.iban),
         mapUrl: row.mapUrl,
       };
     } catch {
@@ -194,6 +196,7 @@ export const getBlocks = cached(
 export interface Offer {
   id: string;
   icon: string;
+  href: string;
   title: string;
   body: string;
 }
@@ -206,6 +209,7 @@ export const getOffers = cached(
       .select({
         id: s.offers.id,
         icon: s.offers.icon,
+        href: s.offers.href,
         title: s.offerTranslations.title,
         body: s.offerTranslations.body,
       })
@@ -217,17 +221,40 @@ export const getOffers = cached(
       .where(eq(s.offers.published, true))
       .orderBy(asc(s.offers.sort));
     const rows = limit ? await q.limit(limit) : await q;
-    return rows.map((r) => ({ id: r.id, icon: r.icon, title: r.title ?? '', body: r.body ?? '' }));
+    return rows.map((r) => ({
+      id: r.id,
+      icon: r.icon,
+      href: r.href,
+      title: r.title ?? '',
+      body: r.body ?? '',
+    }));
   },
 );
 
 /* ─── Courses ────────────────────────────────────────────────────────────── */
 
-export interface Course {
+/** When a course, a sport or a weekly activity meets. */
+export interface Timing {
+  /** ISO weekdays, 1 = Monday … 7 = Sunday. */
+  days: number[];
+  startTime: string;
+  endTime: string;
+  rhythm: string;
+  group: string;
+}
+
+const parseDays = (value: string | null) =>
+  (value ?? '')
+    .split(',')
+    .map((d) => Number(d.trim()))
+    .filter((d) => Number.isInteger(d) && d >= 1 && d <= 7);
+
+export interface Course extends Timing {
   id: string;
   slug: string;
   category: string;
   level: string;
+  fee: string;
   title: string;
   body: string;
   targetGroup: string;
@@ -245,6 +272,12 @@ export const getCourses = cached(
         slug: s.courses.slug,
         category: s.courses.category,
         level: s.courses.level,
+        days: s.courses.days,
+        startTime: s.courses.startTime,
+        endTime: s.courses.endTime,
+        rhythm: s.courses.rhythm,
+        group: s.courses.group,
+        fee: s.courseTranslations.fee,
         title: s.courseTranslations.title,
         body: s.courseTranslations.body,
         targetGroup: s.courseTranslations.targetGroup,
@@ -267,6 +300,12 @@ export const getCourses = cached(
       slug: r.slug,
       category: r.category,
       level: r.level,
+      days: parseDays(r.days),
+      startTime: r.startTime,
+      endTime: r.endTime,
+      rhythm: r.rhythm,
+      group: r.group,
+      fee: r.fee ?? '',
       title: r.title ?? '',
       body: r.body ?? '',
       targetGroup: r.targetGroup ?? '',
@@ -478,7 +517,7 @@ export async function getFeaturedEvent(locale: Locale): Promise<EventEntry | nul
 
 /* ─── Simple card collections ────────────────────────────────────────────── */
 
-export interface SportEntry {
+export interface SportEntry extends Timing {
   id: string;
   activity: string;
   audience: string;
@@ -492,6 +531,11 @@ export const getSports = cached(
     const rows = await db
       .select({
         id: s.sports.id,
+        days: s.sports.days,
+        startTime: s.sports.startTime,
+        endTime: s.sports.endTime,
+        rhythm: s.sports.rhythm,
+        group: s.sports.group,
         activity: s.sportTranslations.activity,
         audience: s.sportTranslations.audience,
         schedule: s.sportTranslations.schedule,
@@ -505,6 +549,11 @@ export const getSports = cached(
       .orderBy(asc(s.sports.sort));
     return rows.map((r) => ({
       id: r.id,
+      days: parseDays(r.days),
+      startTime: r.startTime,
+      endTime: r.endTime,
+      rhythm: r.rhythm,
+      group: r.group,
       activity: r.activity ?? '',
       audience: r.audience ?? '',
       schedule: r.schedule ?? '',
@@ -591,7 +640,11 @@ export const getValues = cached(
 
 export interface WeekRow {
   id: string;
+  /** 0 = Sunday … 6 = Saturday. */
   weekday: number;
+  startTime: string;
+  endTime: string;
+  group: string;
   label: string;
   detail: string;
 }
@@ -604,6 +657,9 @@ export const getWeekSchedule = cached(
       .select({
         id: s.weekSchedule.id,
         weekday: s.weekSchedule.weekday,
+        startTime: s.weekSchedule.startTime,
+        endTime: s.weekSchedule.endTime,
+        group: s.weekSchedule.group,
         label: s.weekTranslations.label,
         detail: s.weekTranslations.detail,
       })
@@ -616,6 +672,9 @@ export const getWeekSchedule = cached(
     return rows.map((r) => ({
       id: r.id,
       weekday: r.weekday,
+      startTime: r.startTime,
+      endTime: r.endTime,
+      group: r.group,
       label: r.label ?? '',
       detail: r.detail ?? '',
     }));

@@ -2,18 +2,19 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 import { requireLocale } from '@/lib/i18n/locale-param';
+import { MapPin, Phone, EnvelopeSimple, InstagramLogo } from '@phosphor-icons/react/dist/ssr';
 import {
-  MapPin,
-  Phone,
-  EnvelopeSimple,
-  Clock,
-  ArrowSquareOut,
-} from '@phosphor-icons/react/dist/ssr';
-import { getPageHeader, getBlocks, getSettings } from '@/lib/db/queries/content';
+  getPageHeader,
+  getSettings,
+  getCourses,
+  getSports,
+  getUpcomingEvents,
+} from '@/lib/db/queries/content';
+import { OpeningHours, Directions, HouseMap } from '@/components/site/house-info';
+import { OpenNow } from '@/components/site/open-now';
+import { FACTS } from '@/lib/site-facts';
 import { PageHead } from '@/components/site/page-head';
 import { ContactForm } from '@/components/site/contact-form';
-import { PatternPlate } from '@/components/site/ornaments';
-import { EditableText } from '@/components/editable/editable-text';
 import { JsonLd, placeJsonLd } from '@/lib/seo';
 import { pageMetadata } from '@/lib/page-meta';
 import { locales } from '@/lib/i18n/config';
@@ -31,29 +32,28 @@ export async function generateMetadata({
   return pageMetadata('contact', locale, '/contact');
 }
 
-export default async function ContactPage({
-  params,
-  searchParams,
-}: {
-  params: Promise<{ locale: string }>;
-  searchParams: Promise<{ topic?: string }>;
-}) {
+export default async function ContactPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
-  const { topic } = await searchParams;
   const typed = requireLocale(locale);
 
-  const [header, blocks, settings] = await Promise.all([
+  const [header, settings, courses, sports, events] = await Promise.all([
     getPageHeader('contact', typed),
-    getBlocks('contact', typed),
     getSettings(),
+    getCourses(typed),
+    getSports(typed),
+    getUpcomingEvents(typed),
   ]);
   if (!header) notFound();
 
   const t = await getTranslations({ locale, namespace: 'contact' });
-  const tA11y = await getTranslations({ locale, namespace: 'a11y' });
-  const tBrand = await getTranslations({ locale, namespace: 'brand' });
+  const tHouse = await getTranslations({ locale, namespace: 'house' });
 
-  const hours = blocks.opening_hours?.items ?? [];
+  // What a `?topic=…&id=…` link can name, so the form can fill it in.
+  const subjects = {
+    course: Object.fromEntries(courses.map((c) => [c.slug, c.title])),
+    sport: Object.fromEntries(sports.map((s) => [s.id, s.activity])),
+    event: Object.fromEntries(events.map((e) => [e.slug, e.title])),
+  };
 
   return (
     <>
@@ -61,145 +61,68 @@ export default async function ContactPage({
 
       <PageHead header={header} locale={typed} />
 
-      <section className="section" data-rise>
-        <div className="page">
-          <div
-            style={{
-              display: 'grid',
-              gap: 'var(--space-7)',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(min(20rem, 100%), 1fr))',
-              alignItems: 'start',
-            }}
-          >
-            {/* Form.
-
-                The design opens the page with the invitation to write, and
-                keeps the house's own details beside it. */}
-            <div>
-              <h2 style={{ fontSize: 'clamp(25px, 3vw, 36px)' }}>{t('formTitle')}</h2>
-              <div style={{ marginBlockStart: 'var(--space-5)' }}>
-                <ContactForm locale={typed} defaultTopic={topic} />
+      <section className="section">
+        <div className="page contact-layout">
+          {/* Where, when, how to get here and how to reach us — in the order a
+              visitor on a phone needs them. The house's name is in the page
+              head already; it is not repeated here. */}
+          <div className="contact-info">
+            <div className="contact-block">
+              <p className="contact-address">
+                <MapPin size={22} weight="duotone" aria-hidden="true" />
+                <span className="ltr-island">{settings.address}</span>
+              </p>
+              <div className="contact-hours-head">
+                <h2 className="contact-h">{tHouse('hours')}</h2>
+                <OpenNow />
               </div>
+              <OpeningHours locale={typed} />
             </div>
 
-            {/* Details.
+            <HouseMap locale={typed} mapUrl={settings.mapUrl || FACTS.mapUrl} />
 
-                The design puts these in a panel of their own rather than
-                loose in a column: a card with the girih plate behind it, the
-                house's name at the top, and each fact behind its own icon. */}
-            <div className="surf" data-rise>
-              <PatternPlate opacity={0.4} />
+            <div className="contact-block">
+              <h2 className="contact-h">{tHouse('directionsTitle')}</h2>
+              <Directions locale={typed} />
+            </div>
 
-              <div style={{ position: 'relative', display: 'grid', gap: 'var(--space-2)' }}>
-                <p
-                  style={{
-                    fontFamily: 'var(--font-display)',
-                    fontSize: 'var(--text-2xl)',
-                    fontWeight: 'var(--weight-bold)',
-                  }}
-                >
-                  {tBrand('name')}
-                </p>
-                <p className="kicker">{tBrand('sub')}</p>
+            <div className="contact-block">
+              <h2 className="contact-h">{tHouse('reach')}</h2>
+              <ul className="contact-links">
+                {settings.phone ? (
+                  <li>
+                    <a href={`tel:${settings.phone.replace(/[^\d+]/g, '')}`}>
+                      <Phone size={20} weight="duotone" aria-hidden="true" />
+                      <span className="ltr-island">{settings.phone}</span>
+                    </a>
+                  </li>
+                ) : null}
+                {settings.contactEmail ? (
+                  <li>
+                    <a href={`mailto:${settings.contactEmail}`}>
+                      <EnvelopeSimple size={20} weight="duotone" aria-hidden="true" />
+                      <span className="ltr-island">{settings.contactEmail}</span>
+                    </a>
+                  </li>
+                ) : null}
+                <li>
+                  <a
+                    href={`https://www.instagram.com/${FACTS.instagram}/`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <InstagramLogo size={20} weight="duotone" aria-hidden="true" />
+                    <span className="ltr-island">@{FACTS.instagram}</span>
+                  </a>
+                </li>
+              </ul>
+            </div>
+          </div>
 
-                <div
-                  style={{
-                    marginBlockStart: 'var(--space-4)',
-                    display: 'grid',
-                    gap: 'var(--space-4)',
-                  }}
-                >
-                  <p className="flex items-start gap-3">
-                    <MapPin
-                      size={20}
-                      weight="duotone"
-                      aria-hidden="true"
-                      style={{ flexShrink: 0, color: 'var(--green)' }}
-                    />
-                    <span className="ltr-island">{settings.address}</span>
-                  </p>
-                  {settings.contactEmail ? (
-                    <p className="flex items-start gap-3">
-                      <EnvelopeSimple
-                        size={20}
-                        weight="duotone"
-                        aria-hidden="true"
-                        style={{ flexShrink: 0, color: 'var(--green)' }}
-                      />
-                      <a href={`mailto:${settings.contactEmail}`}>
-                        <span className="ltr-island">{settings.contactEmail}</span>
-                      </a>
-                    </p>
-                  ) : null}
-                  {settings.phone ? (
-                    <p className="flex items-start gap-3">
-                      <Phone
-                        size={20}
-                        weight="duotone"
-                        aria-hidden="true"
-                        style={{ flexShrink: 0, color: 'var(--green)' }}
-                      />
-                      <a href={`tel:${settings.phone.replace(/\s/g, '')}`}>
-                        <span className="ltr-island">{settings.phone}</span>
-                      </a>
-                    </p>
-                  ) : null}
-                  {hours.length > 0 ? (
-                    <div className="flex items-start gap-3">
-                      <Clock
-                        size={20}
-                        weight="duotone"
-                        aria-hidden="true"
-                        style={{ flexShrink: 0, color: 'var(--green)' }}
-                      />
-                      <div>
-                        <p className="kicker">{t('openingHours')}</p>
-                        <ul
-                          style={{
-                            listStyle: 'none',
-                            margin: 0,
-                            padding: 0,
-                            display: 'grid',
-                            gap: '2px',
-                            marginBlockStart: 'var(--space-1)',
-                          }}
-                        >
-                          {hours.map((line) => (
-                            <li key={line}>{line}</li>
-                          ))}
-                        </ul>
-                        {blocks.opening_hours ? (
-                          <EditableText
-                            as="p"
-                            entity="block"
-                            id={blocks.opening_hours.id}
-                            field="items"
-                            locale={typed}
-                            value={hours.join('\n')}
-                            multiline
-                            className="visually-hidden"
-                          />
-                        ) : null}
-                      </div>
-                    </div>
-                  ) : null}
-                  {settings.mapUrl ? (
-                    <p>
-                      <a
-                        href={settings.mapUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-1"
-                        style={{ width: 'fit-content' }}
-                      >
-                        {t('showOnMap')}
-                        <ArrowSquareOut size={14} weight="bold" aria-hidden="true" />
-                        <span className="visually-hidden">{tA11y('externalLink')}</span>
-                      </a>
-                    </p>
-                  ) : null}
-                </div>
-              </div>
+          <div className="contact-form-col">
+            <h2 style={{ fontSize: 'clamp(25px, 3vw, 34px)' }}>{t('formTitle')}</h2>
+            <div style={{ marginBlockStart: 'var(--space-4)' }}>
+              <ContactForm locale={typed} subjects={subjects} />
             </div>
           </div>
         </div>

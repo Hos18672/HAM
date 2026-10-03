@@ -1,13 +1,23 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
+import { ArrowRight } from '@phosphor-icons/react/dist/ssr';
 import { requireLocale } from '@/lib/i18n/locale-param';
-import { getPageHeader, getOffers, getWeekSchedule } from '@/lib/db/queries/content';
+import {
+  getPageHeader,
+  getOffers,
+  getWeekSchedule,
+  getCourses,
+  getSports,
+} from '@/lib/db/queries/content';
 import { PageHead, SectionHead } from '@/components/site/page-head';
 import { EditableText } from '@/components/editable/editable-text';
 import { EditableEntry, EditableAdd } from '@/components/editable/editable-list';
-import { Card, CardStar } from '@/components/ui/card';
 import { Icon } from '@/components/site/icon';
+import { WeekSchedule } from '@/components/site/week-schedule';
+import { LinkButton } from '@/components/ui/button';
+import { Link } from '@/lib/i18n/navigation';
+import { buildSchedule } from '@/lib/schedule';
 import { pageMetadata } from '@/lib/page-meta';
 import { locales } from '@/lib/i18n/config';
 
@@ -28,112 +38,107 @@ export default async function ActivitiesPage({ params }: { params: Promise<{ loc
   const { locale } = await params;
   const typed = requireLocale(locale);
 
-  const [header, offers, week] = await Promise.all([
+  const [header, offers, week, courses, sports] = await Promise.all([
     getPageHeader('activities', typed),
     getOffers(typed),
     getWeekSchedule(typed),
+    getCourses(typed),
+    getSports(typed),
   ]);
   if (!header) notFound();
 
   const t = await getTranslations({ locale, namespace: 'activities' });
+  const schedule = buildSchedule(courses, sports, week);
 
   return (
     <>
       <PageHead header={header} locale={typed} />
 
-      {/* The areas of work. The design plates these from the bottom corner. */}
-      <section className="section section-alt" data-rise>
+      {/* The areas of work, as a list of ways in rather than a second copy of
+          the home page's cards: each row goes to the page that holds it. */}
+      <section className="section section-tight" data-rise>
         <div className="page">
-          <ul
-            className="columns-feature columns-tight plate-rota"
-            style={{ listStyle: 'none', margin: 0, padding: 0 }}
-          >
-            {offers.map((offer) => (
-              <li key={offer.id} data-rise>
-                <EditableEntry entity="offer" id={offer.id} isLast={offers.length <= 1}>
-                  <Card as="article" className="card-plate-bottom h-full" plate>
-                    <CardStar>
-                      <Icon name={offer.icon} size={27} />
-                    </CardStar>
+          <SectionHead title={t('areasTitle')} />
+          <ul className="link-list">
+            {offers.map((offer) => {
+              const row = (
+                <>
+                  <span className="link-row-icon">
+                    <Icon name={offer.icon} size={24} />
+                  </span>
+                  <span style={{ minInlineSize: 0 }}>
                     <EditableText
-                      as="h2"
+                      as="span"
                       entity="offer"
                       id={offer.id}
                       field="title"
                       locale={typed}
                       value={offer.title}
-                      className="card-title"
-                      style={{ marginBlockStart: 'var(--space-2)' }}
-                      words="tight"
+                      className="link-row-title"
                     />
                     <EditableText
-                      as="p"
+                      as="span"
                       entity="offer"
                       id={offer.id}
                       field="body"
                       locale={typed}
                       value={offer.body}
-                      className="card-body"
+                      className="link-row-text"
                       multiline
-                      rise
                     />
-                  </Card>
-                </EditableEntry>
-              </li>
-            ))}
+                  </span>
+                  {offer.href ? (
+                    <ArrowRight
+                      size={20}
+                      weight="bold"
+                      aria-hidden="true"
+                      className="mirror link-row-go"
+                    />
+                  ) : (
+                    <span />
+                  )}
+                </>
+              );
+              return (
+                <li key={offer.id}>
+                  <EditableEntry entity="offer" id={offer.id} isLast={offers.length <= 1}>
+                    {offer.href ? (
+                      <Link href={offer.href} className="link-row">
+                        {row}
+                      </Link>
+                    ) : (
+                      <div className="link-row">{row}</div>
+                    )}
+                  </EditableEntry>
+                </li>
+              );
+            })}
           </ul>
-          <div style={{ marginBlockStart: 'var(--space-5)' }}>
+          <div style={{ marginBlockStart: 'var(--space-4)' }}>
             <EditableAdd entity="offer" />
           </div>
         </div>
       </section>
 
-      {/* The week. The design closes this page on it, ruled in gold. */}
-      {week.length > 0 ? (
-        <section className="section" data-rise>
-          <div className="page">
-            <div style={{ maxInlineSize: '65rem' }}>
-              <SectionHead title={t('weekTitle')}>
-                <p className="lead">{t('weekLead')}</p>
-              </SectionHead>
-              {/* The one table on the site, in the wrapper the stylesheet has
-                  been carrying for it all along: a table cannot be narrower
-                  than its columns, and at 320px this one pushed the whole
-                  page 6px sideways. Inside the wrapper it scrolls on its own
-                  instead. */}
-              <div className="table-scroll">
-                <table className="table-week table">
-                  <caption className="visually-hidden">{t('weekTitle')}</caption>
-                  <tbody>
-                    {week.map((row) => (
-                      <tr key={row.id}>
-                        <th scope="row">
-                          <EditableText
-                            entity="week"
-                            id={row.id}
-                            field="label"
-                            locale={typed}
-                            value={row.label}
-                          />
-                        </th>
-                        <td>
-                          <EditableText
-                            entity="week"
-                            id={row.id}
-                            field="detail"
-                            locale={typed}
-                            value={row.detail}
-                          />
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
+      {/* The week, built from the courses', the sports' and the recurring
+          activities' own times — so it cannot disagree with them. */}
+      <section className="section section-alt" data-rise>
+        <div className="page">
+          <SectionHead title={t('weekTitle')}>
+            <p className="lead" style={{ maxInlineSize: '65ch' }}>
+              {t('weekLead')}
+            </p>
+          </SectionHead>
+          <WeekSchedule items={schedule} locale={typed} />
+
+          <div className="cta-row" style={{ marginBlockStart: 'var(--space-6)' }}>
+            <LinkButton href={`/${typed}/courses`}>{t('ctaCourses')}</LinkButton>
+            <LinkButton href={`/${typed}/contact`} variant="secondary">
+              {t('ctaVisit')}
+            </LinkButton>
           </div>
-        </section>
-      ) : null}
+        </div>
+      </section>
     </>
   );
 }

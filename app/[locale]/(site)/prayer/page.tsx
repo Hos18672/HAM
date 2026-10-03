@@ -4,7 +4,8 @@ import { notFound } from 'next/navigation';
 import { requireLocale } from '@/lib/i18n/locale-param';
 import { getPageHeader, getOccasions } from '@/lib/db/queries/content';
 import { getPrayerDay, getCalendarMonth, getTimetable, viennaIso } from '@/lib/prayer-page';
-import { PatternPlate } from '@/components/site/ornaments';
+import { getTranslations } from 'next-intl/server';
+import { digits } from '@/lib/i18n/format';
 import { PageHead } from '@/components/site/page-head';
 import { PrayerList } from '@/components/site/prayer-list';
 import { HijriCalendar } from '@/components/site/hijri-calendar';
@@ -71,20 +72,17 @@ export default async function PrayerPage({
   // month; handing it to the calendar lets the browser build the months it
   // moves to without coming back here.
   const occasions = await getOccasions(typed);
+  const t = await getTranslations({ locale, namespace: 'prayer' });
 
   return (
     <>
       <PageHead header={header} locale={typed} />
 
-      <section className="section" data-rise>
-        <div className="page">
+      {/* One grid: the next prayer and today's times beside the month's
+          calendar, and the month's table across both. */}
+      <section className="section">
+        <div className="page prayer-layout">
           <PrayerList day={day} locale={typed} />
-        </div>
-      </section>
-
-      <section className="section section-alt" style={{ position: 'relative' }} data-rise>
-        <PatternPlate opacity={0.35} />
-        <div className="page">
           <HijriCalendar
             initialMonth={calendar}
             initialTimetable={timetable}
@@ -94,6 +92,11 @@ export default async function PrayerPage({
             locale={typed}
             basePath={`/${typed}/prayer`}
           />
+          {/* The source and the method, once, for everything above. */}
+          <p className="prayer-source">
+            {t('sourceNote')} · {t('placeVienna')} ·{' '}
+            <span className="ltr-island">{digits('48.2175° N, 16.3260° E', typed)}</span>
+          </p>
         </div>
       </section>
     </>

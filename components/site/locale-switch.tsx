@@ -16,32 +16,31 @@ import { cn } from '../ui/cn';
  * on a page whose content depends on it (the prayer calendar's `?y=&m=`)
  * losing it would silently throw the reader back to the current month.
  */
-export function LocaleSwitch({ className, style }: { className?: string; style?: CSSProperties }) {
+interface SwitchProps {
+  className?: string;
+  style?: CSSProperties;
+  /** "FA | DE" for the slim header bar; the full names everywhere else. */
+  compact?: boolean;
+}
+
+export function LocaleSwitch(props: SwitchProps) {
   // `useSearchParams` opts its subtree out of static prerendering, so it is
   // read inside a boundary: the statically rendered markup links without the
   // query, and the moment it hydrates the real one is there.
   return (
-    <Suspense fallback={<Switch className={className} style={style} search="" />}>
-      <SwitchWithQuery className={className} style={style} />
+    <Suspense fallback={<Switch {...props} search="" />}>
+      <SwitchWithQuery {...props} />
     </Suspense>
   );
 }
 
-function SwitchWithQuery({ className, style }: { className?: string; style?: CSSProperties }) {
+function SwitchWithQuery(props: SwitchProps) {
   const params = useSearchParams();
   const search = params.toString();
-  return <Switch className={className} style={style} search={search ? `?${search}` : ''} />;
+  return <Switch {...props} search={search ? `?${search}` : ''} />;
 }
 
-function Switch({
-  className,
-  style,
-  search,
-}: {
-  className?: string;
-  style?: CSSProperties;
-  search: string;
-}) {
+function Switch({ className, style, compact, search }: SwitchProps & { search: string }) {
   const t = useTranslations('locale');
   const pathname = usePathname();
   const params = useParams();
@@ -51,7 +50,7 @@ function Switch({
 
   return (
     <div
-      className={cn('seg', className)}
+      className={cn('seg', compact && 'seg-compact', className)}
       style={style}
       role="group"
       aria-label={t('switch')}
@@ -82,7 +81,14 @@ function Switch({
               document.cookie = `NEXT_LOCALE=${locale}; path=/; max-age=31536000; samesite=lax`;
             }}
           >
-            {localeLabel[locale]}
+            {compact ? (
+              <>
+                <span aria-hidden="true">{locale.toUpperCase()}</span>
+                <span className="visually-hidden">{localeLabel[locale]}</span>
+              </>
+            ) : (
+              localeLabel[locale]
+            )}
           </Link>
         );
       })}

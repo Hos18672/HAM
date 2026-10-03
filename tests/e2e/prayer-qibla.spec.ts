@@ -11,9 +11,11 @@ test.describe('prayer times', () => {
 
     // The next prayer is highlighted and counts down.
     await expect(page.getByText('Nächstes Gebet')).toBeVisible();
-    const countdown = page.locator('[aria-label="Verbleibende Zeit bis zum nächsten Gebet"]');
-    await expect(countdown).toBeVisible();
-    await expect(countdown).toContainText(/\d/, { timeout: 15_000 });
+    // Spelled out in words, never left as a dash: "in 2 Std. 14 Min.".
+    const countdown = page.locator('.prayer-next-left');
+    await expect(countdown).toContainText(/in \d+ (Std\.|Min\.)|unter 1 Min\./, {
+      timeout: 15_000,
+    });
 
     // Both calendars, side by side.
     await expect(page.getByText('Legende')).toBeVisible();

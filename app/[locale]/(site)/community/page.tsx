@@ -2,13 +2,13 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 import { requireLocale } from '@/lib/i18n/locale-param';
+import { contactHref } from '@/lib/topics';
 import { getPageHeader, getBlocks, getCommunityCards } from '@/lib/db/queries/content';
 import { PatternPlate } from '@/components/site/ornaments';
 import { PageHead } from '@/components/site/page-head';
 import { Words } from '@/components/site/words';
 import { EditableText } from '@/components/editable/editable-text';
 import { EditableEntry, EditableAdd } from '@/components/editable/editable-list';
-import { Card, CardStar } from '@/components/ui/card';
 import { LinkButton } from '@/components/ui/button';
 import { Icon } from '@/components/site/icon';
 import { pageMetadata } from '@/lib/page-meta';
@@ -42,26 +42,57 @@ export default async function CommunityPage({ params }: { params: Promise<{ loca
   if (!header) notFound();
 
   const t = await getTranslations({ locale, namespace: 'community' });
-  const tActions = await getTranslations({ locale, namespace: 'actions' });
-  const tNav = await getTranslations({ locale, namespace: 'nav' });
 
   return (
     <>
       <PageHead header={header} locale={typed} />
 
-      <section className="section section-alt" data-rise>
+      {/* Two ways in, first: for someone who needs a hand, and for someone
+          who wants to give one. */}
+      <section className="section section-tight">
         <div className="page">
-          <ul
-            className="columns-tight plate-rota"
-            style={{ listStyle: 'none', margin: 0, padding: 0 }}
-          >
+          <div className="cta-panel" data-rise>
+            <PatternPlate tiling="shesh" drift opacity={0.55} />
+            <div className="cta-panel-in">
+              <div>
+                <Words as="h2" style={{ fontSize: 'var(--text-3xl)' }}>
+                  {t('helpTitle')}
+                </Words>
+                <p
+                  style={{
+                    marginBlockStart: 'var(--space-3)',
+                    color: 'var(--bandDim)',
+                    maxInlineSize: '50ch',
+                  }}
+                >
+                  {t('helpLead')}
+                </p>
+              </div>
+              <div className="cta-actions">
+                <LinkButton href={contactHref(typed, 'help')} size="lg" className="btn-gold">
+                  {t('askForHelp')}
+                </LinkButton>
+                <LinkButton href={contactHref(typed, 'volunteer')} variant="on-scrim" size="lg">
+                  {t('volunteer')}
+                </LinkButton>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* What the neighbourhood help covers: information, not links, so a
+          plain list rather than cards that look clickable. */}
+      <section className="section section-alt">
+        <div className="page">
+          <ul className="info-list">
             {cards.map((card, index) => (
               <li key={card.id} data-rise>
                 <EditableEntry entity="community" id={card.id} isLast={cards.length <= 1}>
-                  <Card as="article" className="card-plate-bottom h-full" plate>
-                    <CardStar>
-                      <Icon name={COMMUNITY_ICONS[index % COMMUNITY_ICONS.length]} size={26} />
-                    </CardStar>
+                  <div className="info-item">
+                    <span className="link-row-icon">
+                      <Icon name={COMMUNITY_ICONS[index % COMMUNITY_ICONS.length]} size={24} />
+                    </span>
                     <EditableText
                       as="h2"
                       entity="community"
@@ -69,9 +100,6 @@ export default async function CommunityPage({ params }: { params: Promise<{ loca
                       field="title"
                       locale={typed}
                       value={card.title}
-                      className="card-title"
-                      style={{ fontSize: 'var(--text-lg)', marginBlockStart: 'var(--space-2)' }}
-                      words="tight"
                     />
                     <EditableText
                       as="p"
@@ -80,11 +108,9 @@ export default async function CommunityPage({ params }: { params: Promise<{ loca
                       field="body"
                       locale={typed}
                       value={card.body}
-                      className="card-body"
                       multiline
-                      rise
                     />
-                  </Card>
+                  </div>
                 </EditableEntry>
               </li>
             ))}
@@ -92,53 +118,19 @@ export default async function CommunityPage({ params }: { params: Promise<{ loca
           <div style={{ marginBlockStart: 'var(--space-4)' }}>
             <EditableAdd entity="community" />
           </div>
-        </div>
-      </section>
-
-      {/* The closing ask. The design sets this as a rounded panel of the band
-          inside the page, with the ground drifting behind it — not as a
-          full-bleed section. */}
-      <section className="section" data-rise>
-        <div className="page">
-          <div className="cta-panel glow" data-rise>
-            <PatternPlate tiling="shesh" drift opacity={0.55} />
-            <div className="cta-panel-in">
-              <div>
-                <Words as="h2" style={{ fontSize: 'var(--text-3xl)' }}>
-                  {t('volunteerTitle')}
-                </Words>
-                {blocks.cta_note ? (
-                  <EditableText
-                    as="p"
-                    entity="block"
-                    id={blocks.cta_note.id}
-                    field="text"
-                    locale={typed}
-                    value={blocks.cta_note.text}
-                    style={{
-                      marginBlockStart: 'var(--space-3)',
-                      color: 'var(--bandDim)',
-                      maxInlineSize: '36em',
-                    }}
-                    multiline
-                    rise
-                  />
-                ) : null}
-              </div>
-              <div className="cta-actions">
-                <LinkButton
-                  href={`/${locale}/contact?topic=volunteer`}
-                  size="lg"
-                  className="btn-gold"
-                >
-                  {tActions('volunteer')}
-                </LinkButton>
-                <LinkButton href={`/${locale}/support`} variant="on-scrim" size="lg">
-                  {tNav('support')}
-                </LinkButton>
-              </div>
-            </div>
-          </div>
+          {blocks.cta_note ? (
+            <EditableText
+              as="p"
+              entity="block"
+              id={blocks.cta_note.id}
+              field="text"
+              locale={typed}
+              value={blocks.cta_note.text}
+              className="lead"
+              style={{ marginBlockStart: 'var(--space-6)', maxInlineSize: '65ch' }}
+              multiline
+            />
+          ) : null}
         </div>
       </section>
     </>

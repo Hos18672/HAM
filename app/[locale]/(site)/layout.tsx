@@ -33,7 +33,7 @@ export default async function SiteLayout({
       >
         <PageEnter>{children}</PageEnter>
       </main>
-      <Footer locale={typed} />
+      <Footer locale={typed} theme={theme} />
       <WanderingBirds />
     </>
   );

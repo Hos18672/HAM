@@ -66,7 +66,10 @@ test.describe('public site', () => {
     await page.goto('/de');
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
 
-    await page.getByRole('button', { name: /Darstellung wechseln/i }).click();
+    await page
+      .locator('header')
+      .getByRole('button', { name: /Darstellung wechseln/i })
+      .click();
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
 
     // The cookie is what makes the server render dark on the next request —
@@ -80,7 +83,7 @@ test.describe('public site', () => {
     // toggle has to carry its own state or the second click is a no-op.
     await page.goto('/de');
     const html = page.locator('html');
-    const toggle = page.getByRole('button', { name: /Darstellung wechseln/i });
+    const toggle = page.locator('header').getByRole('button', { name: /Darstellung wechseln/i });
 
     await toggle.click();
     await expect(html).toHaveAttribute('data-theme', 'dark');
@@ -164,7 +167,7 @@ test.describe('public site', () => {
     expect(headers['x-content-type-options']).toBe('nosniff');
   });
 
-  test('asks nobody but the tile server, and only on the qibla page', async ({ page }) => {
+  test('asks nobody but the tile server, and only where a map is shown', async ({ page }) => {
     // One transparent pixel, so the map behaves as if the tiles arrived and
     // the run never actually troubles OpenStreetMap's servers.
     const PIXEL = Buffer.from(
@@ -191,12 +194,13 @@ test.describe('public site', () => {
     }
 
     // No font CDN, no analytics, no embeds, anywhere. The single exception
-    // is the map on the qibla page, which fetches OpenStreetMap's tiles as
-    // plain images — nothing else of theirs runs in the page, and the
-    // privacy policy says so. If anything else ever appears here, the
-    // policy has stopped being true.
+    // is OpenStreetMap's tiles, fetched as plain images by the qibla page's
+    // map and by the house map on the home and contact pages — nothing else
+    // of theirs runs in the page, and the privacy policy says so. If anything
+    // else ever appears here, the policy has stopped being true.
+    const MAP_PAGES = ['/qibla', '/contact', ''];
     const unexpected = external.filter(
-      (r) => !(r.path === '/qibla' && r.url.startsWith('https://tile.openstreetmap.org/')),
+      (r) => !(MAP_PAGES.includes(r.path) && r.url.startsWith('https://tile.openstreetmap.org/')),
     );
     expect(unexpected).toEqual([]);
   });

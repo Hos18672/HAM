@@ -30,7 +30,7 @@ const validContact = {
   name: 'Maryam Hosseini',
   email: 'maryam@example.at',
   phone: '+43 660 1234567',
-  topic: 'courses' as const,
+  topic: 'course' as const,
   message: 'Ich möchte mich für den Deutschkurs anmelden.',
   locale: 'de' as const,
   website: '',

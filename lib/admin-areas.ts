@@ -40,6 +40,49 @@ export interface AreaSpec {
   sortable: boolean;
 }
 
+const GROUP: BaseFieldSpec = {
+  name: 'group',
+  label: 'Gruppe',
+  type: 'select',
+  options: [
+    { value: 'all', label: 'Alle' },
+    { value: 'women', label: 'Frauen' },
+    { value: 'men', label: 'Männer' },
+    { value: 'family', label: 'Familien' },
+    { value: 'kids', label: 'Kinder' },
+    { value: 'youth', label: 'Jugendliche' },
+    { value: 'adults', label: 'Erwachsene' },
+  ],
+  hint: 'Steuert den Gruppenfilter und die Farbe im Wochenplan.',
+};
+
+const TIME_FIELDS: BaseFieldSpec[] = [
+  { name: 'startTime', label: 'Beginn (HH:MM)', type: 'text', hint: 'Zum Beispiel 17:00.' },
+  { name: 'endTime', label: 'Ende (HH:MM)', type: 'text', hint: 'Leer lassen, wenn offen.' },
+];
+
+/** When a course or a sport meets. The weekly schedule is built from these. */
+const TIMING: BaseFieldSpec[] = [
+  {
+    name: 'days',
+    label: 'Wochentage',
+    type: 'text',
+    hint: 'Als Ziffern, mit Komma getrennt: 1 = Montag … 7 = Sonntag. Zum Beispiel „1,3“.',
+  },
+  ...TIME_FIELDS,
+  {
+    name: 'rhythm',
+    label: 'Rhythmus',
+    type: 'select',
+    options: [
+      { value: 'weekly', label: 'Wöchentlich' },
+      { value: 'biweekly', label: 'Vierzehntägig' },
+      { value: 'monthly', label: 'Monatlich (erster Termin im Monat)' },
+    ],
+  },
+  GROUP,
+];
+
 const PUBLISHED: BaseFieldSpec = {
   name: 'published',
   label: 'Veröffentlicht',
@@ -87,7 +130,26 @@ export const AREAS: Record<string, AreaSpec> = {
       { name: 'title', label: 'Titel' },
       { name: 'body', label: 'Beschreibung', multiline: true, rows: 3 },
     ],
-    baseFields: [{ name: 'icon', label: 'Symbol', type: 'icon' }, PUBLISHED],
+    baseFields: [
+      { name: 'icon', label: 'Symbol', type: 'icon' },
+      {
+        name: 'href',
+        label: 'Verlinkte Seite',
+        type: 'select',
+        options: [
+          { value: '', label: '— keine —' },
+          { value: '/courses', label: 'Kurse' },
+          { value: '/duas', label: 'Bittgebete' },
+          { value: '/sport', label: 'Sport' },
+          { value: '/culture', label: 'Kultur' },
+          { value: '/community', label: 'Gemeinschaft' },
+          { value: '/events', label: 'Termine' },
+          { value: '/prayer', label: 'Gebetszeiten' },
+          { value: '/contact', label: 'Kontakt' },
+        ],
+      },
+      PUBLISHED,
+    ],
     addable: true,
     sortable: true,
   },
@@ -101,8 +163,17 @@ export const AREAS: Record<string, AreaSpec> = {
       { name: 'title', label: 'Titel' },
       { name: 'body', label: 'Beschreibung', multiline: true, rows: 3 },
       { name: 'targetGroup', label: 'Zielgruppe' },
-      { name: 'schedule', label: 'Zeiten' },
+      {
+        name: 'schedule',
+        label: 'Zeiten (Text)',
+        hint: 'Optional — eine Anmerkung zu den Zeiten unten.',
+      },
       { name: 'languages', label: 'Sprachen' },
+      {
+        name: 'fee',
+        label: 'Kosten',
+        hint: 'Zum Beispiel „kostenlos“. Leer = wird nicht angezeigt.',
+      },
     ],
     baseFields: [
       {
@@ -125,6 +196,7 @@ export const AREAS: Record<string, AreaSpec> = {
         hint: 'Zum Beispiel A1, B1 — oder leer lassen.',
       },
       { name: 'slug', label: 'Kurzname (URL)', type: 'text' },
+      ...TIMING,
       PUBLISHED,
     ],
     addable: true,
@@ -167,9 +239,13 @@ export const AREAS: Record<string, AreaSpec> = {
     fields: [
       { name: 'activity', label: 'Aktivität' },
       { name: 'audience', label: 'Für wen' },
-      { name: 'schedule', label: 'Trainingszeiten' },
+      {
+        name: 'schedule',
+        label: 'Trainingszeiten (Text)',
+        hint: 'Optional — eine Anmerkung zu den Zeiten unten.',
+      },
     ],
-    baseFields: [PUBLISHED],
+    baseFields: [...TIMING, PUBLISHED],
     addable: true,
     sortable: true,
   },
@@ -218,12 +294,17 @@ export const AREAS: Record<string, AreaSpec> = {
   week: {
     key: 'week',
     entity: 'week',
-    title: 'Wochenplan',
-    description: 'Die Tabelle auf der Seite „Über uns“.',
+    title: 'Wochenplan: weitere Termine',
+    description:
+      'Regelmäßige Termine, die weder Kurs noch Sport sind (Gebete, Duʿa-Abende …). Der Wochenplan auf der Seite „Aktivitäten“ setzt sich aus diesen, den Kursen und den Sportzeiten zusammen.',
     titleField: 'label',
     fields: [
-      { name: 'label', label: 'Tag' },
-      { name: 'detail', label: 'Was an diesem Tag stattfindet' },
+      { name: 'label', label: 'Was' },
+      {
+        name: 'detail',
+        label: 'Zeitangabe ohne Uhrzeit',
+        hint: 'Nur, wenn es keine feste Uhrzeit gibt — etwa „zur Mittagsgebetszeit“.',
+      },
     ],
     baseFields: [
       {
@@ -240,6 +321,8 @@ export const AREAS: Record<string, AreaSpec> = {
           { value: '6', label: 'Samstag' },
         ],
       },
+      ...TIME_FIELDS,
+      GROUP,
     ],
     addable: true,
     sortable: true,

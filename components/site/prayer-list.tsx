@@ -11,18 +11,21 @@ import {
   Moon,
   Clock,
   MapPin,
+  ArrowRight,
   ArrowCounterClockwise,
 } from '@phosphor-icons/react/dist/ssr';
-import { formatClock, formatCountdown, digits } from '@/lib/i18n/format';
+import { formatClock, formatDuration, formatDay, digits } from '@/lib/i18n/format';
 import { formatHijri } from '@/lib/hijri';
 import type { PrayerKey } from '@/lib/prayer-times';
 import type { PrayerDay } from '@/lib/prayer-page';
 import { localPrayerDay } from '@/lib/prayer-local';
-import { CITIES, CITY_GROUPS, DEFAULT_CITY_ID, cityName, findCity } from '@/lib/cities';
+import { DEFAULT_CITY_ID, cityName, findCity } from '@/lib/cities';
+import { useNextPrayer } from '@/lib/use-next-prayer';
+import { CityCombobox } from './city-combobox';
+import { Link } from '@/lib/i18n/navigation';
 import { toPersianDate, persianMonthName } from '@/lib/persian-date';
 import type { Locale } from '@/lib/i18n/config';
 import { Button } from '../ui/button';
-import { Card } from '../ui/card';
 import { PatternPlate } from './ornaments';
 
 type GeoState =
@@ -63,10 +66,11 @@ const ORDER: PrayerKey[] = ['fajr', 'sunrise', 'dhuhr', 'asr', 'maghrib', 'isha'
  */
 export function PrayerList({ day: vienna, locale }: { day: PrayerDay; locale: Locale }) {
   const t = useTranslations('prayer');
-  const [remaining, setRemaining] = useState<number | null>(null);
-  const [day, setDay] = useState(vienna);
+  const [shownDay, setShownDay] = useState(vienna);
   const [geo, setGeo] = useState<GeoState>('vienna');
   const [cityId, setCityId] = useState<string>(DEFAULT_CITY_ID);
+  const [recent, setRecent] = useState<string[]>([]);
+  const { day, remaining } = useNextPrayer(shownDay);
 
   /**
    * A chosen city is worked out here in the browser rather than asked of the
@@ -75,9 +79,9 @@ export function PrayerList({ day: vienna, locale }: { day: PrayerDay; locale: Lo
    * same calculation the server falls back to.
    *
    * The choice is remembered per browser, so someone in Graz is not choosing
-   * Graz again every visit. Vienna clears the memory rather than storing
-   * itself — this is a Viennese house, and its own city is the default, not
-   * a preference.
+   * Graz again every visit, and the last few choices come first in the list.
+   * Vienna clears the memory rather than storing itself — this is a Viennese
+   * house, and its own city is the default, not a preference.
    */
   function chooseCity(id: string) {
     const city = findCity(id);
@@ -86,15 +90,20 @@ export function PrayerList({ day: vienna, locale }: { day: PrayerDay; locale: Lo
     try {
       if (!city || city.id === DEFAULT_CITY_ID) window.localStorage.removeItem('ham-city');
       else window.localStorage.setItem('ham-city', city.id);
+      if (city) {
+        const list = [city.id, ...recent.filter((r) => r !== city.id)].slice(0, 4);
+        setRecent(list);
+        window.localStorage.setItem('ham-city-recent', JSON.stringify(list));
+      }
     } catch {
       // Private window, or storage turned off. The choice still holds for
       // this page; it simply will not outlive it.
     }
     if (!city || city.id === DEFAULT_CITY_ID) {
-      setDay(vienna);
+      setShownDay(vienna);
       return;
     }
-    setDay(localPrayerDay(new Date(), city));
+    setShownDay(localPrayerDay(new Date(), city));
   }
 
   // The remembered city, once, after hydration — reading storage during the
@@ -103,13 +112,15 @@ export function PrayerList({ day: vienna, locale }: { day: PrayerDay; locale: Lo
     let stored: string | null = null;
     try {
       stored = window.localStorage.getItem('ham-city');
+      const list = JSON.parse(window.localStorage.getItem('ham-city-recent') ?? '[]') as unknown;
+      if (Array.isArray(list)) setRecent(list.filter((x): x is string => typeof x === 'string'));
     } catch {
       stored = null;
     }
     const city = findCity(stored);
     if (!city || city.id === DEFAULT_CITY_ID) return;
     setCityId(city.id);
-    setDay(localPrayerDay(new Date(), city));
+    setShownDay(localPrayerDay(new Date(), city));
     // Only on mount: afterwards the reader's own choices drive this.
   }, []);
 
@@ -137,12 +148,12 @@ export function PrayerList({ day: vienna, locale }: { day: PrayerDay; locale: Lo
         try {
           const response = await fetch(`/api/prayer/day?${query}`);
           if (!response.ok) throw new Error(String(response.status));
-          setDay((await response.json()) as PrayerDay);
+          setShownDay((await response.json()) as PrayerDay);
         } catch {
           // No route to ask — the static preview has none — or it said no.
           // The day is arithmetic, so it is worked out here instead of
           // telling the reader their own position could not be used.
-          setDay(localPrayerDay(new Date(), place));
+          setShownDay(localPrayerDay(new Date(), place));
         }
         setCityId('');
         setGeo('located');
@@ -150,10 +161,6 @@ export function PrayerList({ day: vienna, locale }: { day: PrayerDay; locale: Lo
       (error) => setGeo(error.code === error.PERMISSION_DENIED ? 'denied' : 'failed'),
       { timeout: 10_000, maximumAge: 600_000 },
     );
-  }
-
-  function backToVienna() {
-    chooseCity(DEFAULT_CITY_ID);
   }
 
   const geoMessage =
@@ -171,40 +178,7 @@ export function PrayerList({ day: vienna, locale }: { day: PrayerDay; locale: Lo
                 ? t('locationNote')
                 : null;
 
-  useEffect(() => {
-    if (!day.next) return;
-
-    // The server says how much of the interval was left at the moment it
-    // rendered. From there only *differences* in the local clock are used, so
-    // a device whose clock is wrong still sees the right remaining time
-    // relative to the times printed above it — comparing the server's absolute
-    // instant against `Date.now()` would inherit the device's error in full.
-    const totalMs = (day.next.minutes - day.nowMinutes) * 60_000;
-    const startedAt = Date.now();
-
-    const tick = () =>
-      setRemaining(Math.max(0, Math.round((totalMs - (Date.now() - startedAt)) / 1000)));
-    tick();
-    // Every thirty seconds: the page shows minutes, so a faster tick would be
-    // work nobody can see.
-    const timer = window.setInterval(tick, 30_000);
-    return () => window.clearInterval(timer);
-  }, [day]);
-
   const gregorian = new Date(day.gregorianIso);
-  const gregorianLabel = new Intl.DateTimeFormat(locale === 'fa' ? 'fa-IR' : 'de-AT', {
-    weekday: 'long',
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-    timeZone: day.place.timeZone,
-    numberingSystem: locale === 'fa' ? 'arabext' : 'latn',
-    // Said out loud, because `fa-IR` resolves to the Persian calendar by
-    // default: without it this line and the Iranian one below it were the
-    // same date twice for a Persian reader.
-    calendar: 'gregory',
-  }).format(gregorian);
-
   const chosenCity = findCity(cityId);
   const placeLabel =
     geo === 'located'
@@ -214,229 +188,156 @@ export function PrayerList({ day: vienna, locale }: { day: PrayerDay; locale: Lo
         : t('todayHere');
 
   const persian = toPersianDate(gregorian);
-  const persianLabel = `${digits(persian.day, locale)}. ${persianMonthName(persian.month, locale)} ${digits(persian.year, locale)}`;
+  const persianLabel = [
+    locale === 'fa' ? digits(persian.day, locale) : `${persian.day}.`,
+    persianMonthName(persian.month, locale),
+    digits(persian.year, locale),
+  ].join(' ');
 
-  const { latitude, longitude } = day.place;
-  const coordinates = day.place.vienna
-    ? '48.2175° N, 16.3260° E'
-    : `${Math.abs(latitude).toFixed(2)}° ${latitude >= 0 ? 'N' : 'S'}, ` +
-      `${Math.abs(longitude).toFixed(2)}° ${longitude >= 0 ? 'E' : 'W'}`;
+  const next = day.next;
 
   return (
-    <div style={{ display: 'grid', gap: 'var(--space-6)' }}>
-      {/* Next prayer.
-
-          The design's opening panel: two columns on one surface, the prayer
-          and its countdown on one side and today's two dates on the other,
-          with the girih plate behind them. */}
-      {day.next ? (
-        <div
-          className="surf"
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 17rem), 1fr))',
-            gap: 'clamp(22px, 3vw, 48px)',
-            alignItems: 'center',
-          }}
-        >
-          <PatternPlate opacity={0.3} />
-
-          <div style={{ position: 'relative' }}>
-            <p className="kicker" style={{ color: 'var(--color-accent-2-text)' }}>
-              {t('nextPrayer')}
-            </p>
-            <h2
-              style={{
-                marginBlockStart: 'var(--space-3)',
-                fontSize: 'clamp(30px, 4.4vw, 46px)',
-                lineHeight: 1.05,
-              }}
-            >
-              {t(`names.${day.next.key}`)}
+    <div className="prayer-now">
+      {/* The next prayer, with today's three dates and the place. */}
+      <section className="surf prayer-next" aria-labelledby="next-prayer-name">
+        <PatternPlate opacity={0.3} />
+        <div style={{ position: 'relative' }}>
+          <p className="kicker" style={{ color: 'var(--color-accent-2-text)' }}>
+            {t('nextPrayer')}
+          </p>
+          {next ? (
+            <>
+              <h2 id="next-prayer-name" className="prayer-next-name">
+                {t(`names.${next.key}`)}
+                {next.tomorrow ? (
+                  <span className="prayer-next-tomorrow">{t('tomorrow')}</span>
+                ) : null}
+              </h2>
+              <p className="prayer-next-row">
+                <span className="tabular prayer-next-time">
+                  {/* `next.minutes` rather than today's entry for that key:
+                      after Isha this is tomorrow's Fajr, which is a minute or
+                      two off today's and is the time being counted down to. */}
+                  {formatClock(next.minutes, locale)}
+                </span>
+                <span className="prayer-next-left" aria-live="polite" aria-atomic="true">
+                  {remaining === null ? null : (
+                    <>
+                      <span className="visually-hidden">{t('countdownLabel')}: </span>
+                      {t('in')} {formatDuration(remaining, locale)}
+                    </>
+                  )}
+                </span>
+              </p>
+            </>
+          ) : (
+            <h2 id="next-prayer-name" className="prayer-next-name">
+              —
             </h2>
-            <div
-              style={{
-                marginBlockStart: 'var(--space-2)',
-                display: 'flex',
-                alignItems: 'baseline',
-                flexWrap: 'wrap',
-                gap: 'var(--space-3)',
-              }}
-            >
-              <span
-                className="tabular"
-                style={{
-                  fontSize: 'clamp(34px, 5vw, 52px)',
-                  lineHeight: 1,
-                  fontWeight: 'var(--weight-bold)',
-                  color: 'var(--color-accent-2-text)',
-                }}
-              >
-                {/* `next.minutes` rather than today's entry for that key: after
-                    Isha this is tomorrow's Fajr, which is a minute or two off
-                    today's and is the time the countdown is actually running to. */}
-                {formatClock(day.next.minutes, locale)}
-              </span>
-              <span
-                aria-live="polite"
-                aria-label={t('countdownLabel')}
-                className="tabular text-sm"
-                style={{ color: 'var(--color-ink-muted)' }}
-              >
-                {t('in')}{' '}
-                {remaining === null ? (
-                  // Before hydration there is nothing honest to show, so the
-                  // slot is reserved rather than filled with a number that
-                  // will jump.
-                  <span aria-hidden="true">—</span>
-                ) : (
-                  formatCountdown(remaining, locale)
-                )}
-              </span>
-            </div>
-          </div>
+          )}
 
-          <div style={{ position: 'relative', display: 'grid', gap: 'var(--space-1)' }}>
-            <p className="kicker" style={{ color: 'var(--color-accent-2-text)' }}>
-              {placeLabel}
-            </p>
-            <p style={{ lineHeight: 'var(--leading-normal)' }}>{gregorianLabel}</p>
-            <p
-              style={{
-                lineHeight: 'var(--leading-normal)',
-                color: 'var(--color-accent-2-text)',
-                fontWeight: 'var(--weight-semibold)',
-              }}
-            >
+          <div className="prayer-next-dates">
+            <p className="prayer-next-place">{placeLabel}</p>
+            <p>{formatDay(locale, gregorian, 'full', { calendar: 'gregory' })}</p>
+            <p className="prayer-next-hijri">
               {formatHijri(gregorian, locale, day.place.timeZone)}
             </p>
-            {/* The Solar Hijri date, as Iran keeps it. Computed from the
-                platform's own Persian calendar rather than asked of anyone:
-                see `lib/persian-date`. It is read in Tehran whatever city is
-                showing above it, because the question it answers is what the
-                date is there. */}
-            <p className="text-sm" style={{ color: 'var(--color-ink-muted)' }}>
+            <p className="prayer-next-iran">
               {t('iranDate')}: {persianLabel}
             </p>
-
-            {/* The city. A plain select: it is a list of thirty names on a
-                page people open on a phone, and the one the platform draws is
-                better at that than anything built here. */}
-            <div style={{ marginBlockStart: 'var(--space-3)' }}>
-              <label
-                className="kicker"
-                htmlFor="prayer-city"
-                style={{ display: 'block', marginBlockEnd: 'var(--space-1)' }}
-              >
-                {t('cityLabel')}
-              </label>
-              <span className="city-select-wrap">
-                <select
-                  id="prayer-city"
-                  className="city-select"
-                  value={geo === 'located' ? '' : cityId}
-                  onChange={(event) => chooseCity(event.target.value)}
-                >
-                  {geo === 'located' ? <option value="">{t('todayYourPlace')}</option> : null}
-                  {CITY_GROUPS.map((group) => (
-                    <optgroup key={group} label={t(`cityGroups.${group}`)}>
-                      {CITIES.filter((city) => city.group === group).map((city) => (
-                        <option key={city.id} value={city.id}>
-                          {cityName(city, locale)}
-                        </option>
-                      ))}
-                    </optgroup>
-                  ))}
-                </select>
-              </span>
-            </div>
-
-            <div className="flex flex-wrap gap-2" style={{ marginBlockStart: 'var(--space-3)' }}>
-              {geo === 'located' ? (
-                <Button variant="secondary" size="sm" onClick={backToVienna}>
-                  <ArrowCounterClockwise size={16} weight="duotone" aria-hidden="true" />
-                  {t('backToVienna')}
-                </Button>
-              ) : (
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  onClick={useMyLocation}
-                  loading={geo === 'locating'}
-                  disabled={geo === 'locating'}
-                >
-                  <MapPin size={16} weight="duotone" aria-hidden="true" />
-                  {t('useMyLocation')}
-                </Button>
-              )}
-            </div>
-            {/* Failures are stated, never silent. */}
-            <p aria-live="polite" className="text-xs" style={{ color: 'var(--color-ink-muted)' }}>
-              {geoMessage}
-            </p>
           </div>
-        </div>
-      ) : null}
 
-      {/* The seven times. The track is narrow enough that all seven stand in
-          one row on a desktop, as the design sets them. */}
-      <ul
-        style={{
-          listStyle: 'none',
-          margin: 0,
-          padding: 0,
-          display: 'grid',
-          // The same 20px every other set of cards on the site is spaced by.
-          // At 15 the seven of them read as one block rather than seven.
-          gap: 'var(--space-4)',
-          // 96, not the 106 it was: the wider gap costs the row 10px of
-          // track, and at 390 that was the difference between three of them
-          // fitting and two. The gap changes, the shape of the row does not.
-          gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 96px), 1fr))',
-        }}
-      >
-        {ORDER.map((key) => {
-          const IconComponent = ICONS[key] ?? Clock;
-          const isNext = day.next?.key === key && !day.next.tomorrow;
-          const value = day.times[key];
-          return (
-            <li key={key} data-rise>
-              <Card variant="soft" marked={isNext} className="ptime h-full">
-                <IconComponent size={20} weight="duotone" aria-hidden="true" color="var(--gold)" />
-                <p className="ptime-label">
+          <div className="prayer-next-place-pick">
+            <CityCombobox
+              value={geo === 'located' ? '' : cityId}
+              recent={recent}
+              onChoose={chooseCity}
+              locale={locale}
+              located={geo === 'located'}
+            />
+            {geo === 'located' ? (
+              <Button variant="secondary" size="sm" onClick={() => chooseCity(DEFAULT_CITY_ID)}>
+                <ArrowCounterClockwise size={16} weight="duotone" aria-hidden="true" />
+                {t('backToVienna')}
+              </Button>
+            ) : (
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={useMyLocation}
+                loading={geo === 'locating'}
+                disabled={geo === 'locating'}
+              >
+                <MapPin size={16} weight="duotone" aria-hidden="true" />
+                {t('useMyLocation')}
+              </Button>
+            )}
+          </div>
+          {/* Failures are stated, never silent. */}
+          <p aria-live="polite" className="text-xs" style={{ color: 'var(--color-ink-muted)' }}>
+            {geoMessage}
+          </p>
+        </div>
+      </section>
+
+      {/* Today's seven times, one row each, the next one marked. */}
+      <section aria-labelledby="prayer-today-title">
+        <h2 id="prayer-today-title" className="visually-hidden">
+          {placeLabel}
+        </h2>
+        <ol className="ptimes">
+          {ORDER.map((key) => {
+            const IconComponent = ICONS[key] ?? Clock;
+            const isNext = next?.key === key && !next.tomorrow;
+            const value = day.times[key];
+            return (
+              <li key={key} className="ptimes-row" data-next={isNext ? 'true' : undefined}>
+                <IconComponent size={22} weight="duotone" aria-hidden="true" color="var(--gold)" />
+                <span className="ptimes-name">
                   {t(`names.${key}`)}
-                  {/* The gold ring says "next" to anyone who can see it; this
-                      says it to everyone else. Its own wording, not the
-                      hero's: two elements reading "Nächstes Gebet" on one
-                      page is ambiguous to a reader moving by text, and it
-                      makes any test that looks for that phrase pick blindly
-                      between them. */}
-                  {isNext ? <span className="visually-hidden"> — {t('nextMark')}</span> : null}
-                </p>
-                <p
-                  className="tabular"
-                  style={{
-                    fontSize: 'clamp(21px, 2.6vw, 28px)',
-                    lineHeight: 1,
-                    fontWeight: 'var(--weight-bold)',
-                    color: 'var(--head)',
-                  }}
-                >
+                  {isNext ? <span className="ptimes-mark">{t('nextMark')}</span> : null}
+                </span>
+                <span className="ptimes-time tabular">
                   {/* A time that does not occur at this latitude prints an
                       em dash rather than crashing or inventing a value. */}
                   {value === null ? '—' : formatClock(value, locale)}
-                </p>
-              </Card>
-            </li>
-          );
-        })}
-      </ul>
-
-      <p className="text-xs" style={{ color: 'var(--color-ink-faint)', maxInlineSize: '70ch' }}>
-        {day.source === 'aladhan' ? t('sourceApi') : t('sourceLocal')} ·{' '}
-        {day.place.vienna ? `${t('placeVienna')} · ` : null}
-        <span className="ltr-island">{digits(coordinates, locale)}</span>
-      </p>
+                </span>
+              </li>
+            );
+          })}
+        </ol>
+      </section>
     </div>
+  );
+}
+
+/**
+ * The compact strip under the home page's hero: the next prayer, its time,
+ * the time left and the way to the full page. Vienna only — the city picker
+ * lives on the prayer page.
+ */
+export function NextPrayerStrip({ day: initial, locale }: { day: PrayerDay; locale: Locale }) {
+  const t = useTranslations('prayer');
+  const { day, remaining } = useNextPrayer(initial);
+  const next = day.next;
+  if (!next) return null;
+  const IconComponent = ICONS[next.key] ?? Clock;
+  return (
+    <Link className="prayer-strip" href="/prayer">
+      <IconComponent size={26} weight="duotone" aria-hidden="true" color="var(--gold)" />
+      <span className="prayer-strip-label">{t('nextPrayer')}</span>
+      <span className="prayer-strip-name">
+        {t(`names.${next.key}`)}
+        {next.tomorrow ? ` · ${t('tomorrow')}` : ''}
+      </span>
+      <span className="prayer-strip-time tabular">{formatClock(next.minutes, locale)}</span>
+      <span className="prayer-strip-left" aria-live="polite">
+        {remaining === null ? null : `${t('in')} ${formatDuration(remaining, locale)}`}
+      </span>
+      <span className="prayer-strip-go">
+        {t('allTimes')}
+        <ArrowRight size={16} weight="bold" aria-hidden="true" className="mirror" />
+      </span>
+    </Link>
   );
 }

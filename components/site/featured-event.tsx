@@ -3,7 +3,10 @@ import { EditableText } from '@/components/editable/editable-text';
 import { EditableAdd } from '@/components/editable/editable-list';
 import { PatternPlate } from './ornaments';
 import { LinkButton } from '../ui/button';
-import { formatDate, formatTime } from '@/lib/i18n/format';
+import { formatDay, formatTime, timeRange } from '@/lib/i18n/format';
+import { icsHref } from '@/lib/ics';
+import { contactHref } from '@/lib/topics';
+import { CalendarPlus } from '@phosphor-icons/react/dist/ssr';
 import type { Locale } from '@/lib/i18n/config';
 import type { EventEntry } from '@/lib/db/queries/content';
 
@@ -25,7 +28,6 @@ export async function FeaturedEvent({
   address: string;
 }) {
   const t = await getTranslations({ locale, namespace: 'events' });
-  const tActions = await getTranslations({ locale, namespace: 'actions' });
 
   const label = {
     fontSize: '10.5px',
@@ -181,20 +183,23 @@ export async function FeaturedEvent({
               <div style={label}>{t('date')}</div>
               <div style={fact}>
                 <time dateTime={event.startsAt.toISOString()}>
-                  {formatDate(event.startsAt, locale, {
-                    weekday: 'long',
-                    day: 'numeric',
-                    month: 'long',
-                    year: 'numeric',
-                  })}
+                  {formatDay(locale, event.startsAt, 'full')}
+                  {locale === 'fa' ? (
+                    <span style={{ display: 'block', fontSize: '14px', opacity: 0.85 }}>
+                      {formatDay(locale, event.startsAt, 'date', { calendar: 'gregory' })}
+                    </span>
+                  ) : null}
                 </time>
               </div>
             </div>
             <div>
               <div style={label}>{t('time')}</div>
               <div style={fact} className="tabular">
-                {formatTime(event.startsAt, locale)}
-                {event.endsAt ? `–${formatTime(event.endsAt, locale)}` : ''}
+                {timeRange(
+                  formatTime(event.startsAt, locale),
+                  event.endsAt ? formatTime(event.endsAt, locale) : null,
+                  locale,
+                )}
               </div>
             </div>
             <div>
@@ -215,13 +220,24 @@ export async function FeaturedEvent({
             </div>
           </div>
 
-          <LinkButton
-            href={`/${locale}/contact?topic=event`}
-            className="btn-gold"
-            style={{ marginBlockStart: '28px', inlineSize: '100%', justifyContent: 'center' }}
-          >
-            {tActions('askAboutEvent')}
-          </LinkButton>
+          <div style={{ marginBlockStart: '28px', display: 'grid', gap: '10px' }}>
+            <a
+              className="btn btn-gold"
+              href={icsHref(event)}
+              download={`${event.slug}.ics`}
+              style={{ justifyContent: 'center' }}
+            >
+              <CalendarPlus size={18} weight="duotone" aria-hidden="true" />
+              {t('addToCalendar')}
+            </a>
+            <LinkButton
+              href={contactHref(locale, 'event', event.slug)}
+              className="btn-on-scrim"
+              style={{ justifyContent: 'center' }}
+            >
+              {t('askQuestion')}
+            </LinkButton>
+          </div>
         </div>
       </div>
     </article>

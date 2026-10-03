@@ -3,7 +3,14 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
-import { X, CaretLeft, CaretRight } from '@phosphor-icons/react/dist/ssr';
+import {
+  X,
+  CaretLeft,
+  CaretRight,
+  ImagesSquare,
+  InstagramLogo,
+} from '@phosphor-icons/react/dist/ssr';
+import { FACTS } from '@/lib/site-facts';
 import { FilterChips } from './filter-chips';
 import { Button } from '../ui/button';
 import type { GalleryEntry } from '@/lib/db/queries/content';
@@ -92,9 +99,50 @@ export function GalleryGrid({ items }: { items: GalleryEntry[] }) {
 
   const current = openIndex === null ? null : visible[openIndex];
 
+  const counts = useMemo(() => {
+    const out: Record<string, number> = { all: items.length };
+    for (const item of items) out[item.category] = (out[item.category] ?? 0) + 1;
+    return out;
+  }, [items]);
+
+  // Swipe between pictures on a touch screen. Mirrored in RTL like the arrows.
+  const touchX = useRef<number | null>(null);
+  const onTouchStart = (event: React.TouchEvent) => {
+    touchX.current = event.touches[0]?.clientX ?? null;
+  };
+  const onTouchEnd = (event: React.TouchEvent) => {
+    if (touchX.current === null) return;
+    const dx = (event.changedTouches[0]?.clientX ?? touchX.current) - touchX.current;
+    touchX.current = null;
+    if (Math.abs(dx) < 50) return;
+    const rtl = document.documentElement.dir === 'rtl';
+    step(dx < 0 !== rtl ? 1 : -1);
+  };
+
+  // Nothing yet: say so, and point to where the pictures are meanwhile.
+  if (items.length === 0) {
+    return (
+      <div className="empty-state">
+        <ImagesSquare size={40} weight="duotone" aria-hidden="true" />
+        <p className="empty-state-title">{t('emptyTitle')}</p>
+        <p className="empty-state-text">{t('emptyText')}</p>
+        <a
+          className="btn btn-secondary"
+          href={`https://www.instagram.com/${FACTS.instagram}/`}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <InstagramLogo size={18} weight="duotone" aria-hidden="true" />
+          <span className="ltr-island">@{FACTS.instagram}</span>
+        </a>
+      </div>
+    );
+  }
+
   return (
     <div style={{ display: 'grid', gap: 'var(--space-5)' }}>
       <FilterChips
+        counts={counts}
         categories={categories}
         active={active}
         onChange={(value) => {
@@ -143,11 +191,10 @@ export function GalleryGrid({ items }: { items: GalleryEntry[] }) {
                     className="cmyk"
                     style={{ inlineSize: '100%', blockSize: 'auto', objectFit: 'cover' }}
                   />
-                  {/* The caption rides on the picture, as the design sets it,
-                      on a scrim that is near-opaque where the words are — so
-                      the contrast is the scrim's and not the photograph's. */}
-                  {item.caption ? <span className="tile-caption">{item.caption}</span> : null}
                 </span>
+                {/* Under the picture, not laid over it: a caption on a scrim
+                    hides the part of the photograph it sits on. */}
+                {item.caption ? <span className="tile-caption-below">{item.caption}</span> : null}
               </button>
             </li>
           ))}
@@ -171,6 +218,8 @@ export function GalleryGrid({ items }: { items: GalleryEntry[] }) {
           onClick={(event) => {
             if (event.target === event.currentTarget) close();
           }}
+          onTouchStart={onTouchStart}
+          onTouchEnd={onTouchEnd}
         >
           <div
             style={{ display: 'grid', gap: 'var(--space-3)', maxInlineSize: 'min(64rem, 100%)' }}
@@ -191,12 +240,7 @@ export function GalleryGrid({ items }: { items: GalleryEntry[] }) {
                   aria-label={t('previous')}
                   onClick={() => step(-1)}
                 >
-                  <CaretLeft
-                    size={20}
-                    weight="bold"
-                    aria-hidden="true"
-                    className="rtl:rotate-180"
-                  />
+                  <CaretLeft size={20} weight="bold" aria-hidden="true" className="mirror" />
                 </Button>
                 <Button
                   variant="on-scrim"
@@ -205,12 +249,7 @@ export function GalleryGrid({ items }: { items: GalleryEntry[] }) {
                   aria-label={t('next')}
                   onClick={() => step(1)}
                 >
-                  <CaretRight
-                    size={20}
-                    weight="bold"
-                    aria-hidden="true"
-                    className="rtl:rotate-180"
-                  />
+                  <CaretRight size={20} weight="bold" aria-hidden="true" className="mirror" />
                 </Button>
                 <Button
                   variant="on-scrim"

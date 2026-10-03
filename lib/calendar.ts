@@ -61,8 +61,9 @@ export function buildCalendarMonth(
   const firstOfMonth = new Date(Date.UTC(year, month - 1, 1, 12));
   const daysInMonth = new Date(Date.UTC(year, month, 0, 12)).getUTCDate();
 
-  // getUTCDay() is 0 = Sunday, which is the column order the weekday labels use.
-  const leadingBlanks = firstOfMonth.getUTCDay();
+  // The week starts on Monday, everywhere on the site. getUTCDay() counts
+  // from Sunday = 0, so Monday's column is 0 and Sunday's 6.
+  const leadingBlanks = (firstOfMonth.getUTCDay() + 6) % 7;
 
   const cells: CalendarCell[] = [];
   const monthOccasions: (Occasion & { iso: string; gregorianDay: number })[] = [];

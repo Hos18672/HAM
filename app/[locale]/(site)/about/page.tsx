@@ -127,7 +127,7 @@ export default async function AboutPage({ params }: { params: Promise<{ locale: 
             {values.map((item, index) => (
               <li key={item.id} data-rise>
                 <EditableEntry entity="values" id={item.id} isLast={values.length <= 1}>
-                  <Card as="article" className="h-full" plate>
+                  <Card as="article" className="h-full">
                     <CardStar>
                       <Icon name={VALUE_ICONS[index % VALUE_ICONS.length]} size={24} />
                     </CardStar>

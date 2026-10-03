@@ -42,7 +42,10 @@ test.describe('accessibility', () => {
 
   test('dark mode has no contrast violations', async ({ page }) => {
     await page.goto('/de');
-    await page.getByRole('button', { name: /Darstellung wechseln/i }).click();
+    await page
+      .locator('header')
+      .getByRole('button', { name: /Darstellung wechseln/i })
+      .click();
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
 
     const results = await audit(page);

@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { locales } from '../i18n/config';
+import { TOPICS } from '../topics';
 
 /**
  * Public form schemas. The error strings are message-catalogue keys, not
@@ -61,10 +62,9 @@ export const contactSchema = antiSpamSchema.extend({
   // The key has to be the enum's *error*, not its description: a description
   // is metadata and never reaches an issue, so a bad topic would report Zod's
   // own English default straight into the reader's language.
-  topic: z.enum(
-    ['general', 'courses', 'events', 'membership', 'volunteer', 'other'],
-    'form.errors.topicRequired',
-  ),
+  topic: z.enum(TOPICS, 'form.errors.topicRequired'),
+  /** What the message is about — a course or an event's name, pre-filled from the link. */
+  subject: z.string().trim().max(120).optional().default(''),
   message,
   locale: localeField,
 });

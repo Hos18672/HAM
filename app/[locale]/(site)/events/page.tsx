@@ -9,15 +9,16 @@ import {
   getFeaturedEvent,
   getSettings,
 } from '@/lib/db/queries/content';
-import { PatternPlate } from '@/components/site/ornaments';
 import { PageHead, SectionHead } from '@/components/site/page-head';
-import { EventCard } from '@/components/site/event-card';
+import { EventRow } from '@/components/site/event-row';
+import { FilterableList } from '@/components/site/filterable-list';
+import { digits } from '@/lib/i18n/format';
 import { FeaturedEvent } from '@/components/site/featured-event';
 import { EditableEntry, EditableAdd } from '@/components/editable/editable-list';
 import { JsonLd, eventJsonLd } from '@/lib/seo';
 import { pageMetadata } from '@/lib/page-meta';
 import { locales } from '@/lib/i18n/config';
-import { ASSOCIATION } from '@/lib/db/seed-data';
+import { FACTS } from '@/lib/site-facts';
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -47,6 +48,18 @@ export default async function EventsPage({ params }: { params: Promise<{ locale:
   if (!header) notFound();
 
   const t = await getTranslations({ locale, namespace: 'events' });
+  const showFeatured = settings.showOpeningEvent && featured;
+  // The featured event has the band at the top; it is not listed twice.
+  const list = showFeatured ? upcoming.filter((e) => e.id !== featured.id) : upcoming;
+  const rows = list.map((event) => ({
+    key: event.id,
+    category: event.category,
+    node: (
+      <EditableEntry entity="event" id={event.id} isLast={upcoming.length + past.length <= 1}>
+        <EventRow event={event} locale={typed} />
+      </EditableEntry>
+    ),
+  }));
 
   return (
     <>
@@ -57,86 +70,53 @@ export default async function EventsPage({ params }: { params: Promise<{ locale:
       <PageHead header={header} locale={typed} />
 
       {/* The design leads this page with the opening, not with the list. */}
-      {settings.showOpeningEvent && featured ? (
+      {showFeatured ? (
         <section className="section" data-rise>
           <div className="page">
             <FeaturedEvent
               event={featured}
               locale={typed}
-              address={settings.address || ASSOCIATION.street}
+              address={settings.address || FACTS.street}
             />
           </div>
         </section>
       ) : null}
 
-      <section className="section" data-rise>
+      <section className="section">
         <div className="page">
-          <SectionHead kicker={t('upcoming')} />
-          {upcoming.length === 0 ? (
+          <SectionHead title={t('upcoming')} />
+          {list.length === 0 ? (
             <p style={{ color: 'var(--color-ink-muted)' }}>{t('none')}</p>
           ) : (
-            <ul
-              style={{
-                listStyle: 'none',
-                margin: 0,
-                padding: 0,
-                display: 'grid',
-                // Held to the page's width on the narrowest phones.
-                gridTemplateColumns: 'minmax(0, 1fr)',
-                gap: 'var(--space-3)',
-              }}
-            >
-              {upcoming.map((event) => (
-                <li key={event.id} data-rise>
-                  <EditableEntry
-                    entity="event"
-                    id={event.id}
-                    isLast={upcoming.length + past.length <= 1}
-                  >
-                    <EventCard event={event} locale={typed} />
-                  </EditableEntry>
-                </li>
-              ))}
-            </ul>
+            <FilterableList
+              items={rows}
+              label={t('filterByCategory')}
+              labelNamespace="events"
+              emptyMessage={t('none')}
+              className="event-list"
+            />
           )}
           <div style={{ marginBlockStart: 'var(--space-5)' }}>
             <EditableAdd entity="event" />
           </div>
+
+          {/* The archive, folded away: it is there to be found, not read. */}
+          {past.length > 0 ? (
+            <details className="event-archive">
+              <summary>{t('pastCount', { count: digits(past.length, typed) })}</summary>
+              <ul className="event-list">
+                {past.map((event) => (
+                  <li key={event.id}>
+                    <EditableEntry entity="event" id={event.id} isLast={false}>
+                      <EventRow event={event} locale={typed} past />
+                    </EditableEntry>
+                  </li>
+                ))}
+              </ul>
+            </details>
+          ) : null}
         </div>
       </section>
-
-      {past.length > 0 ? (
-        <section className="section section-alt" style={{ position: 'relative' }} data-rise>
-          <PatternPlate opacity={0.35} />
-          <div className="page">
-            <SectionHead kicker={t('past')} />
-            {/* No opacity here. Dimming the whole list was how this said
-                "already happened", and against the cream paper it dragged
-                every label in it under 4.5:1 — 0.75 turns the faint ink into
-                #918f85, which is 2.7:1. The heading above already says these
-                are past, so the meaning does not depend on the dimming. */}
-            <ul
-              style={{
-                listStyle: 'none',
-                margin: 0,
-                padding: 0,
-                display: 'grid',
-                // Held to the page's width on the narrowest phones.
-                gridTemplateColumns: 'minmax(0, 1fr)',
-                gap: 'var(--space-3)',
-              }}
-            >
-              {past.map((event) => (
-                <li key={event.id} data-rise>
-                  <EditableEntry entity="event" id={event.id} isLast={false}>
-                    <EventCard event={event} locale={typed} showBody={false} />
-                  </EditableEntry>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </section>
-      ) : null}
     </>
   );
 }

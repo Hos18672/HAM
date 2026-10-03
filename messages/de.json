@@ -28,7 +28,14 @@
     "skipToContent": "Zum Inhalt springen",
     "primary": "Hauptnavigation",
     "footer": "Fußzeilennavigation",
-    "quran": "Quran"
+    "quran": "Quran",
+    "breadcrumb": "Brotkrümelnavigation",
+    "groupHouse": "Haus",
+    "groupOffers": "Angebote",
+    "groupFaith": "Glaube",
+    "bottomBar": "Schnellzugriff",
+    "join": "Mitglied werden",
+    "donate": "Spenden"
   },
   "actions": {
     "readMore": "Mehr erfahren",
@@ -55,7 +62,8 @@
     "save": "Speichern",
     "discard": "Verwerfen",
     "retry": "Erneut versuchen",
-    "donate": "Spenden"
+    "donate": "Spenden",
+    "signUp": "Anmelden"
   },
   "theme": {
     "toggle": "Darstellung wechseln",
@@ -91,8 +99,11 @@
     "address": "Adresse"
   },
   "activities": {
+    "areasTitle": "Unsere Bereiche",
     "weekTitle": "Wochenplan",
-    "weekLead": "Was an welchem Tag stattfindet. Änderungen geben wir auf der Terminseite bekannt."
+    "weekLead": "Was an welchem Tag stattfindet — Kurse, Sport und regelmäßige Treffen. Einzelne Termine stehen auf der Terminseite.",
+    "ctaCourses": "Alle Kurse",
+    "ctaVisit": "Besuchen Sie uns"
   },
   "events": {
     "upcoming": "Kommende Termine",
@@ -110,10 +121,17 @@
       "community": "Gemeinschaft",
       "courses": "Kurse",
       "sport": "Sport"
-    }
+    },
+    "filterByCategory": "Nach Art filtern",
+    "pastCount": "Vergangene Termine ({count})",
+    "askQuestion": "Fragen dazu?"
   },
   "community": {
-    "volunteerTitle": "Mitmachen im Haus"
+    "volunteerTitle": "Mitmachen im Haus",
+    "helpTitle": "Brauchen Sie Unterstützung — oder möchten Sie helfen?",
+    "helpLead": "Ob ein Formular, ein Brief vom Amt oder ein Termin beim Arzt: Schreiben Sie uns, jemand aus dem Haus begleitet Sie. Und wer eine Stunde Zeit hat, ist herzlich willkommen.",
+    "askForHelp": "Hilfe anfragen",
+    "volunteer": "Ehrenamtlich mitmachen"
   },
   "courses": {
     "filterByCategory": "Nach Bereich filtern",
@@ -129,15 +147,30 @@
       "adults": "Erwachsene",
       "integration": "Integration",
       "art": "Kunst"
-    }
+    },
+    "fee": "Kosten"
   },
   "culture": {
-    "themes": "Themen"
+    "themes": "Themen",
+    "formats": "Was bei uns stattfindet",
+    "upcoming": "Kommende Kulturabende",
+    "noUpcoming": "Gerade ist kein Kulturabend angekündigt — die Terminseite sagt, wann der nächste stattfindet."
   },
   "sport": {
     "activity": "Aktivität",
     "audience": "Für wen",
-    "schedule": "Trainingszeiten"
+    "schedule": "Trainingszeiten",
+    "filterByGroup": "Nach Gruppe filtern",
+    "none": "In dieser Gruppe gibt es gerade kein Angebot.",
+    "category": {
+      "all": "Für alle",
+      "women": "Frauen",
+      "men": "Männer",
+      "family": "Familien",
+      "youth": "Jugend",
+      "kids": "Kinder",
+      "adults": "Erwachsene"
+    }
   },
   "gallery": {
     "filterByCategory": "Nach Kategorie filtern",
@@ -154,7 +187,9 @@
       "sport": "Sport",
       "culture": "Kultur",
       "house": "Haus"
-    }
+    },
+    "emptyTitle": "Noch keine Bilder",
+    "emptyText": "Die ersten Fotos aus dem Haus kommen bald. Bis dahin zeigen wir, was bei uns los ist, auf Instagram."
   },
   "qibla": {
     "title": "Gebetsrichtung",
@@ -274,7 +309,7 @@
     "legendOccasion": "Gedenktag",
     "occasions": "Gedenktage in diesem Monat",
     "occasionsNone": "In diesem Monat sind keine Gedenktage eingetragen.",
-    "weekdays": ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"],
+    "weekdays": ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"],
     "previousMonth": "Vorheriger Monat",
     "nextMonth": "Nächster Monat",
     "countdownLabel": "Verbleibende Zeit bis zum nächsten Gebet",
@@ -347,7 +382,16 @@
       "eu": "Weitere Städte"
     },
     "chosenDay": "Gewählter Tag",
-    "dayNothing": "An diesem Tag ist nichts eingetragen."
+    "dayNothing": "An diesem Tag ist nichts eingetragen.",
+    "tomorrow": "morgen",
+    "citySearch": "Stadt suchen …",
+    "cityNone": "Keine Stadt gefunden",
+    "cityRecent": "Zuletzt gewählt",
+    "allTimes": "Alle Gebetszeiten",
+    "sourceNote": "Quelle: Aladhan-API, Methode Schia Ithna-Aschari (Leva-Institut, Qom). Ist sie nicht erreichbar, rechnet die Seite selbst nach derselben dschaʿfaritischen Methode.",
+    "showTable": "Monatstabelle anzeigen",
+    "hideTable": "Monatstabelle ausblenden",
+    "dstNote": "Zeitumstellung"
   },
   "duas": {
     "filterByCategory": "Nach Art filtern",
@@ -382,8 +426,16 @@
     "tier": "Beitrag",
     "chooseTier": "Beitrag wählen",
     "choosePurpose": "Zweck wählen",
-    "donationTitle": "Unterstützung anfragen",
-    "donationLead": "Wir senden Ihnen Kontoverbindung und Verwendungsnachweis. Auf Wunsch erhalten Sie eine Spendenbestätigung."
+    "donationTitle": "Spenden",
+    "donationLead": "Wir senden Ihnen Kontoverbindung und Verwendungsnachweis. Auf Wunsch erhalten Sie eine Spendenbestätigung.",
+    "tabsLabel": "Mitgliedschaft oder Spende",
+    "copyIban": "IBAN kopieren",
+    "copied": "Kopiert",
+    "bic": "BIC",
+    "memberTitle": "Mitglied werden",
+    "memberLead": "Wählen Sie einen Beitrag und schreiben Sie uns — wir melden uns mit dem Aufnahmeformular und den nächsten Schritten.",
+    "bankLead": "Oder direkt überweisen:",
+    "bankMissing": "Die Bankverbindung schicken wir Ihnen gern auf Anfrage."
   },
   "contact": {
     "openingHours": "Öffnungszeiten",
@@ -395,13 +447,21 @@
     "chooseTopic": "Bitte wählen",
     "topics": {
       "general": "Allgemeine Frage",
-      "courses": "Kurse",
-      "events": "Veranstaltungen",
+      "course": "Kurs-Anmeldung",
+      "event": "Veranstaltung",
+      "sport": "Sport",
+      "volunteer": "Ehrenamtlich mitarbeiten",
+      "help": "Ich brauche Hilfe",
       "membership": "Mitgliedschaft",
-      "volunteer": "Mitarbeit",
-      "other": "Sonstiges"
+      "donation": "Spende"
     },
-    "formTitle": "Schreiben Sie uns"
+    "formTitle": "Schreiben Sie uns",
+    "subject": "Worum geht es?",
+    "subjectFor": {
+      "course": "Kurs",
+      "event": "Veranstaltung",
+      "sport": "Sportgruppe"
+    }
   },
   "form": {
     "name": "Name",
@@ -424,7 +484,9 @@
       "messageTooLong": "Die Nachricht ist zu lang.",
       "topicRequired": "Bitte wählen Sie ein Anliegen.",
       "tierRequired": "Bitte wählen Sie einen Beitrag."
-    }
+    },
+    "requiredLegend": "* Pflichtfeld",
+    "successDonation": "Danke! Wir melden uns mit allem, was Sie für Ihre Spende brauchen."
   },
   "about": {
     "values": "Was uns wichtig ist"
@@ -437,7 +499,8 @@
     "rights": "Alle Rechte vorbehalten.",
     "zvr": "ZVR",
     "join": "Unterstützen",
-    "joinText": "Werden Sie Mitglied oder unterstützen Sie die Arbeit des Hauses."
+    "joinText": "Werden Sie Mitglied oder unterstützen Sie die Arbeit des Hauses.",
+    "tagline": "Ein Haus für Bildung, Kultur, Glauben und Begegnung in Wien-Hernals — offen für alle."
   },
   "error": {
     "notFoundTitle": "Diese Seite gibt es nicht",
@@ -556,5 +619,43 @@
     "allKinds": "Alle Arten",
     "unavailable": "Dieser Text konnte nicht geladen werden.",
     "opening": "Eröffnung"
+  },
+  "schedule": {
+    "title": "Wochenplan",
+    "today": "Heute",
+    "nothing": "Kein fester Termin",
+    "groups": {
+      "all": "Alle",
+      "women": "Frauen",
+      "men": "Männer",
+      "family": "Familien",
+      "kids": "Kinder",
+      "youth": "Jugend",
+      "adults": "Erwachsene"
+    },
+    "rhythm": {
+      "weekly": "wöchentlich",
+      "biweekly": "vierzehntägig",
+      "monthly": "1. im Monat"
+    }
+  },
+  "house": {
+    "status": {
+      "open": "Jetzt geöffnet",
+      "closed": "Jetzt geschlossen",
+      "programme": "Heute nach Programm"
+    },
+    "byProgramme": "nach Programm",
+    "hours": "Öffnungszeiten",
+    "directionsTitle": "Anreise",
+    "directions": {
+      "tram": "Straßenbahn",
+      "train": "S-Bahn",
+      "access": "Eingang"
+    },
+    "mapLabel": "Karte: das Vereinshaus in der Sautergasse, Wien-Hernals",
+    "openMap": "Größere Karte öffnen",
+    "reach": "So erreichen Sie uns",
+    "instagram": "Instagram"
   }
 }

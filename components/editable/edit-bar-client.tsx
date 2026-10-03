@@ -41,6 +41,7 @@ export function EditBarClient({ locale, labels }: { locale: Locale; labels: Edit
     <div
       role="status"
       aria-live="polite"
+      className="edit-bar"
       style={{
         position: 'fixed',
         insetInline: 0,

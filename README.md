@@ -179,7 +179,9 @@ Unter **Protokoll** steht, wer wann was geändert hat.
 
 1. Create a project at <https://supabase.com>.
 2. **Settings → Database** gives you two connection strings. The _pooled_ one
-   (port 6543) is `DATABASE_URL`; the _direct_ one (port 5432) is `DIRECT_URL`.
+   (transaction pooler, port 6543) is `DATABASE_URL`. For `DIRECT_URL` take the
+   _session pooler_ string (port 5432): Supabase's direct host is IPv6-only on
+   the free tier, and Vercel's build machines cannot reach it.
 3. **Storage → New bucket** named `media`, marked **public**.
 4. **Settings → API** gives you the project URL and the `service_role` key.
 
@@ -194,12 +196,11 @@ which is enough to test with.
 1. Import the repository.
 2. Add every variable from the table above as a project environment variable.
    `AUTH_URL` and `NEXT_PUBLIC_SITE_URL` must be the real domain.
-3. Deploy.
-4. From your machine, pointed at the production database, run once:
-   ```bash
-   pnpm db:push && pnpm db:seed
-   ```
-5. Log in at `/admin` and **change the seeded password immediately**.
+3. Deploy. Vercel runs `pnpm vercel-build`, which applies the migrations,
+   seeds the database **only if it is empty** (and creates the admin account
+   from `ADMIN_EMAIL` / `ADMIN_PASSWORD` if it does not exist yet), then builds.
+   Later deploys leave the content alone, so edits made on the site survive.
+4. Log in at `/de/admin` and **change the seeded password immediately**.
 
 ### 4. Domain
 
@@ -225,7 +226,7 @@ the 32 public pages render, and deploys that. The design, the typography, both
 languages and the seeded content are all genuine — it is the real output of the
 real app. Everything needing a server is inert: no sign-in, no admin, no live
 editing, the forms do not submit and the search does not search. Every page
-carries a banner saying so, and `noindex` plus a refusing `robots.txt` keep the
+carries `noindex`, and with a refusing `robots.txt` that keeps the
 preview from ever competing with the real site in a search engine. A nightly
 run keeps the prayer times and the calendar current, since both are rendered
 for the day of the build.

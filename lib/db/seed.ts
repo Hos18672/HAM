@@ -454,7 +454,22 @@ async function seedMemberships() {
   log('membership tiers', data.MEMBERSHIPS.length);
 }
 
-export async function seed() {
+/**
+ * True when the content tables already hold the site. A deploy runs the seed
+ * with `--if-empty` on every build, and the seed truncates before it writes:
+ * without this check every deploy would wipe what the editors have changed.
+ */
+async function hasContent() {
+  const [row] = await db.select({ n: raw<number>`count(*)::int` }).from(s.pages);
+  return (row?.n ?? 0) > 0;
+}
+
+export async function seed({ ifEmpty = false }: { ifEmpty?: boolean } = {}) {
+  if (ifEmpty && (await hasContent())) {
+    console.log('Content already seeded — left unchanged.');
+    await seedAdmin();
+    return;
+  }
   console.log('Seeding Haus aller Menschen …');
   await truncateContent();
   await seedSettings();
@@ -479,7 +494,7 @@ export async function seed() {
 const invokedDirectly = process.argv[1] !== undefined && process.argv[1].includes('seed');
 
 if (invokedDirectly) {
-  seed()
+  seed({ ifEmpty: process.argv.includes('--if-empty') })
     .then(async () => {
       await sql.end();
       process.exit(0);

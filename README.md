@@ -636,8 +636,9 @@ Recorded here rather than left implicit:
    page leaves. The Arabic of the scripture and of the prayers carries that
    ink in every view, so the same words are never two colours.
 9. **The qibla page, against its reference design.** The page was rebuilt to
-   a supplied reference (`Qibla.dc.html`): one stage with three tabs —
-   compass, map, guide — and the figures beside it, fitting the first screen
+   a supplied reference (`Qibla.dc.html`): one stage with two tabs —
+   compass and map (the reference's guide tab was dropped on request) — and
+   the figures beside it, fitting the first screen
    at 375×667, 768×1024, 924×539 and 1440×900 in both languages. Four things
    in that reference could not be copied as written, and were not:
    - **No font CDN.** The reference loads Vazirmatn and Manrope from Google

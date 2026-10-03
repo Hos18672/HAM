@@ -4529,12 +4529,12 @@
   }
   .qibla-tabs {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 4px;
     padding: 4px;
     border-radius: 999px;
     background: rgba(247, 243, 232, 0.08);
-    inline-size: min(100%, 440px);
+    inline-size: min(100%, 320px);
   }
   .qibla-tab {
     block-size: 42px;
@@ -4735,81 +4735,6 @@
   .qibla-panel-map > * {
     block-size: 100%;
   }
-  /* Centred by auto margins rather than by `justify-content`, because this
-     panel also scrolls. A centred flex column distributes its overflow to
-     both ends, and the half above the start is unreachable: `scrollTop` is
-     already 0 there, so no scrolling, no keyboard and no scrollbar can
-     reach it. On a phone that put the first step twenty-four pixels off
-     the top of the panel with no way back to it. Auto margins centre the
-     group while there is room and collapse to nothing when there is not. */
-  .qibla-panel-guide {
-    flex: 1;
-    flex-direction: column;
-    justify-content: flex-start;
-    gap: clamp(10px, 1.6vw, 16px);
-    padding: clamp(18px, 3vw, 40px);
-    overflow-y: auto;
-  }
-  .qibla-panel-guide > :first-child {
-    margin-block-start: auto;
-  }
-  .qibla-panel-guide > :last-child {
-    margin-block-end: auto;
-  }
-  .qibla-panel-guide:not([hidden]) {
-    display: flex;
-  }
-  .qibla-step {
-    display: grid;
-    grid-template-columns: 52px minmax(0, 1fr);
-    gap: 16px;
-    align-items: center;
-    padding: clamp(14px, 2vw, 20px);
-    border-radius: 18px;
-    background: rgba(247, 243, 232, 0.06);
-  }
-  .qibla-step-mark {
-    inline-size: 52px;
-    block-size: 52px;
-    border-radius: 999px;
-    border: var(--rule-hair) solid var(--gold);
-    color: var(--gold);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  .qibla-step-words {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    min-inline-size: 0;
-  }
-  .qibla-step-n {
-    font-size: 12px;
-    font-weight: var(--weight-bold);
-    color: var(--gold);
-  }
-  .qibla-step-text {
-    font-size: clamp(15px, 1.5vw, 17px);
-    line-height: 1.65;
-    color: var(--stage-ink);
-    text-wrap: pretty;
-  }
-  .qibla-method {
-    display: flex;
-    gap: 8px;
-    align-items: flex-start;
-    margin: 4px 0 0;
-    font-size: 13px;
-    line-height: 1.7;
-    color: #b9c4bd;
-  }
-  .qibla-method > svg {
-    color: var(--gold);
-    flex-shrink: 0;
-    margin-block-start: 2px;
-  }
-
   /* The street map inside the stage's map tab. The component is the same
      one that used to have a section of its own, so what changes here is
      only the frame around it: it fills the tab instead of standing in the
@@ -5251,28 +5176,6 @@
     }
     .qibla-go {
       font-size: 15px;
-    }
-    .qibla-step-text {
-      font-size: 14.5px;
-    }
-    /* Forty pixels over the stage is what made the guide scroll at all;
-       the cards give it back. */
-    .qibla-panel-guide {
-      padding: 14px;
-      gap: 8px;
-    }
-    .qibla-step {
-      grid-template-columns: 44px minmax(0, 1fr);
-      gap: 12px;
-      padding: 12px;
-      border-radius: 14px;
-    }
-    .qibla-step-mark {
-      inline-size: 44px;
-      block-size: 44px;
-    }
-    .qibla-method {
-      font-size: 12.5px;
     }
     /* Measured, not guessed: the site's header, this page's padding and its
        title row take 314px of a phone's first screen, so the stage takes

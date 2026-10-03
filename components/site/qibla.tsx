@@ -7,11 +7,7 @@ import {
   CheckCircle,
   Compass as CompassIcon,
   Crosshair,
-  DeviceMobile,
-  GlobeHemisphereEast,
-  HandTap,
   HouseLine,
-  ListNumbers,
   MapPin,
   MapTrifold,
   NavigationArrow,
@@ -28,9 +24,9 @@ interface CompassEvent extends DeviceOrientationEvent {
 
 type CompassState = 'idle' | 'active' | 'unsupported' | 'denied';
 type GeoState = 'house' | 'locating' | 'located' | 'denied' | 'unsupported' | 'failed';
-type Tab = 'compass' | 'map' | 'guide';
+type Tab = 'compass' | 'map';
 
-const TABS: Tab[] = ['compass', 'map', 'guide'];
+const TABS: Tab[] = ['compass', 'map'];
 /** Within this many degrees of the bearing, the reader is facing the qibla. */
 const ALIGNED = 5;
 /** A device with a magnetometer answers long before this. */
@@ -48,7 +44,7 @@ const STORE = 'ham.qibla.tab';
  * Each is an enhancement on the one before, and each failure is stated
  * explicitly rather than leaving a needle pointing somewhere arbitrary.
  *
- * The three ways of showing it — the dial, the map, the instructions — are
+ * The two ways of showing it — the dial and the map — are
  * tabs of one stage rather than sections stacked down the page, so that the
  * thing a reader came for is on the screen they arrive at.
  */
@@ -272,10 +268,8 @@ export function Qibla({ locale }: { locale: Locale }) {
   const mine = geo === 'located';
   const originLabel = mine ? t('fromYourLocation') : t('fromHouse');
 
-  const steps = [t('step1'), t('step2'), t('step3')];
-  const StepIcon = [DeviceMobile, HandTap, ArrowsClockwise];
-  const tabIcon = { compass: CompassIcon, map: MapTrifold, guide: ListNumbers };
-  const tabLabel = { compass: t('tabCompass'), map: t('tabMap'), guide: t('tabGuide') };
+  const tabIcon = { compass: CompassIcon, map: MapTrifold };
+  const tabLabel = { compass: t('tabCompass'), map: t('tabMap') };
 
   return (
     <div className="qibla">
@@ -368,33 +362,6 @@ export function Qibla({ locale }: { locale: Locale }) {
               headingLive={compass === 'active'}
             />
           ) : null}
-        </div>
-
-        <div
-          id="qibla-panel-guide"
-          role="tabpanel"
-          aria-labelledby="qibla-tab-guide"
-          className="qibla-panel qibla-panel-guide"
-          hidden={tab !== 'guide'}
-        >
-          {steps.map((text, i) => {
-            const Icon = StepIcon[i]!;
-            return (
-              <div key={text} className="qibla-step">
-                <span className="qibla-step-mark" aria-hidden="true">
-                  <Icon size={24} weight="duotone" />
-                </span>
-                <div className="qibla-step-words">
-                  <span className="qibla-step-n">{t('stepN', { n: digits(i + 1, locale) })}</span>
-                  <span className="qibla-step-text">{text}</span>
-                </div>
-              </div>
-            );
-          })}
-          <p className="qibla-method">
-            <GlobeHemisphereEast size={17} weight="duotone" aria-hidden="true" />
-            <span>{t('note')}</span>
-          </p>
         </div>
       </div>
 

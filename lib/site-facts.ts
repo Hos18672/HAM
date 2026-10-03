@@ -103,3 +103,44 @@ export function isOpenAt(now: Date, hours: readonly OpeningWindow[] = OPENING_HO
   if (!today.open || !today.close) return null;
   return minutes >= minutesOf(today.open) && minutes < minutesOf(today.close);
 }
+
+/**
+ * The house's history, for the about page. A milestone without text is not
+ * shown; a year left empty is simply not printed.
+ */
+export const HISTORY: readonly { year: string; fa: string; de: string }[] = [
+  {
+    // TODO(content): the year the families first met in each other's homes.
+    year: '',
+    fa: 'چند خانوادهٔ فارسی‌زبان وین سال‌ها در خانه‌های یکدیگر گرد هم می‌آیند — برای درس، دعا و دیدار.',
+    de: 'Einige persischsprachige Familien in Wien treffen sich jahrelang reihum in ihren Wohnungen — zum Lernen, Beten und Beisammensein.',
+  },
+  {
+    // TODO(content): the year the association was registered.
+    year: '',
+    fa: 'انجمن انصار المهدی (عج) به‌عنوان انجمنی غیرانتفاعی در وین به ثبت می‌رسد.',
+    de: 'Der Verein Ansar al-Mahdi (a.j.) wird als gemeinnütziger Verein in Wien eingetragen.',
+  },
+  {
+    // TODO(content): the year the rooms in the Sautergasse were found.
+    year: '',
+    fa: 'خانه‌ای از آنِ خودمان در Sautergasse در منطقهٔ Hernals پیدا می‌شود.',
+    de: 'Ein eigenes Haus in der Sautergasse in Hernals ist gefunden.',
+  },
+  {
+    // TODO(content): confirm the opening date.
+    year: '2026',
+    fa: 'گشایش رسمی خانهٔ همهٔ انسان‌ها — با درهای باز برای همهٔ همسایگان.',
+    de: 'Offizielle Eröffnung des Hauses aller Menschen — mit offenen Türen für die ganze Nachbarschaft.',
+  },
+];
+
+/**
+ * The board. Empty until the association names who serves on it; the about
+ * page shows the section only when there is someone to show.
+ * TODO(content): names (or at least roles) of the board members.
+ */
+export const BOARD: readonly { name: string; fa: string; de: string }[] = [];
+
+/** When the privacy policy and the imprint were last revised. */
+export const LEGAL_UPDATED = '2026-10-04';

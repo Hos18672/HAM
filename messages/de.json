@@ -489,7 +489,15 @@
     "successDonation": "Danke! Wir melden uns mit allem, was Sie für Ihre Spende brauchen."
   },
   "about": {
-    "values": "Was uns wichtig ist"
+    "values": "Was uns wichtig ist",
+    "history": "Wie das Haus entstanden ist",
+    "association": "Der Verein",
+    "name": "Name",
+    "form": "Rechtsform",
+    "formValue": "Gemeinnütziger Verein nach österreichischem Vereinsgesetz, ehrenamtlich geführt",
+    "seat": "Sitz",
+    "zvr": "ZVR-Zahl",
+    "board": "Vorstand"
   },
   "footer": {
     "mission": "Über uns",
@@ -500,7 +508,8 @@
     "zvr": "ZVR",
     "join": "Unterstützen",
     "joinText": "Werden Sie Mitglied oder unterstützen Sie die Arbeit des Hauses.",
-    "tagline": "Ein Haus für Bildung, Kultur, Glauben und Begegnung in Wien-Hernals — offen für alle."
+    "tagline": "Ein Haus für Bildung, Kultur, Glauben und Begegnung in Wien-Hernals — offen für alle.",
+    "updated": "Stand: {date}"
   },
   "error": {
     "notFoundTitle": "Diese Seite gibt es nicht",

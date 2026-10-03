@@ -4389,63 +4389,6 @@
   .dua-back:hover {
     color: var(--gold);
   }
-  /* The Arabic title, ghosted behind the card's words. It is decoration and
-     must take no room — but it had no rule of its own at all, so the SVG was
-     laid out in the flow and left an empty band across the top of every
-     card. Behind the content, at z-index 0 rather than -1: the card is an
-     isolated stacking context and -1 would put it behind the card itself. */
-  .dua-ghost {
-    position: absolute;
-    z-index: 0;
-    inset-block-end: -6px;
-    inset-inline-end: 0;
-    inline-size: min(100%, 20rem);
-    block-size: auto;
-    opacity: 0.07;
-    pointer-events: none;
-  }
-  /* Everything but the link rides above the ghost. The link is put back to
-     static on purpose, against `.card > *`, which positions every child:
-     the overlay has to resolve against the card to cover it, and a
-     positioned link made itself the containing block, so the overlay
-     covered the words and nothing else. */
-  .dua > :not(.dua-ghost):not(.dua-open) {
-    position: relative;
-    z-index: 1;
-  }
-  .dua > .dua-open {
-    position: static;
-  }
-  /* The whole card opens the du'a, not only the words that say so: the link
-     stretches over the card, and keeps being the one link a screen reader
-     and the keyboard find. */
-  .dua:has(.dua-open) {
-    cursor: pointer;
-  }
-  .dua-open::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    z-index: 2;
-  }
-  .dua:has(.dua-open:hover) {
-    border-color: var(--gold);
-  }
-  .dua-open {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    align-self: start;
-    margin-block-start: var(--space-2);
-    font-size: var(--text-sm);
-    font-weight: var(--weight-semibold);
-    color: var(--color-accent-2-text);
-    text-decoration: none;
-  }
-  .dua-open:hover {
-    text-decoration: underline;
-    text-underline-offset: 3px;
-  }
   .dua-facts {
     display: grid;
     grid-template-columns: auto minmax(0, 1fr);
@@ -7829,6 +7772,11 @@ body:has(.edit-bar) .bottom-bar,
   color: inherit;
   text-decoration: none;
 }
+.card > :has(> .card-link) {
+  /* Static, against `.card > *`: the link's overlay has to resolve against
+     the card to cover it, not against the heading it sits in. */
+  position: static;
+}
 .card-link::before {
   content: '';
   position: absolute;
@@ -8212,4 +8160,59 @@ body:has(.edit-bar) .bottom-bar,
   color: var(--ink2);
   text-align: start;
   line-height: 1.5;
+}
+
+/* ─── About: timeline and the association's facts ────────────────────────── */
+.about-layout {
+  display: grid;
+  gap: var(--space-6);
+}
+@media (min-width: 1024px) {
+  .about-layout {
+    grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+    align-items: start;
+  }
+}
+.timeline {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-4);
+  border-inline-start: 2px solid var(--line);
+  padding-inline-start: 24px;
+}
+.timeline li {
+  position: relative;
+  display: grid;
+  gap: 2px;
+}
+.timeline-dot {
+  position: absolute;
+  inset-inline-start: -31px;
+  inset-block-start: 6px;
+  inline-size: 12px;
+  block-size: 12px;
+  border-radius: 50%;
+  background: var(--gold);
+  box-shadow: 0 0 0 4px var(--paper);
+}
+.timeline-year {
+  font-weight: var(--weight-bold);
+  color: var(--goldInk);
+}
+.timeline p {
+  margin: 0;
+  max-inline-size: 65ch;
+  line-height: 1.8;
+}
+.about-facts {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.legal-updated {
+  font-size: var(--text-sm);
+  color: var(--ink2);
+  margin: 0 0 var(--space-5);
 }

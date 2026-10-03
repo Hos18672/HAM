@@ -16,8 +16,11 @@ const hydrated = (page: Page) => expect(page.locator('.qr-fixed')).toBeAttached(
 test.describe('the du‘as', () => {
   test('lists them and opens one in full', async ({ page }) => {
     await page.goto('/de/duas');
-    const open = page.getByRole('link', { name: 'Vollständigen Text lesen' });
-    await expect(open.first()).toBeVisible();
+    // Every card opens its text: the title is the link.
+    const cards = page.locator('article.dua');
+    const count = await cards.count();
+    expect(count).toBeGreaterThan(0);
+    await expect(page.locator('article.dua .card-link')).toHaveCount(count);
 
     await page.goto('/de/duas/faraj');
     await hydrated(page);

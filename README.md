@@ -530,8 +530,11 @@ countdown and the toasts, and `lang`/`dir` set from the locale.
 There is no analytics, no tracker, no font CDN, no map embed and no social
 button anywhere in the codebase — fonts are self-hosted from `public/fonts`.
 That is why there is no cookie banner: the only cookies are the theme
-preference and the editorial session, and neither needs consent. An e2e test
-asserts that a page load makes **no** third-party requests, so this stays true.
+preference and the editorial session, and neither needs consent. The one
+third-party request is OpenStreetMap's tiles, fetched as plain images by the
+qibla map and by the small house map on the home and contact pages (lazy, and
+always the same patch of Hernals). An e2e test asserts that no page makes any
+other third-party request, so this stays true.
 
 ---
 
@@ -592,9 +595,13 @@ Recorded here rather than left implicit:
    for this build and is a stand-in for the association's own words** — it is
    plausible and complete, but it is not the prototype's copy. Replace it
    through `/admin`, or by editing the seed and re-running `pnpm db:seed`.
-2. **Placeholder facts.** The phone number, email address, ZVR number and IBAN
-   in the seed are placeholders in the right shape. Set the real ones under
-   **Einstellungen**; the ZVR number lives in `lib/db/seed-data.ts`.
+2. **Facts that are not known yet are left empty, not faked.** The fixed facts
+   live in one file, `lib/site-facts.ts` (address, hours, directions, phone,
+   IBAN, BIC, ZVR, history, board). Phone, IBAN, BIC and ZVR are empty there,
+   and every page hides a row whose value is empty. Databases seeded by an
+   earlier build still hold zero-filled placeholders (`+43 1 000 00 00`,
+   `AT00 …`); those are treated as empty on read. Email, phone, address and
+   IBAN can also be set under **Einstellungen**.
 3. **Persian typography.** Source Serif 4 has no Arabic glyphs, so Persian and
    Arabic text is set in Noto Naskh Arabic — the serif of the Arabic script,
    carrying the same editorial weight. Both are self-hosted.
@@ -663,3 +670,41 @@ Recorded here rather than left implicit:
      green band, because the band and the stage do not both fit on a phone.
      The band's kicker, title and lead are still here as a title row, and
      still edited in **Seiten** like every other page's.
+
+10. **The site-wide fix pass.** The redesign brief for header, footer and
+    pages was implemented as written, with these decisions:
+    - **One week start:** Monday, in the prayer calendar and the weekly
+      schedule alike.
+    - **The weekly schedule is computed.** Courses and sports carry their own
+      days, times, rhythm and group (migration `0001_structured_schedule`);
+      the week table only holds what is neither (Duʿa Kumail, the Friday
+      prayer, the children's Saturday afternoon). Calligraphy is fortnightly,
+      as its course says — the old schedule's "every Friday" is gone.
+    - **Opening hours are structured** in `lib/site-facts.ts`, so the site can
+      say "open now". They are no longer edited in the admin area.
+    - **Seeded event times** were set in the build machine's timezone (UTC),
+      which put the opening at 18:00 against a 16:00 programme. The seed now
+      sets Vienna wall-clock times, and the migration moves already-seeded
+      rows that still carry the old times.
+    - **Kickers became breadcrumbs** on every sub-page; the kicker field is
+      still stored but only the home page shows it.
+    - **The "about" values** were replaced by a timeline, the association's
+      registration facts and a board list that appears once it has names.
+    - **The EU online dispute platform** link was removed from the imprint:
+      the platform was closed in July 2025.
+
+### Content still needed (`TODO(content)` in the code)
+
+- Phone number, IBAN, BIC and ZVR number — `lib/site-facts.ts` (or
+  **Einstellungen** for phone and IBAN).
+- Years for the history timeline, and the board's names and roles —
+  `HISTORY` and `BOARD` in `lib/site-facts.ts`.
+- The clock time of the Friday prayer and of the children's Saturday
+  afternoon, if they are fixed — the week table (**Wochenplan** in /admin).
+- Course fees ("kostenlos", "30 € im Monat") — **Kurse → Kosten** in /admin;
+  the row is hidden while empty.
+- The opening's date, start and end — confirm with the board
+  (`eroeffnungsfest` in the seed, **Termine** in /admin).
+- Gallery photos — until there are any, the page shows an empty state that
+  points to Instagram.
+

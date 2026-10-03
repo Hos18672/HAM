@@ -2,6 +2,8 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 import { requireLocale } from '@/lib/i18n/locale-param';
+import { LEGAL_UPDATED } from '@/lib/site-facts';
+import { formatDay } from '@/lib/i18n/format';
 import { getPageHeader, getSettings } from '@/lib/db/queries/content';
 import { PageHead } from '@/components/site/page-head';
 import { pageMetadata } from '@/lib/page-meta';
@@ -47,12 +49,17 @@ export default async function ImprintPage({ params }: { params: Promise<{ locale
         ? 'Verein nach dem Vereinsgesetz 2002'
         : 'انجمن ثبت‌شده بر پایهٔ قانون انجمن‌های اتریش ۲۰۰۲',
     ],
-    [
-      t('zvr'),
-      <span key="zvr" className="ltr-island">
-        {ASSOCIATION.zvr}
-      </span>,
-    ],
+    // Only once it is known: never a row of zeros.
+    ...(ASSOCIATION.zvr
+      ? ([
+          [
+            t('zvr'),
+            <span key="zvr" className="ltr-island">
+              {ASSOCIATION.zvr}
+            </span>,
+          ],
+        ] as [string, React.ReactNode][])
+      : []),
     [
       de ? 'Sitz' : 'نشانی',
       <span key="seat" className="ltr-island">
@@ -91,11 +98,19 @@ export default async function ImprintPage({ params }: { params: Promise<{ locale
       <PageHead header={header} locale={typed} />
       <section className="section" data-rise>
         <div className="page">
+          <p className="legal-updated">
+            {t('updated', {
+              date: formatDay(typed, new Date(`${LEGAL_UPDATED}T12:00:00Z`), 'date'),
+            })}
+          </p>
+          <h2 style={{ fontSize: 'var(--text-xl)', marginBlockEnd: 'var(--space-3)' }}>
+            {de ? 'Angaben nach § 25 Mediengesetz' : 'اطلاعات بر پایهٔ بند ۲۵ قانون رسانه‌ها'}
+          </h2>
           <dl
             style={{
               display: 'grid',
               gap: 'var(--space-4)',
-              maxInlineSize: 'var(--measure)',
+              maxInlineSize: '70ch',
               margin: 0,
             }}
           >
@@ -109,28 +124,9 @@ export default async function ImprintPage({ params }: { params: Promise<{ locale
 
           <div
             className="prose"
-            style={{ marginBlockStart: 'var(--space-6)', maxInlineSize: 'var(--measure)' }}
+            style={{ marginBlockStart: 'var(--space-6)', maxInlineSize: '70ch' }}
           >
             <h2 style={{ fontSize: 'var(--text-xl)' }}>
-              {de ? 'Online-Streitbeilegung' : 'حل اختلاف آنلاین'}
-            </h2>
-            <p>
-              {de
-                ? 'Die Europäische Kommission stellt eine Plattform zur Online-Streitbeilegung bereit. Wir sind weder verpflichtet noch bereit, an einem Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle teilzunehmen.'
-                : 'کمیسیون اروپا سامانه‌ای برای حل اختلاف آنلاین فراهم کرده است. ما نه موظف و نه مایل به شرکت در روند داوری نزد مرجع حل اختلاف مصرف‌کنندگان هستیم.'}
-            </p>
-            <p>
-              <a
-                href="https://ec.europa.eu/consumers/odr"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="ltr-island"
-              >
-                ec.europa.eu/consumers/odr
-              </a>
-            </p>
-
-            <h2 style={{ fontSize: 'var(--text-xl)', marginBlockStart: 'var(--space-5)' }}>
               {de ? 'Haftung für Inhalte' : 'مسئولیت محتوا'}
             </h2>
             <p>

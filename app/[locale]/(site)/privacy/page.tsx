@@ -2,6 +2,9 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 
 import { requireLocale } from '@/lib/i18n/locale-param';
+import { getTranslations } from 'next-intl/server';
+import { LEGAL_UPDATED } from '@/lib/site-facts';
+import { formatDay } from '@/lib/i18n/format';
 import { getPageHeader, getSettings } from '@/lib/db/queries/content';
 import { PageHead } from '@/components/site/page-head';
 import { pageMetadata } from '@/lib/page-meta';
@@ -40,6 +43,7 @@ export default async function PrivacyPage({ params }: { params: Promise<{ locale
 
   const [header, settings] = await Promise.all([getPageHeader('privacy', typed), getSettings()]);
   if (!header) notFound();
+  const tFooter = await getTranslations({ locale: typed, namespace: 'footer' });
 
   const de = typed === 'de';
   const contact = settings.contactEmail;
@@ -177,7 +181,12 @@ export default async function PrivacyPage({ params }: { params: Promise<{ locale
       <PageHead header={header} locale={typed} />
       <section className="section" data-rise>
         <div className="page">
-          <div className="prose" style={{ maxInlineSize: 'var(--measure)' }}>
+          <div className="prose" style={{ maxInlineSize: '70ch' }}>
+            <p className="legal-updated">
+              {tFooter('updated', {
+                date: formatDay(typed, new Date(`${LEGAL_UPDATED}T12:00:00Z`), 'date'),
+              })}
+            </p>
             {sections.map((section) => (
               <section key={section.title} style={{ marginBlockEnd: 'var(--space-6)' }}>
                 <h2 style={{ fontSize: 'var(--text-xl)', marginBlockEnd: 'var(--space-2)' }}>

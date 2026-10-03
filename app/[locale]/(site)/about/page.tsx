@@ -2,13 +2,12 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 import { requireLocale } from '@/lib/i18n/locale-param';
-import { getPageHeader, getBlocks, getValues } from '@/lib/db/queries/content';
+import { getPageHeader, getBlocks } from '@/lib/db/queries/content';
+import { FACTS, HISTORY, BOARD } from '@/lib/site-facts';
+import { digits } from '@/lib/i18n/format';
 import { Mark, PatternPlate, ViennaSkyline } from '@/components/site/ornaments';
 import { PageHead, SectionHead } from '@/components/site/page-head';
 import { EditableText } from '@/components/editable/editable-text';
-import { EditableEntry, EditableAdd } from '@/components/editable/editable-list';
-import { Card, CardStar } from '@/components/ui/card';
-import { Icon } from '@/components/site/icon';
 import { pageMetadata } from '@/lib/page-meta';
 import { locales } from '@/lib/i18n/config';
 
@@ -23,7 +22,6 @@ export function generateStaticParams() {
  * managed content and carry none, so the badge cycles a fixed set: it is
  * `aria-hidden` ornament, and no meaning rides on which one a card gets.
  */
-const VALUE_ICONS = ['Sparkle', 'Heart', 'Translate', 'UsersThree', 'Compass', 'Star'];
 
 export async function generateMetadata({
   params,
@@ -38,10 +36,9 @@ export default async function AboutPage({ params }: { params: Promise<{ locale: 
   const { locale } = await params;
   const typed = requireLocale(locale);
 
-  const [header, blocks, values] = await Promise.all([
+  const [header, blocks] = await Promise.all([
     getPageHeader('about', typed),
     getBlocks('about', typed),
-    getValues(typed),
   ]);
   if (!header) notFound();
 
@@ -116,51 +113,70 @@ export default async function AboutPage({ params }: { params: Promise<{ locale: 
         </div>
       </section>
 
-      {/* Values — the design's card grid, every card plated and badged. */}
-      <section className="section" data-rise>
-        <div className="page">
-          <SectionHead title={t('values')} />
-          <ul
-            className="columns-tight plate-rota"
-            style={{ listStyle: 'none', margin: 0, padding: 0 }}
-          >
-            {values.map((item, index) => (
-              <li key={item.id} data-rise>
-                <EditableEntry entity="values" id={item.id} isLast={values.length <= 1}>
-                  <Card as="article" className="h-full">
-                    <CardStar>
-                      <Icon name={VALUE_ICONS[index % VALUE_ICONS.length]} size={24} />
-                    </CardStar>
-                    <EditableText
-                      as="h3"
-                      entity="values"
-                      id={item.id}
-                      field="title"
-                      locale={typed}
-                      value={item.title}
-                      className="card-title"
-                      style={{ fontSize: 'var(--text-lg)', marginBlockStart: 'var(--space-2)' }}
-                      words="tight"
-                    />
-                    <EditableText
-                      as="p"
-                      entity="values"
-                      id={item.id}
-                      field="body"
-                      locale={typed}
-                      value={item.body}
-                      className="card-body"
-                      multiline
-                      rise
-                    />
-                  </Card>
-                </EditableEntry>
-              </li>
-            ))}
-          </ul>
-          <div style={{ marginBlockStart: 'var(--space-4)' }}>
-            <EditableAdd entity="values" />
+      {/* The house's history, as a timeline. */}
+      <section className="section">
+        <div className="page about-layout">
+          <div>
+            <SectionHead title={t('history')} />
+            <ol className="timeline">
+              {HISTORY.map((step) => (
+                <li key={step.de}>
+                  <span className="timeline-dot" aria-hidden="true" />
+                  {step.year ? (
+                    <span className="timeline-year tabular">{digits(step.year, typed)}</span>
+                  ) : null}
+                  <p>{step[typed]}</p>
+                </li>
+              ))}
+            </ol>
           </div>
+
+          {/* Who is behind it: the registered association, and its board once
+              the names are known. */}
+          <aside className="surf about-facts" aria-labelledby="about-facts">
+            <h2 id="about-facts" className="kicker">
+              {t('association')}
+            </h2>
+            <dl className="meta-grid">
+              <div>
+                <dt>{t('name')}</dt>
+                <dd>{typed === 'fa' ? FACTS.nameFa : FACTS.nameDe}</dd>
+              </div>
+              <div>
+                <dt>{t('form')}</dt>
+                <dd>{t('formValue')}</dd>
+              </div>
+              <div>
+                <dt>{t('seat')}</dt>
+                <dd>
+                  <span className="ltr-island">
+                    {FACTS.street}, {FACTS.postcode} {FACTS.city}
+                  </span>
+                </dd>
+              </div>
+              {FACTS.zvr ? (
+                <div>
+                  <dt>{t('zvr')}</dt>
+                  <dd className="ltr-island">{FACTS.zvr}</dd>
+                </div>
+              ) : null}
+            </dl>
+            {BOARD.length > 0 ? (
+              <>
+                <h3 className="kicker" style={{ marginBlockStart: 'var(--space-4)' }}>
+                  {t('board')}
+                </h3>
+                <dl className="meta-grid">
+                  {BOARD.map((member) => (
+                    <div key={member.name}>
+                      <dt>{member[typed]}</dt>
+                      <dd>{member.name}</dd>
+                    </div>
+                  ))}
+                </dl>
+              </>
+            ) : null}
+          </aside>
         </div>
       </section>
     </>

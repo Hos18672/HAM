@@ -566,11 +566,10 @@ test.describe('gallery', () => {
   test('shows the empty state before any image is uploaded', async ({ page }) => {
     await page.goto('/de/gallery');
     // The seed ships no images, so the page must say so rather than render a
-    // broken grid.
-    await expect(
-      page.getByText('In dieser Kategorie sind noch keine Bilder vorhanden.'),
-    ).toBeVisible();
-    // The filter row is still offered, so an editor can tell the page works.
-    await expect(page.getByRole('button', { name: 'Alle', exact: true })).toBeVisible();
+    // broken grid — and point to Instagram meanwhile.
+    await expect(page.getByText('Noch keine Bilder')).toBeVisible();
+    await expect(page.getByRole('link', { name: /@ansarolmahdi_Wien/ })).toBeVisible();
+    // No filter chips with nothing behind them.
+    await expect(page.getByRole('button', { name: /^Alle/ })).toHaveCount(0);
   });
 });

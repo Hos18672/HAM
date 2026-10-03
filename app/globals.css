@@ -7773,9 +7773,12 @@ body:has(.edit-bar) .bottom-bar,
   text-decoration: none;
 }
 .card > :has(> .card-link) {
-  /* Static, against `.card > *`: the link's overlay has to resolve against
-     the card to cover it, not against the heading it sits in. */
+  /* Static and unstacked, against `.card > *`: the link's overlay has to
+     resolve against the card to cover it, not against the heading it sits
+     in — and a z-index on a flex item makes a stacking context even when it
+     is static, which kept the overlay under the text that follows. */
   position: static;
+  z-index: auto;
 }
 .card-link::before {
   content: '';
@@ -8215,4 +8218,18 @@ body:has(.edit-bar) .bottom-bar,
   font-size: var(--text-sm);
   color: var(--ink2);
   margin: 0 0 var(--space-5);
+}
+
+/* Gold ink is too light on the gold tints: the Hijri digits on an occasion
+   or Friday row, and the "by programme" status, take the heading ink. */
+.timetable tr[data-occ='true'] .timetable-hij,
+.timetable tr[data-friday='true'] .timetable-hij,
+.timetable tr[data-today='true'] .timetable-hij {
+  color: var(--head);
+}
+.open-now[data-state='programme'] {
+  color: var(--head);
+}
+.ptimes-row[data-next] .ptimes-mark {
+  color: var(--head);
 }

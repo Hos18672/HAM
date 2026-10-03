@@ -129,8 +129,8 @@ test.describe('the du‘as', () => {
   });
 
   test('the card has no empty band above its kicker', async ({ page }) => {
-    // The ghosted Arabic title is decoration and had no rule of its own, so
-    // the SVG was laid out in the flow and pushed everything down.
+    // The ghosted Arabic title once pushed everything down; it has since
+    // been removed altogether.
     await page.goto('/de/duas');
     const gap = await page.evaluate(() => {
       const card = document.querySelector('.dua')!;
@@ -138,12 +138,8 @@ test.describe('the du‘as', () => {
       return kicker.getBoundingClientRect().top - card.getBoundingClientRect().top;
     });
     expect(gap).toBeLessThan(40);
-    expect(
-      await page
-        .locator('.dua-ghost')
-        .first()
-        .evaluate((el) => getComputedStyle(el).position),
-    ).toBe('absolute');
+    // And the watermark itself is gone: 7% gold text read as unreadable copy.
+    await expect(page.locator('.dua-ghost')).toHaveCount(0);
   });
 
   test('sets the Basmala apart at the head of a du‘a', async ({ page }) => {

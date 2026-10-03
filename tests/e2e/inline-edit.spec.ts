@@ -121,7 +121,7 @@ test.describe('in-place editing', () => {
     await enterEditMode(page);
     await page.goto('/de/activities');
 
-    const cards = page.locator('ul.columns-feature > li');
+    const cards = page.locator('ul.link-list > li');
     const before = await cards.count();
     expect(before).toBeGreaterThan(0);
 
@@ -130,14 +130,14 @@ test.describe('in-place editing', () => {
 
     // Adding applies to both languages at once, so the Persian page grew too.
     await page.goto('/fa/activities');
-    await expect(page.locator('ul.columns-feature > li')).toHaveCount(before + 1);
+    await expect(page.locator('ul.link-list > li')).toHaveCount(before + 1);
 
     // Delete it again, confirming as the toolbar requires.
     await page.goto('/de/activities');
-    const toolbar = page.locator('ul.columns-feature > li').last().locator('.editable-toolbar');
+    const toolbar = page.locator('ul.link-list > li').last().locator('.editable-toolbar');
     await toolbar.getByRole('button', { name: 'Eintrag löschen' }).click();
     await toolbar.getByRole('button', { name: /Wirklich löschen/ }).click();
-    await expect(page.locator('ul.columns-feature > li')).toHaveCount(before, { timeout: 20_000 });
+    await expect(page.locator('ul.link-list > li')).toHaveCount(before, { timeout: 20_000 });
   });
 
   test('leaves edit mode cleanly', async ({ page }) => {

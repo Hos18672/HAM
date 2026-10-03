@@ -4,7 +4,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import {
   ArrowsClockwise,
-  Compass,
   GlobeHemisphereEast,
   MapTrifold,
   Minus,
@@ -440,10 +439,13 @@ export function QiblaStreet({
               button for anyone not reading it with their eyes. */}
           <span className="qibla-ctl-word">{t('recentreMe')}</span>
         </button>
+        {/* That the compass is live is said by the north rose, which turns
+            with the phone — a third disc on a map this size said it twice
+            and cost a tenth of the street to do it. Still announced, for a
+            reader who is not looking at the rose. */}
         {headingLive ? (
-          <span className="mushaf-switch reader-full-btn" aria-live="polite">
-            <Compass size={17} weight="duotone" aria-hidden="true" />
-            <span className="qibla-ctl-word">{t('headingOn')}</span>
+          <span className="visually-hidden" aria-live="polite">
+            {t('headingOn')}
           </span>
         ) : null}
       </div>

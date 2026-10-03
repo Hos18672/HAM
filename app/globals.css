@@ -4933,13 +4933,37 @@
       clip-path: inset(50%);
       white-space: nowrap;
     }
+    /* One row along the top, not a column down the middle of the street:
+       two controls stacked took a third of the map's height on a phone. */
+    .qibla-panel-map .qibla-map-controls {
+      flex-direction: row;
+      align-items: center;
+    }
+    /* `min-block-size`, not `block-size`: both of these controls are built
+       on a shared base that sets a 38px floor, and a height alone is held
+       up by it. */
     .qibla-panel-map .qibla-map-controls .reader-full-btn {
-      inline-size: 38px;
+      inline-size: 34px;
+      min-block-size: 34px;
+      block-size: 34px;
       padding-inline: 0;
       justify-content: center;
       /* Round, like the north rose and the two discs of the zoom. Square
          with a 12px radius it read as a stray box dropped on the street. */
       border-radius: 999px;
+    }
+    .qibla-panel-map .reader-size {
+      min-block-size: 34px;
+      block-size: 34px;
+    }
+    .qibla-panel-map .reader-size-value {
+      font-size: 11px;
+    }
+    /* Scoped to the tab so it beats the rose's own rule, which is declared
+       further down the file. */
+    .qibla-panel-map .qibla-street-rose {
+      inline-size: 38px;
+      block-size: 38px;
     }
     /* The credit keeps its corner and the buttons sit on the line above it,
        so the two never compete for the same width: at 360px the panel is
@@ -4950,9 +4974,10 @@
       inset-block-end: 30px;
     }
     .qibla-span-btn {
-      block-size: 36px;
-      padding-inline: 12px;
-      font-size: 13px;
+      block-size: 34px;
+      padding-inline: 11px;
+      gap: 5px;
+      font-size: 12.5px;
     }
     .qibla-panel-map .qibla-attribution {
       font-size: 10px;

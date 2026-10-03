@@ -474,6 +474,34 @@ test.describe('the qibla', () => {
             ).size,
         );
         expect(rows, `span buttons wrapped at ${locale} ${width}x${height}`).toBe(1);
+
+        // On a phone the controls are a row along the top at a reduced
+        // size. Measured rather than assumed: these overrides sit on bases
+        // that set a `min-block-size` floor and are declared further down
+        // the file, and a rule that loses either way is silently dead —
+        // which is how the map came to carry full-size furniture.
+        if (width < 500) {
+          const sizes = await page.evaluate(() => {
+            const h = (s: string) => {
+              const el = document.querySelector(s);
+              return el ? Math.round(el.getBoundingClientRect().height) : 0;
+            };
+            return {
+              controlRow: h('.qibla-map-controls'),
+              zoom: h('.reader-size'),
+              recentre: h('.qibla-map-controls > button'),
+              rose: h('.qibla-street-rose'),
+              span: h('.qibla-span-btn'),
+            };
+          });
+          expect(sizes, `control sizes at ${locale} ${width}`).toEqual({
+            controlRow: 34,
+            zoom: 34,
+            recentre: 34,
+            rose: 38,
+            span: 34,
+          });
+        }
       }
     }
   });

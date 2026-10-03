@@ -226,7 +226,7 @@ the 32 public pages render, and deploys that. The design, the typography, both
 languages and the seeded content are all genuine — it is the real output of the
 real app. Everything needing a server is inert: no sign-in, no admin, no live
 editing, the forms do not submit and the search does not search. Every page
-carries `noindex`, and with a refusing `robots.txt` that keeps the
+carries `noindex` and `robots.txt` refuses crawlers, which keeps the
 preview from ever competing with the real site in a search engine. A nightly
 run keeps the prayer times and the calendar current, since both are rendered
 for the day of the build.

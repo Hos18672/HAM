@@ -707,4 +707,3 @@ Recorded here rather than left implicit:
   (`eroeffnungsfest` in the seed, **Termine** in /admin).
 - Gallery photos — until there are any, the page shows an empty state that
   points to Instagram.
-

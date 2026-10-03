@@ -1,0 +1,16 @@
+# Netlify runs the full Next.js app (middleware, server actions, API routes,
+# on-demand revalidation) through its Next.js runtime, which it installs on
+# its own for any Next.js site. Every value lives in the site's environment
+# variables, never in this file.
+[build]
+  # Migrations, then the seed — which writes only into an empty database and
+  # otherwise just makes sure the admin account exists — then the build.
+  command = "pnpm run deploy-build"
+  publish = ".next"
+
+[build.environment]
+  NODE_VERSION = "22"
+  # These are meant to appear in the built output (public URLs, the bucket
+  # name, the browser-safe anon key), so the secrets scan must not fail the
+  # build on them. The real secrets are still scanned.
+  SECRETS_SCAN_OMIT_KEYS = "NEXT_PUBLIC_SITE_URL,NEXT_PUBLIC_SUPABASE_ANON_KEY,AUTH_URL,SUPABASE_URL,SUPABASE_STORAGE_BUCKET"

@@ -181,7 +181,7 @@ Unter **Protokoll** steht, wer wann was geändert hat.
 2. **Settings → Database** gives you two connection strings. The _pooled_ one
    (transaction pooler, port 6543) is `DATABASE_URL`. For `DIRECT_URL` take the
    _session pooler_ string (port 5432): Supabase's direct host is IPv6-only on
-   the free tier, and Vercel's build machines cannot reach it.
+   the free tier, and Netlify's build machines cannot reach it.
 3. **Storage → New bucket** named `media`, marked **public**.
 4. **Settings → API** gives you the project URL and the `service_role` key.
 
@@ -191,12 +191,14 @@ Create an account, verify the association's domain, and take an API key. Until
 the domain is verified Resend only delivers to the account owner's address,
 which is enough to test with.
 
-### 3. Vercel (hosting, free tier)
+### 3. Netlify (hosting, free tier)
 
-1. Import the repository.
-2. Add every variable from the table above as a project environment variable.
-   `AUTH_URL` and `NEXT_PUBLIC_SITE_URL` must be the real domain.
-3. Deploy. Vercel runs `pnpm vercel-build`, which applies the migrations,
+1. **Add new site → Import an existing project**, pick the repository. The
+   build settings come from `netlify.toml`; leave the form's fields as they are.
+2. **Site configuration → Environment variables**: add every variable from the
+   table above. `AUTH_URL` and `NEXT_PUBLIC_SITE_URL` must be the site's real
+   address (`https://<name>.netlify.app` until the domain is connected).
+3. Deploy. Netlify runs `pnpm run deploy-build`, which applies the migrations,
    seeds the database **only if it is empty** (and creates the admin account
    from `ADMIN_EMAIL` / `ADMIN_PASSWORD` if it does not exist yet), then builds.
    Later deploys leave the content alone, so edits made on the site survive.
@@ -204,7 +206,7 @@ which is enough to test with.
 
 ### 4. Domain
 
-Point the domain at Vercel and set it as the project's primary domain. This is
+Point the domain at Netlify and set it as the project's primary domain. This is
 the only thing the association pays for.
 
 ### Why not GitHub Pages
@@ -537,12 +539,12 @@ asserts that a page load makes **no** third-party requests, so this stays true.
 
 The stack is chosen so the association pays for one thing only.
 
-| Service  | Plan  | Cost                      | For                                        |
-| -------- | ----- | ------------------------- | ------------------------------------------ |
-| Vercel   | Hobby | free                      | hosting, builds, ISR                       |
-| Supabase | Free  | free                      | Postgres **and** file storage, one account |
-| Resend   | Free  | free (~3 000 mails/month) | form notifications                         |
-| Domain   | —     | ~€15/year                 | the only real cost                         |
+| Service  | Plan | Cost                      | For                                        |
+| -------- | ---- | ------------------------- | ------------------------------------------ |
+| Netlify  | Free | free                      | hosting, builds, ISR                       |
+| Supabase | Free | free                      | Postgres **and** file storage, one account |
+| Resend   | Free | free (~3 000 mails/month) | form notifications                         |
+| Domain   | —    | ~€15/year                 | the only real cost                         |
 
 Deliberately **not** used: Upstash or Redis (rate limiting lives in Postgres),
 UploadThing or S3 (Supabase Storage covers it), any analytics service, any font

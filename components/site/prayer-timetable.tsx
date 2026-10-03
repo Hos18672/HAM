@@ -116,6 +116,11 @@ export function PrayerTimetable({
       {state === 'ready' && timetable ? (
         <div
           id="month-timetable"
+          // A scrolling region is reachable from the keyboard, so its rows can
+          // be scrolled without a mouse.
+          tabIndex={0}
+          role="region"
+          aria-label={`${t('timetable')} · ${monthLabel}`}
           className="table-scroll timetable-wrap"
           data-open={open ? 'true' : 'false'}
           style={{ marginBlockStart: 'var(--space-4)' }}

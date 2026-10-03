@@ -568,7 +568,9 @@ test.describe('gallery', () => {
     // The seed ships no images, so the page must say so rather than render a
     // broken grid — and point to Instagram meanwhile.
     await expect(page.getByText('Noch keine Bilder')).toBeVisible();
-    await expect(page.getByRole('link', { name: /@ansarolmahdi_Wien/ })).toBeVisible();
+    await expect(
+      page.locator('#main').getByRole('link', { name: /@ansarolmahdi_Wien/ }),
+    ).toBeVisible();
     // No filter chips with nothing behind them.
     await expect(page.getByRole('button', { name: /^Alle/ })).toHaveCount(0);
   });

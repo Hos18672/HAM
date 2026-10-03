@@ -8230,6 +8230,7 @@ body:has(.edit-bar) .bottom-bar,
 .open-now[data-state='programme'] {
   color: var(--head);
 }
-.ptimes-row[data-next] .ptimes-mark {
+.ptimes-row[data-next] .ptimes-mark,
+.cal-day[data-occ='true'] .cal-day-hij {
   color: var(--head);
 }

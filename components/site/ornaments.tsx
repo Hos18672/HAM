@@ -301,7 +301,7 @@ export function Corner({
         position: 'absolute',
         zIndex: 0,
         ...(place === 'start'
-          ? { insetBlockStart: 18, insetInlineStart: 18 }
+          ? { insetBlockStart: 'var(--corner-top, 18px)', insetInlineStart: 18 }
           : { insetBlockEnd: 18, insetInlineEnd: 18 }),
         opacity,
         pointerEvents: 'none',

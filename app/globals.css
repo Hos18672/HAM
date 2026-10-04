@@ -7851,9 +7851,16 @@ body:has(.edit-bar) .bottom-bar,
   transform: translateX(-3px) scaleX(-1);
 }
 
-/* Home: the prayer strip sits just under the hero; the visit block. */
+/* Home: the prayer strip sits just under the hero; the visit block. The
+   same gap below as above, so the card no longer sits on the edge of the
+   white section that follows. */
 .home-prayer {
-  margin-block: clamp(20px, 3vw, 32px) 0;
+  margin-block: clamp(20px, 3vw, 32px);
+}
+/* The hero runs up behind the floating bar, so its head corner starts below
+   the bar rather than under it. */
+.hc-hero {
+  --corner-top: calc(var(--hc-header-h) + 14px);
 }
 .home-visit {
   margin-block-start: 26px;

@@ -69,7 +69,7 @@ export default async function CommunityPage({ params }: { params: Promise<{ loca
                 </p>
               </div>
               <div className="cta-actions">
-                <LinkButton href={contactHref(typed, 'help')} size="lg" className="btn-gold">
+                <LinkButton href={contactHref(typed, 'help')} size="lg" className="btn-band">
                   {t('askForHelp')}
                 </LinkButton>
                 <LinkButton href={contactHref(typed, 'volunteer')} variant="on-scrim" size="lg">

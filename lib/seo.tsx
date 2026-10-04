@@ -1,6 +1,7 @@
 import type { Locale } from './i18n/config';
 import type { EventEntry, SiteSettings, Course } from './db/queries/content';
 import { ASSOCIATION } from './db/seed-data';
+import { FACTS, OPENING_HOURS } from './site-facts';
 
 /**
  * JSON-LD builders.
@@ -41,6 +42,53 @@ export function placeJsonLd(settings: SiteSettings) {
       longitude: ASSOCIATION.longitude,
     },
     ...(settings.mapUrl ? { hasMap: settings.mapUrl } : {}),
+  };
+}
+
+const WEEKDAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+
+/** The opening hours as schema.org has them. Days by programme have no hours. */
+export function openingHoursJsonLd() {
+  return OPENING_HOURS.filter((w) => w.open && w.close).map((w) => ({
+    '@type': 'OpeningHoursSpecification',
+    dayOfWeek: w.days.map((d) => `https://schema.org/${WEEKDAYS[d - 1]}`),
+    opens: w.open,
+    closes: w.close,
+  }));
+}
+
+/**
+ * The contact page's graph: the association, the house it opens and when,
+ * and where the page sits — the breadcrumb the page no longer prints.
+ */
+export function contactJsonLd(
+  locale: Locale,
+  settings: SiteSettings,
+  homeName: string,
+  pageName: string,
+) {
+  return {
+    '@context': 'https://schema.org',
+    '@graph': [
+      {
+        ...organizationJsonLd(locale, settings),
+        '@context': undefined,
+        sameAs: [`https://www.instagram.com/${FACTS.instagram}/`],
+        location: { ...placeJsonLd(settings), openingHoursSpecification: openingHoursJsonLd() },
+      },
+      {
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+          { '@type': 'ListItem', position: 1, name: homeName, item: `${siteUrl()}/${locale}` },
+          {
+            '@type': 'ListItem',
+            position: 2,
+            name: pageName,
+            item: `${siteUrl()}/${locale}/contact`,
+          },
+        ],
+      },
+    ],
   };
 }
 

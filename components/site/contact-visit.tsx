@@ -219,11 +219,11 @@ export function ContactMap({
           <img
             className="contact-map-img"
             src={`${BASE}/map-contact@1x.webp`}
-            srcSet={`${BASE}/map-contact@1x.webp 1x, ${BASE}/map-contact@2x.webp 2x`}
+            srcSet={`${BASE}/map-contact@1x.webp 800w, ${BASE}/map-contact@2x.webp 1600w`}
             alt=""
             width={800}
             height={500}
-            loading="lazy"
+            sizes="(min-width: 1024px) 680px, 100vw"
             decoding="async"
           />
         ) : null}

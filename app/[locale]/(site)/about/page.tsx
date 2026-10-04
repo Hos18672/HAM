@@ -60,7 +60,7 @@ export default async function AboutPage({ params }: { params: Promise<{ locale: 
             >
               <PatternPlate tiling="shesh" opacity={0.5} />
               <div className="ornament-mark">
-                <Mark className="" />
+                <Mark className="" sizes="320px" />
               </div>
               <ViennaSkyline tone="var(--gold)" opacity={0.3} />
             </div>

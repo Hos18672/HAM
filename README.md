@@ -693,6 +693,30 @@ Recorded here rather than left implicit:
     - **The EU online dispute platform** link was removed from the imprint:
       the platform was closed in July 2025.
 
+11. **The contact page brief.** Built as written, with these decisions:
+    - **The static map** (`public/map-contact@1x.webp`, `@2x`) is rendered by
+      `scripts/contact-map.mjs`, which the **Contact map** workflow runs
+      whenever the script changes: the build sandbox cannot reach the tile
+      server. Until the visitor taps "Interaktive Karte laden" the page
+      makes no third-party request; the privacy page says so. The home
+      page's small map is unchanged and still loads tiles on scroll.
+    - **The open status in the built page is neutral** ("Öffnungszeiten"),
+      not today's hours: the page is built once and served for days, so any
+      day-specific text baked in would be wrong most of the time. The
+      browser replaces it with the real state, in the same box, at once.
+    - **"Heute nach Programm"** is set in the heading ink on the gold
+      ground: `--goldInk` there measures 4.2:1, short of 4.5.
+    - **No reply time** is promised under the form until the association
+      commits to one (`TODO(content)` in the page).
+    - **Buttons site-wide** lost the pill, ring, sheen, letter-spacing and
+      lift. Gold is kept for "Mitglied werden" alone; the other asks that sat
+      gold on a dark band (home hero, help panel, featured event) take a flat
+      near-white fill (`.btn-band`), since the green fill would sink into the
+      green behind it.
+    - **The footer's contact column** is hidden on the contact page only.
+    - **The honeypot** is `hp_field_x` on every public form, and the
+      fill-time floor is 3 s.
+
 ### Content still needed (`TODO(content)` in the code)
 
 - Phone number, IBAN, BIC and ZVR number — `lib/site-facts.ts` (or

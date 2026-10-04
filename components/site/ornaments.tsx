@@ -353,6 +353,8 @@ export function Eye({ size = 26 }: { size?: number }) {
   );
 }
 
+const BASE = process.env.NEXT_PUBLIC_BASE_PATH ?? '';
+
 /**
  * The house's mark: the association's own seal.
  *
@@ -361,7 +363,15 @@ export function Eye({ size = 26 }: { size?: number }) {
  * band green the masthead uses in the dark theme — so the disc stays light in
  * both themes and the mark reads the same either way.
  */
-export function Mark({ className = 'brand-mark' }: { className?: string }) {
+export function Mark({
+  className = 'brand-mark',
+  sizes = '40px',
+}: {
+  className?: string;
+  /** How wide it is drawn. The masthead's 40px takes the small WebP; the about
+   *  page's large seal, the full 512px original. */
+  sizes?: string;
+}) {
   return (
     <span
       className={className}
@@ -377,7 +387,11 @@ export function Mark({ className = 'brand-mark' }: { className?: string }) {
       {/* eslint-disable-next-line @next/next/no-img-element -- a fixed-size
           decorative mark; the optimiser has nothing to choose between. */}
       <img
-        src={`${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/logo.png`}
+        src={`${BASE}/logo-160.webp`}
+        srcSet={`${BASE}/logo-160.webp 160w, ${BASE}/logo.png 512w`}
+        sizes={sizes}
+        width={160}
+        height={160}
         alt=""
         aria-hidden="true"
         style={{ display: 'block', inlineSize: '100%', blockSize: '100%', objectFit: 'contain' }}

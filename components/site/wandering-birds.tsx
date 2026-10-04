@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+import { usePathname } from '@/lib/i18n/navigation';
 import type { PageSkyControl } from '@/lib/homecoming/page-sky.js';
 import { loadSilhouette, skylineBoxes, type Silhouette } from './skyline-silhouette';
 
@@ -29,13 +30,17 @@ const CARDS = '.card, .tile, .surf, .cta-panel, .card-plate, .frame, .pull-quote
  * it nears one, and a bird the scroll carries over one is steered off it. The
  * city's boxes follow its roof line (see `skyline-silhouette.ts`), so birds
  * still fly in the sky above it.
+ *
+ * The contact page has none: it is there to be read at once, and the scene's
+ * frame loop cost a phone seconds of main thread before the page answered.
  */
 export function WanderingBirds() {
   const hostRef = useRef<HTMLDivElement>(null);
+  const grounded = usePathname() === '/contact';
 
   useEffect(() => {
     const host = hostRef.current;
-    if (!host) return undefined;
+    if (!host || grounded) return undefined;
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return undefined;
 
     const root = document.documentElement;
@@ -109,7 +114,7 @@ export function WanderingBirds() {
       control?.dispose();
       control = null;
     };
-  }, []);
+  }, [grounded]);
 
   return (
     <div

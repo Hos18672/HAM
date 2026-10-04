@@ -5,9 +5,16 @@ test.describe('contact form', () => {
     await page.goto('/de/contact');
     await page.getByRole('button', { name: 'Nachricht senden' }).click();
 
-    // Client-side validation from the same Zod schema the server uses.
-    await expect(page.getByText('Bitte geben Sie Ihren Namen an.')).toBeVisible();
-    await expect(page.getByText('Bitte geben Sie eine E-Mail-Adresse an.')).toBeVisible();
+    // Client-side validation from the same Zod schema the server uses: each
+    // error beside its field, and again in the summary at the top, as a link
+    // to the field. The cursor goes to the first.
+    const inline = page.locator('.field-error');
+    await expect(inline.getByText('Bitte geben Sie Ihren Namen an.')).toBeVisible();
+    await expect(inline.getByText('Bitte geben Sie eine E-Mail-Adresse an.')).toBeVisible();
+    await expect(
+      page.getByRole('alert').getByRole('link', { name: 'Bitte geben Sie Ihren Namen an.' }),
+    ).toBeVisible();
+    await expect(page.getByLabel('Name', { exact: false })).toBeFocused();
   });
 
   test('rejects an address that is not an address', async ({ page }) => {
@@ -16,7 +23,9 @@ test.describe('contact form', () => {
     await page.getByLabel('E-Mail', { exact: false }).fill('keine-adresse');
     await page.getByLabel('Nachricht', { exact: false }).fill('Eine ausreichend lange Nachricht.');
     await page.getByRole('button', { name: 'Nachricht senden' }).click();
-    await expect(page.getByText('Diese E-Mail-Adresse sieht nicht richtig aus.')).toBeVisible();
+    await expect(
+      page.locator('.field-error').getByText('Diese E-Mail-Adresse sieht nicht richtig aus.'),
+    ).toBeVisible();
   });
 
   test('accepts a real submission and confirms it', async ({ page }) => {
@@ -41,6 +50,6 @@ test.describe('contact form', () => {
   test('works in Persian too', async ({ page }) => {
     await page.goto('/fa/contact');
     await page.getByRole('button', { name: 'ارسال پیام' }).click();
-    await expect(page.getByText('لطفاً نام خود را بنویسید.')).toBeVisible();
+    await expect(page.locator('.field-error').getByText('لطفاً نام خود را بنویسید.')).toBeVisible();
   });
 });

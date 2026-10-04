@@ -195,10 +195,12 @@ test.describe('public site', () => {
 
     // No font CDN, no analytics, no embeds, anywhere. The single exception
     // is OpenStreetMap's tiles, fetched as plain images by the qibla page's
-    // map and by the house map on the home and contact pages — nothing else
-    // of theirs runs in the page, and the privacy policy says so. If anything
-    // else ever appears here, the policy has stopped being true.
-    const MAP_PAGES = ['/qibla', '/contact', ''];
+    // map and by the house map on the home page — nothing else of theirs runs
+    // in the page, and the privacy policy says so. The contact page shows a
+    // picture and asks OpenStreetMap for nothing until a visitor loads the
+    // live map. If anything else ever appears here, the policy has stopped
+    // being true.
+    const MAP_PAGES = ['/qibla', ''];
     const unexpected = external.filter(
       (r) => !(MAP_PAGES.includes(r.path) && r.url.startsWith('https://tile.openstreetmap.org/')),
     );

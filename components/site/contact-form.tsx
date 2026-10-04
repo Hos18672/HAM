@@ -66,11 +66,11 @@ export function ContactForm({
     setError,
     setFocus,
     setValue,
+    trigger,
     watch,
     formState: { errors, isSubmitting, submitCount },
   } = useForm<ContactInput>({
     resolver: zodResolver(contactSchema),
-    mode: 'onTouched',
     defaultValues: {
       locale,
       hp_field_x: '',
@@ -103,6 +103,43 @@ export function ContactForm({
   useEffect(() => {
     if (state === 'sent') sentRef.current?.focus();
   }, [state]);
+
+  // A field is checked when it is left — but not while the pointer that left
+  // it is still down. The error line appearing shifts everything below it,
+  // and a press that began on a topic chip would end beside it and be lost.
+  const pointerDown = useRef(false);
+  const pending = useRef<(() => void) | null>(null);
+  useEffect(() => {
+    const down = () => {
+      pointerDown.current = true;
+    };
+    const up = () => {
+      pointerDown.current = false;
+      const run = pending.current;
+      pending.current = null;
+      if (run) window.setTimeout(run, 120);
+    };
+    document.addEventListener('pointerdown', down, true);
+    document.addEventListener('pointerup', up, true);
+    document.addEventListener('pointercancel', up, true);
+    return () => {
+      document.removeEventListener('pointerdown', down, true);
+      document.removeEventListener('pointerup', up, true);
+      document.removeEventListener('pointercancel', up, true);
+    };
+  }, []);
+  /** `register` with the check on leaving, and again on typing once it has failed. */
+  const field = (name: Checked) =>
+    register(name, {
+      onBlur: () => {
+        const run = () => void trigger(name);
+        if (pointerDown.current) pending.current = run;
+        else run();
+      },
+      onChange: () => {
+        if (errors[name]) void trigger(name);
+      },
+    });
 
   const topic = watch('topic');
   const subject = watch('subject');
@@ -205,7 +242,7 @@ export function ContactForm({
           error={message(errors.name?.message)}
           errorIcon={warn}
         >
-          {(props) => <Input type="text" autoComplete="name" {...props} {...register('name')} />}
+          {(props) => <Input type="text" autoComplete="name" {...props} {...field('name')} />}
         </Field>
 
         <Field
@@ -216,7 +253,7 @@ export function ContactForm({
           errorIcon={warn}
         >
           {(props) => (
-            <Input type="email" autoComplete="email" dir="ltr" {...props} {...register('email')} />
+            <Input type="email" autoComplete="email" dir="ltr" {...props} {...field('email')} />
           )}
         </Field>
       </div>
@@ -229,7 +266,7 @@ export function ContactForm({
         errorIcon={warn}
       >
         {(props) => (
-          <Input type="tel" autoComplete="tel" dir="ltr" {...props} {...register('phone')} />
+          <Input type="tel" autoComplete="tel" dir="ltr" {...props} {...field('phone')} />
         )}
       </Field>
 
@@ -282,7 +319,7 @@ export function ContactForm({
           error={message(errors.subject?.message)}
           errorIcon={warn}
         >
-          {(props) => <Input type="text" {...props} {...register('subject')} />}
+          {(props) => <Input type="text" {...props} {...field('subject')} />}
         </Field>
       ) : null}
 
@@ -298,7 +335,7 @@ export function ContactForm({
         })}
         className="contact-message"
       >
-        {(props) => <Textarea maxLength={MAX_MESSAGE} {...props} {...register('message')} />}
+        {(props) => <Textarea maxLength={MAX_MESSAGE} {...props} {...field('message')} />}
       </Field>
 
       <p className="contact-consent">

@@ -32,9 +32,9 @@ import { digits, timeRange } from '@/lib/i18n/format';
 import { weekdayName } from '@/lib/schedule';
 import { EditableText } from '@/components/editable/editable-text';
 import { ContactForm } from '@/components/site/contact-form';
-import { JsonLd, placeJsonLd } from '@/lib/seo';
+import { JsonLd, contactJsonLd } from '@/lib/seo';
 import { pageMetadata } from '@/lib/page-meta';
-import { locales } from '@/lib/i18n/config';
+import { isLocale, locales } from '@/lib/i18n/config';
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -46,7 +46,11 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
   const { locale } = await params;
-  return pageMetadata('contact', locale, '/contact');
+  const meta = await pageMetadata('contact', locale, '/contact');
+  if (!isLocale(locale)) return meta;
+  const t = await getTranslations({ locale, namespace: 'contact' });
+  const title = t('metaTitle');
+  return { ...meta, title: { absolute: title }, openGraph: { ...meta.openGraph, title } };
 }
 
 /** Rendered by `scripts/contact-map.mjs`; until it exists the frame waits for a click. */
@@ -68,6 +72,7 @@ export default async function ContactPage({ params }: { params: Promise<{ locale
   const t = await getTranslations({ locale, namespace: 'contact' });
   const tHouse = await getTranslations({ locale, namespace: 'house' });
   const tA11y = await getTranslations({ locale, namespace: 'a11y' });
+  const tNav = await getTranslations({ locale, namespace: 'nav' });
 
   // What a `?topic=…&id=…` link can name, so the form can fill it in.
   const subjects = {
@@ -102,7 +107,7 @@ export default async function ContactPage({ params }: { params: Promise<{ locale
 
   return (
     <div className="contact-page">
-      <JsonLd data={{ '@context': 'https://schema.org', ...placeJsonLd(settings) }} />
+      <JsonLd data={contactJsonLd(typed, settings, tNav('home'), tNav('contact'))} />
 
       {/* No band, no plate, no breadcrumb: the title, and whether the door is
           open, are the first things on the screen. */}

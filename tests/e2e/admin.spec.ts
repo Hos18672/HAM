@@ -223,11 +223,13 @@ test.describe('admin settings and inbox', () => {
       .click();
     await expect(toast(page)).toContainText('Einstellungen gespeichert.');
 
-    // The number appears in the contact block and again in the footer — both
-    // read it from settings, so both must have picked up the change.
+    // The number appears on the contact page and in the footer of every
+    // other page — both read it from settings, so both must have picked up
+    // the change. (The contact page hides its own footer copy.)
     await page.goto('/de/contact');
-    await expect(page.getByText(phone).first()).toBeVisible();
-    expect(await page.getByText(phone).count()).toBeGreaterThanOrEqual(2);
+    await expect(page.locator('.contact-tile').getByText(phone)).toBeVisible();
+    await page.goto('/de');
+    await expect(page.locator('.footer-contact').getByText(phone)).toBeVisible();
   });
 
   test('rejects an IBAN that is not shaped like one', async ({ page }) => {

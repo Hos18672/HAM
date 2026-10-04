@@ -17,8 +17,9 @@ import type { ThemeValue } from './theme';
  *
  * This file is only the scaffolding the scene needs — the section it covers,
  * the square it lands in, the caption and the progress line — plus the wiring
- * to this app's theme, locale and page states. Nothing in `lib/homecoming/src`
- * is touched: no bird counts, timings, colours or flight logic.
+ * to this app's theme, locale and page states. The scene itself is changed
+ * only where marked "CHANGED FOR THIS SITE" — among them a shorter build on
+ * phones and a progress meter that no longer waits for lazy images.
  *
  * The copy is passed in as `children` so it stays server-rendered: the
  * headline, the lead and the buttons are in the HTML whether or not the

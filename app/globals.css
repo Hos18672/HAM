@@ -7437,12 +7437,36 @@ a.week-link:hover {
 .header-burger {
   display: flex;
 }
+/* The bar's language switch: small and quiet beside the menu button. Its
+   height is fixed rather than grown from padding, so a phone's text scaling
+   cannot inflate it; each option's tap area reaches 44px through an invisible
+   overlay above and below the pill. */
+.seg-compact {
+  padding: 3px;
+  gap: 0;
+  box-shadow: none;
+}
+.seg-compact .seg-thumb {
+  top: 3px;
+  bottom: 3px;
+  inset-inline-start: 3px;
+  width: calc(50% - 3px);
+  box-shadow: none;
+}
 .seg-compact .seg-option {
-  min-inline-size: 42px;
-  padding-inline: 10px;
-  font-size: 13px;
+  display: grid;
+  place-items: center;
+  min-inline-size: 34px;
+  block-size: 28px;
+  padding: 0 8px;
+  font-size: 12px;
+  line-height: 1;
   font-weight: var(--weight-bold);
-  min-block-size: 36px;
+}
+.seg-compact .seg-option::after {
+  content: '';
+  position: absolute;
+  inset: -8px 0;
 }
 @media (min-width: 1100px) {
   .main-nav {

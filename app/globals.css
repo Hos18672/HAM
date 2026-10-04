@@ -3204,6 +3204,18 @@
     font-size: var(--qr-ar);
   }
   .qr-banner .mushaf-banner {
+    /* Named again on the heading: the site's own heading face otherwise
+       wins over the one inherited from the wrapper. */
+    font-family: 'Scheherazade New', var(--font-naskh), serif;
+    font-weight: 400;
+    color: var(--head);
+  }
+  /* The cartouche in a page's head is the heading itself rather than a
+     wrapper round one, so the rule above missed it and the running head's
+     small gold type won instead: the first surah on a page came out smaller
+     and gold, the next one green. Both are set the same way now. */
+  .qr-head-band .qr-banner.mushaf-banner {
+    font-size: calc(var(--qr-ar) * 1.05);
     font-weight: 400;
     color: var(--head);
   }
@@ -4065,6 +4077,9 @@
     /* On a narrow line, justification stretches the gaps badly. */
     .mushaf-banner {
       font-size: 1em;
+    }
+    .qr-head-band .qr-banner.mushaf-banner {
+      font-size: var(--qr-ar);
     }
   }
 

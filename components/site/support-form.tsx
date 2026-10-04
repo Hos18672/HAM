@@ -69,7 +69,7 @@ export function SupportForm({
     resolver: zodResolver(schema) as never,
     defaultValues: {
       locale,
-      website: '',
+      hp_field_x: '',
       elapsed: 0,
       name: '',
       email: '',
@@ -134,16 +134,10 @@ export function SupportForm({
       })}
       style={{ display: 'grid', gap: compact ? 'var(--space-3)' : 'var(--space-4)' }}
     >
+      {/* Honeypot: off-screen, out of the tab order, no label for autofill to
+          match — but a bot fills it in. */}
       <div aria-hidden="true" className="hp-field">
-        <label htmlFor={`${mode}-website`}>Website</label>
-        <input
-          id={`${mode}-website`}
-          type="text"
-          tabIndex={-1}
-          autoComplete="off"
-          aria-hidden="true"
-          {...register('website')}
-        />
+        <input type="text" tabIndex={-1} autoComplete="off" {...register('hp_field_x')} />
       </div>
 
       <input type="hidden" {...register('locale')} value={locale} />

@@ -33,7 +33,7 @@ const validContact = {
   topic: 'course' as const,
   message: 'Ich möchte mich für den Deutschkurs anmelden.',
   locale: 'de' as const,
-  website: '',
+  hp_field_x: '',
   elapsed: 9000,
 };
 
@@ -83,7 +83,7 @@ describe('contact form', () => {
 
   it('rejects a message that is too short or absurdly long', () => {
     expect(contactSchema.safeParse({ ...validContact, message: 'hi' }).success).toBe(false);
-    expect(contactSchema.safeParse({ ...validContact, message: 'x'.repeat(5001) }).success).toBe(
+    expect(contactSchema.safeParse({ ...validContact, message: 'x'.repeat(2001) }).success).toBe(
       false,
     );
   });
@@ -97,17 +97,17 @@ describe('contact form', () => {
   });
 
   it('defaults the anti-spam fields when a no-JavaScript client omits them', () => {
-    const { website: _w, elapsed: _e, ...withoutTraps } = validContact;
+    const { hp_field_x: _w, elapsed: _e, ...withoutTraps } = validContact;
     const result = contactSchema.safeParse(withoutTraps);
     expect(result.success).toBe(true);
-    expect(result.success && result.data.website).toBe('');
+    expect(result.success && result.data.hp_field_x).toBe('');
     expect(result.success && result.data.elapsed).toBe(0);
   });
 
   it('parses the honeypot and timer without judging them', () => {
     // The schema accepts a filled honeypot; the action decides what it means,
     // so a tripped trap can return the same success a real submission does.
-    const result = antiSpamSchema.safeParse({ website: 'http://spam.example', elapsed: 40 });
+    const result = antiSpamSchema.safeParse({ hp_field_x: 'http://spam.example', elapsed: 40 });
     expect(result.success).toBe(true);
     expect(MIN_FILL_MS).toBeGreaterThan(1000);
   });

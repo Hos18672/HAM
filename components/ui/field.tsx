@@ -17,6 +17,8 @@ export interface FieldProps {
   hint?: string;
   required?: boolean;
   optionalLabel?: string;
+  /** Set before the error text, so the error is not told by colour alone. */
+  errorIcon?: React.ReactNode;
   children: (props: {
     id: string;
     'aria-invalid': boolean | undefined;
@@ -37,6 +39,7 @@ export function Field({
   hint,
   required,
   optionalLabel,
+  errorIcon,
   children,
   id,
   className,
@@ -71,6 +74,7 @@ export function Field({
       ) : null}
       {error ? (
         <p className="field-error" id={errorId}>
+          {errorIcon}
           {error}
         </p>
       ) : null}

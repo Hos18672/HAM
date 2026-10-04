@@ -37,8 +37,8 @@ const SUCCESS: SubmitResult = { ok: true };
  * which field gave it away; a person who somehow trips it loses one message,
  * which is the lesser harm than a flooded inbox.
  */
-function looksAutomated(website: string, elapsed: number): boolean {
-  if (website.trim().length > 0) return true;
+function looksAutomated(honeypot: string, elapsed: number): boolean {
+  if (honeypot.trim().length > 0) return true;
   // `elapsed` is 0 when JavaScript never ran, which is a person with scripts
   // off rather than a bot — so only a positive, implausibly fast time counts.
   if (elapsed > 0 && elapsed < MIN_FILL_MS) return true;
@@ -104,8 +104,8 @@ export async function submitContact(input: unknown): Promise<SubmitResult> {
   if (!parsed.success)
     return { ok: false, error: 'form.error', fields: fieldErrors(parsed.error.issues) };
 
-  const { website, elapsed, subject, topic, ...data } = parsed.data;
-  if (looksAutomated(website, elapsed)) return SUCCESS;
+  const { hp_field_x: honeypot, elapsed, subject, topic, ...data } = parsed.data;
+  if (looksAutomated(honeypot, elapsed)) return SUCCESS;
 
   const { allowed, ipHash } = await guard('contact');
   if (!allowed) return { ok: false, error: 'form.rateLimited' };
@@ -121,8 +121,8 @@ export async function submitMembership(input: unknown): Promise<SubmitResult> {
   if (!parsed.success)
     return { ok: false, error: 'form.error', fields: fieldErrors(parsed.error.issues) };
 
-  const { website, elapsed, tier, ...rest } = parsed.data;
-  if (looksAutomated(website, elapsed)) return SUCCESS;
+  const { hp_field_x: honeypot, elapsed, tier, ...rest } = parsed.data;
+  if (looksAutomated(honeypot, elapsed)) return SUCCESS;
 
   const { allowed, ipHash } = await guard('membership');
   if (!allowed) return { ok: false, error: 'form.rateLimited' };
@@ -135,8 +135,8 @@ export async function submitDonation(input: unknown): Promise<SubmitResult> {
   if (!parsed.success)
     return { ok: false, error: 'form.error', fields: fieldErrors(parsed.error.issues) };
 
-  const { website, elapsed, purpose, ...rest } = parsed.data;
-  if (looksAutomated(website, elapsed)) return SUCCESS;
+  const { hp_field_x: honeypot, elapsed, purpose, ...rest } = parsed.data;
+  if (looksAutomated(honeypot, elapsed)) return SUCCESS;
 
   const { allowed, ipHash } = await guard('donation');
   if (!allowed) return { ok: false, error: 'form.rateLimited' };
@@ -149,8 +149,8 @@ export async function submitVolunteer(input: unknown): Promise<SubmitResult> {
   if (!parsed.success)
     return { ok: false, error: 'form.error', fields: fieldErrors(parsed.error.issues) };
 
-  const { website, elapsed, ...data } = parsed.data;
-  if (looksAutomated(website, elapsed)) return SUCCESS;
+  const { hp_field_x: honeypot, elapsed, ...data } = parsed.data;
+  if (looksAutomated(honeypot, elapsed)) return SUCCESS;
 
   const { allowed, ipHash } = await guard('volunteer');
   if (!allowed) return { ok: false, error: 'form.rateLimited' };

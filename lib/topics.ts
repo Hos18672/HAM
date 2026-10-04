@@ -16,6 +16,20 @@ export const TOPICS = [
 
 export type Topic = (typeof TOPICS)[number];
 
+/**
+ * The topics the contact form offers as choices. Membership and donations have
+ * their own forms on the support page, which the contact form links to; a
+ * link that arrives with one of them still selects it.
+ */
+export const CONTACT_FORM_TOPICS = [
+  'general',
+  'course',
+  'event',
+  'sport',
+  'volunteer',
+  'help',
+] as const satisfies readonly Topic[];
+
 export function isTopic(value: unknown): value is Topic {
   return typeof value === 'string' && (TOPICS as readonly string[]).includes(value);
 }

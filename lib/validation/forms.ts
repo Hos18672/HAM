@@ -39,7 +39,9 @@ const message = z
 
 /**
  * Anti-spam fields present on every public form.
- *  - `website` is a honeypot: hidden from people, irresistible to bots.
+ *  - `hp_field_x` is a honeypot: hidden from people, irresistible to bots. Its
+ *    name means nothing on purpose — a field called "website" is one a
+ *    password manager or autofill may fill in, silently dropping a real message.
  *  - `elapsed` is milliseconds since the form mounted. A human needs seconds
  *    to fill a form; a script posts in tens of milliseconds.
  * Both are accepted by the schema and judged in the action, so a tripped trap
@@ -47,11 +49,11 @@ const message = z
  * failed only teaches it to try again.
  */
 export const antiSpamSchema = z.object({
-  website: z.string().max(200).optional().default(''),
+  hp_field_x: z.string().max(200).optional().default(''),
   elapsed: z.coerce.number().int().nonnegative().optional().default(0),
 });
 
-export const MIN_FILL_MS = 2500;
+export const MIN_FILL_MS = 3000;
 
 export const localeField = z.enum(locales);
 
@@ -65,7 +67,8 @@ export const contactSchema = antiSpamSchema.extend({
   topic: z.enum(TOPICS, 'form.errors.topicRequired'),
   /** What the message is about — a course or an event's name, pre-filled from the link. */
   subject: z.string().trim().max(120).optional().default(''),
-  message,
+  // The contact form counts to 2000 as it is typed; the cap matches it.
+  message: message.max(2000, 'form.errors.messageTooLong'),
   locale: localeField,
 });
 /**

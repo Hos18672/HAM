@@ -7,7 +7,7 @@ import { weekdayName } from '@/lib/schedule';
 import type { Locale } from '@/lib/i18n/config';
 
 /** "Montag – Donnerstag", "جمعه" — a run of days as a range. */
-function dayRange(days: readonly number[], locale: Locale) {
+export function dayRange(days: readonly number[], locale: Locale) {
   const first = weekdayName(days[0]!, locale);
   if (days.length === 1) return first;
   return `${first} ${locale === 'fa' ? 'تا' : '–'} ${weekdayName(days[days.length - 1]!, locale)}`;

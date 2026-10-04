@@ -355,7 +355,9 @@
   --measure-narrow: 44ch;
   --page-max: 1320px;
   --page-gutter: clamp(20px, 5vw, 56px);
-  --header-height: 4.5rem;
+  /* The sticky bar's whole height: its 8px top pad and the 56px pill (68px
+     from 1100px). */
+  --header-h: 64px;
 
   /* ── The Homecoming hero ──────────────────────────────────────────────
      The scene's own three variables, given this site's values. The header
@@ -5420,9 +5422,9 @@
      height that stops short of the bottom of the window so the page is still
      visible behind it. */
   .drawer-panel {
-    inset-block-start: calc(var(--header-height) + 4px);
+    inset-block-start: calc(var(--header-h) + 4px);
     inset-inline: clamp(10px, 2vw, 20px);
-    max-block-size: calc(100dvh - var(--header-height) - 24px);
+    max-block-size: calc(100dvh - var(--header-h) - 24px);
     overflow: auto;
     overscroll-behavior: contain;
     padding: 22px clamp(16px, 4vw, 32px) 26px;
@@ -6898,25 +6900,6 @@ a.week-link:hover {
 }
 
 /* ─── Contact page & house facts ─────────────────────────────────────────── */
-.contact-layout {
-  display: grid;
-  gap: clamp(36px, 5vw, 64px);
-  grid-template-columns: minmax(0, 1fr);
-}
-@media (min-width: 1024px) {
-  .contact-layout {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    align-items: start;
-  }
-}
-.contact-info {
-  display: grid;
-  gap: var(--space-5);
-}
-.contact-block {
-  display: grid;
-  gap: var(--space-2);
-}
 .contact-h {
   font-size: var(--text-lg);
   margin: 0;
@@ -6991,27 +6974,6 @@ a.week-link:hover {
   border-radius: 50%;
   background: currentColor;
 }
-.contact-links {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: grid;
-  gap: 4px;
-}
-.contact-links a {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  min-block-size: 44px;
-  font-weight: var(--weight-semibold);
-  color: var(--ink);
-}
-.contact-links a svg {
-  color: var(--green);
-}
-.contact-links a:hover {
-  color: var(--green);
-}
 .house-map {
   margin: 0;
 }
@@ -7065,6 +7027,504 @@ a.week-link:hover {
   font-size: var(--text-sm);
   color: var(--ink2);
   margin: 0;
+}
+
+/* ─── The contact page ───────────────────────────────────────────────────────
+   Four bands on the paper ground — the head, the visit (address, hours, map,
+   how to get here), the ways to reach us, the form — and no decoration
+   between them. On a phone the order is the order of need: whether the door
+   is open, the route, the address, the hours. */
+.contact-page {
+  --page-max: 1200px;
+  --contact-band: clamp(48px, 7vw, 96px);
+  padding-block: 40px var(--contact-band);
+}
+.contact-page > section {
+  margin-block-start: var(--contact-band);
+}
+.contact-page > .contact-visit {
+  margin-block-start: clamp(24px, 4vw, 56px);
+}
+
+.contact-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px 32px;
+  animation: contact-head-in 500ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+@keyframes contact-head-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .contact-head {
+    animation: none;
+  }
+}
+.contact-head-text {
+  display: grid;
+  gap: 12px;
+  max-inline-size: 40rem;
+}
+.contact-kicker {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 15px;
+  color: var(--goldInk);
+}
+:root[lang='fa'] .contact-kicker {
+  font-family: var(--font-naskh);
+  font-style: normal;
+  font-weight: 600;
+}
+.contact-title {
+  font-size: clamp(34px, 4.6vw, 56px);
+  font-weight: 600;
+  line-height: 1.1;
+  color: var(--head);
+  text-wrap: balance;
+}
+:root[lang='fa'] .contact-title {
+  font-weight: 700;
+  line-height: 1.35;
+}
+.contact-lead {
+  font-size: 18px;
+  line-height: 1.6;
+  color: var(--ink2);
+  max-inline-size: 48ch;
+}
+
+/* Open, closed, or by programme. The same box before and after the browser
+   has worked it out, so nothing below it moves. */
+.contact-status {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 14px;
+}
+.contact-status-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-block-size: 36px;
+  padding-inline: 14px;
+  border-radius: 2px;
+  font-size: 15px;
+  font-weight: 600;
+  background: var(--card2);
+  color: var(--ink2);
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+.contact-status-dot {
+  flex-shrink: 0;
+  inline-size: 8px;
+  block-size: 8px;
+  border-radius: 50%;
+  background: currentColor;
+}
+.contact-status[data-state='open'] .contact-status-chip {
+  background: var(--chip);
+  color: var(--green);
+  box-shadow: none;
+}
+/* The gold ground with the heading ink: --goldInk on it is 4.2:1, short of
+   the 4.5 that text this size needs. The dot keeps the gold. */
+.contact-status[data-state='programme'] .contact-status-chip {
+  background: color-mix(in srgb, var(--gold) 16%, transparent);
+  color: var(--head);
+  box-shadow: none;
+}
+.contact-status[data-state='programme'] .contact-status-dot {
+  background: var(--goldInk);
+}
+.contact-status-link,
+.contact-inline-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  color: var(--green);
+}
+.contact-status-link {
+  min-block-size: 44px;
+}
+
+/* The visit: one column on a phone; from 1024px the facts on the start side
+   (five of twelve) and the map beside them. */
+.contact-visit {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas: 'quick' 'addr' 'hours' 'map' 'trans';
+  gap: 28px;
+}
+@media (min-width: 1024px) {
+  .contact-visit {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    grid-template-areas: 'addr map' 'hours map' 'trans map';
+    grid-template-rows: auto auto 1fr;
+    column-gap: clamp(32px, 4vw, 64px);
+    align-items: start;
+  }
+}
+.contact-quick {
+  grid-area: quick;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+.contact-quick:has(> :only-child) {
+  grid-template-columns: minmax(0, 1fr);
+}
+.contact-quick .btn {
+  min-block-size: 48px;
+  padding-inline: 16px;
+}
+@media (min-width: 1024px) {
+  .contact-quick {
+    display: none;
+  }
+}
+
+.contact-addr {
+  grid-area: addr;
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+.contact-addr address {
+  display: grid;
+  font-style: normal;
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--head);
+}
+.contact-copy {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  inline-size: 44px;
+  block-size: 44px;
+  border: 0;
+  border-radius: 2px;
+  background: transparent;
+  color: var(--green);
+  cursor: pointer;
+  transition: background-color 150ms var(--ease-standard);
+}
+.contact-copy:hover {
+  background: var(--chip);
+}
+.contact-toast {
+  position: absolute;
+  inset-inline-end: 0;
+  inset-block-start: calc(100% + 2px);
+  padding: 4px 10px;
+  border-radius: 2px;
+  font-size: 13px;
+  font-weight: 600;
+  background: var(--head);
+  color: var(--paper);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 150ms var(--ease-standard);
+}
+.contact-toast:empty {
+  padding: 0;
+}
+.contact-toast[data-show] {
+  opacity: 1;
+}
+
+.contact-label {
+  margin-block-end: 8px;
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0;
+  color: var(--head);
+}
+:root[lang='fa'] .contact-label {
+  font-family: var(--font-naskh);
+}
+.contact-hours-block {
+  grid-area: hours;
+}
+.contact-trans {
+  grid-area: trans;
+}
+
+/* Hours and directions share one label style; only the hours are a table,
+   with a rule between rows and today's row marked. */
+.contact-dl {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  column-gap: 24px;
+  margin: 0;
+}
+.contact-dl-row {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: subgrid;
+  align-items: baseline;
+  padding-block: 6px;
+}
+.contact-dl dt {
+  font-weight: 500;
+  color: var(--ink2);
+}
+.contact-dl dd {
+  margin: 0;
+  font-weight: 600;
+  color: var(--ink);
+}
+.contact-hours .contact-dl-row {
+  align-items: center;
+  min-block-size: 44px;
+  padding-block: 4px;
+  padding-inline: 12px;
+  border-block-end: 1px solid var(--line);
+  border-inline-start: 3px solid transparent;
+}
+.contact-dd-split {
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: 12px;
+}
+.contact-hours .contact-dl-row:first-child {
+  border-block-start: 1px solid var(--line);
+}
+.contact-hours .contact-dl-row[data-today] {
+  background: var(--chip);
+  border-inline-start-color: var(--green);
+}
+.contact-hours [data-today] dt,
+.contact-hours [data-today] dd {
+  font-weight: 700;
+  color: var(--head);
+}
+
+/* The map: a picture until asked, full-bleed 4:3 on a phone, 16:10 beside
+   the facts on a desktop. The pin is the page's own, over the centre. */
+.contact-map {
+  grid-area: map;
+  margin: 0;
+  scroll-margin-block-start: calc(var(--header-h) + 16px);
+}
+.contact-map-frame {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 4 / 3;
+  margin-inline: calc(-1 * var(--page-gutter));
+  background: var(--card2);
+  box-shadow: var(--shadow-sm);
+}
+@media (min-width: 1024px) {
+  .contact-map-frame {
+    aspect-ratio: 16 / 10;
+    margin-inline: 0;
+    border-radius: 2px;
+  }
+}
+.contact-map-img {
+  position: absolute;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+  max-inline-size: none;
+  object-fit: cover;
+}
+.contact-map-live {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  direction: ltr;
+}
+.contact-map-live img {
+  position: absolute;
+  inline-size: 256px;
+  block-size: 256px;
+  max-inline-size: none;
+}
+.contact-map-pin {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  inline-size: 32px;
+  block-size: 44px;
+  overflow: visible;
+  transform: translate(-50%, -100%);
+  fill: var(--green);
+  stroke: #fff;
+  stroke-width: 2px;
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.3));
+}
+.contact-map-pin circle {
+  fill: #fff;
+  stroke: none;
+}
+.contact-map-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 20px;
+  margin-block-start: 12px;
+}
+/* The route is already the first button on a phone. */
+@media (max-width: 1023.98px) {
+  .contact-map-actions .btn {
+    display: none;
+  }
+}
+.contact-text-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-block-size: 44px;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-weight: 600;
+  color: var(--green);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+.contact-map-credit {
+  font-size: 13px;
+  color: var(--ink2);
+}
+
+/* The ways to reach us: a list of rows on a phone, equal tiles in one row
+   from 1024px. The whole tile is the link. */
+.contact-tiles {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.contact-tile {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr);
+  column-gap: 14px;
+  align-items: center;
+  block-size: 100%;
+  min-block-size: 56px;
+  padding: 8px 16px;
+  border-radius: 2px;
+  background: var(--card);
+  box-shadow: var(--shadow-sm);
+  color: var(--ink);
+  text-decoration: none;
+  transition: box-shadow 150ms var(--ease-standard);
+}
+.contact-tile > svg {
+  grid-row: span 2;
+  color: var(--green);
+}
+.contact-tile-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--head);
+}
+:root[lang='fa'] .contact-tile-title {
+  font-family: var(--font-naskh);
+  font-weight: 700;
+}
+.contact-tile-detail {
+  font-size: 15px;
+  color: var(--ink2);
+  overflow-wrap: anywhere;
+}
+.contact-tile:hover {
+  box-shadow: var(--shadow-md);
+  color: var(--ink);
+}
+.contact-tile:hover .contact-tile-title {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+.contact-tile:focus-visible {
+  outline: 2px solid var(--green);
+  outline-offset: 2px;
+}
+@media (min-width: 1024px) {
+  .contact-tiles {
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(0, 1fr);
+    gap: 16px;
+  }
+  .contact-tile {
+    grid-template-columns: minmax(0, 1fr);
+    align-content: start;
+    row-gap: 6px;
+    padding: 24px;
+  }
+  .contact-tile > svg {
+    grid-row: auto;
+    margin-block-end: 6px;
+  }
+}
+
+/* The form: a full-bleed white band on a phone; on a desktop a card, with
+   its short introduction held beside it as the form scrolls. */
+.contact-write {
+  display: grid;
+  gap: 24px;
+}
+.contact-write-intro {
+  display: grid;
+  gap: 12px;
+  align-content: start;
+}
+.contact-write-intro h2 {
+  font-size: 32px;
+  color: var(--head);
+}
+.contact-write-intro p {
+  font-size: 17px;
+  line-height: 1.6;
+  color: var(--ink2);
+}
+.contact-form-card {
+  margin-inline: calc(-1 * var(--page-gutter));
+  padding: clamp(24px, 3vw, 40px) var(--page-gutter);
+  background: var(--card);
+}
+@media (min-width: 1024px) {
+  .contact-write {
+    grid-template-columns: minmax(0, 4fr) minmax(0, 8fr);
+    column-gap: clamp(32px, 4vw, 64px);
+    align-items: start;
+  }
+  .contact-write-intro {
+    position: sticky;
+    top: calc(var(--header-h) + 24px);
+  }
+  .contact-form-card {
+    margin-inline: 0;
+    padding: clamp(24px, 3vw, 40px);
+    border-radius: 2px;
+    box-shadow: var(--shadow-lg);
+  }
 }
 
 /* ─── Events: one row each ────────────────────────────────────────────────── */
@@ -7196,6 +7656,7 @@ a.week-link:hover {
 @media (min-width: 1100px) {
   :root {
     --hc-header-h: 76px;
+    --header-h: 76px;
   }
 }
 .site-header {

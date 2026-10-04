@@ -104,6 +104,39 @@ export function isOpenAt(now: Date, hours: readonly OpeningWindow[] = OPENING_HO
   return minutes >= minutesOf(today.open) && minutes < minutesOf(today.close);
 }
 
+/** Open until a time, closed until the next opening, or running by programme. */
+export type HouseStatus =
+  | { state: 'open'; day: number; close: string }
+  | { state: 'programme'; day: number }
+  | { state: 'closed'; day: number; opensDay: number; opensAt: string; inDays: number };
+
+/**
+ * The house's state at an instant, in Vienna: what the contact page says
+ * first. A closed house says when it next opens, skipping days that run by
+ * programme, since those have no time to name.
+ */
+export function houseStatus(
+  now: Date,
+  hours: readonly OpeningWindow[] = OPENING_HOURS,
+): HouseStatus {
+  const { day, minutes } = viennaNow(now);
+  const today = hours.find((w) => w.days.includes(day));
+  if (today && (!today.open || !today.close)) return { state: 'programme', day };
+  if (today?.open && today.close) {
+    if (minutes >= minutesOf(today.open) && minutes < minutesOf(today.close)) {
+      return { state: 'open', day, close: today.close };
+    }
+  }
+  for (let inDays = 0; inDays < 8; inDays += 1) {
+    const next = ((day - 1 + inDays) % 7) + 1;
+    const window = hours.find((w) => w.days.includes(next));
+    if (!window?.open) continue;
+    if (inDays === 0 && minutes >= minutesOf(window.open)) continue;
+    return { state: 'closed', day, opensDay: next, opensAt: window.open, inDays };
+  }
+  return { state: 'closed', day, opensDay: day, opensAt: '', inDays: 0 };
+}
+
 /**
  * The house's history, for the about page. A milestone without text is not
  * shown; a year left empty is simply not printed.

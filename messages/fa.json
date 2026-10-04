@@ -447,7 +447,7 @@
     "chooseTopic": "لطفاً انتخاب کنید",
     "topics": {
       "general": "پرسش عمومی",
-      "course": "ثبت‌نام در کلاس",
+      "course": "کلاس‌ها",
       "event": "برنامه‌ها",
       "sport": "ورزش",
       "volunteer": "همکاری داوطلبانه",
@@ -461,7 +461,43 @@
       "course": "کلاس",
       "event": "برنامه",
       "sport": "گروه ورزشی"
-    }
+    },
+    "metaTitle": "تماس و راه رسیدن – خانهٔ همهٔ انسان‌ها، وین، منطقهٔ Hernals",
+    "status": {
+      "default": "ساعات کار",
+      "open": "اکنون باز است · تا {time}",
+      "closedToday": "بسته است · امروز ساعت {time} باز می‌شود",
+      "closedTomorrow": "بسته است · فردا ساعت {time} باز می‌شود",
+      "closedDay": "بسته است · {day} ساعت {time} باز می‌شود",
+      "programme": "امروز بنا به برنامه",
+      "seeEvents": "دیدن برنامه‌ها"
+    },
+    "today": "امروز",
+    "route": "مسیریابی",
+    "emailAction": "رایانامه",
+    "copyAddress": "کپی نشانی",
+    "copied": "کپی شد",
+    "byProgrammeLink": "برنامه‌ها",
+    "openOsm": "باز کردن در OpenStreetMap",
+    "osmCredit": "© مشارکت‌کنندگان OpenStreetMap",
+    "loadMap": "بارگذاری نقشهٔ تعاملی",
+    "loadMapNote": "بخش‌هایی از نقشه از OpenStreetMap بارگذاری می‌شود.",
+    "channelsTitle": "تماس مستقیم",
+    "channels": {
+      "email": "نوشتن رایانامه",
+      "phone": "تماس تلفنی",
+      "instagram": "اینستاگرام",
+      "visit": "سر زدن به ما",
+      "visitDetail": "مسیر تا Sautergasse"
+    },
+    "formIntro": "پرسشی دربارهٔ کلاس‌ها، برنامه‌ها یا خانه دارید؟ چند سطری برای ما بنویسید.",
+    "formInPerson": "ترجیح می‌دهید حضوری صحبت کنیم؟ در ساعات کار سر بزنید.",
+    "supportLink": "عضویت و کمک مالی",
+    "consent": "با فرستادن پیام، با پردازش آن مطابق <link>سیاست حریم خصوصی</link> ما موافقت می‌کنید.",
+    "errorSummary": "لطفاً این موارد را بررسی کنید:",
+    "send": "ارسال پیام",
+    "another": "پیام دیگر",
+    "counter": "{count} / {max} نویسه"
   },
   "form": {
     "name": "نام",

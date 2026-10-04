@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { isPlaceholder, known, isOpenAt } from '@/lib/site-facts';
+import { isPlaceholder, known, isOpenAt, houseStatus } from '@/lib/site-facts';
 import { buildSchedule, formatTiming } from '@/lib/schedule';
 import { formatDay, formatDuration, timeRange } from '@/lib/i18n/format';
 import { buildCalendarMonth } from '@/lib/calendar';
@@ -25,6 +25,45 @@ describe('opening hours', () => {
   });
   it('says "by programme" on Sunday', () => {
     expect(isOpenAt(new Date('2026-10-04T10:00:00Z'))).toBeNull();
+  });
+});
+
+describe('house status', () => {
+  // October 2026 is CEST, UTC+2. 6 Oct is a Tuesday, 4 Oct a Sunday.
+  it('is open until the closing time', () => {
+    expect(houseStatus(new Date('2026-10-06T15:30:00Z'))).toEqual({
+      state: 'open',
+      day: 2,
+      close: '20:00',
+    });
+  });
+  it('names a later opening the same day', () => {
+    expect(houseStatus(new Date('2026-10-06T08:00:00Z'))).toMatchObject({
+      state: 'closed',
+      opensDay: 2,
+      opensAt: '16:00',
+      inDays: 0,
+    });
+  });
+  it('names the next day once today is over', () => {
+    // Thursday 21:30 → Friday 14:00.
+    expect(houseStatus(new Date('2026-10-08T19:30:00Z'))).toMatchObject({
+      state: 'closed',
+      opensDay: 5,
+      opensAt: '14:00',
+      inDays: 1,
+    });
+  });
+  it('skips Sunday, which runs by programme', () => {
+    // Saturday 19:00 → Monday 16:00.
+    expect(houseStatus(new Date('2026-10-10T17:00:00Z'))).toMatchObject({
+      state: 'closed',
+      opensDay: 1,
+      inDays: 2,
+    });
+  });
+  it('says Sunday runs by programme', () => {
+    expect(houseStatus(new Date('2026-10-04T10:00:00Z')).state).toBe('programme');
   });
 });
 

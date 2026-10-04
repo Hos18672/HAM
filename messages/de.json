@@ -447,10 +447,10 @@
     "chooseTopic": "Bitte wählen",
     "topics": {
       "general": "Allgemeine Frage",
-      "course": "Kurs-Anmeldung",
-      "event": "Veranstaltung",
+      "course": "Kurse",
+      "event": "Veranstaltungen",
       "sport": "Sport",
-      "volunteer": "Ehrenamtlich mitarbeiten",
+      "volunteer": "Ehrenamt",
       "help": "Ich brauche Hilfe",
       "membership": "Mitgliedschaft",
       "donation": "Spende"
@@ -461,7 +461,43 @@
       "course": "Kurs",
       "event": "Veranstaltung",
       "sport": "Sportgruppe"
-    }
+    },
+    "metaTitle": "Kontakt & Anfahrt – Haus aller Menschen, Wien-Hernals",
+    "status": {
+      "default": "Öffnungszeiten",
+      "open": "Jetzt geöffnet · bis {time}",
+      "closedToday": "Geschlossen · öffnet heute {time}",
+      "closedTomorrow": "Geschlossen · öffnet morgen {time}",
+      "closedDay": "Geschlossen · öffnet {day} {time}",
+      "programme": "Heute nach Programm",
+      "seeEvents": "Termine ansehen"
+    },
+    "today": "heute",
+    "route": "Route planen",
+    "emailAction": "E-Mail",
+    "copyAddress": "Adresse kopieren",
+    "copied": "Kopiert",
+    "byProgrammeLink": "Termine",
+    "openOsm": "In OpenStreetMap öffnen",
+    "osmCredit": "© OpenStreetMap-Mitwirkende",
+    "loadMap": "Interaktive Karte laden",
+    "loadMapNote": "Lädt Kartenausschnitte von OpenStreetMap.",
+    "channelsTitle": "Direkt erreichen",
+    "channels": {
+      "email": "E-Mail schreiben",
+      "phone": "Anrufen",
+      "instagram": "Instagram",
+      "visit": "Vorbeikommen",
+      "visitDetail": "Route zur Sautergasse"
+    },
+    "formIntro": "Fragen zu Kursen, Veranstaltungen oder zum Haus? Schreiben Sie uns ein paar Zeilen.",
+    "formInPerson": "Lieber persönlich? Kommen Sie zu den Öffnungszeiten vorbei.",
+    "supportLink": "Mitgliedschaft & Spenden",
+    "consent": "Mit dem Absenden stimmen Sie der Verarbeitung gemäß unserer <link>Datenschutzerklärung</link> zu.",
+    "errorSummary": "Bitte prüfen Sie diese Angaben:",
+    "send": "Nachricht senden",
+    "another": "Weitere Nachricht",
+    "counter": "{count} / {max} Zeichen"
   },
   "form": {
     "name": "Name",

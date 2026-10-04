@@ -1,8 +1,17 @@
 import type { Metadata } from 'next';
+import { existsSync } from 'node:fs';
+import path from 'node:path';
 import { notFound } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
+import {
+  ArrowSquareOut,
+  EnvelopeSimple,
+  InstagramLogo,
+  MapPin,
+  NavigationArrow,
+  Phone,
+} from '@phosphor-icons/react/dist/ssr';
 import { requireLocale } from '@/lib/i18n/locale-param';
-import { MapPin, Phone, EnvelopeSimple, InstagramLogo } from '@phosphor-icons/react/dist/ssr';
 import {
   getPageHeader,
   getSettings,
@@ -10,10 +19,18 @@ import {
   getSports,
   getUpcomingEvents,
 } from '@/lib/db/queries/content';
-import { OpeningHours, Directions, HouseMap } from '@/components/site/house-info';
-import { OpenNow } from '@/components/site/open-now';
-import { FACTS } from '@/lib/site-facts';
-import { PageHead } from '@/components/site/page-head';
+import { dayRange } from '@/components/site/house-info';
+import {
+  ContactMap,
+  CopyAddress,
+  HoursTable,
+  OpenStatus,
+  RouteLink,
+} from '@/components/site/contact-visit';
+import { DIRECTIONS, FACTS, OPENING_HOURS } from '@/lib/site-facts';
+import { digits, timeRange } from '@/lib/i18n/format';
+import { weekdayName } from '@/lib/schedule';
+import { EditableText } from '@/components/editable/editable-text';
 import { ContactForm } from '@/components/site/contact-form';
 import { JsonLd, placeJsonLd } from '@/lib/seo';
 import { pageMetadata } from '@/lib/page-meta';
@@ -32,6 +49,9 @@ export async function generateMetadata({
   return pageMetadata('contact', locale, '/contact');
 }
 
+/** Rendered by `scripts/contact-map.mjs`; until it exists the frame waits for a click. */
+const HAS_MAP_IMAGE = existsSync(path.join(process.cwd(), 'public', 'map-contact@1x.webp'));
+
 export default async function ContactPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   const typed = requireLocale(locale);
@@ -47,6 +67,7 @@ export default async function ContactPage({ params }: { params: Promise<{ locale
 
   const t = await getTranslations({ locale, namespace: 'contact' });
   const tHouse = await getTranslations({ locale, namespace: 'house' });
+  const tA11y = await getTranslations({ locale, namespace: 'a11y' });
 
   // What a `?topic=…&id=…` link can name, so the form can fill it in.
   const subjects = {
@@ -55,78 +76,189 @@ export default async function ContactPage({ params }: { params: Promise<{ locale
     event: Object.fromEntries(events.map((e) => [e.slug, e.title])),
   };
 
+  // "Sautergasse 34–38, 1170 Wien" → two lines.
+  const address = settings.address || `${FACTS.street}, ${FACTS.postcode} ${FACTS.city}`;
+  const [street = address, ...rest] = address.split(',').map((part) => part.trim());
+  const cityLine = rest.join(', ');
+
+  const hours = OPENING_HOURS.map((window) => ({
+    days: window.days,
+    label: dayRange(window.days, typed),
+    time: window.open && window.close ? timeRange(window.open, window.close, typed) : null,
+  }));
+  const dayNames = [1, 2, 3, 4, 5, 6, 7].map((day) => weekdayName(day, typed));
+  const clocks = Object.fromEntries(
+    OPENING_HOURS.flatMap((w) => [w.open, w.close])
+      .filter((clock): clock is string => Boolean(clock))
+      .map((clock) => [clock, digits(clock, typed)]),
+  );
+  const directions = (['tram', 'train', 'access'] as const)
+    .map((key) => [key, DIRECTIONS[typed][key]] as const)
+    .filter(([, text]) => text);
+
+  const email = settings.contactEmail;
+  const phone = settings.phone;
+  const external = <span className="visually-hidden"> ({tA11y('externalLink')})</span>;
+
   return (
-    <>
+    <div className="contact-page">
       <JsonLd data={{ '@context': 'https://schema.org', ...placeJsonLd(settings) }} />
 
-      <PageHead header={header} locale={typed} />
+      {/* No band, no plate, no breadcrumb: the title, and whether the door is
+          open, are the first things on the screen. */}
+      <header className="page contact-head">
+        <div className="contact-head-text">
+          {header.kicker ? <p className="contact-kicker">{header.kicker}</p> : null}
+          <EditableText
+            as="h1"
+            entity="page"
+            id={header.id}
+            field="title"
+            locale={typed}
+            value={header.title}
+            className="contact-title"
+          />
+          <EditableText
+            as="p"
+            entity="page"
+            id={header.id}
+            field="lead"
+            locale={typed}
+            value={header.lead}
+            className="contact-lead"
+            multiline
+          />
+        </div>
+        <OpenStatus dayNames={dayNames} clocks={clocks} />
+      </header>
 
-      <section className="section">
-        <div className="page contact-layout">
-          {/* Where, when, how to get here and how to reach us — in the order a
-              visitor on a phone needs them. The house's name is in the page
-              head already; it is not repeated here. */}
-          <div className="contact-info">
-            <div className="contact-block">
-              <p className="contact-address">
-                <MapPin size={22} weight="duotone" aria-hidden="true" />
-                <span className="ltr-island">{settings.address}</span>
-              </p>
-              <div className="contact-hours-head">
-                <h2 className="contact-h">{tHouse('hours')}</h2>
-                <OpenNow />
-              </div>
-              <OpeningHours locale={typed} />
-            </div>
+      <section className="page contact-visit" aria-label={tHouse('reach')}>
+        {/* On a phone, the two things a visitor came for, before anything else. */}
+        <div className="contact-quick">
+          <RouteLink className="btn">
+            <NavigationArrow size={20} weight="duotone" aria-hidden="true" className="mirror" />
+            {t('route')}
+          </RouteLink>
+          {email ? (
+            <a className="btn btn-secondary" href={`mailto:${email}`}>
+              <EnvelopeSimple size={20} weight="duotone" aria-hidden="true" />
+              {t('emailAction')}
+            </a>
+          ) : null}
+        </div>
 
-            <HouseMap locale={typed} mapUrl={settings.mapUrl || FACTS.mapUrl} />
+        <div className="contact-addr">
+          <h2 className="visually-hidden">{t('address')}</h2>
+          <address>
+            <span className="ltr-island">{street}</span>
+            {cityLine ? <span className="ltr-island">{cityLine}</span> : null}
+          </address>
+          <CopyAddress value={cityLine ? `${street}, ${cityLine}` : street} />
+        </div>
 
-            <div className="contact-block">
-              <h2 className="contact-h">{tHouse('directionsTitle')}</h2>
-              <Directions locale={typed} />
-            </div>
+        <div className="contact-hours-block">
+          <h2 className="contact-label">{tHouse('hours')}</h2>
+          <HoursTable rows={hours} byProgramme={tHouse('byProgramme')} />
+        </div>
 
-            <div className="contact-block">
-              <h2 className="contact-h">{tHouse('reach')}</h2>
-              <ul className="contact-links">
-                {settings.phone ? (
-                  <li>
-                    <a href={`tel:${settings.phone.replace(/[^\d+]/g, '')}`}>
-                      <Phone size={20} weight="duotone" aria-hidden="true" />
-                      <span className="ltr-island">{settings.phone}</span>
-                    </a>
-                  </li>
-                ) : null}
-                {settings.contactEmail ? (
-                  <li>
-                    <a href={`mailto:${settings.contactEmail}`}>
-                      <EnvelopeSimple size={20} weight="duotone" aria-hidden="true" />
-                      <span className="ltr-island">{settings.contactEmail}</span>
-                    </a>
-                  </li>
-                ) : null}
-                <li>
-                  <a
-                    href={`https://www.instagram.com/${FACTS.instagram}/`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <InstagramLogo size={20} weight="duotone" aria-hidden="true" />
-                    <span className="ltr-island">@{FACTS.instagram}</span>
-                  </a>
-                </li>
-              </ul>
-            </div>
+        <figure className="contact-map" id="map">
+          <ContactMap label={tHouse('mapLabel')} hasImage={HAS_MAP_IMAGE}>
+            <RouteLink className="btn">
+              <NavigationArrow size={20} weight="duotone" aria-hidden="true" className="mirror" />
+              {t('route')}
+            </RouteLink>
+            <a
+              href={settings.mapUrl || FACTS.mapUrl}
+              className="contact-text-link"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              {t('openOsm')}
+              <ArrowSquareOut size={16} weight="bold" aria-hidden="true" />
+              {external}
+            </a>
+          </ContactMap>
+          <figcaption className="contact-map-credit">{t('osmCredit')}</figcaption>
+        </figure>
+
+        {directions.length > 0 ? (
+          <div className="contact-trans">
+            <h2 className="contact-label">{tHouse('directionsTitle')}</h2>
+            <dl className="contact-dl">
+              {directions.map(([key, text]) => (
+                <div key={key} className="contact-dl-row">
+                  <dt>{tHouse(`directions.${key}`)}</dt>
+                  <dd>{text}</dd>
+                </div>
+              ))}
+            </dl>
           </div>
+        ) : null}
+      </section>
 
-          <div className="contact-form-col">
-            <h2 style={{ fontSize: 'clamp(25px, 3vw, 34px)' }}>{t('formTitle')}</h2>
-            <div style={{ marginBlockStart: 'var(--space-4)' }}>
-              <ContactForm locale={typed} subjects={subjects} />
-            </div>
-          </div>
+      <section className="page contact-channels" aria-labelledby="contact-channels-h">
+        <h2 id="contact-channels-h" className="visually-hidden">
+          {t('channelsTitle')}
+        </h2>
+        <ul className="contact-tiles">
+          {email ? (
+            <li>
+              <a className="contact-tile" href={`mailto:${email}`}>
+                <EnvelopeSimple size={28} weight="duotone" aria-hidden="true" />
+                <span className="contact-tile-title">{t('channels.email')}</span>
+                <span className="contact-tile-detail ltr-island">{email}</span>
+              </a>
+            </li>
+          ) : null}
+          {/* TODO(phone): shown only once a real number is entered in the admin
+              settings — never a placeholder. */}
+          {phone ? (
+            <li>
+              <a className="contact-tile" href={`tel:${phone.replace(/[^\d+]/g, '')}`}>
+                <Phone size={28} weight="duotone" aria-hidden="true" />
+                <span className="contact-tile-title">{t('channels.phone')}</span>
+                <span className="contact-tile-detail ltr-island">{phone}</span>
+              </a>
+            </li>
+          ) : null}
+          <li>
+            <a
+              className="contact-tile"
+              href={`https://www.instagram.com/${FACTS.instagram}/`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <InstagramLogo size={28} weight="duotone" aria-hidden="true" />
+              <span className="contact-tile-title">
+                {t('channels.instagram')}
+                <ArrowSquareOut size={15} weight="bold" aria-hidden="true" />
+              </span>
+              <span className="contact-tile-detail ltr-island">@{FACTS.instagram}</span>
+              {external}
+            </a>
+          </li>
+          <li>
+            <a className="contact-tile" href="#map">
+              <MapPin size={28} weight="duotone" aria-hidden="true" />
+              <span className="contact-tile-title">{t('channels.visit')}</span>
+              <span className="contact-tile-detail">{t('channels.visitDetail')}</span>
+            </a>
+          </li>
+        </ul>
+      </section>
+
+      <section className="page contact-write" aria-labelledby="contact-write-h">
+        <div className="contact-write-intro">
+          <h2 id="contact-write-h">{t('formTitle')}</h2>
+          <p>{t('formIntro')}</p>
+          {/* TODO(content): a reply time ("Wir antworten in der Regel innerhalb
+              von 2 Werktagen.") once the association commits to one. */}
+          <p>{t('formInPerson')}</p>
+        </div>
+        <div className="contact-form-card">
+          <ContactForm locale={typed} subjects={subjects} />
         </div>
       </section>
-    </>
+    </div>
   );
 }

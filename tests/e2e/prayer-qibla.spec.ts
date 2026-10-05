@@ -32,9 +32,11 @@ test.describe('prayer times', () => {
     await expect(page.locator('.prayer-source')).toContainText('Ihr Standort');
     await expect(page.locator('.prayer-source')).toContainText('47.07° N, 15.44° E');
 
-    // Remembered: the home page's strip names the same place at once.
+    // Remembered: the home page's prayer card names the same place at once.
     await page.goto('/de');
-    await expect(page.locator('.prayer-strip-label')).toContainText('Ihr Standort');
+    await expect(page.locator('.npc-where:visible, .pstrip-title:visible').first()).toContainText(
+      'Ihr Standort',
+    );
 
     // Back to Vienna is a choice, and it holds on the next visit.
     await page.goto('/de/prayer');

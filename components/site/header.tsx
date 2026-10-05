@@ -154,7 +154,7 @@ export function Header({ theme, locale }: { theme: ThemeValue; locale: Locale })
       </a>
 
       <header
-        className="site-header hc-header"
+        className="site-header"
         data-scrolled={scrolled ? 'true' : undefined}
         data-home={home || undefined}
       >

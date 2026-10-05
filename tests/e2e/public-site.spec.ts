@@ -67,7 +67,7 @@ test.describe('public site', () => {
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
 
     await page
-      .locator('header')
+      .locator('footer')
       .getByRole('button', { name: /Darstellung wechseln/i })
       .click();
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
@@ -83,7 +83,7 @@ test.describe('public site', () => {
     // toggle has to carry its own state or the second click is a no-op.
     await page.goto('/de');
     const html = page.locator('html');
-    const toggle = page.locator('header').getByRole('button', { name: /Darstellung wechseln/i });
+    const toggle = page.locator('footer').getByRole('button', { name: /Darstellung wechseln/i });
 
     await toggle.click();
     await expect(html).toHaveAttribute('data-theme', 'dark');
@@ -96,35 +96,39 @@ test.describe('public site', () => {
     await expect(html).toHaveAttribute('data-theme', 'dark');
   });
 
-  test('the home hero plays its loader, then hands over', async ({ page }) => {
+  test('the home page plays its intro once, over a page already there', async ({ page }) => {
     await page.goto('/de');
-
-    // While the birds build the mark: the page cannot scroll and neither the
-    // header nor the hero copy is on screen.
+    // The overlay is up at first, and the header is rendered underneath it.
     await expect
-      .poll(() => page.evaluate(() => document.documentElement.dataset.hc))
-      .toBe('loading');
-    expect(await page.evaluate(() => document.documentElement.style.overflow)).toBe('hidden');
+      .poll(() => page.evaluate(() => document.documentElement.dataset.intro))
+      .toBe('play');
+    await expect(page.locator('.site-header')).toBeAttached();
     expect(
-      await page.evaluate(() => getComputedStyle(document.querySelector('.hc-header')!).opacity),
-    ).toBe('0');
+      await page.evaluate(() => getComputedStyle(document.querySelector('.site-header')!).opacity),
+    ).toBe('1');
 
-    // And afterwards: unlocked, with everything visible.
-    await expect
-      .poll(() => page.evaluate(() => document.documentElement.dataset.hc), { timeout: 45_000 })
-      .toBe('ready');
-    expect(await page.evaluate(() => document.documentElement.style.overflow)).toBe('');
+    // Then it takes itself away.
+    await expect(page.locator('.intro')).toHaveCount(0, { timeout: 5_000 });
+    expect(await page.evaluate(() => document.documentElement.dataset.intro)).toBeUndefined();
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+
+    // Once per visit: back home, no intro.
+    await page.goto('/de');
+    expect(await page.evaluate(() => document.documentElement.dataset.intro)).toBeUndefined();
   });
 
-  test('the loader belongs to the home page alone', async ({ page }) => {
-    // Every other page must render its header from the first paint: the
-    // page-state attribute is what hides it, so it must never be set here.
+  test('the intro belongs to the home page alone', async ({ page }) => {
     await page.goto('/de/about');
-    expect(await page.evaluate(() => document.documentElement.dataset.hc)).toBeUndefined();
-    expect(
-      await page.evaluate(() => getComputedStyle(document.querySelector('.hc-header')!).opacity),
-    ).toBe('1');
+    expect(await page.evaluate(() => document.documentElement.dataset.intro)).toBeUndefined();
+    await expect(page.locator('.intro')).toHaveCount(0);
+  });
+
+  test('the intro stays away for reduced motion', async ({ browser }) => {
+    const context = await browser.newContext({ reducedMotion: 'reduce' });
+    const page = await context.newPage();
+    await page.goto('/de');
+    expect(await page.evaluate(() => document.documentElement.dataset.intro)).toBeUndefined();
+    await context.close();
   });
 
   test('has a working skip link', async ({ page }) => {
@@ -231,9 +235,11 @@ test.describe('phone width', () => {
     });
   }
 
-  test('the mobile drawer opens, navigates and returns focus', async ({ page }) => {
-    await page.goto('/de');
-    const opener = page.getByRole('button', { name: 'Menü öffnen' });
+  test('the menu sheet opens from the tab bar and returns focus', async ({ page }) => {
+    await page.goto('/de/about');
+    const opener = page.getByRole('navigation', { name: 'Schnellzugriff' }).getByRole('button', {
+      name: 'Menü',
+    });
     await opener.click();
 
     const drawer = page.getByRole('dialog', { name: 'Menü' });

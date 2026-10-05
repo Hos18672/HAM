@@ -193,7 +193,7 @@ test.describe('the Quran reader', () => {
   });
 
   test('fills the screen, and the site stands down while it does', async ({ page }) => {
-    const header = page.locator('.hc-header');
+    const header = page.locator('.site-header');
     const band = page.locator('.page-head-band');
     await expect(header).toBeVisible();
     await expect(band).toBeVisible();

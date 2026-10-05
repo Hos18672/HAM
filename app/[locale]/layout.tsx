@@ -114,6 +114,34 @@ export default async function LocaleLayout({
           }}
         />
         {/*
+          The home page's intro, armed before the first paint — once per visit.
+
+          Only on the home page, only the first time this browsing session
+          reaches it, and never for a reader who has asked for less motion or
+          less data. `data-intro="play"` is what shows the overlay; the overlay
+          hides itself when its animation ends. The session mark is set as it
+          is armed, so a reload halfway through does not play it again, and
+          where storage throws the intro simply plays.
+        */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              '(function(){try{' +
+              // The prefix the app is served under: empty in production, /HAM
+              // on the preview.
+              `var b=${JSON.stringify(process.env.NEXT_PUBLIC_BASE_PATH ?? '')};` +
+              "var p=location.pathname.replace(/\\/+$/,'');" +
+              'if(b&&p.indexOf(b)===0)p=p.slice(b.length);' +
+              'if(!/^(\\/(fa|de))?$/.test(p))return;' +
+              "if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;" +
+              'var c=navigator.connection;if(c&&c.saveData)return;' +
+              "try{if(sessionStorage.getItem('ham:hc')==='1')return;" +
+              "sessionStorage.setItem('ham:hc','1')}catch(e){}" +
+              "document.documentElement.dataset.intro='play';" +
+              '}catch(e){}})()',
+          }}
+        />
+        {/*
           No font preload link here, on purpose.
 
           The faces are imported by the stylesheet and webpack emits them

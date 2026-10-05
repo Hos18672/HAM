@@ -161,7 +161,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
           />
 
           <div className="flex flex-wrap items-center gap-2">
-            <LinkButton href={`/${locale}/about`} size="lg" className="btn-band">
+            <LinkButton href={`/${locale}/about`} size="lg" className="btn-gold">
               {t('heroAbout')}
               <ArrowRight size={17} weight="bold" aria-hidden="true" className="mirror" />
             </LinkButton>

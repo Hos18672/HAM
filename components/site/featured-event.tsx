@@ -222,7 +222,7 @@ export async function FeaturedEvent({
 
           <div style={{ marginBlockStart: '28px', display: 'grid', gap: '10px' }}>
             <a
-              className="btn btn-band"
+              className="btn btn-gold"
               href={icsHref(event)}
               download={`${event.slug}.ics`}
               style={{ justifyContent: 'center' }}

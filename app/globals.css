@@ -1082,34 +1082,101 @@
     font-size: var(--text-sm);
     font-weight: var(--weight-semibold);
     line-height: 1.1;
-    /* A plain, nearly square control. The pill with its inner ring, the sheen
-       that crossed it, the label that opened up and the lift on hover are
-       gone: hover is a darker fill, press the darkest, and nothing moves. */
+    /* The design's pill: 16/34 padding, a hairline ring that settles inward on
+       hover, a sheen that crosses once, and the label opening up very slightly
+       as the whole control lifts. */
     padding: 16px 34px;
     min-height: 2.75rem;
+    letter-spacing: 0.015em;
     border: 0;
-    border-radius: 2px;
+    border-radius: var(--radius-pill);
     background: var(--btn-bg);
     color: var(--btn-fg);
     cursor: pointer;
     text-decoration: none;
     position: relative;
+    overflow: hidden;
+    isolation: isolate;
+    box-shadow: 0 1px 2px rgba(7, 59, 41, 0.16);
     transition:
-      background-color 150ms var(--ease-standard),
-      color 150ms var(--ease-standard),
-      box-shadow 150ms var(--ease-standard);
+      transform var(--duration-base) var(--ease-out-expressive),
+      box-shadow var(--duration-base) var(--ease-out-expressive),
+      background-color var(--duration-fast) var(--ease-standard),
+      color var(--duration-fast) var(--ease-standard),
+      letter-spacing var(--duration-base) var(--ease-out-expressive);
     white-space: nowrap;
+  }
+  .btn > * {
+    position: relative;
+    z-index: 3;
+  }
+  .btn::before {
+    content: '';
+    position: absolute;
+    z-index: 2;
+    inset: 4px;
+    border-radius: var(--radius-pill);
+    border: var(--rule-hair) solid currentColor;
+    opacity: 0;
+    transform: scale(1.06);
+    transition:
+      opacity var(--duration-fast) var(--ease-standard),
+      transform var(--duration-base) var(--ease-out-expressive);
+    pointer-events: none;
+  }
+  .btn:hover:not(:disabled)::before {
+    opacity: 0.3;
+    transform: none;
+  }
+  .btn::after {
+    content: '';
+    position: absolute;
+    z-index: 1;
+    inset: -40% -10%;
+    background: linear-gradient(
+      115deg,
+      transparent 38%,
+      rgba(255, 255, 255, 0.3) 50%,
+      transparent 62%
+    );
+    transform: translateX(-70%);
+    opacity: 0;
+    transition: opacity var(--duration-fast) var(--ease-standard);
+    pointer-events: none;
+  }
+  .btn:hover:not(:disabled)::after {
+    opacity: 1;
+    animation: ham-sheen 1.05s var(--ease-out-expressive);
+  }
+  /* The trailing icon leans the way the button sends you, mirrored in RTL. */
+  .btn > svg {
+    transition: transform var(--duration-base) var(--ease-out-expressive);
+  }
+  /* The trailing arrow leans the way the button sends you — but only when
+     there is something for it to trail. In an icon-only button the icon is
+     both the first child and the last, so this used to slide the caret 5px
+     out of the middle of its disc and leave it sitting against the rim: most
+     visible on the calendar's month arrows, which look broken the moment the
+     pointer lands on them. */
+  .btn:hover:not(:disabled) > svg:last-child:not(:first-child) {
+    transform: translateX(5px);
+  }
+  :root[dir='rtl'] .btn:hover:not(:disabled) > svg:last-child:not(:first-child) {
+    transform: translateX(-5px);
   }
   .btn:hover:not(:disabled) {
     --btn-bg: var(--color-accent-fill-hover);
     --btn-bd: var(--color-accent-fill-hover);
     color: var(--btn-fg);
+    transform: translateY(-2px);
+    letter-spacing: 0.03em;
+    box-shadow: 0 16px 34px -16px rgba(7, 59, 41, 0.6);
   }
-  /* --micro in the light theme; the dark theme's own pressed fill there, as
-     --micro is near-black and its label would vanish into it. */
   .btn:active:not(:disabled) {
     --btn-bg: var(--color-accent-fill-active);
     --btn-bd: var(--color-accent-fill-active);
+    transform: translateY(0) scale(0.985);
+    transition-duration: 0.12s;
   }
   .btn:disabled,
   .btn[aria-disabled='true'] {
@@ -1202,6 +1269,13 @@
     padding: 11px 22px;
     gap: 8px;
     min-height: 2.125rem;
+  }
+  .btn-sm::before {
+    inset: 3px;
+  }
+  /* An icon-only control is round, and has no label to open up. */
+  .btn-icon:hover:not(:disabled) {
+    letter-spacing: normal;
   }
   .btn-lg {
     font-size: var(--text-base);
@@ -5265,31 +5339,23 @@
     transform: scaleX(-1);
   }
 
-  /* The gold fill, kept for the one "Mitglied werden" ask: flat, no sweep. */
+  /* The gold fill: a diagonal gradient that slides across as it is pressed. */
   .btn-gold {
-    --btn-bg: var(--gold);
+    --btn-bg: transparent;
     --btn-fg: var(--color-on-gold);
+    background: linear-gradient(135deg, var(--goldHi) 0%, var(--gold) 46%, var(--goldLo) 100%);
+    background-size: 180% 180%;
+    background-position: 0% 50%;
+    color: var(--color-on-gold);
+    transition:
+      transform var(--duration-base) var(--ease-out-expressive),
+      box-shadow var(--duration-base) var(--ease-out-expressive),
+      background-position 0.7s var(--ease-out-expressive),
+      letter-spacing var(--duration-base) var(--ease-out-expressive);
   }
   .btn-gold:hover:not(:disabled) {
-    --btn-bg: var(--goldHi);
-  }
-  .btn-gold:active:not(:disabled) {
-    --btn-bg: var(--goldLo);
-  }
-
-  /* The filled ask on a dark band — the hero, the help panel, the featured
-     event — where the green fill would sink into the green behind it. The
-     band's own near-white and deep green, which do not invert with the theme. */
-  .btn-band {
-    --btn-bg: var(--bandHead);
-    --btn-fg: var(--band);
-  }
-  .btn-band:hover:not(:disabled) {
-    --btn-bg: color-mix(in srgb, var(--bandHead) 82%, var(--gold));
-    --btn-fg: var(--band);
-  }
-  .btn-band:active:not(:disabled) {
-    --btn-bg: color-mix(in srgb, var(--bandHead) 68%, var(--gold));
+    background-position: 100% 50%;
+    box-shadow: 0 16px 36px -16px rgba(200, 164, 93, 0.8);
   }
 
   /* `.btn-on-scrim` used to be defined a second time here. It is one block
@@ -5942,6 +6008,16 @@
      taken for a page transition. The design's page change is `hamPageIn`
      alone: the content rises 34px out of a slight shrink, 420ms after the
      navigation. That is `.page-enter` above. */
+
+  /* The sheen that crosses a button once on hover. */
+  @keyframes ham-sheen {
+    from {
+      transform: translateX(-70%);
+    }
+    to {
+      transform: translateX(70%);
+    }
+  }
 
   /* A pattern plate drifting behind a band, and the slow orbit on a mark. */
   @keyframes ham-spin {
@@ -7227,7 +7303,7 @@ body:has(.contact-page) .footer-contact {
   inline-size: 44px;
   block-size: 44px;
   border: 0;
-  border-radius: 2px;
+  border-radius: 50%;
   background: transparent;
   color: var(--green);
   cursor: pointer;
@@ -7540,10 +7616,9 @@ body:has(.contact-page) .footer-contact {
   }
 }
 
-/* The contact form's own fields: square-cornered like everything else on
-   the page, 48px tall, 16px text so a phone does not zoom into them. No
-   asterisks — the one optional field says so instead. An error is drawn in
-   the gold ink with a warning icon, never by colour alone. */
+/* The contact form: the site's own fields and buttons. No asterisks — the
+   one optional field says so instead — and an error carries a warning icon,
+   never colour alone. */
 .contact-form {
   display: grid;
   gap: 20px;
@@ -7573,40 +7648,16 @@ body:has(.contact-page) .footer-contact {
   font-weight: 400;
   color: var(--ink2);
 }
-.contact-form .input {
-  min-block-size: 48px;
-  padding: 10px 14px;
-  font-size: 16px;
-  background: var(--paper);
-  border: 1px solid var(--line);
-  border-radius: 2px;
-}
-.contact-form .input:hover:not(:disabled):not(:focus) {
-  background: var(--paper);
-  border-color: var(--color-accent-400);
-}
-.contact-form .input:focus {
-  background: var(--card);
-  border-color: var(--green);
-  box-shadow: 0 0 0 3px var(--chip);
-}
-.contact-form .input[aria-invalid='true'] {
-  border-color: var(--goldInk);
-}
 :root[dir='rtl'] .contact-form input[dir='ltr'] {
   text-align: end;
 }
 .contact-form textarea.input {
   min-block-size: 160px;
-  resize: vertical;
 }
 .contact-form .field-error {
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--goldInk);
 }
 .contact-form .field-error svg {
   flex-shrink: 0;
@@ -7629,8 +7680,8 @@ body:has(.contact-page) .footer-contact {
   align-items: center;
   gap: 6px;
   min-block-size: 44px;
-  padding-inline: 14px;
-  border-radius: 2px;
+  padding-inline: 16px;
+  border-radius: var(--radius-pill);
   background: var(--card2);
   box-shadow: inset 0 0 0 1px var(--line);
   color: var(--ink);

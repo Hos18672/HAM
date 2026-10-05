@@ -708,11 +708,10 @@ Recorded here rather than left implicit:
       ground: `--goldInk` there measures 4.2:1, short of 4.5.
     - **No reply time** is promised under the form until the association
       commits to one (`TODO(content)` in the page).
-    - **Buttons site-wide** lost the pill, ring, sheen, letter-spacing and
-      lift. Gold is kept for "Mitglied werden" alone; the other asks that sat
-      gold on a dark band (home hero, help panel, featured event) take a flat
-      near-white fill (`.btn-band`), since the green fill would sink into the
-      green behind it.
+    - **Buttons and fields keep the site's own design** — the pill with its
+      ring, sheen and lift, and the rounded field with its underline — rather
+      than the brief's square corners, which were tried and turned back on
+      request. The topic chips and the copy button are round to match.
     - **The footer's contact column** is hidden on the contact page only.
     - **The honeypot** is `hp_field_x` on every public form, and the
       fill-time floor is 3 s.

@@ -4,10 +4,8 @@ import { notFound } from 'next/navigation';
 import { requireLocale } from '@/lib/i18n/locale-param';
 import { getPageHeader, getOccasions } from '@/lib/db/queries/content';
 import { getPrayerDay, getCalendarMonth, getTimetable, viennaIso } from '@/lib/prayer-page';
-import { getTranslations } from 'next-intl/server';
-import { digits } from '@/lib/i18n/format';
 import { PageHead } from '@/components/site/page-head';
-import { PrayerList } from '@/components/site/prayer-list';
+import { PrayerList, PrayerPlaceNote } from '@/components/site/prayer-list';
 import { HijriCalendar } from '@/components/site/hijri-calendar';
 import { pageMetadata } from '@/lib/page-meta';
 import { VIENNA } from '@/lib/prayer-times';
@@ -72,7 +70,6 @@ export default async function PrayerPage({
   // month; handing it to the calendar lets the browser build the months it
   // moves to without coming back here.
   const occasions = await getOccasions(typed);
-  const t = await getTranslations({ locale, namespace: 'prayer' });
 
   return (
     <>
@@ -93,10 +90,7 @@ export default async function PrayerPage({
             basePath={`/${typed}/prayer`}
           />
           {/* The source and the method, once, for everything above. */}
-          <p className="prayer-source">
-            {t('sourceNote')} · {t('placeVienna')} ·{' '}
-            <span className="ltr-island">{digits('48.2175° N, 16.3260° E', typed)}</span>
-          </p>
+          <PrayerPlaceNote locale={typed} />
         </div>
       </section>
     </>

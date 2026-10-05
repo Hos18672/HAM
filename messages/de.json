@@ -331,7 +331,7 @@
     "geoUnsupported": "Dieser Browser kann keinen Standort bestimmen.",
     "geoFailed": "Der Standort konnte nicht bestimmt werden. Bitte versuchen Sie es noch einmal.",
     "fetchFailed": "Die Zeiten für Ihren Standort konnten nicht geladen werden. Bitte versuchen Sie es später noch einmal.",
-    "locationNote": "Ihr Standort wird auf etwa einen Kilometer gerundet, nur für diese Berechnung verwendet und nicht gespeichert.",
+    "locationNote": "Ihr Standort wird auf etwa einen Kilometer gerundet und nur auf diesem Gerät gemerkt, damit jede Seite die Zeiten für Ihren Ort zeigt.",
     "sourceApi": "Quelle: Aladhan-API · Methode Schia Ithna-Aschari (Leva-Institut, Qom)",
     "sourceLocal": "Berechnet nach der dschaʿfaritischen Methode (die Aladhan-API war nicht erreichbar)",
     "placeVienna": "Wien",
@@ -391,7 +391,8 @@
     "sourceNote": "Quelle: Aladhan-API, Methode Schia Ithna-Aschari (Leva-Institut, Qom). Ist sie nicht erreichbar, rechnet die Seite selbst nach derselben dschaʿfaritischen Methode.",
     "showTable": "Monatstabelle anzeigen",
     "hideTable": "Monatstabelle ausblenden",
-    "dstNote": "Zeitumstellung"
+    "dstNote": "Zeitumstellung",
+    "placeYours": "Ihr Standort"
   },
   "duas": {
     "filterByCategory": "Nach Art filtern",

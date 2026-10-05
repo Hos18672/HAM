@@ -716,6 +716,19 @@ Recorded here rather than left implicit:
     - **The honeypot** is `hp_field_x` on every public form, and the
       fill-time floor is 3 s.
 
+12. **The reader's own place is the default.** Prayer times — the prayer
+    page, its month table and the home page's strip — are for the reader's
+    position, asked of the browser on the first visit, rounded to about a
+    kilometre and remembered in `localStorage` (`lib/prayer-place.ts`). A city
+    from the list or "Zurück zu Wien" wins and is remembered; Vienna is shown
+    when the position is refused. The qibla page opens on the remembered
+    position while it finds a precise one, and shares that back. The house's
+    own address stays on the pages that are about the house: the map, the
+    contact page, the structured data.
+13. **The paper page-turn is for phones.** In the mushaf view the leaf turns
+    like paper below 768px only; wider screens change the page at once, from
+    the buttons or the arrow keys.
+
 ### Content still needed (`TODO(content)` in the code)
 
 - Phone number, IBAN, BIC and ZVR number — `lib/site-facts.ts` (or

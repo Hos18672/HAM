@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { offerPosition, rememberedPlace } from '@/lib/prayer-place';
 import { useTranslations } from 'next-intl';
 import {
   ArrowsClockwise,
@@ -196,8 +197,13 @@ export function Qibla({ locale }: { locale: Locale }) {
           longitude: position.coords.longitude,
         });
         setGeo('located');
+        offerPosition(position.coords.latitude, position.coords.longitude);
       },
-      (error) => setGeo(error.code === error.PERMISSION_DENIED ? 'denied' : 'failed'),
+      (error) => {
+        // Refused: back to the house, which is what the message says is shown.
+        if (error.code === error.PERMISSION_DENIED) setOrigin(HOUSE);
+        setGeo(error.code === error.PERMISSION_DENIED ? 'denied' : 'failed');
+      },
       { enableHighAccuracy: true, timeout: 10_000, maximumAge: 60_000 },
     );
   }, []);
@@ -216,6 +222,10 @@ export function Qibla({ locale }: { locale: Locale }) {
   useEffect(() => {
     if (asked.current) return;
     asked.current = true;
+    // Where the reader was last time, at once, while the browser finds where
+    // they are now.
+    const remembered = rememberedPlace();
+    if (remembered) setOrigin({ latitude: remembered.latitude, longitude: remembered.longitude });
     locateMe();
   }, [locateMe]);
 

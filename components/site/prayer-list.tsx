@@ -18,8 +18,16 @@ import { formatClock, formatDuration, formatDay, digits } from '@/lib/i18n/forma
 import { formatHijri } from '@/lib/hijri';
 import type { PrayerKey } from '@/lib/prayer-times';
 import type { PrayerDay } from '@/lib/prayer-page';
-import { localPrayerDay } from '@/lib/prayer-local';
-import { DEFAULT_CITY_ID, cityName, findCity } from '@/lib/cities';
+import { DEFAULT_CITY_ID, cityName } from '@/lib/cities';
+import {
+  chooseCity,
+  chooseHouse,
+  locate,
+  placeOf,
+  usePlaceDay,
+  usePrayerPlace,
+} from '@/lib/prayer-place';
+import { VIENNA } from '@/lib/prayer-times';
 import { useNextPrayer } from '@/lib/use-next-prayer';
 import { CityCombobox } from './city-combobox';
 import { Link } from '@/lib/i18n/navigation';
@@ -27,9 +35,6 @@ import { toPersianDate, persianMonthName } from '@/lib/persian-date';
 import type { Locale } from '@/lib/i18n/config';
 import { Button } from '../ui/button';
 import { PatternPlate } from './ornaments';
-
-type GeoState =
-  'vienna' | 'locating' | 'located' | 'denied' | 'unsupported' | 'failed' | 'fetchFailed';
 
 const ICONS: Record<
   PrayerKey,
@@ -59,109 +64,44 @@ const ORDER: PrayerKey[] = ['fajr', 'sunrise', 'dhuhr', 'asr', 'maghrib', 'isha'
  * visitor's, so a device with a wrong clock still sees the right remaining
  * time relative to the times printed above it.
  *
- * The page opens on Vienna. A visitor elsewhere can ask for their own
- * position: the browser hands its coordinates to this site's `/api/prayer/day`
- * — never to the API directly — and the day that comes back replaces the one
- * shown, countdown and all, until they go back to Vienna.
+ * The page opens on the reader's own position (`lib/prayer-place`): the
+ * browser is asked for it, and the day for it replaces Vienna's, countdown
+ * and all. A city picked from the list wins over the position; Vienna is
+ * what is shown when the position is refused, or chosen.
  */
 export function PrayerList({ day: vienna, locale }: { day: PrayerDay; locale: Locale }) {
   const t = useTranslations('prayer');
-  const [shownDay, setShownDay] = useState(vienna);
-  const [geo, setGeo] = useState<GeoState>('vienna');
-  const [cityId, setCityId] = useState<string>(DEFAULT_CITY_ID);
+  const { day: shownDay, place } = usePlaceDay(vienna);
+  const { choice, geo } = place;
   const [recent, setRecent] = useState<string[]>([]);
   const { day, remaining } = useNextPrayer(shownDay);
 
   /**
-   * A chosen city is worked out here in the browser rather than asked of the
-   * server: a round trip per choice would be slower than the answer, and on
-   * the static preview there is no server to ask. `lib/prayer-local` uses the
-   * same calculation the server falls back to.
-   *
-   * The choice is remembered per browser, so someone in Graz is not choosing
-   * Graz again every visit, and the last few choices come first in the list.
-   * Vienna clears the memory rather than storing itself — this is a Viennese
-   * house, and its own city is the default, not a preference.
+   * The last few cities chosen come first in the list. The choice itself is
+   * kept by `lib/prayer-place`, so the home page and the month table follow it.
    */
-  function chooseCity(id: string) {
-    const city = findCity(id);
-    setGeo('vienna');
-    setCityId(city ? city.id : DEFAULT_CITY_ID);
+  function pick(id: string) {
+    chooseCity(id);
+    if (id === DEFAULT_CITY_ID) return;
+    const list = [id, ...recent.filter((r) => r !== id)].slice(0, 4);
+    setRecent(list);
     try {
-      if (!city || city.id === DEFAULT_CITY_ID) window.localStorage.removeItem('ham-city');
-      else window.localStorage.setItem('ham-city', city.id);
-      if (city) {
-        const list = [city.id, ...recent.filter((r) => r !== city.id)].slice(0, 4);
-        setRecent(list);
-        window.localStorage.setItem('ham-city-recent', JSON.stringify(list));
-      }
+      window.localStorage.setItem('ham-city-recent', JSON.stringify(list));
     } catch {
-      // Private window, or storage turned off. The choice still holds for
-      // this page; it simply will not outlive it.
+      // Private window, or storage turned off: the list is for this page only.
     }
-    if (!city || city.id === DEFAULT_CITY_ID) {
-      setShownDay(vienna);
-      return;
-    }
-    setShownDay(localPrayerDay(new Date(), city));
   }
 
-  // The remembered city, once, after hydration — reading storage during the
+  // The remembered list, once, after hydration — reading storage during the
   // render would make the server's HTML and the first paint disagree.
   useEffect(() => {
-    let stored: string | null = null;
     try {
-      stored = window.localStorage.getItem('ham-city');
       const list = JSON.parse(window.localStorage.getItem('ham-city-recent') ?? '[]') as unknown;
       if (Array.isArray(list)) setRecent(list.filter((x): x is string => typeof x === 'string'));
     } catch {
-      stored = null;
+      // Nothing remembered.
     }
-    const city = findCity(stored);
-    if (!city || city.id === DEFAULT_CITY_ID) return;
-    setCityId(city.id);
-    setShownDay(localPrayerDay(new Date(), city));
-    // Only on mount: afterwards the reader's own choices drive this.
   }, []);
-
-  function useMyLocation() {
-    if (typeof navigator === 'undefined' || !navigator.geolocation) {
-      setGeo('unsupported');
-      return;
-    }
-    setGeo('locating');
-    navigator.geolocation.getCurrentPosition(
-      async (position) => {
-        // Rounded to two decimals — about a kilometre — before it leaves the
-        // device, and rounded for the local calculation too, so the same
-        // coarse position is used either way.
-        const place = {
-          latitude: Number(position.coords.latitude.toFixed(2)),
-          longitude: Number(position.coords.longitude.toFixed(2)),
-          timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-        };
-        const query = new URLSearchParams({
-          lat: String(place.latitude),
-          lng: String(place.longitude),
-          tz: place.timeZone,
-        });
-        try {
-          const response = await fetch(`/api/prayer/day?${query}`);
-          if (!response.ok) throw new Error(String(response.status));
-          setShownDay((await response.json()) as PrayerDay);
-        } catch {
-          // No route to ask — the static preview has none — or it said no.
-          // The day is arithmetic, so it is worked out here instead of
-          // telling the reader their own position could not be used.
-          setShownDay(localPrayerDay(new Date(), place));
-        }
-        setCityId('');
-        setGeo('located');
-      },
-      (error) => setGeo(error.code === error.PERMISSION_DENIED ? 'denied' : 'failed'),
-      { timeout: 10_000, maximumAge: 600_000 },
-    );
-  }
 
   const geoMessage =
     geo === 'locating'
@@ -172,19 +112,16 @@ export function PrayerList({ day: vienna, locale }: { day: PrayerDay; locale: Lo
           ? t('geoUnsupported')
           : geo === 'failed'
             ? t('geoFailed')
-            : geo === 'fetchFailed'
-              ? t('fetchFailed')
-              : geo === 'located'
-                ? t('locationNote')
-                : null;
+            : geo === 'located' && choice.kind === 'located'
+              ? t('locationNote')
+              : null;
 
   const gregorian = new Date(day.gregorianIso);
-  const chosenCity = findCity(cityId);
   const placeLabel =
-    geo === 'located'
+    choice.kind === 'located'
       ? t('todayYourPlace')
-      : chosenCity && chosenCity.id !== DEFAULT_CITY_ID
-        ? t('todayIn', { city: cityName(chosenCity, locale) })
+      : choice.kind === 'city'
+        ? t('todayIn', { city: cityName(choice.city, locale) })
         : t('todayHere');
 
   const persian = toPersianDate(gregorian);
@@ -249,14 +186,20 @@ export function PrayerList({ day: vienna, locale }: { day: PrayerDay; locale: Lo
 
           <div className="prayer-next-place-pick">
             <CityCombobox
-              value={geo === 'located' ? '' : cityId}
+              value={
+                choice.kind === 'located'
+                  ? ''
+                  : choice.kind === 'city'
+                    ? choice.city.id
+                    : DEFAULT_CITY_ID
+              }
               recent={recent}
-              onChoose={chooseCity}
+              onChoose={pick}
               locale={locale}
-              located={geo === 'located'}
+              located={choice.kind === 'located'}
             />
-            {geo === 'located' ? (
-              <Button variant="secondary" size="sm" onClick={() => chooseCity(DEFAULT_CITY_ID)}>
+            {choice.kind === 'located' ? (
+              <Button variant="secondary" size="sm" onClick={chooseHouse}>
                 <ArrowCounterClockwise size={16} weight="duotone" aria-hidden="true" />
                 {t('backToVienna')}
               </Button>
@@ -264,7 +207,7 @@ export function PrayerList({ day: vienna, locale }: { day: PrayerDay; locale: Lo
               <Button
                 variant="secondary"
                 size="sm"
-                onClick={useMyLocation}
+                onClick={locate}
                 loading={geo === 'locating'}
                 disabled={geo === 'locating'}
               >
@@ -313,19 +256,29 @@ export function PrayerList({ day: vienna, locale }: { day: PrayerDay; locale: Lo
 
 /**
  * The compact strip under the home page's hero: the next prayer, its time,
- * the time left and the way to the full page. Vienna only — the city picker
- * lives on the prayer page.
+ * the time left and the way to the full page. For the same place as the
+ * prayer page — the reader's own, unless they chose another — with the place
+ * named, so a time that is not Vienna's never passes for it.
  */
 export function NextPrayerStrip({ day: initial, locale }: { day: PrayerDay; locale: Locale }) {
   const t = useTranslations('prayer');
-  const { day, remaining } = useNextPrayer(initial);
+  const { day: shown, place } = usePlaceDay(initial);
+  const { day, remaining } = useNextPrayer(shown);
+  const where =
+    place.choice.kind === 'located'
+      ? t('placeYours')
+      : place.choice.kind === 'city'
+        ? cityName(place.choice.city, locale)
+        : t('placeVienna');
   const next = day.next;
   if (!next) return null;
   const IconComponent = ICONS[next.key] ?? Clock;
   return (
     <Link className="prayer-strip" href="/prayer">
       <IconComponent size={26} weight="duotone" aria-hidden="true" color="var(--gold)" />
-      <span className="prayer-strip-label">{t('nextPrayer')}</span>
+      <span className="prayer-strip-label">
+        {t('nextPrayer')} · {where}
+      </span>
       <span className="prayer-strip-name">
         {t(`names.${next.key}`)}
         {next.tomorrow ? ` · ${t('tomorrow')}` : ''}
@@ -339,5 +292,35 @@ export function NextPrayerStrip({ day: initial, locale }: { day: PrayerDay; loca
         <ArrowRight size={16} weight="bold" aria-hidden="true" className="mirror" />
       </span>
     </Link>
+  );
+}
+
+/** "48.22° N, 16.33° E" for a place, in the page's digits. */
+function coordinates(latitude: number, longitude: number, decimals: number, locale: Locale) {
+  const lat = `${Math.abs(latitude).toFixed(decimals)}° ${latitude >= 0 ? 'N' : 'S'}`;
+  const lng = `${Math.abs(longitude).toFixed(decimals)}° ${longitude >= 0 ? 'E' : 'W'}`;
+  return digits(`${lat}, ${lng}`, locale);
+}
+
+/** The source and the method, and the place the times above are for. */
+export function PrayerPlaceNote({ locale }: { locale: Locale }) {
+  const t = useTranslations('prayer');
+  const { choice } = usePrayerPlace();
+  const at = placeOf(choice);
+  const name =
+    choice.kind === 'located'
+      ? t('placeYours')
+      : choice.kind === 'city'
+        ? cityName(choice.city, locale)
+        : t('placeVienna');
+  return (
+    <p className="prayer-source">
+      {t('sourceNote')} · {name} ·{' '}
+      <span className="ltr-island">
+        {at
+          ? coordinates(at.latitude, at.longitude, 2, locale)
+          : coordinates(VIENNA.latitude, VIENNA.longitude, 4, locale)}
+      </span>
+    </p>
   );
 }

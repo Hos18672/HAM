@@ -8,6 +8,7 @@ import { HIJRI_MONTHS } from '@/lib/hijri';
 import { toPersianDate, persianMonthName } from '@/lib/persian-date';
 import { localTimetable } from '@/lib/prayer-local';
 import { VIENNA } from '@/lib/prayer-times';
+import { placeKey, placeOf, usePrayerPlace } from '@/lib/prayer-place';
 import { buildCalendarMonth, previousMonth, nextMonth } from '@/lib/calendar';
 import { HOLIDAYS } from '@/lib/holidays';
 import type { CalendarMonth } from '@/lib/calendar';
@@ -73,16 +74,26 @@ export function HijriCalendar({
     month: initialMonth.month,
   });
 
+  // The table is for the same place as the times above it: Vienna's months
+  // come from the server, any other place's are worked out here.
+  const { choice } = usePrayerPlace();
+  const where = placeKey(choice);
+  const elsewhere = placeOf(choice);
+
   const [timetables, setTimetables] = useState<Record<string, TimetableEntry>>(() => ({
-    [monthKey(initialTimetable)]: initialTimetable,
+    [`house|${monthKey(initialTimetable)}`]: initialTimetable,
   }));
-  const entry = timetables[monthKey({ year, month })];
+  const entry = timetables[`${where}|${monthKey({ year, month })}`];
   const timetable = typeof entry === 'object' ? entry : null;
 
   // Fetch a month's times the first time it is shown; each is kept after.
   useEffect(() => {
-    const key = monthKey({ year, month });
+    const key = `${where}|${monthKey({ year, month })}`;
     if (timetables[key] !== undefined) return;
+    if (elsewhere) {
+      setTimetables((all) => ({ ...all, [key]: localTimetable(year, month, elsewhere) }));
+      return;
+    }
     setTimetables((all) => ({ ...all, [key]: 'loading' }));
     fetch(`/api/prayer/month?y=${year}&m=${month}`)
       .then((response) => {
@@ -97,7 +108,9 @@ export function HijriCalendar({
         // one the page was built with came back empty.
         setTimetables((all) => ({ ...all, [key]: localTimetable(year, month, VIENNA) })),
       );
-  }, [year, month, timetables]);
+    // `where` stands for `elsewhere`, which is a new object on every change.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [year, month, timetables, where]);
 
   // The days the site keeps outside the database (`lib/holidays`), as
   // occasions the grid can match on the Hijri date like any other.
@@ -506,6 +519,7 @@ export function HijriCalendar({
           occasionDays={occasionDays}
           monthLabel={monthLabel}
           locale={locale}
+          timeZone={elsewhere?.timeZone ?? VIENNA.timeZone}
         />
       </section>
     </>

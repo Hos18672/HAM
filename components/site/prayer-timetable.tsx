@@ -13,7 +13,7 @@ import { Button } from '../ui/button';
 const COLUMNS: PrayerKey[] = ['fajr', 'sunrise', 'dhuhr', 'asr', 'maghrib', 'isha', 'midnight'];
 
 /**
- * One month of Vienna's prayer times, a row a day.
+ * One month of prayer times — for the place the page is showing — a row a day.
  *
  * It follows the calendar above it: the calendar owns which month is shown
  * and fetches the month's times as it moves, and this only lays them out.
@@ -27,6 +27,7 @@ export function PrayerTimetable({
   occasionDays,
   monthLabel,
   locale,
+  timeZone = 'Europe/Vienna',
 }: {
   timetable: Timetable | null;
   state: 'ready' | 'loading' | 'failed';
@@ -35,18 +36,20 @@ export function PrayerTimetable({
   occasionDays: Map<string, string[]>;
   monthLabel: string;
   locale: Locale;
+  /** The place's zone, so a change of the clocks is marked on the right day. */
+  timeZone?: string;
 }) {
   const t = useTranslations('prayer');
   // Phones open on the calendar and the day's times; the month's table is
   // one tap away. Wide screens always show it — the toggle is hidden there.
   const [open, setOpen] = useState(false);
 
-  /** Vienna's UTC offset at noon on a day, in minutes. */
+  /** The place's UTC offset at noon on a day, in minutes. */
   const offsetOn = (iso: string) => {
     const [y, m, d] = iso.split('-').map(Number) as [number, number, number];
     const noon = new Date(Date.UTC(y, m - 1, d, 12));
     const local = new Intl.DateTimeFormat('en-GB', {
-      timeZone: 'Europe/Vienna',
+      timeZone,
       hour: '2-digit',
       hourCycle: 'h23',
     }).format(noon);

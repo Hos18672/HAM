@@ -23,6 +23,39 @@ test.describe('prayer times', () => {
     await expect(page.getByText('Gedenktag', { exact: true })).toBeVisible();
   });
 
+  test('opens on where the reader is, and the home strip follows', async ({ page, context }) => {
+    await context.grantPermissions(['geolocation']);
+    // Graz: its times differ from Vienna's by several minutes.
+    await context.setGeolocation({ latitude: 47.0707, longitude: 15.4395 });
+    await page.goto('/de/prayer');
+    await expect(page.locator('.prayer-next-place')).toHaveText('Heute an Ihrem Standort');
+    await expect(page.locator('.prayer-source')).toContainText('Ihr Standort');
+    await expect(page.locator('.prayer-source')).toContainText('47.07° N, 15.44° E');
+
+    // Remembered: the home page's strip names the same place at once.
+    await page.goto('/de');
+    await expect(page.locator('.prayer-strip-label')).toContainText('Ihr Standort');
+
+    // Back to Vienna is a choice, and it holds on the next visit.
+    await page.goto('/de/prayer');
+    await page.getByRole('button', { name: 'Zurück zu Wien' }).click();
+    await expect(page.locator('.prayer-next-place')).toHaveText('Heute in Wien');
+    await page.reload();
+    await expect(page.locator('.prayer-next-place')).toHaveText('Heute in Wien');
+  });
+
+  test('shows Vienna when the location is refused, and says so', async ({ page }) => {
+    await page.addInitScript(() => {
+      Object.defineProperty(navigator.geolocation, 'getCurrentPosition', {
+        value: (_ok: unknown, fail: (e: { code: number; PERMISSION_DENIED: number }) => void) =>
+          fail({ code: 1, PERMISSION_DENIED: 1 }),
+      });
+    });
+    await page.goto('/de/prayer');
+    await expect(page.locator('.prayer-next-place')).toHaveText('Heute in Wien');
+    await expect(page.getByText('Der Standortzugriff wurde nicht erlaubt.')).toBeVisible();
+  });
+
   test('moves the month without reloading the page', async ({ page }) => {
     await page.goto('/de/prayer');
 

@@ -2,15 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
-import {
-  X,
-  MagnifyingGlass,
-  CaretDown,
-  Clock,
-  CalendarDots,
-  ChatCircleText,
-  List,
-} from '@phosphor-icons/react/dist/ssr';
+import { X, MagnifyingGlass, CaretDown } from '@phosphor-icons/react/dist/ssr';
 import { Link, usePathname } from '@/lib/i18n/navigation';
 import { NAV_GROUPS, LEGAL_NAV, type NavGroup } from './nav.config';
 import { ThemeToggle } from './theme-toggle';
@@ -22,6 +14,7 @@ import { IconCircle } from '../ui/icon-circle';
 import { LangCircle, LangSwitch } from '../ui/lang-switch';
 import { PillLink } from '../ui/pill-button';
 import { NextPrayerInline } from '../ui/next-prayer';
+import { TabBar } from './tab-bar';
 import { formatDate } from '@/lib/i18n/format';
 import { localPrayerDay } from '@/lib/prayer-local';
 import { VIENNA } from '@/lib/prayer-times';
@@ -387,31 +380,7 @@ export function Header({ theme, locale }: { theme: ThemeValue; locale: Locale })
         </div>
       ) : null}
 
-      {readerPage ? null : (
-        <nav className="bottom-bar" aria-label={t('bottomBar')}>
-          <Link href="/prayer" aria-current={isCurrent('/prayer') ? 'page' : undefined}>
-            <Clock size={22} weight="duotone" aria-hidden="true" />
-            <span>{t('prayer')}</span>
-          </Link>
-          <Link href="/events" aria-current={isCurrent('/events') ? 'page' : undefined}>
-            <CalendarDots size={22} weight="duotone" aria-hidden="true" />
-            <span>{t('events')}</span>
-          </Link>
-          <Link href="/contact" aria-current={isCurrent('/contact') ? 'page' : undefined}>
-            <ChatCircleText size={22} weight="duotone" aria-hidden="true" />
-            <span>{t('contact')}</span>
-          </Link>
-          <button
-            type="button"
-            aria-expanded={sheetOpen}
-            aria-controls="menu-sheet"
-            onClick={openSheet}
-          >
-            <List size={22} weight="bold" aria-hidden="true" />
-            <span>{t('menu')}</span>
-          </button>
-        </nav>
-      )}
+      {readerPage ? null : <TabBar isCurrent={isCurrent} menuOpen={sheetOpen} onMenu={openSheet} />}
 
       <SearchPopup
         open={searchOpen}

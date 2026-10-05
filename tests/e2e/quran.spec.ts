@@ -84,6 +84,32 @@ test.describe('the Quran reader', () => {
     expect(await kept(page)).toBe('here');
   });
 
+  test('turns like paper on a phone only', async ({ page }) => {
+    await page.getByRole('button', { name: 'Mushaf' }).click();
+    await expect(page.locator('.qr-sheet')).toBeVisible();
+
+    // A wide screen simply changes the page: no leaf is ever drawn.
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await page.evaluate(() => {
+      (window as unknown as { leafSeen: boolean }).leafSeen = false;
+      new MutationObserver(() => {
+        if (document.querySelector('.qr-leaf'))
+          (window as unknown as { leafSeen: boolean }).leafSeen = true;
+      }).observe(document.body, { childList: true, subtree: true });
+    });
+    await page.keyboard.press('ArrowLeft');
+    await expect(page).toHaveURL(/\/page\/3$/);
+    expect(await page.evaluate(() => (window as unknown as { leafSeen: boolean }).leafSeen)).toBe(
+      false,
+    );
+
+    // A phone turns the leaf.
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.keyboard.press('ArrowRight');
+    await expect(page.locator('.qr-leaf')).toBeAttached();
+    await expect(page).toHaveURL(/\/page\/2$/);
+  });
+
   test('turns the page from the foot, and only when the slider is let go', async ({ page }) => {
     await mark(page);
     const slider = page.getByRole('slider');

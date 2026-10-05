@@ -17,7 +17,14 @@ import { useCallback, useEffect, useRef, useState } from 'react';
  * The angle is written straight onto the element rather than held in state:
  * a turn is sixty frames, and sixty renders of a page of the Quran is sixty
  * frames dropped. React is told only which two pages are on the deck.
+ *
+ * Only on a small screen. A phone is held like a book and turned with the
+ * thumb; on a tablet or a desk the page simply changes, from the buttons or
+ * the arrow keys, with no leaf and no swipe.
  */
+
+/** Below this the page turns like paper; at and above it, it just changes. */
+const PAPER_QUERY = '(max-width: 767.98px)';
 
 /** How far the sheet must be carried before letting go completes the turn. */
 const COMMIT_AT = 0.32;
@@ -81,9 +88,18 @@ export function usePaperTurn({
   } | null>(null);
   const settling = useRef(false);
   const reduced = useRef(false);
+  /** True where there is no leaf: a wide screen, or reduced motion. */
+  const still = useRef(false);
 
   useEffect(() => {
     reduced.current = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const small = window.matchMedia(PAPER_QUERY);
+    const update = () => {
+      still.current = reduced.current || !small.matches;
+    };
+    update();
+    small.addEventListener('change', update);
+    return () => small.removeEventListener('change', update);
   }, []);
 
   /** Put the leaf at `progress`, 0 flat on the book and 1 fully turned. */
@@ -133,17 +149,22 @@ export function usePaperTurn({
       const direction: 1 | -1 = to > page ? 1 : -1;
       void prepare(to).then((ready) => {
         if (!ready) return;
+        // No leaf on a wide screen: the new page is simply put in place.
+        if (still.current) {
+          commit(to);
+          return;
+        }
         setState({ to, direction });
         // The leaf only exists once React has drawn it.
         requestAnimationFrame(() => settle(0, direction, to, true));
       });
     },
-    [canGo, page, prepare, settle],
+    [canGo, commit, page, prepare, settle],
   );
 
   /* ── The gesture ──────────────────────────────────────────────────────── */
   const onPointerDown = useCallback((event: React.PointerEvent) => {
-    if (event.pointerType === 'mouse' || settling.current) return;
+    if (event.pointerType === 'mouse' || settling.current || still.current) return;
     if ((event.target as HTMLElement).closest('button, a, input, select, textarea, summary'))
       return;
     // A touch is captured by the element it began on anyway; a pen is not,

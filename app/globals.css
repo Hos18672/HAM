@@ -355,21 +355,26 @@
   --measure-narrow: 44ch;
   --page-max: 1320px;
   --page-gutter: clamp(20px, 5vw, 56px);
-  /* The sticky bar's whole height: its 8px top pad and the 56px pill (68px
-     from 1100px). */
-  --header-h: 64px;
+  /* ── Navigation v2 ─────────────────────────────────────────────────────
+     Radii, shadows and curves for the header, tab bar, menu sheet and
+     footer. One header height: --header-h is the space the sticky header
+     takes in the flow — the floating 58px pill and its 10px margin on phones
+     and tablets, the 80px bar from 1100px. */
+  --chip-2: #d9ebe1;
+  --r-sm: 14px;
+  --r-md: 20px;
+  --r-lg: 28px;
+  --r-pill: 999px;
+  --shadow-float: 0 10px 30px rgba(7, 59, 41, 0.16);
+  --shadow-soft: 0 2px 10px rgba(7, 59, 41, 0.06);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-spring: cubic-bezier(0.34, 1.4, 0.64, 1);
+  --header-h-m: 58px;
+  --header-h: calc(var(--header-h-m) + 10px);
+  --tabbar-h: 68px;
 
   /* ── The Homecoming hero ──────────────────────────────────────────────
-     The scene's own three variables, given this site's values. The header
-     height has to be the real one: the hero and every page head are pulled
-     up underneath the bar by exactly this much, so if it is short they start
-     below the bar and leave a strip of bare paper above them.
-
-     88px is what the bar measures in its resting state at every width from
-     320 to 1600 — 8px of clearance above it, a hairline, 15px of padding,
-     a 48px row of controls, 15px and a hairline again. It was 4.5rem (72),
-     which is the bar's own row and not the box it sits in. */
-  --hc-header-h: 88px;
+     The scene's own variables, given this site's values. */
   --hc-gold: var(--gold);
   --hc-cap-color: var(--bandHead);
 
@@ -398,6 +403,9 @@
       second token set, not a filter. Applied from a cookie on the server so
       the first paint is already correct. ─────────────────────────────────── */
 :root[data-theme='dark'] {
+  --chip-2: rgba(127, 203, 163, 0.2);
+  --shadow-float: 0 10px 30px rgba(0, 0, 0, 0.45);
+  --shadow-soft: 0 2px 10px rgba(0, 0, 0, 0.3);
   --color-bg: #06211a;
   --color-text: #efe8d8;
   --color-accent: #7fcba3;
@@ -894,8 +902,8 @@
      up by this same amount. The padding gains what the margin takes, so
      nothing inside the band moves. */
   .page-head-band {
-    margin-block-start: calc(-1 * var(--hc-header-h));
-    padding-block-start: calc(clamp(48px, 6vw, 96px) + var(--hc-header-h));
+    margin-block-start: calc(-1 * var(--header-h));
+    padding-block-start: calc(clamp(48px, 6vw, 96px) + var(--header-h));
     padding-block-end: clamp(48px, 6vw, 96px);
   }
   .section-band h1,
@@ -7924,8 +7932,7 @@ body:has(.contact-page) .footer-contact {
 /* ─── Site header ─────────────────────────────────────────────────────────── */
 @media (min-width: 1100px) {
   :root {
-    --hc-header-h: 76px;
-    --header-h: 76px;
+    --header-h: 80px;
   }
 }
 .site-header {
@@ -8514,7 +8521,7 @@ body:has(.edit-bar) .bottom-bar,
 /* The hero runs up behind the floating bar, so its head corner starts below
    the bar rather than under it. */
 .hc-hero {
-  --corner-top: calc(var(--hc-header-h) + 14px);
+  --corner-top: calc(var(--header-h) + 14px);
 }
 .home-visit {
   margin-block-start: 26px;
@@ -8933,4 +8940,14 @@ body:has(.edit-bar) .bottom-bar,
 .ptimes-row[data-next] .ptimes-mark,
 .cal-day[data-occ='true'] .cal-day-hij {
   color: var(--head);
+}
+
+/* Reduced motion, everywhere: nothing moves, everything is there at once. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
 }

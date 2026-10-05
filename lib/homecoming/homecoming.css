@@ -23,7 +23,7 @@
   overflow: hidden;
   min-height: 100vh;
   min-height: 100svh;
-  margin-top: calc(-1 * var(--hc-header-h));
+  margin-top: calc(-1 * var(--header-h));
   /* keep the site's own hero background here (colour, pattern …) */
 }
 .hc-host {
@@ -39,7 +39,7 @@
   min-height: 100vh;
   min-height: 100svh;
   margin: 0 auto;
-  padding: calc(var(--hc-header-h) + clamp(28px, 4vw, 56px)) clamp(20px, 5vw, 56px) clamp(56px, 7vw, 96px);
+  padding: calc(var(--header-h) + clamp(28px, 4vw, 56px)) clamp(20px, 5vw, 56px) clamp(56px, 7vw, 96px);
   display: grid;
   grid-template-columns: 1.1fr 0.9fr;
   gap: clamp(24px, 4vw, 64px);

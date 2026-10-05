@@ -3,6 +3,7 @@
 import { useEffect, useRef } from 'react';
 import { usePathname } from '@/lib/i18n/navigation';
 import type { PageSkyControl } from '@/lib/homecoming/page-sky.js';
+import { loadSilhouette, skylineBoxes, type Silhouette } from './skyline-silhouette';
 
 /** What counts as a card: the flocks keep off every one of these. */
 const CARDS = '.card, .tile, .surf, .cta-panel, .card-plate, .frame, .pull-quote-plated';
@@ -19,13 +20,14 @@ const CARDS = '.card, .tile, .surf, .cta-panel, .card-plate, .frame, .pull-quote
  * and dialog. It lives in the site layout, so the flocks keep flying across
  * navigations instead of starting over on each page.
  *
- * On the home page they hold back while the intro plays. Nothing is drawn
- * with `prefers-reduced-motion`, and without WebGL the layer simply stays
- * empty.
+ * On the home page they hold back while the intro plays. Nothing is drawn with `prefers-reduced-motion`, and without WebGL the
+ * layer simply stays empty.
  *
- * The birds keep off the page's cards: they are handed to the scene each
- * frame as no-fly boxes. A flock turns away as it nears one, and a bird the
- * scroll carries over one is steered off it.
+ * The birds keep off the page's cards and off the city in the footer: both
+ * are handed to the scene each frame as no-fly boxes. A flock turns away as
+ * it nears one, and a bird the scroll carries over one is steered off it. The
+ * city's boxes follow its roof line (see `skyline-silhouette.ts`), so birds
+ * still fly in the sky above it.
  *
  * The contact page has none: it is there to be read at once, and the scene's
  * frame loop cost a phone seconds of main thread before the page answered.
@@ -43,6 +45,7 @@ export function WanderingBirds() {
     let disposed = false;
     let control: PageSkyControl | null = null;
 
+    // Held back while the home page's intro is up.
     const visibility = () => (root.dataset.intro === 'play' ? 0 : 1);
 
     // The cards on the page. The list is refreshed now and then (the page
@@ -50,6 +53,14 @@ export function WanderingBirds() {
     // each frame, since they move with every scroll.
     let cards: Element[] = [];
     let cardsAt = -Infinity;
+    let silhouette: Silhouette | null = null;
+    void loadSilhouette()
+      .then((tops) => {
+        silhouette = tops;
+      })
+      .catch(() => {
+        // Without the outline the birds simply do not know about the city.
+      });
 
     const obstacles = () => {
       const now = performance.now();
@@ -64,6 +75,8 @@ export function WanderingBirds() {
         if (r.width < 1 || r.bottom < -200 || r.top > vh + 200) continue;
         boxes.push([r.left, r.top, r.right, r.bottom, 0]);
       }
+      const city = silhouette && document.querySelector('.footer-skyline');
+      if (city && silhouette) boxes.push(...skylineBoxes(city, silhouette));
       return boxes;
     };
 

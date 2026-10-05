@@ -16,7 +16,7 @@ import {
 import { SectionHead } from '@/components/site/page-head';
 import { EventRow } from '@/components/site/event-row';
 import { NextPrayerCard, PrayerStrip } from '@/components/ui/next-prayer';
-import { PillLink } from '@/components/ui/pill-button';
+import { PatternPlate, Ring, Corner, Eye } from '@/components/site/ornaments';
 import { OpeningHours, Directions, HouseMap } from '@/components/site/house-info';
 import { OpenNow } from '@/components/site/open-now';
 import { getPrayerDay } from '@/lib/prayer-page';
@@ -84,88 +84,104 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
       <JsonLd data={organizationJsonLd(typed, settings)} />
 
       {/* ── Hero ──────────────────────────────────────────────────────────
-          On the paper: the kicker, the title, the lead and the two ways in,
-          beside the house's seal in a tall frame. Each piece rises into place
+          On the deep green band: the kicker, the title, the lead and the two
+          ways in, beside the house's seal. Each piece rises into place
           once, a beat after the one before. On a phone the next prayer sits
           under the buttons; wide screens get the day's six times below. The
           copy is server-rendered and editable in place, as before. */}
-      <section className="page home-hero">
-        <div className="home-hero-copy">
-          <div className="home-hero-kicker hero-in" style={{ '--d': '0ms' } as CSSProperties}>
+      <section className="home-hero-band">
+        {/* The band's own ground, as it always was: the girih drifting
+            behind the deep green, the rings and the gold corners. */}
+        <PatternPlate tiling="shesh" drift opacity={0.75} />
+        <Ring />
+        <Ring size={340} top={-100} />
+        <Corner place="start" />
+        <Corner place="end" />
+        <div className="page home-hero">
+          <div className="home-hero-copy">
+            <div className="home-hero-kicker hero-in" style={{ '--d': '0ms' } as CSSProperties}>
+              <Eye />
+              <EditableText
+                as="p"
+                entity="page"
+                id={header.id}
+                field="kicker"
+                locale={typed}
+                value={header.kicker}
+                className="kicker"
+              />
+              {blocks.hero_badge?.text ? (
+                <Tag tone="accent-2">
+                  <EditableText
+                    entity="block"
+                    id={blocks.hero_badge.id}
+                    field="text"
+                    locale={typed}
+                    value={blocks.hero_badge.text}
+                  />
+                </Tag>
+              ) : null}
+            </div>
+
+            <EditableText
+              as="h1"
+              entity="page"
+              id={header.id}
+              field="title"
+              locale={typed}
+              value={header.title}
+              className="home-hero-title hero-in"
+              style={{ '--d': '80ms' } as CSSProperties}
+            />
+
             <EditableText
               as="p"
               entity="page"
               id={header.id}
-              field="kicker"
+              field="lead"
               locale={typed}
-              value={header.kicker}
-              className="kicker"
+              value={header.lead}
+              className="home-hero-lead hero-in"
+              style={{ '--d': '180ms' } as CSSProperties}
+              multiline
             />
-            {blocks.hero_badge?.text ? (
-              <Tag tone="accent-2">
-                <EditableText
-                  entity="block"
-                  id={blocks.hero_badge.id}
-                  field="text"
-                  locale={typed}
-                  value={blocks.hero_badge.text}
-                />
-              </Tag>
-            ) : null}
+
+            <div className="home-hero-actions hero-in" style={{ '--d': '280ms' } as CSSProperties}>
+              <LinkButton href={`/${locale}/about`} size="lg" className="btn-gold">
+                {t('heroAbout')}
+                <ArrowRight size={17} weight="bold" aria-hidden="true" className="mirror" />
+              </LinkButton>
+              <LinkButton
+                href={`/${locale}/activities`}
+                size="lg"
+                variant="secondary"
+                className="btn-on-scrim"
+              >
+                {t('heroActivities')}
+              </LinkButton>
+            </div>
+
+            <NextPrayerCard day={prayerDay} locale={typed} className="home-hero-prayer" />
           </div>
 
-          <EditableText
-            as="h1"
-            entity="page"
-            id={header.id}
-            field="title"
-            locale={typed}
-            value={header.title}
-            className="home-hero-title hero-in"
-            style={{ '--d': '80ms' } as CSSProperties}
-          />
-
-          <EditableText
-            as="p"
-            entity="page"
-            id={header.id}
-            field="lead"
-            locale={typed}
-            value={header.lead}
-            className="home-hero-lead hero-in"
-            style={{ '--d': '180ms' } as CSSProperties}
-            multiline
-          />
-
-          <div className="home-hero-actions hero-in" style={{ '--d': '280ms' } as CSSProperties}>
-            <PillLink href="/about" size={50}>
-              {t('heroAbout')}
-              <ArrowRight size={17} weight="bold" aria-hidden="true" className="mirror" />
-            </PillLink>
-            <PillLink href="/activities" size={50} variant="outline">
-              {t('heroActivities')}
-            </PillLink>
-          </div>
-
-          <NextPrayerCard day={prayerDay} locale={typed} className="home-hero-prayer" />
+          <figure
+            className="home-hero-media hero-in"
+            style={{ '--d': '200ms' } as CSSProperties}
+            aria-hidden="true"
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element -- the seal, at a known size */}
+            <img
+              className="home-hero-seal"
+              src={`${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/logo-512.webp`}
+              srcSet={`${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/logo-160.webp 160w, ${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/logo-512.webp 512w`}
+              sizes="(min-width: 1100px) 300px, 240px"
+              alt=""
+              width={512}
+              height={512}
+              fetchPriority="high"
+            />
+          </figure>
         </div>
-
-        <figure
-          className="home-hero-media hero-in"
-          style={{ '--d': '200ms' } as CSSProperties}
-          aria-hidden="true"
-        >
-          {/* eslint-disable-next-line @next/next/no-img-element -- the seal, at a known size */}
-          <img
-            src={`${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/logo-512.webp`}
-            srcSet={`${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/logo-160.webp 160w, ${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/logo-512.webp 512w`}
-            sizes="(min-width: 1100px) 300px, 240px"
-            alt=""
-            width={512}
-            height={512}
-            fetchPriority="high"
-          />
-        </figure>
       </section>
 
       <div className="page home-strip">

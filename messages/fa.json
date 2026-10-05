@@ -35,7 +35,12 @@
     "groupFaith": "معارف",
     "bottomBar": "دسترسی سریع",
     "join": "عضویت",
-    "donate": "کمک مالی"
+    "donate": "کمک مالی",
+    "tabPrayer": "نماز",
+    "tabMenu": "منو",
+    "groupDirect": "دسترسی مستقیم",
+    "dateline": "وین، هرنالس",
+    "otherLanguage": "این صفحه به آلمانی"
   },
   "actions": {
     "readMore": "بیشتر بخوانید",
@@ -96,7 +101,8 @@
     "openingEvent": "افتتاحیه",
     "programme": "برنامه",
     "vienna": "وین و محل ما",
-    "address": "نشانی"
+    "address": "نشانی",
+    "allTimesMonth": "همهٔ اوقات و ماه"
   },
   "activities": {
     "areasTitle": "زمینه‌های کار ما",
@@ -546,7 +552,9 @@
     "join": "همراهی",
     "joinText": "عضو شوید یا از کار خانه پشتیبانی کنید.",
     "tagline": "خانه‌ای برای آموزش، فرهنگ، معنویت و دیدار در منطقهٔ Hernals وین — باز برای همه.",
-    "updated": "آخرین به‌روزرسانی: {date}"
+    "updated": "آخرین به‌روزرسانی: {date}",
+    "visit": "دیدار",
+    "today": "امروز"
   },
   "error": {
     "notFoundTitle": "این صفحه وجود ندارد",

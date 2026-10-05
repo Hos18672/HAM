@@ -35,7 +35,12 @@
     "groupFaith": "Glaube",
     "bottomBar": "Schnellzugriff",
     "join": "Mitglied werden",
-    "donate": "Spenden"
+    "donate": "Spenden",
+    "tabPrayer": "Gebet",
+    "tabMenu": "Menü",
+    "groupDirect": "Direkt",
+    "dateline": "Wien-Hernals",
+    "otherLanguage": "Diese Seite auf Persisch"
   },
   "actions": {
     "readMore": "Mehr erfahren",
@@ -96,7 +101,8 @@
     "openingEvent": "Eröffnung",
     "programme": "Programm",
     "vienna": "Wien & Standort",
-    "address": "Adresse"
+    "address": "Adresse",
+    "allTimesMonth": "Alle Zeiten & Monat"
   },
   "activities": {
     "areasTitle": "Unsere Bereiche",
@@ -546,7 +552,9 @@
     "join": "Unterstützen",
     "joinText": "Werden Sie Mitglied oder unterstützen Sie die Arbeit des Hauses.",
     "tagline": "Ein Haus für Bildung, Kultur, Glauben und Begegnung in Wien-Hernals — offen für alle.",
-    "updated": "Stand: {date}"
+    "updated": "Stand: {date}",
+    "visit": "Besuchen",
+    "today": "Heute"
   },
   "error": {
     "notFoundTitle": "Diese Seite gibt es nicht",

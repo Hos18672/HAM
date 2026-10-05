@@ -1,6 +1,6 @@
 import type { MetadataRoute } from 'next';
 import { locales } from '@/lib/i18n/config';
-import { NAV, LEGAL_NAV } from '@/components/site/nav-links';
+import { NAV, LEGAL_NAV } from '@/components/site/nav.config';
 
 /**
  * Every page in both languages, each listing the other as its `hreflang`

@@ -1,7 +1,7 @@
 import { getTranslations } from 'next-intl/server';
 import { EnvelopeSimple, Phone, MapPin, InstagramLogo } from '@phosphor-icons/react/dist/ssr';
 import { Link } from '@/lib/i18n/navigation';
-import { NAV_GROUPS, LEGAL_NAV } from './nav-links';
+import { NAV_GROUPS, LEGAL_NAV } from './nav.config';
 import { getSettings } from '@/lib/db/queries/content';
 import { LocaleSwitch } from './locale-switch';
 import { ThemeToggle } from './theme-toggle';

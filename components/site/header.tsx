@@ -12,7 +12,7 @@ import {
   List,
 } from '@phosphor-icons/react/dist/ssr';
 import { Link, usePathname } from '@/lib/i18n/navigation';
-import { NAV_GROUPS, LEGAL_NAV, type NavGroup } from './nav-links';
+import { NAV_GROUPS, LEGAL_NAV, type NavGroup } from './nav.config';
 import { ThemeToggle } from './theme-toggle';
 import { Mark, PatternPlate } from './ornaments';
 import { LocaleSwitch } from './locale-switch';

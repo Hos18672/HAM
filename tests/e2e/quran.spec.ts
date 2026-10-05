@@ -103,11 +103,14 @@ test.describe('the Quran reader', () => {
       false,
     );
 
-    // A phone turns the leaf.
+    // A phone turns the leaf. It is there for half a second, so the observer
+    // above records it rather than a poll trying to catch it in the act.
     await page.setViewportSize({ width: 390, height: 844 });
     await page.keyboard.press('ArrowRight');
-    await expect(page.locator('.qr-leaf')).toBeAttached();
     await expect(page).toHaveURL(/\/page\/2$/);
+    expect(await page.evaluate(() => (window as unknown as { leafSeen: boolean }).leafSeen)).toBe(
+      true,
+    );
   });
 
   test('turns the page from the foot, and only when the slider is let go', async ({ page }) => {

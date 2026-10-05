@@ -1,20 +1,18 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { X, MagnifyingGlass, CaretDown } from '@phosphor-icons/react/dist/ssr';
+import { MagnifyingGlass, CaretDown } from '@phosphor-icons/react/dist/ssr';
 import { Link, usePathname } from '@/lib/i18n/navigation';
-import { NAV_GROUPS, LEGAL_NAV, type NavGroup } from './nav.config';
-import { ThemeToggle } from './theme-toggle';
-import { Mark, PatternPlate } from './ornaments';
-import { LocaleSwitch } from './locale-switch';
+import { NAV_GROUPS, type NavGroup } from './nav.config';
+import { Mark } from './ornaments';
 import { SearchPopup } from './search-popup';
-import { LinkButton } from '../ui/button';
 import { IconCircle } from '../ui/icon-circle';
 import { LangCircle, LangSwitch } from '../ui/lang-switch';
 import { PillLink } from '../ui/pill-button';
 import { NextPrayerInline } from '../ui/next-prayer';
 import { TabBar } from './tab-bar';
+import { MenuSheet } from './menu-sheet';
 import { formatDate } from '@/lib/i18n/format';
 import { localPrayerDay } from '@/lib/prayer-local';
 import { VIENNA } from '@/lib/prayer-times';
@@ -51,7 +49,6 @@ export function Header({ theme, locale }: { theme: ThemeValue; locale: Locale })
   /** The search button that opened the popup — the bar has one per width. */
   const searchButtonRef = useRef<HTMLButtonElement | null>(null);
   const navRef = useRef<HTMLElement>(null);
-  const sheetRef = useRef<HTMLDivElement>(null);
   const sheetOpenerRef = useRef<HTMLElement | null>(null);
   const hoverTimer = useRef<number | undefined>(undefined);
 
@@ -67,43 +64,6 @@ export function Header({ theme, locale }: { theme: ThemeValue; locale: Locale })
     setSheetOpen(false);
     setOpenGroup(null);
   }, [pathname]);
-
-  // The sheet is a modal surface: lock the page behind it and trap focus.
-  useEffect(() => {
-    if (!sheetOpen) return;
-    const previous = document.body.style.overflow;
-    const opener = sheetOpenerRef.current;
-    document.body.style.overflow = 'hidden';
-    sheetRef.current?.querySelector<HTMLElement>('button, a')?.focus();
-
-    function onKeyDown(event: KeyboardEvent) {
-      if (event.key === 'Escape') {
-        setSheetOpen(false);
-        return;
-      }
-      if (event.key !== 'Tab' || !sheetRef.current) return;
-      const focusable = Array.from(
-        sheetRef.current.querySelectorAll<HTMLElement>('a[href], button:not(:disabled), summary'),
-      ).filter((el) => el.offsetParent !== null);
-      if (focusable.length === 0) return;
-      const first = focusable[0]!;
-      const last = focusable[focusable.length - 1]!;
-      if (event.shiftKey && document.activeElement === first) {
-        event.preventDefault();
-        last.focus();
-      } else if (!event.shiftKey && document.activeElement === last) {
-        event.preventDefault();
-        first.focus();
-      }
-    }
-
-    document.addEventListener('keydown', onKeyDown);
-    return () => {
-      document.body.style.overflow = previous;
-      document.removeEventListener('keydown', onKeyDown);
-      opener?.focus();
-    };
-  }, [sheetOpen]);
 
   // Click-away and Escape for the desktop dropdowns.
   useEffect(() => {
@@ -135,9 +95,14 @@ export function Header({ theme, locale }: { theme: ThemeValue; locale: Locale })
     group.href ? isCurrent(group.href) : (group.items ?? []).some((i) => isCurrent(i.href));
 
   function openSheet(event: React.MouseEvent<HTMLElement>) {
+    if (sheetOpen) {
+      setSheetOpen(false);
+      return;
+    }
     sheetOpenerRef.current = event.currentTarget;
     setSheetOpen(true);
   }
+  const closeSheet = useCallback(() => setSheetOpen(false), []);
 
   function openSearch(event: React.MouseEvent<HTMLButtonElement>) {
     searchButtonRef.current = event.currentTarget;
@@ -281,103 +246,17 @@ export function Header({ theme, locale }: { theme: ThemeValue; locale: Locale })
       </header>
 
       {sheetOpen ? (
-        <div
-          ref={sheetRef}
-          id="menu-sheet"
-          className="menu-sheet"
-          role="dialog"
-          aria-modal="true"
-          aria-label={t('menu')}
-        >
-          <PatternPlate opacity={0.35} />
-          <div className="menu-sheet-head">
-            <Brand />
-            <button
-              type="button"
-              className="chrome-btn"
-              aria-label={t('closeMenu')}
-              onClick={() => setSheetOpen(false)}
-            >
-              <X size={20} weight="bold" aria-hidden="true" />
-            </button>
-          </div>
-
-          <div className="menu-sheet-body">
-            <button
-              type="button"
-              className="menu-sheet-search"
-              onClick={() => {
-                setSheetOpen(false);
-                setSearchOpen(true);
-              }}
-            >
-              <MagnifyingGlass size={20} weight="duotone" aria-hidden="true" />
-              {tActions('search')}
-            </button>
-
-            <nav aria-label={t('primary')}>
-              <ul className="menu-sheet-groups">
-                {NAV_GROUPS.map((group) =>
-                  group.href ? (
-                    <li key={group.key}>
-                      <Link
-                        href={group.href}
-                        className="menu-sheet-link menu-sheet-top"
-                        aria-current={isCurrent(group.href) ? 'page' : undefined}
-                      >
-                        {t(group.key)}
-                      </Link>
-                    </li>
-                  ) : (
-                    <li key={group.key}>
-                      <details open={groupIsCurrent(group) || undefined}>
-                        <summary className="menu-sheet-top">
-                          {t(group.key)}
-                          <CaretDown size={16} weight="bold" aria-hidden="true" className="caret" />
-                        </summary>
-                        <ul>
-                          {group.items!.map((item) => (
-                            <li key={item.href}>
-                              <Link
-                                href={item.href}
-                                className="menu-sheet-link"
-                                aria-current={isCurrent(item.href) ? 'page' : undefined}
-                              >
-                                {t(item.key)}
-                              </Link>
-                            </li>
-                          ))}
-                        </ul>
-                      </details>
-                    </li>
-                  ),
-                )}
-              </ul>
-            </nav>
-
-            <div className="menu-sheet-extra">
-              <LocaleSwitch />
-              <ThemeToggle theme={theme} />
-            </div>
-            <ul className="menu-sheet-legal">
-              {LEGAL_NAV.map((entry) => (
-                <li key={entry.href}>
-                  <Link href={entry.href}>{t(entry.key)}</Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* The two asks, pinned to the bottom of the sheet. */}
-          <div className="menu-sheet-cta">
-            <LinkButton href={`/${locale}/support#member`} className="btn-gold">
-              {t('join')}
-            </LinkButton>
-            <LinkButton href={`/${locale}/support#donate`} variant="secondary">
-              {t('donate')}
-            </LinkButton>
-          </div>
-        </div>
+        <MenuSheet
+          theme={theme}
+          isCurrent={isCurrent}
+          onClose={closeSheet}
+          onSearch={() => {
+            setSheetOpen(false);
+            searchButtonRef.current = null;
+            setSearchOpen(true);
+          }}
+          opener={sheetOpenerRef.current}
+        />
       ) : null}
 
       {readerPage ? null : <TabBar isCurrent={isCurrent} menuOpen={sheetOpen} onMenu={openSheet} />}

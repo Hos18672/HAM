@@ -6,7 +6,13 @@ import { Sun, Moon } from '@phosphor-icons/react/dist/ssr';
 import { THEME_COOKIE, type ThemeValue } from './theme';
 
 /** Theme switch. The swap is immediate — no wipe over the page. */
-export function ThemeToggle({ theme }: { theme: ThemeValue }) {
+export function ThemeToggle({
+  theme,
+  className = 'chrome-btn',
+}: {
+  theme: ThemeValue;
+  className?: string;
+}) {
   const t = useTranslations('theme');
 
   // The prop is the server's reading of the cookie, which only changes on the
@@ -43,7 +49,7 @@ export function ThemeToggle({ theme }: { theme: ThemeValue }) {
   return (
     <button
       type="button"
-      className="chrome-btn"
+      className={className}
       onClick={toggle}
       aria-label={t('toggle')}
       title={isDark ? t('light') : t('dark')}

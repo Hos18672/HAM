@@ -373,11 +373,6 @@
   --header-h: calc(var(--header-h-m) + 10px);
   --tabbar-h: 68px;
 
-  /* ── The Homecoming hero ──────────────────────────────────────────────
-     The scene's own variables, given this site's values. */
-  --hc-gold: var(--gold);
-  --hc-cap-color: var(--bandHead);
-
   /* ── Motion ───────────────────────────────────────────────────────────── */
   --ease-out-expressive: cubic-bezier(0.16, 1, 0.3, 1); /* the design's signature */
   --ease-rise: cubic-bezier(0.22, 0.9, 0.24, 1); /* the long scroll reveals */
@@ -942,8 +937,7 @@
     color: var(--goldInk);
     margin: 0;
   }
-  .section-band .kicker,
-  .footer-band .kicker {
+  .section-band .kicker {
     color: var(--gold);
   }
   :root[dir='rtl'] .kicker {
@@ -1297,28 +1291,6 @@
   .btn-icon.btn-sm {
     padding: var(--space-1);
     min-width: 2.125rem;
-  }
-
-  /* The loader's caption. The scene positions it; the type is ours.
-
-     The two resets matter: this app gives every `p` a reading measure and
-     `text-wrap: pretty`, and the caption is not running text — it is one
-     centred line the scene pins under the mark. The measure squeezed it, and
-     `text-wrap` sets `text-wrap-mode`, which is half of `white-space`, so it
-     quietly overrode the caption's own `nowrap` and broke "Ansar al-Mahdi
-     (a.j.) · Wien" in two on a phone. */
-  .hc-cap p {
-    max-width: none;
-    white-space: nowrap;
-  }
-  .hc-cap-title {
-    font-family: var(--font-display);
-    font-weight: var(--weight-heading);
-    letter-spacing: var(--tracking-tight);
-  }
-  :root[lang='fa'] .hc-cap-title {
-    font-family: var(--font-naskh);
-    font-weight: var(--weight-bold);
   }
 
   /* ── The gold dash before a label ─────────────────────────────────────
@@ -2204,218 +2176,6 @@
     position: relative;
     display: flex;
     color: var(--green);
-  }
-
-  /* ── The footer band ──────────────────────────────────────────────────────
-     The design closes every page on a near-black green band with the girih
-     ground drifting behind it, gold column heads, and controls that lift. */
-  /* The Vienna skyline standing on the footer band. The box is sized here as
-     well as by the script (art 2172 × 560), so the space is held before the
-     skyline loads and nothing jumps when it arrives. */
-  /* The city and the footer are one piece.
-
-     The band's colour comes up out of the river: transparent where the sky
-     is, so the page continues into it without a line, and dark by the time
-     the water reaches the footer, which carries the same colour on.
-
-     Two things make the join disappear rather than merely line up. The stops
-     are an ease rather than a straight ramp, so neither end of the fade has
-     a shoulder you can pick out; and the fade is fully dark a little before
-     the element ends, so its steep part never lands on the boundary itself,
-     where any subpixel rounding would print it as a rule. The band is pulled
-     up a pixel under it as well, so there is nothing to round.
-
-     The skyline's own box must stay transparent at the top, where the page's
-     paper has to show through the sky — so the band's colour can only come
-     from this gradient, never from anything behind it.
-
-     The shading also does not stop at that boundary — the darkest point sits
-     on it and comes up into the band as a contact shadow. It is only a
-     whisper deeper than the band itself: enough that the eye cannot find
-     where one ends, not enough to read as a shadow in its own right.
-
-     The gradient only starts below the rooftops. The city is drawn in
-     `--green`, which disappears against the near-black, so the buildings
-     stay on light ground and it is the water that turns to night. */
-  .footer-city {
-    position: relative;
-  }
-  /* The city stands on the ground the page ends on.
-
-     The skyline's own box is transparent where the sky is, so it stood on
-     the body's paper whatever came before it — and six of the sixteen pages
-     (courses, culture, events, prayer, sport, support) end on a white
-     section. That drew a hard white-to-cream rule straight across the page
-     an inch above the roofs, which is the last thing you see before the
-     footer. Matching the ground to the section above closes it.
-
-     Older browsers without `:has()` keep the paper, which is what every
-     page had before. */
-  main:has(> :last-child > :last-child.section-alt) + .footer-city {
-    /* `--paper2` is what the alt section itself is made of. `--card` is the
-       same white on paper and a different green in the dark, which is where
-       taking the wrong one showed. */
-    background: var(--paper2);
-    /* And up a pixel under it, the same way the band is pulled up under the
-       skyline: the two boxes do not always land on the same subpixel, and
-       the body's paper shows through the crack when they do not. */
-    margin-block-start: -1px;
-  }
-  /* And its closing hairline comes off. An alt section is ruled top and
-     bottom to separate it from the paper on either side; when it is the last
-     one on the page there is no paper under it any more, only the sky, and
-     the rule was drawn straight across it an inch above the roofs.
-
-     The width goes, not the colour: a transparent border still owns its
-     pixel, and the body's paper showed through the gap as a one-pixel line —
-     fainter than the rule and just as visible. */
-  main > :last-child > :last-child.section-alt {
-    border-block-end-width: 0;
-  }
-  .footer-skyline {
-    position: relative;
-    inline-size: 100%;
-    aspect-ratio: 2172 / 560;
-    min-block-size: 80px;
-    max-block-size: 160px;
-    margin-block-end: -1px;
-    overflow: hidden;
-    background: linear-gradient(
-      to bottom,
-      rgb(var(--micro-rgb) / 0) 66%,
-      rgb(var(--micro-rgb) / 0.03) 75%,
-      rgb(var(--micro-rgb) / 0.14) 82%,
-      rgb(var(--micro-rgb) / 0.44) 88%,
-      rgb(var(--micro-rgb) / 0.82) 93%,
-      var(--micro) 96%,
-      var(--microDeep) 100%
-    );
-  }
-  /* On a phone the city is a strip of noise above the footer: it goes. */
-  @media (max-width: 599px) {
-    .footer-skyline {
-      display: none;
-    }
-  }
-  .footer-band {
-    position: relative;
-    background: var(--micro);
-    color: var(--microInk);
-    overflow: hidden;
-  }
-  /* The plate's own mask is brightest at the top edge, which put the girih
-     at full strength exactly on the join and drew the line all over again.
-     On the band it comes up out of the dark instead, so nothing changes at
-     the boundary itself. */
-  .footer-band .plate {
-    -webkit-mask: linear-gradient(
-      to bottom,
-      transparent 0,
-      rgba(0, 0, 0, 0.35) 150px,
-      #000 320px,
-      rgba(0, 0, 0, 0.55) 100%
-    );
-    mask: linear-gradient(
-      to bottom,
-      transparent 0,
-      rgba(0, 0, 0, 0.35) 150px,
-      #000 320px,
-      rgba(0, 0, 0, 0.55) 100%
-    );
-  }
-  /* The shadow the city lays over the top of the band: darkest against the
-     water, gone before the columns start. It is the first child box, so the
-     drifting plate and everything else still sit above it. */
-  .footer-band::before {
-    content: '';
-    position: absolute;
-    inset-block-start: 0;
-    inset-inline: 0;
-    block-size: clamp(70px, 11vw, 150px);
-    pointer-events: none;
-    background: linear-gradient(
-      to bottom,
-      rgb(var(--microDeep-rgb) / 1) 0%,
-      rgb(var(--microDeep-rgb) / 0.45) 32%,
-      rgb(var(--microDeep-rgb) / 0.15) 64%,
-      rgb(var(--microDeep-rgb) / 0) 100%
-    );
-  }
-  .footer-inner {
-    position: relative;
-    max-inline-size: 1320px;
-    margin-inline: auto;
-    padding: clamp(40px, 5vw, 72px) clamp(20px, 5vw, 56px) 0;
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 228px), 1fr));
-    gap: clamp(30px, 4vw, 60px);
-  }
-  .footer-head {
-    font-size: 11px;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    font-weight: var(--weight-bold);
-    color: var(--gold);
-  }
-  :root[dir='rtl'] .footer-head {
-    letter-spacing: 0;
-    text-transform: none;
-  }
-  /* Text links only. A button on the band carries its own foreground, and
-     this rule outranks it — which put near-white lettering on the gold CTA. */
-  .footer-band a:not(.btn) {
-    color: var(--microInk);
-  }
-  .footer-band a:not(.btn):hover {
-    color: var(--gold);
-  }
-  /* A round control on the band — the social links. */
-  .band-icon {
-    flex: 0 0 auto;
-    inline-size: 46px;
-    block-size: 46px;
-    border-radius: var(--radius-pill);
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    border: var(--rule-hair) solid var(--patBand);
-    color: var(--gold);
-  }
-  .band-icon:hover {
-    border-color: var(--gold);
-    color: var(--goldHi);
-  }
-  .footer-rule {
-    position: relative;
-    max-inline-size: 1320px;
-    margin: clamp(34px, 4vw, 60px) auto 0;
-    padding: 26px clamp(20px, 5vw, 56px) 34px;
-    border-block-start: var(--rule-hair) solid var(--patBand);
-    display: flex;
-    flex-wrap: wrap;
-    gap: 16px;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 13px;
-  }
-  /* The segmented switch, on the band. */
-  .seg-dark {
-    border-color: var(--patBand);
-    background: rgba(200, 164, 93, 0.08);
-    box-shadow: none;
-  }
-  .seg-dark .seg-thumb {
-    background: var(--gold);
-  }
-  .seg-dark .seg-option {
-    color: var(--microInk);
-  }
-  .seg-dark .seg-option[data-on='true'],
-  .seg-dark .seg-option[data-on='true']:hover {
-    color: var(--color-on-gold);
-  }
-  .seg-dark .seg-option:hover {
-    color: var(--bandHead);
   }
 
   /* ── The design's remaining component treatments ──────────────────────────
@@ -3626,7 +3386,7 @@
      on iOS, so the page itself is the only thing that can fill the screen. */
   :root[data-reader-full='true'] .hc-header,
   :root[data-reader-full='true'] .page-head-band,
-  :root[data-reader-full='true'] .footer-city,
+  :root[data-reader-full='true'] .site-footer,
   :root[data-reader-full='true'] .qr-notes,
   :root[data-reader-full='true'] .reader-hint,
   :root[data-reader-full='true'] .dua-facts {
@@ -6830,50 +6590,6 @@ a.week-link:hover {
   margin: 0;
 }
 
-/* The next-prayer strip under the home hero. */
-.prayer-strip {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 6px 14px;
-  padding: 14px 20px;
-  background: var(--card);
-  border: var(--rule-hair) solid var(--line);
-  border-radius: var(--radius-soft);
-  box-shadow: var(--shadow);
-  color: var(--ink);
-  text-decoration: none;
-  min-block-size: 56px;
-}
-.prayer-strip-label {
-  font-size: var(--text-sm);
-  color: var(--ink2);
-}
-.prayer-strip-name {
-  font-weight: var(--weight-bold);
-  font-size: var(--text-lg);
-}
-.prayer-strip-time {
-  font-weight: var(--weight-bold);
-  font-size: var(--text-xl, 22px);
-  color: var(--color-accent-2-text);
-}
-.prayer-strip-left {
-  color: var(--ink2);
-  font-weight: var(--weight-semibold);
-}
-.prayer-strip-go {
-  margin-inline-start: auto;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-weight: var(--weight-bold);
-  color: var(--green);
-}
-.prayer-strip:hover .prayer-strip-go {
-  text-decoration: underline;
-}
-
 @media print {
   @page {
     size: A4;
@@ -7129,8 +6845,8 @@ body:has(.contact-page) .footer-contact {
   display: none;
 }
 @media (min-width: 1100px) {
-  body:has(.contact-page) .footer-grid {
-    grid-template-columns: minmax(0, 1.1fr) minmax(0, 3.2fr);
+  body:has(.contact-page) .footer-box {
+    grid-template-areas: 'brand nav nav' 'bar bar bar';
   }
 }
 .page-enter:has(.contact-page) {
@@ -8426,119 +8142,196 @@ body:has(.edit-bar) .tab-bar,
 }
 
 /* ─── Footer ──────────────────────────────────────────────────────────────── */
-.footer-grid {
-  position: relative;
-  max-inline-size: 1320px;
-  margin-inline: auto;
-  padding: clamp(40px, 5vw, 72px) clamp(20px, 5vw, 56px) 0;
+.site-footer {
+  padding: clamp(32px, 5vw, 64px) clamp(12px, 2.5vw, 32px) 24px;
+}
+.footer-box {
   display: grid;
-  gap: 36px clamp(30px, 4vw, 60px);
   grid-template-columns: minmax(0, 1fr);
+  grid-template-areas: 'brand' 'contact' 'nav' 'bar';
+  gap: 28px;
+  max-inline-size: 1360px;
+  margin-inline: auto;
+  padding: clamp(24px, 4vw, 48px) clamp(16px, 4vw, 48px) clamp(16px, 2vw, 20px);
+  border-radius: var(--r-lg);
+  background: var(--paper);
+  box-shadow: inset 0 0 0 1px var(--line);
 }
-@media (min-width: 768px) {
-  .footer-grid {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  }
+.footer-brand {
+  grid-area: brand;
 }
-@media (min-width: 1100px) {
-  .footer-grid {
-    grid-template-columns: minmax(0, 1.1fr) minmax(0, 2fr) minmax(0, 1.2fr);
-  }
+.footer-brand-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--head);
+  text-decoration: none;
+}
+.footer-mark {
+  display: block;
+  flex-shrink: 0;
+  inline-size: 48px;
+  block-size: 48px;
 }
 .footer-name {
   font-family: var(--font-display);
-  font-size: 19px;
-  font-weight: var(--weight-bold);
-  color: var(--bandHead);
-  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--head);
+}
+:root[lang='fa'] .footer-name {
+  font-family: var(--font-naskh);
 }
 .footer-tagline {
-  margin: 10px 0 0;
-  font-size: 15px;
-  line-height: 1.8;
-  max-inline-size: 34ch;
-}
-.footer-asks {
-  margin-block-start: 20px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-}
-.footer-asks .btn {
-  min-block-size: 44px;
-}
-.footer-nav {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: 24px;
-}
-.footer-nav ul,
-.footer-contact ul,
-.footer-legal {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-.footer-nav ul {
   margin-block-start: 12px;
-  display: grid;
-}
-.footer-nav a {
-  display: inline-flex;
-  align-items: center;
-  min-block-size: 40px;
+  max-inline-size: 34ch;
   font-size: 15px;
+  line-height: 1.7;
+  color: var(--ink2);
 }
 .footer-head {
-  margin: 0;
-}
-.footer-head a {
-  color: inherit !important;
-}
-.footer-contact ul {
-  margin-block-start: 12px;
-  display: grid;
-  gap: 6px;
-}
-.footer-contact li {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  min-block-size: 36px;
-  font-size: 15px;
-}
-.footer-contact li svg {
-  color: var(--gold);
-  flex-shrink: 0;
-}
-.footer-subhead {
-  margin: 18px 0 8px;
+  margin: 0 0 8px;
+  font-family: var(--font-body);
   font-size: 13px;
-  font-weight: var(--weight-bold);
-  color: var(--gold);
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--goldInk);
 }
-.footer-contact .hours {
+:root[lang='fa'] .footer-head {
+  font-family: var(--font-naskh);
+  letter-spacing: 0;
+  text-transform: none;
+}
+.footer-contact {
+  grid-area: contact;
+  display: grid;
+  align-content: start;
+  justify-items: start;
+  gap: 12px;
+}
+.footer-address {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 0;
+  font-weight: 600;
+  color: var(--ink);
+}
+.footer-address svg {
+  flex-shrink: 0;
+  margin-block-start: 3px;
+  color: var(--green);
+}
+.footer-quick {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.footer-quick .pill {
+  padding-inline: 16px;
   font-size: 14px;
 }
-.footer-contact .hours dt {
-  color: inherit;
-  opacity: 0.8;
+.footer-subhead {
+  margin: 4px 0 6px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink2);
+}
+.footer-hours .hours {
+  font-size: 14px;
+}
+.footer-contact > .footer-head,
+.footer-hours {
+  display: none;
+}
+.footer-nav {
+  grid-area: nav;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px 16px;
+}
+.footer-nav ul {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.footer-nav a {
+  display: flex;
+  align-items: center;
+  min-block-size: 44px;
+  font-size: 15px;
+  color: var(--ink);
+  text-decoration: none;
+}
+.footer-nav a:hover {
+  color: var(--green);
+}
+.footer-bar {
+  grid-area: bar;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
+  padding-block: 12px;
+  padding-inline: 22px 12px;
+  border-radius: var(--r-lg);
+  background: var(--chip);
+}
+.footer-legal {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0 18px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 14px;
+  color: var(--ink2);
+}
+.footer-legal a {
+  display: inline-flex;
+  align-items: center;
+  min-block-size: 44px;
+  color: var(--ink2);
+}
+.footer-legal a:hover {
+  color: var(--head);
 }
 .footer-prefs {
   display: flex;
   align-items: center;
   gap: 10px;
 }
-.footer-legal {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 4px 22px;
+.footer-theme {
+  background: var(--card);
 }
-.footer-legal a {
-  display: inline-flex;
-  align-items: center;
-  min-block-size: 44px;
+@media (min-width: 1100px) {
+  .footer-box {
+    grid-template-columns: minmax(0, 1.3fr) minmax(0, 3fr) minmax(0, 1.4fr);
+    grid-template-areas: 'brand nav contact' 'bar bar bar';
+    column-gap: 40px;
+  }
+  .footer-nav {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .footer-contact > .footer-head,
+  .footer-hours {
+    display: block;
+  }
+  .footer-bar {
+    border-radius: var(--r-pill);
+  }
+}
+@media print {
+  .site-footer {
+    display: none;
+  }
 }
 
 /* ─── Clickable cards: the title's link covers the card ──────────────────── */
@@ -8586,17 +8379,6 @@ body:has(.edit-bar) .tab-bar,
   transform: translateX(-3px) scaleX(-1);
 }
 
-/* Home: the prayer strip sits just under the hero; the visit block. The
-   same gap below as above, so the card no longer sits on the edge of the
-   white section that follows. */
-.home-prayer {
-  margin-block: clamp(20px, 3vw, 32px);
-}
-/* The hero runs up behind the floating bar, so its head corner starts below
-   the bar rather than under it. */
-.hc-hero {
-  --corner-top: calc(var(--header-h) + 14px);
-}
 .home-visit {
   margin-block-start: 26px;
   display: grid;
@@ -9014,6 +8796,121 @@ body:has(.edit-bar) .tab-bar,
 .ptimes-row[data-next] .ptimes-mark,
 .cal-day[data-occ='true'] .cal-day-hij {
   color: var(--head);
+}
+
+/* ─── Home hero ──────────────────────────────────────────────────────────────
+   On the paper: the copy beside the house's seal in a tall frame (a 4:3
+   band under the copy on a phone). Each piece rises once, a beat after the
+   one before. */
+.home-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 24px;
+  padding-block: clamp(24px, 4vw, 56px) clamp(24px, 4vw, 40px);
+}
+.home-hero-copy {
+  display: grid;
+  align-content: center;
+  gap: 16px;
+}
+.home-hero-kicker {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+.home-hero-title {
+  font-size: 36px;
+  line-height: 1.12;
+  color: var(--head);
+  text-wrap: balance;
+}
+:root[lang='fa'] .home-hero-title {
+  line-height: 1.45;
+}
+.home-hero-lead {
+  max-inline-size: 52ch;
+  font-size: clamp(17px, 1.4vw, 19px);
+  line-height: 1.7;
+  color: var(--ink2);
+}
+.home-hero-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+.home-hero-actions .pill {
+  padding-inline: 12px;
+  font-size: 14.5px;
+}
+@media (min-width: 640px) {
+  .home-hero-actions .pill {
+    padding-inline: 24px;
+    font-size: 15px;
+  }
+}
+.home-hero-prayer {
+  margin-block-start: 6px;
+}
+.home-hero-media {
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  aspect-ratio: 4 / 3;
+  margin: 0;
+  border-radius: var(--r-lg);
+  background: var(--chip);
+}
+.home-hero-media img {
+  inline-size: min(58%, 260px);
+  block-size: auto;
+}
+.home-strip {
+  display: none;
+}
+.hero-in {
+  animation: hero-in 850ms var(--ease-out) both;
+  animation-delay: var(--d, 0ms);
+}
+@keyframes hero-in {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+}
+@media (min-width: 640px) {
+  .home-hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+  }
+}
+@media (min-width: 768px) {
+  .home-hero-title {
+    font-size: clamp(36px, 4.6vw, 60px);
+  }
+}
+@media (min-width: 1100px) {
+  .home-hero {
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+    align-items: center;
+    gap: 64px;
+  }
+  .home-hero-media {
+    justify-self: end;
+    inline-size: 100%;
+    max-inline-size: 440px;
+    aspect-ratio: 4 / 5;
+  }
+  .home-hero-media img {
+    inline-size: min(70%, 300px);
+  }
+  .home-hero .home-hero-prayer {
+    display: none;
+  }
+  .home-strip {
+    display: block;
+    padding-block-end: clamp(24px, 3vw, 40px);
+  }
 }
 
 /* ─── Navigation v2: shared components ───────────────────────────────────────

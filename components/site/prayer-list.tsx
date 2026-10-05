@@ -11,7 +11,6 @@ import {
   Moon,
   Clock,
   MapPin,
-  ArrowRight,
   ArrowCounterClockwise,
 } from '@phosphor-icons/react/dist/ssr';
 import { formatClock, formatDuration, formatDay, digits } from '@/lib/i18n/format';
@@ -30,7 +29,6 @@ import {
 import { VIENNA } from '@/lib/prayer-times';
 import { useNextPrayer } from '@/lib/use-next-prayer';
 import { CityCombobox } from './city-combobox';
-import { Link } from '@/lib/i18n/navigation';
 import { toPersianDate, persianMonthName } from '@/lib/persian-date';
 import type { Locale } from '@/lib/i18n/config';
 import { Button } from '../ui/button';
@@ -251,47 +249,6 @@ export function PrayerList({ day: vienna, locale }: { day: PrayerDay; locale: Lo
         </ol>
       </section>
     </div>
-  );
-}
-
-/**
- * The compact strip under the home page's hero: the next prayer, its time,
- * the time left and the way to the full page. For the same place as the
- * prayer page — the reader's own, unless they chose another — with the place
- * named, so a time that is not Vienna's never passes for it.
- */
-export function NextPrayerStrip({ day: initial, locale }: { day: PrayerDay; locale: Locale }) {
-  const t = useTranslations('prayer');
-  const { day: shown, place } = usePlaceDay(initial);
-  const { day, remaining } = useNextPrayer(shown);
-  const where =
-    place.choice.kind === 'located'
-      ? t('placeYours')
-      : place.choice.kind === 'city'
-        ? cityName(place.choice.city, locale)
-        : t('placeVienna');
-  const next = day.next;
-  if (!next) return null;
-  const IconComponent = ICONS[next.key] ?? Clock;
-  return (
-    <Link className="prayer-strip" href="/prayer">
-      <IconComponent size={26} weight="duotone" aria-hidden="true" color="var(--gold)" />
-      <span className="prayer-strip-label">
-        {t('nextPrayer')} · {where}
-      </span>
-      <span className="prayer-strip-name">
-        {t(`names.${next.key}`)}
-        {next.tomorrow ? ` · ${t('tomorrow')}` : ''}
-      </span>
-      <span className="prayer-strip-time tabular">{formatClock(next.minutes, locale)}</span>
-      <span className="prayer-strip-left" aria-live="polite">
-        {remaining === null ? null : `${t('in')} ${formatDuration(remaining, locale)}`}
-      </span>
-      <span className="prayer-strip-go">
-        {t('allTimes')}
-        <ArrowRight size={16} weight="bold" aria-hidden="true" className="mirror" />
-      </span>
-    </Link>
   );
 }
 

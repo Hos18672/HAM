@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import type { CSSProperties } from 'react';
 import { notFound } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 import { requireLocale } from '@/lib/i18n/locale-param';
@@ -14,7 +15,8 @@ import {
 } from '@/lib/db/queries/content';
 import { SectionHead } from '@/components/site/page-head';
 import { EventRow } from '@/components/site/event-row';
-import { NextPrayerStrip } from '@/components/site/prayer-list';
+import { NextPrayerCard, PrayerStrip } from '@/components/ui/next-prayer';
+import { PillLink } from '@/components/ui/pill-button';
 import { OpeningHours, Directions, HouseMap } from '@/components/site/house-info';
 import { OpenNow } from '@/components/site/open-now';
 import { getPrayerDay } from '@/lib/prayer-page';
@@ -26,11 +28,8 @@ import { Card, CardStar } from '@/components/ui/card';
 import { Tag } from '@/components/ui/tag';
 import { LinkButton } from '@/components/ui/button';
 import { Icon } from '@/components/site/icon';
-import { HomecomingHero } from '@/components/site/homecoming-hero';
 import { delay } from '@/components/site/motion';
-import { Eye } from '@/components/site/ornaments';
 import { organizationJsonLd, JsonLd } from '@/lib/seo';
-import { readTheme } from '@/lib/preferences';
 import { isLocale, locales } from '@/lib/i18n/config';
 
 /** The next-prayer strip is rendered with the page; the browser keeps it current. */
@@ -80,35 +79,19 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
   const tEvents = await getTranslations({ locale, namespace: 'events' });
   const tHouse = await getTranslations({ locale, namespace: 'house' });
 
-  const tBrand = await getTranslations({ locale, namespace: 'brand' });
-  // The scene starts in the theme the page is rendered in, rather than
-  // gliding into it after the first frame.
-  const theme = await readTheme(settings.defaultTheme);
-
   return (
     <>
       <JsonLd data={organizationJsonLd(typed, settings)} />
 
       {/* ── Hero ──────────────────────────────────────────────────────────
-          The band, and the loader that builds it.
-
-          The design opens on deep green under cream with the girih ground
-          drifting across it, the rings and the corners. All of that is still
-          here, underneath: the Homecoming canvas is transparent and the birds
-          fly over it. Where the portrait frame used to be there is now the
-          square the mark lands in at the hand-over.
-
-          The copy is rendered here, on the server, and handed to the client
-          shell as children — so the headline, the lead and the buttons are in
-          the HTML whether or not the canvas ever runs. */}
-      <HomecomingHero
-        theme={theme}
-        captionTitle={tBrand('name')}
-        captionSub={`${tBrand('sub')} · Wien`}
-      >
-        <div style={{ display: 'grid', gap: 'var(--space-4)' }}>
-          <div className="fade-in flex flex-wrap items-center gap-3">
-            <Eye />
+          On the paper: the kicker, the title, the lead and the two ways in,
+          beside the house's seal in a tall frame. Each piece rises into place
+          once, a beat after the one before. On a phone the next prayer sits
+          under the buttons; wide screens get the day's six times below. The
+          copy is server-rendered and editable in place, as before. */}
+      <section className="page home-hero">
+        <div className="home-hero-copy">
+          <div className="home-hero-kicker hero-in" style={{ '--d': '0ms' } as CSSProperties}>
             <EditableText
               as="p"
               entity="page"
@@ -117,7 +100,6 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
               locale={typed}
               value={header.kicker}
               className="kicker"
-              style={{ color: 'var(--gold)' }}
             />
             {blocks.hero_badge?.text ? (
               <Tag tone="accent-2">
@@ -139,12 +121,8 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
             field="title"
             locale={typed}
             value={header.title}
-            style={{
-              fontSize: 'clamp(35px, 5.2vw, 64px)',
-              lineHeight: 1.08,
-              color: 'var(--bandHead)',
-            }}
-            words="hero"
+            className="home-hero-title hero-in"
+            style={{ '--d': '80ms' } as CSSProperties}
           />
 
           <EditableText
@@ -154,33 +132,44 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
             field="lead"
             locale={typed}
             value={header.lead}
-            className="lead"
+            className="home-hero-lead hero-in"
+            style={{ '--d': '180ms' } as CSSProperties}
             multiline
-            style={{ fontSize: 'var(--text-xl)', color: 'var(--bandDim)' }}
-            words="lines"
           />
 
-          <div className="flex flex-wrap items-center gap-2">
-            <LinkButton href={`/${locale}/about`} size="lg" className="btn-gold">
+          <div className="home-hero-actions hero-in" style={{ '--d': '280ms' } as CSSProperties}>
+            <PillLink href="/about" size={50}>
               {t('heroAbout')}
               <ArrowRight size={17} weight="bold" aria-hidden="true" className="mirror" />
-            </LinkButton>
-            <LinkButton
-              href={`/${locale}/activities`}
-              size="lg"
-              variant="secondary"
-              className="btn-on-scrim"
-            >
+            </PillLink>
+            <PillLink href="/activities" size={50} variant="outline">
               {t('heroActivities')}
-            </LinkButton>
+            </PillLink>
           </div>
-        </div>
-      </HomecomingHero>
 
-      {/* The next prayer — the thing most visitors open the site for — right
-          under the hero, with the way to the full page. */}
-      <div className="page home-prayer">
-        <NextPrayerStrip day={prayerDay} locale={typed} />
+          <NextPrayerCard day={prayerDay} locale={typed} className="home-hero-prayer" />
+        </div>
+
+        <figure
+          className="home-hero-media hero-in"
+          style={{ '--d': '200ms' } as CSSProperties}
+          aria-hidden="true"
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element -- the seal, at a known size */}
+          <img
+            src={`${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/logo-512.webp`}
+            srcSet={`${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/logo-160.webp 160w, ${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/logo-512.webp 512w`}
+            sizes="(min-width: 1100px) 300px, 240px"
+            alt=""
+            width={512}
+            height={512}
+            fetchPriority="high"
+          />
+        </figure>
+      </section>
+
+      <div className="page home-strip">
+        <PrayerStrip day={prayerDay} locale={typed} />
       </div>
 
       {/* ── Intro statement ──────────────────────────────────────────────── */}

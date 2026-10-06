@@ -108,30 +108,9 @@ function truncate(text: string, length = 140): string {
   return clean.length <= length ? clean : `${clean.slice(0, length - 1).trimEnd()}…`;
 }
 
-export async function search(query: string, locale: Locale, limit = 12): Promise<SearchHit[]> {
-  const trimmed = query.trim();
-  if (trimmed.length < 2) return [];
-
-  await ensureSearchExtensions();
-
-  const config = tsConfig(locale);
-  const pattern = `%${trimmed}%`;
-
-  try {
-    /*
-     * `websearch_to_tsquery` accepts what a person actually types — bare
-     * words, quoted phrases, `-excluded` — rather than the `&`/`|` syntax
-     * `to_tsquery` demands, which would throw on ordinary input.
-     *
-     * The rank combines the FTS score with trigram similarity on the title, so
-     * an exact title match outranks a body mention in either language.
-     */
-    const similarity = hasTrigram
-      ? sql`GREATEST(similarity(t.title, ${trimmed}), 0)`
-      : sql`CASE WHEN t.title ILIKE ${pattern} THEN 0.5 ELSE 0 END`;
-
-    const rows = await sql<RawHit[]>`
-      WITH corpus AS (
+/** Every searchable item in one language: the pages and every collection. */
+function corpus(locale: Locale) {
+  return sql`
         SELECT 'page'::text AS kind, p.id::text AS id, p.key AS slug,
                t.title AS title, t.lead AS excerpt
         FROM page_translations t JOIN pages p ON p.id = t.page_id
@@ -173,6 +152,59 @@ export async function search(query: string, locale: Locale, limit = 12): Promise
         SELECT 'community', c.id::text, NULL, t.title, t.body
         FROM community_translations t JOIN community_cards c ON c.id = t.card_id
         WHERE t.locale = ${locale} AND c.published
+  `;
+}
+
+/**
+ * The whole corpus as a list, for the browser to search where there is no
+ * server to ask — the static preview, whose snapshot saves it as a file.
+ */
+export async function searchIndex(locale: Locale): Promise<Omit<SearchHit, 'rank'>[]> {
+  try {
+    const rows = await sql<Omit<RawHit, 'rank'>[]>`
+      WITH corpus AS (
+        ${corpus(locale)}
+      )
+      SELECT t.id, t.kind, t.title, t.excerpt, t.slug FROM corpus t ORDER BY t.kind, t.title
+    `;
+    return rows.map((row) => ({
+      id: `${row.kind}-${row.id}`,
+      kind: row.kind,
+      title: row.title,
+      excerpt: truncate(row.excerpt ?? '', 400),
+      href: hrefFor(row.kind, locale, row.slug),
+    }));
+  } catch (error) {
+    console.error('[search] index failed', error);
+    return [];
+  }
+}
+
+export async function search(query: string, locale: Locale, limit = 12): Promise<SearchHit[]> {
+  const trimmed = query.trim();
+  if (trimmed.length < 2) return [];
+
+  await ensureSearchExtensions();
+
+  const config = tsConfig(locale);
+  const pattern = `%${trimmed}%`;
+
+  try {
+    /*
+     * `websearch_to_tsquery` accepts what a person actually types — bare
+     * words, quoted phrases, `-excluded` — rather than the `&`/`|` syntax
+     * `to_tsquery` demands, which would throw on ordinary input.
+     *
+     * The rank combines the FTS score with trigram similarity on the title, so
+     * an exact title match outranks a body mention in either language.
+     */
+    const similarity = hasTrigram
+      ? sql`GREATEST(similarity(t.title, ${trimmed}), 0)`
+      : sql`CASE WHEN t.title ILIKE ${pattern} THEN 0.5 ELSE 0 END`;
+
+    const rows = await sql<RawHit[]>`
+      WITH corpus AS (
+        ${corpus(locale)}
       )
       SELECT t.id, t.kind, t.title, t.excerpt, t.slug,
              (

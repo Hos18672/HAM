@@ -122,6 +122,24 @@ async function writeDuaData(locales, slugs) {
 }
 
 /**
+ * The header search's index, one file per language. Search is a server
+ * action, and a static host has no server: the popup searches this file in
+ * the browser instead (`lib/search-local`).
+ */
+async function writeSearchData(locales) {
+  for (const locale of locales) {
+    const response = await fetch(`${ORIGIN}${BASE_PATH}/api/search-index?locale=${locale}`);
+    if (response.status !== 200) {
+      throw new Error(`search index (${locale}) returned ${response.status}`);
+    }
+    const body = await response.text();
+    if (JSON.parse(body).length === 0) throw new Error(`search index (${locale}) is empty`);
+    await writeFileAt(join(OUT, 'search-data', `${locale}.json`), body);
+  }
+  return locales.length;
+}
+
+/**
  * A preview must never outrank the real site once it exists, so every page
  * carries `noindex` and robots.txt refuses the lot.
  */
@@ -226,6 +244,7 @@ async function main() {
 
   const quranData = await writeQuranData(locales);
   const duaData = await writeDuaData(locales, await readDuaSlugs());
+  const searchData = await writeSearchData(locales);
 
   // The icons, which are routes built from `app/icon.*` rather than files in
   // public/. Fetched as bytes, not text: one of them is a PNG, and reading a
@@ -281,7 +300,7 @@ async function main() {
 
   console.log(
     `preview: ${pages} pages (${locales.length} locales × ${routes.length} routes), ` +
-      `${quranData} mushaf pages and ${duaData} du'as as data, every link resolved`,
+      `${quranData} mushaf pages, ${duaData} du'as and ${searchData} search indexes as data, every link resolved`,
   );
 }
 

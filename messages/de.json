@@ -90,7 +90,18 @@
     "empty": "Keine Treffer",
     "emptyHint": "Andere Schreibweise oder ein kürzeres Wort versuchen.",
     "results": "{count, plural, =0 {Keine Treffer} one {Ein Treffer} other {# Treffer}}",
-    "typeToSearch": "Suchbegriff eingeben"
+    "typeToSearch": "Suchbegriff eingeben",
+    "kinds": {
+      "page": "Seite",
+      "course": "Kurs",
+      "event": "Termin",
+      "dua": "Bittgebet",
+      "offer": "Angebot",
+      "sport": "Sport",
+      "culture": "Kultur",
+      "community": "Gemeinschaft",
+      "prayer": "Gebetszeiten"
+    }
   },
   "home": {
     "heroAbout": "Mehr über uns",

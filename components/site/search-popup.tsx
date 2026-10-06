@@ -6,6 +6,7 @@ import { MagnifyingGlass, X } from '@phosphor-icons/react/dist/ssr';
 import { useRouter } from '@/lib/i18n/navigation';
 import { searchAction } from '@/app/actions/search';
 import type { SearchHit } from '@/lib/search';
+import { searchLocal, type IndexEntry } from '@/lib/search-local';
 import type { Locale } from '@/lib/i18n/config';
 import { Button } from '../ui/button';
 
@@ -13,6 +14,50 @@ const OPEN_MS = 520;
 const CLOSE_MS = 420;
 const EASE = 'cubic-bezier(.22,1,.3,1)';
 const PILL_H = 60;
+
+/** The sub-path the preview is served under; empty on the live site. */
+const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH ?? '';
+
+/**
+ * The saved index, per language, fetched once. The preview has no server for
+ * the search action, so it searches this; the live site falls back to it
+ * only if the action fails.
+ */
+const indexes = new Map<string, Promise<IndexEntry[]>>();
+function loadIndex(locale: string): Promise<IndexEntry[]> {
+  let entry = indexes.get(locale);
+  if (!entry) {
+    const url = BASE_PATH
+      ? `${BASE_PATH}/search-data/${locale}.json`
+      : `/api/search-index?locale=${locale}`;
+    entry = fetch(url)
+      .then((response) => {
+        if (!response.ok) throw new Error(String(response.status));
+        return response.json() as Promise<IndexEntry[]>;
+      })
+      .catch((error) => {
+        indexes.delete(locale);
+        throw error;
+      });
+    indexes.set(locale, entry);
+  }
+  return entry;
+}
+
+async function find(query: string, locale: Locale): Promise<SearchHit[]> {
+  if (!BASE_PATH) {
+    try {
+      return (await searchAction(query, locale)).hits;
+    } catch {
+      // No server answered: search the saved index below.
+    }
+  }
+  try {
+    return searchLocal(await loadIndex(locale), query);
+  } catch {
+    return [];
+  }
+}
 
 /** Where the open pill comes to rest, in viewport pixels. */
 function restingBox() {
@@ -206,9 +251,9 @@ export function SearchPopup({
     setPending(true);
     let cancelled = false;
     const timer = window.setTimeout(async () => {
-      const result = await searchAction(trimmed, locale);
+      const result = await find(trimmed, locale);
       if (cancelled) return;
-      setHits(result.hits);
+      setHits(result);
       setPending(false);
     }, 180);
     return () => {
@@ -336,8 +381,10 @@ export function SearchPopup({
           <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
             {hits.map((hit) => (
               <li key={hit.id}>
-                <a href={hit.href} onClick={onClose} className="search-hit">
-                  <span className="kicker">{hit.kind}</span>
+                <a href={`${BASE_PATH}${hit.href}`} onClick={onClose} className="search-hit">
+                  <span className="kicker">
+                    {t.has(`kinds.${hit.kind}`) ? t(`kinds.${hit.kind}`) : hit.kind}
+                  </span>
                   <span style={{ fontWeight: 'var(--weight-bold)' }}>{hit.title}</span>
                   {hit.excerpt ? (
                     <span style={{ fontSize: 'var(--text-sm)', color: 'var(--color-ink-muted)' }}>

@@ -31,6 +31,7 @@ import { DIRECTIONS, FACTS, OPENING_HOURS } from '@/lib/site-facts';
 import { digits, timeRange } from '@/lib/i18n/format';
 import { weekdayName } from '@/lib/schedule';
 import { EditableText } from '@/components/editable/editable-text';
+import { PatternPlate, Ring } from '@/components/site/ornaments';
 import { ContactForm } from '@/components/site/contact-form';
 import { JsonLd, contactJsonLd } from '@/lib/seo';
 import { pageMetadata } from '@/lib/page-meta';
@@ -109,32 +110,37 @@ export default async function ContactPage({ params }: { params: Promise<{ locale
     <div className="contact-page">
       <JsonLd data={contactJsonLd(typed, settings, tNav('home'), tNav('contact'))} />
 
-      {/* No band, no plate, no breadcrumb: the title, and whether the door is
-          open, are the first things on the screen. */}
-      <header className="page contact-head">
-        <div className="contact-head-text">
-          {header.kicker ? <p className="contact-kicker">{header.kicker}</p> : null}
-          <EditableText
-            as="h1"
-            entity="page"
-            id={header.id}
-            field="title"
-            locale={typed}
-            value={header.title}
-            className="contact-title"
-          />
-          <EditableText
-            as="p"
-            entity="page"
-            id={header.id}
-            field="lead"
-            locale={typed}
-            value={header.lead}
-            className="contact-lead"
-            multiline
-          />
+      {/* The title, and whether the door is open, first — on the green band
+          every page opens on, without the breadcrumb. */}
+      <header className="contact-head-band">
+        {/* The same green band every page opens on. */}
+        <PatternPlate tiling="shesh" drift opacity={0.7} />
+        <Ring />
+        <div className="page contact-head">
+          <div className="contact-head-text">
+            {header.kicker ? <p className="contact-kicker">{header.kicker}</p> : null}
+            <EditableText
+              as="h1"
+              entity="page"
+              id={header.id}
+              field="title"
+              locale={typed}
+              value={header.title}
+              className="contact-title"
+            />
+            <EditableText
+              as="p"
+              entity="page"
+              id={header.id}
+              field="lead"
+              locale={typed}
+              value={header.lead}
+              className="contact-lead"
+              multiline
+            />
+          </div>
+          <OpenStatus dayNames={dayNames} clocks={clocks} />
         </div>
-        <OpenStatus dayNames={dayNames} clocks={clocks} />
       </header>
 
       <section className="page contact-visit" aria-label={tHouse('reach')}>

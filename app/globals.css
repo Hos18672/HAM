@@ -6869,7 +6869,49 @@ a.week-link:hover {
 .contact-page {
   --page-max: 1200px;
   --contact-band: clamp(48px, 7vw, 96px);
-  padding-block: 40px var(--contact-band);
+  padding-block-end: var(--contact-band);
+}
+/* The head on the green band, run up behind the header like every page's. */
+.contact-head-band {
+  position: relative;
+  overflow: hidden;
+  margin-block-start: calc(-1 * var(--header-h));
+  padding-block: calc(var(--header-h) + clamp(32px, 5vw, 64px)) clamp(32px, 5vw, 64px);
+  background: var(--band);
+  color: var(--bandInk);
+}
+.contact-head-band .contact-head {
+  position: relative;
+}
+.contact-head-band .contact-kicker {
+  color: var(--gold);
+}
+.contact-head-band .contact-title {
+  color: var(--bandHead);
+}
+.contact-head-band .contact-lead {
+  color: var(--bandDim);
+}
+.contact-head-band .contact-status-chip {
+  background: rgba(247, 243, 232, 0.1);
+  color: var(--bandInk);
+  box-shadow: inset 0 0 0 1px rgba(247, 243, 232, 0.22);
+}
+.contact-head-band .contact-status[data-state='open'] .contact-status-chip {
+  background: var(--chip);
+  color: var(--green);
+  box-shadow: none;
+}
+.contact-head-band .contact-status[data-state='programme'] .contact-status-chip {
+  background: rgba(200, 164, 93, 0.22);
+  color: var(--bandHead);
+  box-shadow: none;
+}
+.contact-head-band .contact-status[data-state='programme'] .contact-status-dot {
+  background: var(--gold);
+}
+.contact-head-band .contact-status-link {
+  color: var(--gold);
 }
 /* The footer's contact column says again what this page has just said. The
    page's content is readable at once — no arrival animation. */
@@ -6888,7 +6930,7 @@ body:has(.contact-page) .footer-contact {
   margin-block-start: var(--contact-band);
 }
 .contact-page > .contact-visit {
-  margin-block-start: clamp(24px, 4vw, 56px);
+  margin-block-start: clamp(28px, 4vw, 56px);
 }
 
 .contact-head {
@@ -6958,7 +7000,7 @@ body:has(.contact-page) .footer-contact {
   gap: 8px;
   min-block-size: 36px;
   padding-inline: 14px;
-  border-radius: 2px;
+  border-radius: var(--radius-pill);
   font-size: 15px;
   font-weight: 600;
   background: var(--card2);
@@ -7073,7 +7115,7 @@ body:has(.contact-page) .footer-contact {
   inset-inline-end: 0;
   inset-block-start: calc(100% + 2px);
   padding: 4px 10px;
-  border-radius: 2px;
+  border-radius: var(--radius-pill);
   font-size: 13px;
   font-weight: 600;
   background: var(--head);
@@ -7144,6 +7186,18 @@ body:has(.contact-page) .footer-contact {
   flex-wrap: wrap;
   column-gap: 12px;
 }
+/* "nach Programm" stays one phrase; only the link may drop below it. */
+.contact-dd-split > span {
+  white-space: nowrap;
+}
+@media (max-width: 639.98px) {
+  .contact-dl {
+    column-gap: 16px;
+  }
+  .contact-hours .contact-dl-row {
+    padding-inline: 10px;
+  }
+}
 .contact-hours .contact-dl-row:first-child {
   border-block-start: 1px solid var(--line);
 }
@@ -7172,11 +7226,13 @@ body:has(.contact-page) .footer-contact {
   background: var(--card2);
   box-shadow: var(--shadow-sm);
 }
-@media (min-width: 1024px) {
+/* From a tablet up the map sits inside the gutter at 16:10; only a phone
+   takes it edge to edge. */
+@media (min-width: 640px) {
   .contact-map-frame {
     aspect-ratio: 16 / 10;
     margin-inline: 0;
-    border-radius: 2px;
+    border-radius: var(--radius-soft);
   }
 }
 .contact-map-img {
@@ -7269,7 +7325,7 @@ body:has(.contact-page) .footer-contact {
   block-size: 100%;
   min-block-size: 56px;
   padding: 8px 16px;
-  border-radius: 2px;
+  border-radius: var(--radius-soft);
   background: var(--card);
   box-shadow: var(--shadow-sm);
   color: var(--ink);
@@ -7367,7 +7423,7 @@ body:has(.contact-page) .footer-contact {
   .contact-form-card {
     margin-inline: 0;
     padding: clamp(24px, 3vw, 40px);
-    border-radius: 2px;
+    border-radius: var(--radius-soft);
     box-shadow: var(--shadow-lg);
   }
 }
@@ -7492,7 +7548,7 @@ body:has(.contact-page) .footer-contact {
 .contact-failed,
 .contact-summary {
   padding: 12px 16px;
-  border-radius: 2px;
+  border-radius: var(--radius-baseline);
   background: var(--card2);
   border-inline-start: 3px solid var(--goldInk);
   color: var(--goldInk);
@@ -8157,7 +8213,9 @@ body:has(.contact-page) .footer-contact {
   outline-offset: -4px;
   border-radius: var(--r-md);
 }
-body:has(.tab-bar) {
+/* The room the floating bar needs is kept inside the footer's green band,
+   so no strip of paper shows under the footer. */
+body:has(.tab-bar) .footer-band {
   padding-block-end: calc(96px + env(safe-area-inset-bottom));
 }
 body:has(.edit-bar) .tab-bar,
@@ -8168,7 +8226,7 @@ body:has(.edit-bar) .tab-bar,
   .tab-bar {
     display: none;
   }
-  body:has(.tab-bar) {
+  body:has(.tab-bar) .footer-band {
     padding-block-end: 0;
   }
 }

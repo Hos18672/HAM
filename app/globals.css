@@ -8279,6 +8279,25 @@ body:has(.contact-page) .footer-contact {
   opacity: 0;
   pointer-events: none;
 }
+/* Kept out of the way while the home loader plays, like the header, and
+   slid up at the hand-over. The same 12-second safety net as the header's,
+   in case the scene's script never runs. */
+html[data-hc='boot'] .tab-bar,
+html[data-hc='loading'] .tab-bar {
+  transform: translateY(calc(100% + 40px));
+  opacity: 0;
+  pointer-events: none;
+}
+html[data-hc='boot'] .tab-bar {
+  animation: tab-bar-failsafe 0.6s ease 12s forwards;
+}
+@keyframes tab-bar-failsafe {
+  to {
+    transform: none;
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
 .tab-indicator {
   position: absolute;
   inset-block: 8px;

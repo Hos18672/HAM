@@ -231,6 +231,22 @@ test.describe('phone width', () => {
     });
   }
 
+  test('the tab bar waits for the home loader to finish', async ({ page }) => {
+    await page.goto('/de');
+    const opacity = () =>
+      page.evaluate(() => getComputedStyle(document.querySelector('.tab-bar')!).opacity);
+
+    await expect
+      .poll(() => page.evaluate(() => document.documentElement.dataset.hc))
+      .toBe('loading');
+    expect(await opacity()).toBe('0');
+
+    await expect
+      .poll(() => page.evaluate(() => document.documentElement.dataset.hc), { timeout: 45_000 })
+      .toBe('ready');
+    await expect.poll(opacity).toBe('1');
+  });
+
   test('the menu sheet opens from the tab bar and returns focus', async ({ page }) => {
     await page.goto('/de/about');
     const opener = page.getByRole('navigation', { name: 'Schnellzugriff' }).getByRole('button', {

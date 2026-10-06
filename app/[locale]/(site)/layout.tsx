@@ -5,7 +5,6 @@ import { Header } from '@/components/site/header';
 import { Footer } from '@/components/site/footer';
 import { PageEnter } from '@/components/site/page-enter';
 import { WanderingBirds } from '@/components/site/wandering-birds';
-import { Intro } from '@/components/site/intro';
 import { EditBar } from '@/components/editable/edit-bar';
 import { EditStatusProvider } from '@/components/editable/edit-status';
 import { readTheme, readEditSession } from '@/lib/preferences';
@@ -36,9 +35,6 @@ export default async function SiteLayout({
       </main>
       <Footer locale={typed} theme={theme} />
       <WanderingBirds />
-      {/* Outside the page's arrival wrapper, whose transform would trap a
-          fixed overlay inside it. It renders only on the home page. */}
-      <Intro />
     </>
   );
 

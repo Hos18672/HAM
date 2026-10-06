@@ -20,7 +20,9 @@ const CARDS = '.card, .tile, .surf, .cta-panel, .card-plate, .frame, .pull-quote
  * and dialog. It lives in the site layout, so the flocks keep flying across
  * navigations instead of starting over on each page.
  *
- * On the home page they hold back while the intro plays. Nothing is drawn with `prefers-reduced-motion`, and without WebGL the
+ * On the home page the hero has birds of its own: these hold back while the
+ * loader runs and while the hero fills the screen, and come in as it scrolls
+ * away. Nothing is drawn with `prefers-reduced-motion`, and without WebGL the
  * layer simply stays empty.
  *
  * The birds keep off the page's cards and off the city in the footer: both
@@ -45,8 +47,20 @@ export function WanderingBirds() {
     let disposed = false;
     let control: PageSkyControl | null = null;
 
-    // Held back while the home page's intro is up.
-    const visibility = () => (root.dataset.intro === 'play' ? 0 : 1);
+    // How much of the window the home hero still covers, 0 … 1.
+    const heroCover = () => {
+      const hero = document.querySelector('.hc-hero');
+      if (!hero) return 0;
+      const r = hero.getBoundingClientRect();
+      const seen = Math.min(r.bottom, window.innerHeight) - Math.max(r.top, 0);
+      return Math.max(0, seen) / window.innerHeight;
+    };
+
+    const visibility = () => {
+      if (root.dataset.hc === 'boot' || root.dataset.hc === 'loading') return 0;
+      const t = Math.min(1, Math.max(0, (heroCover() - 0.2) / 0.4));
+      return 1 - t * t * (3 - 2 * t);
+    };
 
     // The cards on the page. The list is refreshed now and then (the page
     // changes under a client-side navigation); their boxes are read fresh

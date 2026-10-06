@@ -13,6 +13,7 @@ import { RiseObserver } from '@/components/site/rise';
 // The Homecoming scene's own layout and page states, first so this app's
 // tokens below can override its three variables.
 import '../globals.css';
+import '@/lib/homecoming/homecoming.css';
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -114,30 +115,44 @@ export default async function LocaleLayout({
           }}
         />
         {/*
-          The home page's intro, armed before the first paint — once per visit.
+          The hero's loader, armed before the first paint — once per visit.
 
-          Only on the home page, only the first time this browsing session
-          reaches it, and never for a reader who has asked for less motion or
-          less data. `data-intro="play"` is what shows the overlay; the overlay
-          hides itself when its animation ends. The session mark is set as it
-          is armed, so a reload halfway through does not play it again, and
-          where storage throws the intro simply plays.
+          `data-hc="boot"` is what keeps the header and the hero copy hidden
+          until the birds have finished; the scene then moves it to "loading"
+          and "ready". It is set here, in the head, rather than in the page,
+          because by the time a script in the body runs the header has already
+          had a chance to paint.
+
+          Only on the home page, and only the first time this browsing session
+          reaches it. Inside the app a client-side navigation never re-runs
+          this at all, so the flag matters most on the static preview, where
+          every internal link falls back to a full load: without it, coming
+          home from the logo in the bar played the whole four seconds again.
+          `sessionStorage` is the right shelf for it — the loader is worth
+          seeing once each time someone comes to the site, and not once ever.
+
+          The mark is set the moment the loader is armed rather than when it
+          finishes: a reload halfway through is still a visit that has seen
+          it, and nothing later in the page has to be trusted to record it.
+
+          Reading the shelf is its own try/catch. Where storage throws — a
+          locked-down private window — the loader simply plays, which is what
+          it did before any of this.
         */}
         <script
           dangerouslySetInnerHTML={{
             __html:
               '(function(){try{' +
               // The prefix the app is served under: empty in production, /HAM
-              // on the preview.
+              // on the preview. Without it this test never matched there and
+              // the loader simply never armed.
               `var b=${JSON.stringify(process.env.NEXT_PUBLIC_BASE_PATH ?? '')};` +
               "var p=location.pathname.replace(/\\/+$/,'');" +
               'if(b&&p.indexOf(b)===0)p=p.slice(b.length);' +
               'if(!/^(\\/(fa|de))?$/.test(p))return;' +
-              "if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;" +
-              'var c=navigator.connection;if(c&&c.saveData)return;' +
               "try{if(sessionStorage.getItem('ham:hc')==='1')return;" +
               "sessionStorage.setItem('ham:hc','1')}catch(e){}" +
-              "document.documentElement.dataset.intro='play';" +
+              "document.documentElement.dataset.hc='boot';" +
               '}catch(e){}})()',
           }}
         />

@@ -373,6 +373,11 @@
   --header-h: calc(var(--header-h-m) + 10px);
   --tabbar-h: 68px;
 
+  /* ── The Homecoming hero ──────────────────────────────────────────────
+     The scene's own variables, given this site's values. */
+  --hc-gold: var(--gold);
+  --hc-cap-color: var(--bandHead);
+
   /* ── Motion ───────────────────────────────────────────────────────────── */
   --ease-out-expressive: cubic-bezier(0.16, 1, 0.3, 1); /* the design's signature */
   --ease-rise: cubic-bezier(0.22, 0.9, 0.24, 1); /* the long scroll reveals */
@@ -1292,6 +1297,28 @@
   .btn-icon.btn-sm {
     padding: var(--space-1);
     min-width: 2.125rem;
+  }
+
+  /* The loader's caption. The scene positions it; the type is ours.
+
+     The two resets matter: this app gives every `p` a reading measure and
+     `text-wrap: pretty`, and the caption is not running text — it is one
+     centred line the scene pins under the mark. The measure squeezed it, and
+     `text-wrap` sets `text-wrap-mode`, which is half of `white-space`, so it
+     quietly overrode the caption's own `nowrap` and broke "Ansar al-Mahdi
+     (a.j.) · Wien" in two on a phone. */
+  .hc-cap p {
+    max-width: none;
+    white-space: nowrap;
+  }
+  .hc-cap-title {
+    font-family: var(--font-display);
+    font-weight: var(--weight-heading);
+    letter-spacing: var(--tracking-tight);
+  }
+  :root[lang='fa'] .hc-cap-title {
+    font-family: var(--font-naskh);
+    font-weight: var(--weight-bold);
   }
 
   /* ── The gold dash before a label ─────────────────────────────────────
@@ -7747,9 +7774,11 @@ body:has(.contact-page) .footer-contact {
   .site-header[data-scrolled] {
     box-shadow: var(--shadow-soft);
   }
-  /* The home dateline scrolls away; only the bar stays. */
+  /* The home dateline scrolls away; only the bar stays. Its gap above is
+     padding, not margin, so the paper covers it. */
   .site-header[data-home] {
     inset-block-start: -54px;
+    padding-block-start: 14px;
   }
   .site-header-bar {
     max-inline-size: 1360px;
@@ -7790,7 +7819,7 @@ body:has(.contact-page) .footer-contact {
     gap: 16px;
     max-inline-size: 1360px;
     block-size: 40px;
-    margin: 14px auto 0;
+    margin: 0 auto;
     padding-inline: 18px 4px;
     border-radius: var(--r-pill);
     background: var(--chip);
@@ -8730,286 +8759,33 @@ body:has(.edit-bar) .tab-bar,
   color: var(--head);
 }
 
-/* ─── Home hero ──────────────────────────────────────────────────────────────
-   On the deep green band, as it always was — the girih, the rings, the gold
-   corners — with the copy beside the house's seal (a 4:3 area under the copy
-   on a phone). Each piece rises once, a beat after the one before. On phones
-   the band runs up behind the floating header, like every page head. */
-.home-hero-band {
-  --corner-top: calc(var(--header-h) + 14px);
-  position: relative;
-  overflow: hidden;
-  margin-block-start: calc(-1 * var(--header-h));
-  padding-block-start: var(--header-h);
-  background: var(--band);
-  color: var(--bandInk);
-}
-.home-hero-band .home-hero {
-  position: relative;
-}
-.home-hero-band .kicker {
-  color: var(--gold);
-}
-.home-hero-band .home-hero-title {
-  color: var(--bandHead);
-}
-.home-hero-band .home-hero-lead {
-  color: var(--bandDim);
-}
-@media (min-width: 1100px) {
-  .home-hero-band {
-    --corner-top: 18px;
-    margin-block-start: 0;
-    padding-block-start: 0;
-  }
-}
-.home-hero {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: 24px;
-  padding-block: clamp(28px, 5vw, 72px) clamp(28px, 5vw, 64px);
-}
-.home-hero-copy {
-  display: grid;
-  align-content: center;
-  gap: 16px;
-}
-.home-hero-kicker {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 10px;
-}
-.home-hero-title {
-  font-size: 36px;
-  line-height: 1.12;
-  color: var(--head);
-  text-wrap: balance;
-}
-:root[lang='fa'] .home-hero-title {
-  line-height: 1.45;
-}
-.home-hero-lead {
-  max-inline-size: 52ch;
-  font-size: clamp(17px, 1.4vw, 19px);
-  line-height: 1.7;
-  color: var(--ink2);
-}
-.home-hero-actions {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
-}
-.home-hero-actions .pill {
-  padding-inline: 12px;
-  font-size: 14.5px;
-}
-@media (min-width: 640px) {
-  .home-hero-actions .pill {
-    padding-inline: 24px;
-    font-size: 15px;
-  }
-}
-.home-hero-prayer {
-  margin-block-start: 6px;
-}
-.home-hero-media {
-  display: grid;
-  place-items: center;
-  aspect-ratio: 4 / 3;
-  margin: 0;
-}
-.home-hero-seal {
-  border-radius: 50%;
-  background: var(--mark-ground);
-  padding: 4%;
-}
-.home-hero-media img {
-  inline-size: min(58%, 260px);
-  block-size: auto;
-}
+/* ─── Home: under the hero ───────────────────────────────────────────────────
+   The next prayer, right under the Homecoming hero: a card on phones and
+   tablets, the day's six times on a wide screen. */
 .home-strip {
+  padding-block: clamp(20px, 3vw, 40px);
+}
+.home-strip .home-strip-times {
   display: none;
-}
-.hero-in {
-  animation: hero-in 850ms var(--ease-out) both;
-  animation-delay: var(--d, 0ms);
-}
-@keyframes hero-in {
-  from {
-    opacity: 0;
-    transform: translateY(16px);
-  }
-}
-@media (min-width: 640px) {
-  .home-hero-actions {
-    display: flex;
-    flex-wrap: wrap;
-  }
-}
-@media (min-width: 768px) {
-  .home-hero-title {
-    font-size: clamp(36px, 4.6vw, 60px);
-  }
 }
 @media (min-width: 1100px) {
-  .home-hero {
-    grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
-    align-items: center;
-    gap: 64px;
-  }
-  .home-hero-media {
-    justify-self: end;
-    inline-size: 100%;
-    max-inline-size: 440px;
-    aspect-ratio: 4 / 5;
-  }
-  .home-hero-media img {
-    inline-size: min(70%, 300px);
-  }
-  .home-hero .home-hero-prayer {
+  .home-strip .home-strip-card {
     display: none;
   }
-  .home-strip {
-    display: block;
-    padding-block: clamp(24px, 3vw, 40px);
+  .home-strip .home-strip-times {
+    display: grid;
   }
 }
-
-/* ─── The intro ──────────────────────────────────────────────────────────────
-   The home page, first visit per session: 1.2s over a page that is already
-   there. Shown only while <html data-intro="play">, which the head script
-   never sets for reduced motion; the animation ends hidden by itself. */
-:root {
-  --intro-d: 1200ms;
+/* The hero runs up behind the floating bar, so its head corner starts below
+   the bar rather than under it. */
+.hc-hero {
+  --corner-top: calc(var(--header-h) + 14px);
 }
-.intro {
-  display: none;
-}
-:root[data-intro='play'] .intro {
-  position: fixed;
-  inset: 0;
-  z-index: calc(var(--z-drawer) + 10);
-  display: grid;
-  place-items: center;
-  background: radial-gradient(circle at 50% 45%, var(--chip) 0, var(--paper) 60%);
-  animation: intro-out var(--intro-d) var(--ease-out) forwards;
-}
-@media (prefers-reduced-motion: reduce) {
-  :root[data-intro='play'] .intro {
-    display: none;
-  }
-}
-@keyframes intro-out {
-  0%,
-  78% {
-    opacity: 1;
-    visibility: visible;
-  }
-  100% {
-    opacity: 0;
-    visibility: hidden;
-  }
-}
-.intro-stage {
-  display: grid;
-  justify-items: center;
-  gap: 16px;
-  padding-inline: 24px;
-  text-align: center;
-}
-.intro-mark {
-  position: relative;
-  display: grid;
-  place-items: center;
-  inline-size: 104px;
-  block-size: 104px;
-  animation: intro-logo var(--intro-d) var(--ease-out) both;
-}
-.intro-mark img {
-  inline-size: 80px;
-  block-size: 80px;
-}
-@keyframes intro-logo {
-  0% {
-    opacity: 0;
-    transform: scale(0.9);
-  }
-  30%,
-  100% {
-    opacity: 1;
-    transform: none;
-  }
-}
-.intro-ring {
-  position: absolute;
-  inset: 0;
-  inline-size: 100%;
-  block-size: 100%;
-  transform: rotate(-90deg);
-}
-.intro-ring circle {
-  fill: none;
-  stroke: var(--green);
-  stroke-width: 1.4;
-  stroke-dasharray: 1;
-  stroke-dashoffset: 1;
-  animation: intro-ring var(--intro-d) linear both;
-}
-@keyframes intro-ring {
-  0%,
-  12% {
-    stroke-dashoffset: 1;
-  }
-  62%,
-  100% {
-    stroke-dashoffset: 0;
-  }
-}
-.intro-word {
-  max-inline-size: none;
-  font-family: var(--font-display);
-  font-size: 22px;
-  font-weight: 600;
-  color: var(--head);
-  animation: intro-word var(--intro-d) var(--ease-out) both;
-}
-:root[lang='fa'] .intro-word {
-  font-family: var(--font-naskh);
-  font-weight: 700;
-  letter-spacing: 0;
-}
-@keyframes intro-word {
-  0%,
-  22% {
-    opacity: 0;
-    transform: translateY(6px);
-  }
-  48%,
-  100% {
-    opacity: 1;
-    transform: none;
-  }
-}
-.intro-line {
-  display: block;
-  inline-size: 120px;
-  block-size: 2px;
-  border-radius: 2px;
-  background: var(--green);
-  transform-origin: left;
-  animation: intro-line var(--intro-d) var(--ease-out) both;
-}
-:root[dir='rtl'] .intro-line {
-  transform-origin: right;
-}
-@keyframes intro-line {
-  0% {
-    transform: scaleX(0);
-  }
-  75%,
-  100% {
-    transform: scaleX(1);
+/* On a wide screen the home header also carries the dateline (40px and a
+   14px gap above the 80px bar), so the hero runs up behind all of it. */
+@media (min-width: 1100px) {
+  .hc-hero {
+    --header-h: 134px;
   }
 }
 

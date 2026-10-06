@@ -1,5 +1,4 @@
 import type { Metadata } from 'next';
-import type { CSSProperties } from 'react';
 import { notFound } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 import { requireLocale } from '@/lib/i18n/locale-param';
@@ -16,7 +15,9 @@ import {
 import { SectionHead } from '@/components/site/page-head';
 import { EventRow } from '@/components/site/event-row';
 import { NextPrayerCard, PrayerStrip } from '@/components/ui/next-prayer';
-import { PatternPlate, Ring, Corner, Eye } from '@/components/site/ornaments';
+import { Eye } from '@/components/site/ornaments';
+import { HomecomingHero } from '@/components/site/homecoming-hero';
+import { readTheme } from '@/lib/preferences';
 import { OpeningHours, Directions, HouseMap } from '@/components/site/house-info';
 import { OpenNow } from '@/components/site/open-now';
 import { getPrayerDay } from '@/lib/prayer-page';
@@ -79,113 +80,109 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
   const tEvents = await getTranslations({ locale, namespace: 'events' });
   const tHouse = await getTranslations({ locale, namespace: 'house' });
 
+  const tBrand = await getTranslations({ locale, namespace: 'brand' });
+  // The scene starts in the theme the page is rendered in, rather than
+  // gliding into it after the first frame.
+  const theme = await readTheme(settings.defaultTheme);
+
   return (
     <>
       <JsonLd data={organizationJsonLd(typed, settings)} />
 
       {/* ── Hero ──────────────────────────────────────────────────────────
-          On the deep green band: the kicker, the title, the lead and the two
-          ways in, beside the house's seal. Each piece rises into place
-          once, a beat after the one before. On a phone the next prayer sits
-          under the buttons; wide screens get the day's six times below. The
-          copy is server-rendered and editable in place, as before. */}
-      <section className="home-hero-band">
-        {/* The band's own ground, as it always was: the girih drifting
-            behind the deep green, the rings and the gold corners. */}
-        <PatternPlate tiling="shesh" drift opacity={0.75} />
-        <Ring />
-        <Ring size={340} top={-100} />
-        <Corner place="start" />
-        <Corner place="end" />
-        <div className="page home-hero">
-          <div className="home-hero-copy">
-            <div className="home-hero-kicker hero-in" style={{ '--d': '0ms' } as CSSProperties}>
-              <Eye />
-              <EditableText
-                as="p"
-                entity="page"
-                id={header.id}
-                field="kicker"
-                locale={typed}
-                value={header.kicker}
-                className="kicker"
-              />
-              {blocks.hero_badge?.text ? (
-                <Tag tone="accent-2">
-                  <EditableText
-                    entity="block"
-                    id={blocks.hero_badge.id}
-                    field="text"
-                    locale={typed}
-                    value={blocks.hero_badge.text}
-                  />
-                </Tag>
-              ) : null}
-            </div>
+          The band, and the loader that builds it.
 
-            <EditableText
-              as="h1"
-              entity="page"
-              id={header.id}
-              field="title"
-              locale={typed}
-              value={header.title}
-              className="home-hero-title hero-in"
-              style={{ '--d': '80ms' } as CSSProperties}
-            />
+          The design opens on deep green under cream with the girih ground
+          drifting across it, the rings and the corners. All of that is still
+          here, underneath: the Homecoming canvas is transparent and the birds
+          fly over it. Where the portrait frame used to be there is now the
+          square the mark lands in at the hand-over.
 
+          The copy is rendered here, on the server, and handed to the client
+          shell as children — so the headline, the lead and the buttons are in
+          the HTML whether or not the canvas ever runs. */}
+      <HomecomingHero
+        theme={theme}
+        captionTitle={tBrand('name')}
+        captionSub={`${tBrand('sub')} · Wien`}
+      >
+        <div style={{ display: 'grid', gap: 'var(--space-4)' }}>
+          <div className="fade-in flex flex-wrap items-center gap-3">
+            <Eye />
             <EditableText
               as="p"
               entity="page"
               id={header.id}
-              field="lead"
+              field="kicker"
               locale={typed}
-              value={header.lead}
-              className="home-hero-lead hero-in"
-              style={{ '--d': '180ms' } as CSSProperties}
-              multiline
+              value={header.kicker}
+              className="kicker"
+              style={{ color: 'var(--gold)' }}
             />
-
-            <div className="home-hero-actions hero-in" style={{ '--d': '280ms' } as CSSProperties}>
-              <LinkButton href={`/${locale}/about`} size="lg" className="btn-gold">
-                {t('heroAbout')}
-                <ArrowRight size={17} weight="bold" aria-hidden="true" className="mirror" />
-              </LinkButton>
-              <LinkButton
-                href={`/${locale}/activities`}
-                size="lg"
-                variant="secondary"
-                className="btn-on-scrim"
-              >
-                {t('heroActivities')}
-              </LinkButton>
-            </div>
-
-            <NextPrayerCard day={prayerDay} locale={typed} className="home-hero-prayer" />
+            {blocks.hero_badge?.text ? (
+              <Tag tone="accent-2">
+                <EditableText
+                  entity="block"
+                  id={blocks.hero_badge.id}
+                  field="text"
+                  locale={typed}
+                  value={blocks.hero_badge.text}
+                />
+              </Tag>
+            ) : null}
           </div>
 
-          <figure
-            className="home-hero-media hero-in"
-            style={{ '--d': '200ms' } as CSSProperties}
-            aria-hidden="true"
-          >
-            {/* eslint-disable-next-line @next/next/no-img-element -- the seal, at a known size */}
-            <img
-              className="home-hero-seal"
-              src={`${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/logo-512.webp`}
-              srcSet={`${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/logo-160.webp 160w, ${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/logo-512.webp 512w`}
-              sizes="(min-width: 1100px) 300px, 240px"
-              alt=""
-              width={512}
-              height={512}
-              fetchPriority="high"
-            />
-          </figure>
-        </div>
-      </section>
+          <EditableText
+            as="h1"
+            entity="page"
+            id={header.id}
+            field="title"
+            locale={typed}
+            value={header.title}
+            style={{
+              fontSize: 'clamp(35px, 5.2vw, 64px)',
+              lineHeight: 1.08,
+              color: 'var(--bandHead)',
+            }}
+            words="hero"
+          />
 
+          <EditableText
+            as="p"
+            entity="page"
+            id={header.id}
+            field="lead"
+            locale={typed}
+            value={header.lead}
+            className="lead"
+            multiline
+            style={{ fontSize: 'var(--text-xl)', color: 'var(--bandDim)' }}
+            words="lines"
+          />
+
+          <div className="flex flex-wrap items-center gap-2">
+            <LinkButton href={`/${locale}/about`} size="lg" className="btn-gold">
+              {t('heroAbout')}
+              <ArrowRight size={17} weight="bold" aria-hidden="true" className="mirror" />
+            </LinkButton>
+            <LinkButton
+              href={`/${locale}/activities`}
+              size="lg"
+              variant="secondary"
+              className="btn-on-scrim"
+            >
+              {t('heroActivities')}
+            </LinkButton>
+          </div>
+        </div>
+      </HomecomingHero>
+
+      {/* The next prayer — the thing most visitors open the site for — right
+          under the hero: a card on a phone, the day's six times on a wide
+          screen, with the way to the full page. */}
       <div className="page home-strip">
-        <PrayerStrip day={prayerDay} locale={typed} />
+        <NextPrayerCard day={prayerDay} locale={typed} className="home-strip-card" />
+        <PrayerStrip day={prayerDay} locale={typed} className="home-strip-times" />
       </div>
 
       {/* ── Intro statement ──────────────────────────────────────────────── */}

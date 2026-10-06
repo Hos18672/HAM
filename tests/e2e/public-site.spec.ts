@@ -96,39 +96,35 @@ test.describe('public site', () => {
     await expect(html).toHaveAttribute('data-theme', 'dark');
   });
 
-  test('the home page plays its intro once, over a page already there', async ({ page }) => {
+  test('the home hero plays its loader, then hands over', async ({ page }) => {
     await page.goto('/de');
-    // The overlay is up at first, and the header is rendered underneath it.
+
+    // While the birds build the mark: the page cannot scroll and neither the
+    // header nor the hero copy is on screen.
     await expect
-      .poll(() => page.evaluate(() => document.documentElement.dataset.intro))
-      .toBe('play');
-    await expect(page.locator('.site-header')).toBeAttached();
+      .poll(() => page.evaluate(() => document.documentElement.dataset.hc))
+      .toBe('loading');
+    expect(await page.evaluate(() => document.documentElement.style.overflow)).toBe('hidden');
     expect(
-      await page.evaluate(() => getComputedStyle(document.querySelector('.site-header')!).opacity),
-    ).toBe('1');
+      await page.evaluate(() => getComputedStyle(document.querySelector('.hc-header')!).opacity),
+    ).toBe('0');
 
-    // Then it takes itself away.
-    await expect(page.locator('.intro')).toHaveCount(0, { timeout: 5_000 });
-    expect(await page.evaluate(() => document.documentElement.dataset.intro)).toBeUndefined();
+    // And afterwards: unlocked, with everything visible.
+    await expect
+      .poll(() => page.evaluate(() => document.documentElement.dataset.hc), { timeout: 45_000 })
+      .toBe('ready');
+    expect(await page.evaluate(() => document.documentElement.style.overflow)).toBe('');
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
-
-    // Once per visit: back home, no intro.
-    await page.goto('/de');
-    expect(await page.evaluate(() => document.documentElement.dataset.intro)).toBeUndefined();
   });
 
-  test('the intro belongs to the home page alone', async ({ page }) => {
+  test('the loader belongs to the home page alone', async ({ page }) => {
+    // Every other page must render its header from the first paint: the
+    // page-state attribute is what hides it, so it must never be set here.
     await page.goto('/de/about');
-    expect(await page.evaluate(() => document.documentElement.dataset.intro)).toBeUndefined();
-    await expect(page.locator('.intro')).toHaveCount(0);
-  });
-
-  test('the intro stays away for reduced motion', async ({ browser }) => {
-    const context = await browser.newContext({ reducedMotion: 'reduce' });
-    const page = await context.newPage();
-    await page.goto('/de');
-    expect(await page.evaluate(() => document.documentElement.dataset.intro)).toBeUndefined();
-    await context.close();
+    expect(await page.evaluate(() => document.documentElement.dataset.hc)).toBeUndefined();
+    expect(
+      await page.evaluate(() => getComputedStyle(document.querySelector('.hc-header')!).opacity),
+    ).toBe('1');
   });
 
   test('has a working skip link', async ({ page }) => {

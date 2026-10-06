@@ -52,7 +52,7 @@ export async function PageHead({ header, locale }: { header: PageHeader; locale:
             value={header.title}
             style={{
               marginBlockStart: '20px',
-              fontSize: 'clamp(33px, 4.8vw, 58px)',
+              fontSize: 'clamp(28px, 4.2vw, 50px)',
               lineHeight: 1.08,
               color: 'var(--bandHead)',
             }}
@@ -68,7 +68,7 @@ export async function PageHead({ header, locale }: { header: PageHeader; locale:
             value={header.lead}
             style={{
               marginBlockStart: '22px',
-              fontSize: 'clamp(16px, 1.5vw, 18.5px)',
+              fontSize: 'clamp(15.5px, 1.4vw, 18px)',
               lineHeight: 1.85,
               color: 'var(--bandDim)',
             }}

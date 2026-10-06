@@ -198,17 +198,19 @@
   --btnBg: #0b5d3b;
   --btnFg: #f7f3e8;
   --btnBgH: #073b29;
-  --starFill: rgba(11, 93, 59, 0.06);
-  --chip: #edf5f0;
+  --starFill: rgba(200, 164, 93, 0.1);
+  --chip: #f8f0de;
   --chipInk: #0b5d3b;
   --shadow: 0 26px 60px -36px rgba(7, 59, 41, 0.5);
   --shadowS: 0 10px 26px -18px rgba(7, 59, 41, 0.4);
 
   /* Ramps. The green steps the design publishes, plus the gaps filled by
      interpolating between its own stops. */
-  --color-accent-100: #edf5f0; /* design */
-  --color-accent-200: #d6e8de; /* design */
-  --color-accent-300: #afd1c0; /* design */
+  /* The light steps are the gold's, not the design's mint: a pale tint is a
+     background, and the pale green read as turquoise beside the gold. */
+  --color-accent-100: #f8f0de;
+  --color-accent-200: #f0e2c2;
+  --color-accent-300: #e3cc98;
   --color-accent-400: #6ea98c; /* between 300 and 600 */
   --color-accent-500: #2f7f5a; /* between 300 and 600 */
   --color-accent-600: #0b5d3b; /* design */
@@ -286,15 +288,18 @@
   --text-kicker: 0.75rem;
   --text-xs: 0.8125rem;
   --text-sm: 0.9375rem;
-  --text-base: 1.0625rem;
-  --text-lg: 1.1875rem;
-  --text-xl: 1.375rem;
-  --text-2xl: 1.6875rem;
-  --text-3xl: 2.125rem;
-  --text-4xl: 2.75rem;
-  --text-5xl: 3.5rem;
-  --text-6xl: 4.5rem;
-  --text-7xl: 5.75rem;
+  /* From the body up the steps are fluid: the same scale on a wide screen,
+     but a phone column gets headings sized for its width rather than the
+     desktop's — a 34px section title over 15px text was shouting. */
+  --text-base: clamp(1rem, 0.96rem + 0.2vw, 1.0625rem);
+  --text-lg: clamp(1.0625rem, 1rem + 0.25vw, 1.1875rem);
+  --text-xl: clamp(1.1875rem, 1.1rem + 0.35vw, 1.375rem);
+  --text-2xl: clamp(1.3125rem, 1.15rem + 0.65vw, 1.625rem);
+  --text-3xl: clamp(1.5625rem, 1.3rem + 1vw, 2rem);
+  --text-4xl: clamp(1.875rem, 1.45rem + 1.7vw, 2.625rem);
+  --text-5xl: clamp(2.125rem, 1.5rem + 2.6vw, 3.25rem);
+  --text-6xl: clamp(2.5rem, 1.6rem + 3.6vw, 4.25rem);
+  --text-7xl: clamp(2.875rem, 1.6rem + 5.2vw, 5.5rem);
 
   --leading-tight: 1.06;
   --leading-snug: 1.2;
@@ -360,7 +365,7 @@
      footer. One header height: --header-h is the space the sticky header
      takes in the flow — the floating 58px pill and its 10px margin on phones
      and tablets, the 80px bar from 1100px. */
-  --chip-2: #d9ebe1;
+  --chip-2: #f0e2c2;
   --r-sm: 14px;
   --r-md: 20px;
   --r-lg: 28px;
@@ -399,16 +404,16 @@
 
 /* ── Dark mode. The design's own [data-t="dark"] set, verbatim: the paper
       goes to a deep green-black, the gold warms and takes over as the button
-      fill, and the green lightens to stay readable as a text colour. A full
+      fill, and as the accent the light green used to be. A full
       second token set, not a filter. Applied from a cookie on the server so
       the first paint is already correct. ─────────────────────────────────── */
 :root[data-theme='dark'] {
-  --chip-2: rgba(127, 203, 163, 0.2);
+  --chip-2: rgba(220, 187, 123, 0.2);
   --shadow-float: 0 10px 30px rgba(0, 0, 0, 0.45);
   --shadow-soft: 0 2px 10px rgba(0, 0, 0, 0.3);
   --color-bg: #06211a;
   --color-text: #efe8d8;
-  --color-accent: #7fcba3;
+  --color-accent: #dcbb7b;
   --color-accent-2: #dcbb7b;
 
   /* Verbatim, [data-t="dark"]. */
@@ -424,7 +429,7 @@
   --head: #fbf6ea;
   --line: rgba(200, 164, 93, 0.22);
   --line2: rgba(200, 164, 93, 0.12);
-  --green: #7fcba3;
+  --green: #dcbb7b;
   --greenD: #04180f;
   --gold: #dcbb7b;
   --goldInk: #dcbb7b;
@@ -453,21 +458,24 @@
   --btnFg: #04180f;
   --btnBgH: #ebd09a;
   --starFill: rgba(220, 187, 123, 0.07);
-  --chip: rgba(127, 203, 163, 0.12);
-  --chipInk: #7fcba3;
+  --chip: rgba(220, 187, 123, 0.12);
+  --chipInk: #dcbb7b;
   --shadow: 0 26px 60px -34px rgba(0, 0, 0, 0.8);
   --shadowS: 0 10px 26px -16px rgba(0, 0, 0, 0.7);
 
-  /* Ramps invert: the steps run light so the readable end is the high one. */
-  --color-accent-100: #08281c;
-  --color-accent-200: #0c3a28;
-  --color-accent-300: #14503a;
-  --color-accent-400: #2f7f5a;
-  --color-accent-500: #4ea37b;
-  --color-accent-600: #7fcba3;
-  --color-accent-700: #a5dcc0;
-  --color-accent-800: #c6ead7;
-  --color-accent-900: #e4f5ec;
+  /* Ramps invert: the steps run light so the readable end is the high one.
+     The accent is the gold here, not the mint the design had: on the dark
+     ground the light green read as turquoise beside the gold buttons, so the
+     icons, chips, links and the skyline take the gold instead. */
+  --color-accent-100: #2a2114;
+  --color-accent-200: #3d301d;
+  --color-accent-300: #5b4728;
+  --color-accent-400: #8c6d38;
+  --color-accent-500: #be9550;
+  --color-accent-600: #dcbb7b;
+  --color-accent-700: #ecd3a2;
+  --color-accent-800: #f4e4c4;
+  --color-accent-900: #fbf3e4;
 
   --color-accent-2-100: #2a2114;
   --color-accent-2-200: #3d301d;
@@ -1999,6 +2007,119 @@
     color: var(--btnFg);
   }
 
+  /* The card's corner plate and its star, from the design.
+
+     The plate is rotated and swapped by position so a grid of cards never
+     shows the same corner twice running — the design's own nth-child set,
+     carried over as it stands. */
+  .card-plate {
+    position: absolute;
+    inset-inline-end: 0;
+    top: 0;
+    inline-size: 96px;
+    block-size: 96px;
+    transform-origin: center;
+    opacity: 0.3;
+    pointer-events: none;
+    z-index: 1;
+    transition:
+      opacity 0.55s var(--ease-standard),
+      transform 0.9s var(--ease-out-expressive);
+    -webkit-mask: radial-gradient(70% 70% at 70% 30%, #000 18%, transparent 74%);
+    mask: radial-gradient(70% 70% at 70% 30%, #000 18%, transparent 74%);
+  }
+  .card-plate .pB {
+    opacity: 0;
+  }
+  /* Which plate a card carries, and which way up, comes from its position in
+     the set — so no two neighbours are the same. */
+  .card:nth-child(3n + 2) .card-plate .pA,
+  .card:nth-child(4n + 3) .card-plate .pA {
+    opacity: 0;
+  }
+  .card:nth-child(3n + 2) .card-plate .pB,
+  .card:nth-child(4n + 3) .card-plate .pB {
+    opacity: 1;
+  }
+  .card:nth-child(2n) .card-plate {
+    transform: rotate(90deg) scale(1.12);
+  }
+  .card:nth-child(3n) .card-plate {
+    transform: rotate(180deg) scale(0.92);
+  }
+  .card:nth-child(5n + 1) .card-plate {
+    transform: rotate(-90deg) scale(1.05);
+  }
+  .card:nth-child(7n + 4) .card-plate {
+    transform: rotate(45deg) scale(1.25);
+  }
+  /* The same, counted on the list items.
+
+     In a list every card is wrapped in its own `<li>`, so the rules above
+     see a card that is the first child of something — `5n + 1`, all of them,
+     and every plate in the list came out identical. `.plate-rota` on the
+     list is the hook for counting the items instead. Five pages have been
+     asking for it and it was never written.
+
+     Written out again rather than folded into the rules above with `:is()`:
+     the card still matches `.card:nth-child(5n + 1)` from inside its item,
+     and one selector cannot both count the item and ignore the card. These
+     carry a class more, so they win wherever both apply. */
+  .plate-rota > li:nth-child(3n + 2) .card-plate .pA,
+  .plate-rota > li:nth-child(4n + 3) .card-plate .pA {
+    opacity: 0;
+  }
+  .plate-rota > li:nth-child(3n + 2) .card-plate .pB,
+  .plate-rota > li:nth-child(4n + 3) .card-plate .pB {
+    opacity: 1;
+  }
+  .plate-rota > li:nth-child(2n) .card-plate {
+    transform: rotate(90deg) scale(1.12);
+  }
+  .plate-rota > li:nth-child(3n) .card-plate {
+    transform: rotate(180deg) scale(0.92);
+  }
+  .plate-rota > li:nth-child(5n + 1) .card-plate {
+    transform: rotate(-90deg) scale(1.05);
+  }
+  .plate-rota > li:nth-child(7n + 4) .card-plate {
+    transform: rotate(45deg) scale(1.25);
+  }
+  /* Hover still wins over both. */
+  .plate-rota > li .card:hover .card-plate {
+    transform: rotate(0deg) scale(1.1);
+  }
+  .card:hover .card-plate {
+    opacity: 0.85;
+    transform: rotate(0deg) scale(1.1);
+  }
+
+  .card-star-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    inline-size: 56px;
+    block-size: 56px;
+  }
+  .card-star {
+    position: absolute;
+    inset: 0;
+    inline-size: 56px;
+    block-size: 56px;
+    transition:
+      transform 0.7s var(--ease-out-expressive),
+      opacity var(--duration-fast) var(--ease-standard);
+  }
+  .card:hover .card-star {
+    transform: scale(1.1);
+  }
+  .card-star-icon {
+    position: relative;
+    display: flex;
+    color: var(--goldInk);
+  }
+
   /* ── The footer band ──────────────────────────────────────────────────────
      The design closes every page on a near-black green band with the girih
      ground drifting behind it, gold column heads, and controls that lift. */
@@ -2028,7 +2149,7 @@
      where one ends, not enough to read as a shadow in its own right.
 
      The gradient only starts below the rooftops. The city is drawn in
-     `--green`, which disappears against the near-black, so the buildings
+     `--gold`, which would sink into the near-black, so the buildings
      stay on light ground and it is the water that turns to night. */
   .footer-city {
     position: relative;
@@ -3077,7 +3198,7 @@
   }
   .qr-from:hover {
     color: var(--green);
-    background: color-mix(in srgb, var(--green) 8%, transparent);
+    background: color-mix(in srgb, var(--gold) 13%, transparent);
   }
   .qr-ar {
     margin: 0;
@@ -4180,7 +4301,7 @@
   }
   .dua-title {
     margin-block-start: 14px;
-    font-size: clamp(30px, 4.4vw, 52px);
+    font-size: clamp(26px, 3.6vw, 44px);
     line-height: 1.08;
     color: var(--bandHead);
   }
@@ -6156,7 +6277,7 @@
   border-radius: 50%;
   display: grid;
   place-items: center;
-  background: color-mix(in srgb, var(--green) 9%, transparent);
+  background: color-mix(in srgb, var(--gold) 14%, transparent);
   color: var(--green);
 }
 .link-row-title {
@@ -6251,7 +6372,7 @@ a.link-row:hover .link-row-go {
   border-inline-start-color: var(--goldInk);
 }
 a.week-link:hover {
-  background: color-mix(in srgb, var(--green) 8%, var(--card));
+  background: color-mix(in srgb, var(--gold) 13%, var(--card));
 }
 .week-time {
   font-size: 13px;
@@ -6326,7 +6447,7 @@ a.week-link:hover {
 }
 .prayer-next-name {
   margin-block-start: var(--space-2);
-  font-size: clamp(30px, 4.4vw, 44px);
+  font-size: clamp(26px, 3.6vw, 40px);
   line-height: 1.05;
   display: flex;
   align-items: center;
@@ -6349,7 +6470,7 @@ a.week-link:hover {
   gap: 4px 14px;
 }
 .prayer-next-time {
-  font-size: clamp(36px, 5vw, 52px);
+  font-size: clamp(32px, 4.4vw, 48px);
   line-height: 1;
   font-weight: var(--weight-bold);
   color: var(--color-accent-2-text);
@@ -6510,7 +6631,7 @@ a.week-link:hover {
   cursor: pointer;
 }
 .city-box-list [role='option'][data-active] {
-  background: color-mix(in srgb, var(--green) 10%, var(--card));
+  background: color-mix(in srgb, var(--gold) 16%, var(--card));
 }
 .city-box-list [role='option'][aria-selected='true'] {
   font-weight: var(--weight-bold);
@@ -6601,7 +6722,7 @@ a.week-link:hover {
   z-index: 3;
 }
 .timetable tr[data-friday='true'] > * {
-  background: color-mix(in srgb, var(--green) 6%, var(--paper));
+  background: color-mix(in srgb, var(--gold) 10%, var(--paper));
 }
 .timetable tr[data-occ='true'] > * {
   background: color-mix(in srgb, var(--gold) 12%, var(--paper));
@@ -6789,7 +6910,7 @@ a.week-link:hover {
   min-block-size: 28px;
 }
 .open-now[data-state='open'] {
-  background: color-mix(in srgb, var(--green) 12%, transparent);
+  background: color-mix(in srgb, var(--gold) 19%, transparent);
   color: var(--green);
 }
 .open-now[data-state='closed'] {
@@ -6969,7 +7090,7 @@ body:has(.contact-page) .footer-contact {
   font-weight: 600;
 }
 .contact-title {
-  font-size: clamp(34px, 4.6vw, 56px);
+  font-size: clamp(28px, 4.2vw, 50px);
   font-weight: 600;
   line-height: 1.1;
   color: var(--head);
@@ -7397,7 +7518,7 @@ body:has(.contact-page) .footer-contact {
   align-content: start;
 }
 .contact-write-intro h2 {
-  font-size: 32px;
+  font-size: clamp(24px, 2.6vw, 30px);
   color: var(--head);
 }
 .contact-write-intro p {
@@ -7639,7 +7760,7 @@ body:has(.contact-page) .footer-contact {
   gap: 1px;
   padding: 10px 6px;
   border-radius: 12px;
-  background: color-mix(in srgb, var(--green) 8%, var(--card));
+  background: color-mix(in srgb, var(--gold) 13%, var(--card));
   border: var(--rule-hair) solid var(--line);
   text-align: center;
 }
@@ -8196,7 +8317,7 @@ body:has(.contact-page) .footer-contact {
   color: var(--head);
 }
 .tab svg {
-  color: var(--green);
+  color: var(--goldInk);
   transition: transform 350ms var(--ease-spring);
 }
 .tab[aria-current='page'],
@@ -8452,7 +8573,7 @@ body:has(.edit-bar) .tab-bar,
   }
 }
 .support-h {
-  font-size: clamp(25px, 3vw, 34px);
+  font-size: clamp(22px, 2.6vw, 30px);
   margin: 0;
 }
 .support-lead {
@@ -8506,7 +8627,7 @@ body:has(.edit-bar) .tab-bar,
 .choice-card[data-on] {
   border-color: var(--green);
   box-shadow: 0 0 0 1px var(--green);
-  background: color-mix(in srgb, var(--green) 5%, var(--card));
+  background: color-mix(in srgb, var(--gold) 8%, var(--card));
 }
 .choice-card:has(input:focus-visible) {
   outline: 2px solid var(--gold);
@@ -8544,7 +8665,7 @@ body:has(.edit-bar) .tab-bar,
   gap: 14px;
   padding: 20px;
   border-radius: var(--radius-soft);
-  background: color-mix(in srgb, var(--green) 8%, var(--card));
+  background: color-mix(in srgb, var(--gold) 13%, var(--card));
   border: var(--rule-hair) solid var(--green);
 }
 .form-done > svg {

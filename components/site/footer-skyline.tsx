@@ -14,8 +14,9 @@ import type { ViennaSkylineControl } from '@/lib/vienna-skyline/vienna-skyline.j
  * from left to right when it first appears, and that is off on purpose: the
  * footer is somewhere you arrive, not something to be performed at.
  *
- * The city is drawn in the site's main green (`--green`), so it follows the
- * theme: the deep green on paper, the lighter green in the dark. The skyline
+ * The city is drawn in the site's gold (`--gold`), the colour of its other
+ * line drawings, so it follows the theme: the deeper gold on paper, the
+ * warmer one in the dark. The skyline
  * would pick that change up on its own within a second; the observer below
  * makes it immediate.
  *
@@ -31,13 +32,13 @@ export function FooterSkyline() {
     const root = document.documentElement;
     let disposed = false;
     let control: ViennaSkylineControl | null = null;
-    const themeWatch = new MutationObserver(() => control?.setColor('var(--green)'));
+    const themeWatch = new MutationObserver(() => control?.setColor('var(--gold)'));
 
     void import('@/lib/vienna-skyline/vienna-skyline.js')
       .then(({ createViennaSkyline }) => {
         if (disposed || !hostRef.current) return;
         control = createViennaSkyline(hostRef.current, {
-          color: 'var(--green)',
+          color: 'var(--gold)',
           reveal: false,
           // Kept in step with `.footer-skyline` in globals.css, so the box does
           // not jump when the library takes it over.

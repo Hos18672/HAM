@@ -89,7 +89,7 @@ export async function FeaturedEvent({
             value={event.title}
             style={{
               marginBlockStart: '20px',
-              fontSize: 'clamp(27px, 3.6vw, 44px)',
+              fontSize: 'clamp(24px, 3vw, 38px)',
               lineHeight: 1.1,
               color: 'var(--bandHead)',
             }}

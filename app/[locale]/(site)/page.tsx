@@ -140,7 +140,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
             locale={typed}
             value={header.title}
             style={{
-              fontSize: 'clamp(35px, 5.2vw, 64px)',
+              fontSize: 'clamp(30px, 4.6vw, 56px)',
               lineHeight: 1.08,
               color: 'var(--bandHead)',
             }}
@@ -377,7 +377,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
                   style={{
                     ...delay(80),
                     marginBlockStart: '18px',
-                    fontSize: 'clamp(28px, 3.6vw, 44px)',
+                    fontSize: 'clamp(24px, 3vw, 38px)',
                     lineHeight: 1.12,
                   }}
                   words

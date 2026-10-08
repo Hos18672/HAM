@@ -1712,7 +1712,7 @@ button.rd-medal:active {
   align-items: center;
   gap: 2px;
   inline-size: fit-content;
-  max-inline-size: calc(100% - 16px);
+  max-inline-size: calc(100% - 24px);
   margin-inline: auto;
   padding: 5px;
   border: 1px solid rgba(247, 243, 232, 0.14);
@@ -1734,7 +1734,8 @@ button.rd-medal:active {
 }
 .rd-ink-grip {
   display: grid;
-  flex: none;
+  flex: 0 1 auto;
+  min-inline-size: 18px;
   place-items: center;
   inline-size: 26px;
   block-size: 40px;
@@ -1750,7 +1751,8 @@ button.rd-medal:active {
 }
 .rd-ink-btn {
   display: grid;
-  flex: none;
+  flex: 0 1 auto;
+  min-inline-size: 30px;
   place-items: center;
   inline-size: 40px;
   block-size: 40px;
@@ -1787,7 +1789,8 @@ button.rd-medal:active {
 }
 .rd-ink-done {
   display: grid;
-  flex: none;
+  flex: 0 1 auto;
+  min-inline-size: 32px;
   place-items: center;
   inline-size: 40px;
   block-size: 40px;
@@ -1903,13 +1906,24 @@ button.rd-medal:active {
   inset-block-end: calc(80px + env(safe-area-inset-bottom));
   display: grid;
   place-items: center;
-  inline-size: 52px;
-  block-size: 52px;
+  inline-size: 56px;
+  block-size: 56px;
   padding: 0;
-  border: 2px solid currentColor;
+  border: 2px solid #c8a45d;
   border-radius: 50%;
-  background: rgba(4, 38, 26, 0.94);
+  background: rgba(4, 38, 26, 0.96);
+  color: #c8a45d !important;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+}
+.rd-ink-mini-dot {
+  position: absolute;
+  inset-block-end: -2px;
+  inset-inline-end: -2px;
+  inline-size: 18px;
+  block-size: 18px;
+  border: 2px solid #f7f3e8;
+  box-shadow: 0 0 0 2px #04261a;
+  border-radius: 50%;
 }
 .rd-ink-remove {
   position: absolute;
@@ -1943,6 +1957,19 @@ button.rd-medal:active {
   }
   .rd-ink-grip {
     inline-size: 22px;
+  }
+}
+@media (max-width: 380px) {
+  .rd-ink-bar {
+    padding: 4px;
+    gap: 0;
+  }
+  .rd-ink-btn,
+  .rd-ink-done {
+    inline-size: 34px;
+  }
+  .rd-ink-pick {
+    inline-size: 40px;
   }
 }
 

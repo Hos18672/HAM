@@ -15,6 +15,7 @@ import {
   Highlighter,
   LineSegment,
   Minus,
+  Palette,
   PencilSimple,
   Rectangle,
   Square,
@@ -872,14 +873,15 @@ export function Ink({
           ref={bar as React.RefObject<HTMLButtonElement>}
           type="button"
           className="rd-ink-mini"
-          style={{ ...place, color: prefs.color }}
+          style={place}
           aria-label={t('expand')}
           title={t('expand')}
           {...drag}
           onKeyDown={nudge}
           onClick={pressed(() => setMini(false))}
         >
-          {toolIcon(22)}
+          <Palette size={26} weight="duotone" aria-hidden="true" />
+          <span className="rd-ink-mini-dot" style={{ background: prefs.color }} />
         </button>
       ) : null}
       {active && !mini ? (

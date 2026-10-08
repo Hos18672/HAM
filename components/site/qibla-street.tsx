@@ -44,6 +44,14 @@ import type { Locale } from '@/lib/i18n/config';
 
 /** CARTO Voyager over OpenStreetMap data. Both ask for attribution. */
 const TILES = 'https://basemaps.cartocdn.com/rastertiles/voyager';
+/**
+ * CARTO serves its raster tiles only with a key (since September 2026);
+ * without one every tile carries an "API KEY REQUIRED" stamp. The key is a
+ * public browser key — it travels in every tile URL — and comes from the
+ * build environment rather than the repository.
+ */
+const TILE_KEY = process.env.NEXT_PUBLIC_CARTO_KEY ?? '';
+const TILE_QUERY = TILE_KEY ? `?key=${encodeURIComponent(TILE_KEY)}` : '';
 /** Close enough to see the street, far enough to see which way it runs. */
 const DEFAULT_ZOOM = 17;
 
@@ -267,7 +275,7 @@ export function QiblaStreet({
             // eslint-disable-next-line @next/next/no-img-element
             <img
               key={tile.key}
-              src={`${TILES}/${tile.z}/${tile.x}/${tile.y}@2x.png`}
+              src={`${TILES}/${tile.z}/${tile.x}/${tile.y}@2x.png${TILE_QUERY}`}
               alt=""
               width={TILE}
               height={TILE}

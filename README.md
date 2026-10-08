@@ -317,6 +317,14 @@ prayer. That is the one thing a drawing from our own data cannot give: a
 bearing is only usable if you can see it **against the buildings in front of
 you**.
 
+CARTO only serves these tiles with a key (since September 2026). The key
+is a public browser key — it is part of every tile URL — so it is read from
+`NEXT_PUBLIC_CARTO_KEY` at build time and kept out of the repository. The
+preview build takes it from the repository variable `CARTO_KEY`
+(Settings → Secrets and variables → Actions → Variables); the live host
+needs the same variable in its dashboard. Without it the map still works,
+but every tile carries CARTO's "API KEY REQUIRED" stamp.
+
 The arrow may be drawn as a straight line because Mercator is conformal — it
 preserves angles at a point — so the initial bearing of the great circle,
 which is what the qibla is, leaves your position at that very angle on the

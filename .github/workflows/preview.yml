@@ -106,6 +106,8 @@ jobs:
         env:
           PREVIEW_BASE_PATH: ${{ steps.pages.outputs.base_path }}
           NEXT_PUBLIC_SITE_URL: ${{ steps.pages.outputs.base_url }}
+          # CARTO's browser key for the qibla map tiles (a repository variable).
+          NEXT_PUBLIC_CARTO_KEY: ${{ vars.CARTO_KEY }}
         run: pnpm build
 
       - name: Render the snapshot

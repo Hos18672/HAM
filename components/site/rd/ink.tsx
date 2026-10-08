@@ -1,16 +1,20 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { useTranslations } from 'next-intl';
 import {
   ArrowClockwise,
   ArrowCounterClockwise,
   ArrowUpRight,
+  CaretDown,
   Check,
   Circle,
+  Cursor,
+  DotsSixVertical,
   Eraser,
   Highlighter,
   LineSegment,
+  Minus,
   PencilSimple,
   Rectangle,
   Square,
@@ -28,6 +32,7 @@ import { readJson, writeJson } from './storage';
  */
 
 export type InkTool =
+  | 'select'
   | 'pen'
   | 'marker'
   | 'eraser'
@@ -41,7 +46,12 @@ export type InkTool =
   | 'star';
 
 type Point = [number, number];
-type Mark = { tool: Exclude<InkTool, 'eraser'>; color: string; size: number; points: Point[] };
+type Mark = {
+  tool: Exclude<InkTool, 'eraser' | 'select'>;
+  color: string;
+  size: number;
+  points: Point[];
+};
 type Page = { marks: Mark[]; undo: Mark[][]; redo: Mark[][] };
 
 const PREFS_KEY = 'ham:present:ink';
@@ -76,6 +86,7 @@ function Ellipse(props: { size: number }) {
 }
 
 const TOOLS: [InkTool, (size: number) => ReactNode][] = [
+  ['select', (s) => <Cursor size={s} weight="duotone" aria-hidden="true" />],
   ['pen', (s) => <PencilSimple size={s} weight="duotone" aria-hidden="true" />],
   ['marker', (s) => <Highlighter size={s} weight="duotone" aria-hidden="true" />],
   ['eraser', (s) => <Eraser size={s} weight="duotone" aria-hidden="true" />],
@@ -242,8 +253,122 @@ function outline(mark: Mark): Point[] {
   return ring;
 }
 
+const BOX_SHAPES = new Set<InkTool>(['rect', 'square', 'ellipse', 'circle', 'triangle', 'star']);
+const EVEN = new Set<InkTool>(['square', 'circle']);
+
+type Bounds = { x0: number; y0: number; x1: number; y1: number };
+
+/** A box shape held as its two corners, so moving and stretching it is plain. */
+function settle(mark: Mark): Mark {
+  if (!BOX_SHAPES.has(mark.tool)) return mark;
+  const { x, y, w, h } = box(mark);
+  return {
+    ...mark,
+    points: [
+      [Math.min(x, x + w), Math.min(y, y + h)],
+      [Math.max(x, x + w), Math.max(y, y + h)],
+    ],
+  };
+}
+
+function bounds(mark: Mark): Bounds {
+  const points = FREEHAND.has(mark.tool) ? mark.points : settle(mark).points;
+  const xs = points.map((p) => p[0]);
+  const ys = points.map((p) => p[1]);
+  return { x0: Math.min(...xs), y0: Math.min(...ys), x1: Math.max(...xs), y1: Math.max(...ys) };
+}
+
+/** The frame drawn around a chosen mark: its bounds with room for the stroke. */
+function frame(mark: Mark): Bounds {
+  const b = bounds(mark);
+  const pad = (mark.tool === 'marker' ? mark.size * 1.5 : mark.size / 2) + 8;
+  return { x0: b.x0 - pad, y0: b.y0 - pad, x1: b.x1 + pad, y1: b.y1 + pad };
+}
+
+/** The four corners of a frame, clockwise from the top left. */
+function corners(b: Bounds): Point[] {
+  return [
+    [b.x0, b.y0],
+    [b.x1, b.y0],
+    [b.x1, b.y1],
+    [b.x0, b.y1],
+  ];
+}
+
+const HANDLE = 22; // how near a finger must come to a corner to take it
+
+function handleAt(mark: Mark, p: Point): number {
+  return corners(frame(mark)).findIndex((c) => Math.hypot(p[0] - c[0], p[1] - c[1]) <= HANDLE);
+}
+
+function inside(b: Bounds, p: Point) {
+  return p[0] >= b.x0 && p[0] <= b.x1 && p[1] >= b.y0 && p[1] <= b.y1;
+}
+
+function paintSelection(ctx: CanvasRenderingContext2D, mark: Mark) {
+  const b = frame(mark);
+  ctx.save();
+  ctx.lineWidth = 1.5;
+  ctx.setLineDash([6, 5]);
+  ctx.strokeStyle = 'rgba(247, 243, 232, 0.85)';
+  ctx.strokeRect(b.x0, b.y0, b.x1 - b.x0, b.y1 - b.y0);
+  ctx.setLineDash([]);
+  for (const [x, y] of corners(b)) {
+    ctx.beginPath();
+    ctx.arc(x, y, 7, 0, Math.PI * 2);
+    ctx.fillStyle = '#f7f3e8';
+    ctx.fill();
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = '#c8a45d';
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
+type Edit = {
+  kind: 'move' | 'resize';
+  index: number;
+  start: Point;
+  base: Mark;
+  before: Mark[];
+  /** For a resize: the corner held still, the one taken, and where the finger sat on it. */
+  anchor?: Point;
+  corner?: Point;
+  grip?: Point;
+  changed: boolean;
+};
+
+function moved(mark: Mark, dx: number, dy: number): Mark {
+  return { ...mark, points: mark.points.map(([x, y]): Point => [x + dx, y + dy]) };
+}
+
+function stretched(edit: Edit, p: Point): Mark {
+  const { base, anchor, corner, grip } = edit;
+  const [ax, ay] = anchor!;
+  const tx = p[0] - grip![0];
+  const ty = p[1] - grip![1];
+  const spanX = corner![0] - ax;
+  const spanY = corner![1] - ay;
+  let sx = Math.abs(spanX) < 1 ? 1 : (tx - ax) / spanX;
+  let sy = Math.abs(spanY) < 1 ? 1 : (ty - ay) / spanY;
+  if (EVEN.has(base.tool)) {
+    const s = Math.max(Math.abs(sx), Math.abs(sy));
+    sx = Math.sign(sx || 1) * s;
+    sy = Math.sign(sy || 1) * s;
+  }
+  // Not so small it can no longer be found again.
+  const min = 0.05;
+  if (Math.abs(sx) < min) sx = Math.sign(sx || 1) * min;
+  if (Math.abs(sy) < min) sy = Math.sign(sy || 1) * min;
+  return {
+    ...base,
+    points: base.points.map(([x, y]): Point => [ax + (x - ax) * sx, ay + (y - ay) * sy]),
+  };
+}
+
 type Prefs = { tool: InkTool; color: string; size: number };
 const DEFAULTS: Prefs = { tool: 'pen', color: '#c8a45d', size: 6 };
+type Panel = 'tool' | 'color' | 'size' | null;
 
 /** The drawing layer, and while drawing, its tools. */
 export function Ink({
@@ -258,11 +383,21 @@ export function Ink({
 }) {
   const t = useTranslations('ink');
   const canvas = useRef<HTMLCanvasElement>(null);
+  const bar = useRef<HTMLElement>(null);
   const pages = useRef(new Map<string, Page>());
   const current = useRef<Mark | null>(null);
+  const selected = useRef<number | null>(null);
+  const edit = useRef<Edit | null>(null);
+  const restyled = useRef<string | null>(null);
   const [prefs, setPrefs] = useState<Prefs>(DEFAULTS);
+  const [panel, setPanel] = useState<Panel>(null);
+  const [below, setBelow] = useState(false);
+  const [mini, setMini] = useState(false);
+  // Where the bar was dragged to, within the presentation; at first it rests at the foot.
+  const [spot, setSpot] = useState<{ x: number; y: number } | null>(null);
   // Bumped whenever a page changes, so the buttons know what can be undone.
   const [, setVersion] = useState(0);
+  const bump = () => setVersion((v) => v + 1);
 
   useEffect(() => {
     const kept = readJson<Partial<Prefs>>(PREFS_KEY) ?? {};
@@ -275,12 +410,6 @@ export function Ink({
       size: typeof kept.size === 'number' ? Math.min(48, Math.max(2, kept.size)) : was.size,
     }));
   }, []);
-  const choose = (next: Partial<Prefs>) =>
-    setPrefs((was) => {
-      const prefs = { ...was, ...next };
-      writeJson(PREFS_KEY, prefs);
-      return prefs;
-    });
 
   const page = useCallback((): Page => {
     let found = pages.current.get(pageKey);
@@ -298,9 +427,22 @@ export function Ink({
     const ratio = window.devicePixelRatio || 1;
     ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
     ctx.clearRect(0, 0, el.width, el.height);
-    for (const mark of page().marks) draw(ctx, mark);
+    const { marks } = page();
+    for (const mark of marks) draw(ctx, mark);
     if (current.current) draw(ctx, current.current);
-  }, [page]);
+    const chosen = selected.current === null ? undefined : marks[selected.current];
+    if (active && chosen) paintSelection(ctx, chosen);
+  }, [page, active]);
+
+  const select = useCallback(
+    (index: number | null) => {
+      restyled.current = null;
+      selected.current = index;
+      bump();
+      paint();
+    },
+    [paint],
+  );
 
   // Sharp on every screen, and redrawn when the window changes size.
   useEffect(() => {
@@ -321,11 +463,12 @@ export function Ink({
 
   const commit = useCallback(
     (marks: Mark[]) => {
+      restyled.current = null;
       const p = page();
       p.undo.push(p.marks);
       p.redo = [];
       p.marks = marks;
-      setVersion((v) => v + 1);
+      bump();
       paint();
     },
     [page, paint],
@@ -337,7 +480,8 @@ export function Ink({
     if (!was) return;
     p.redo.push(p.marks);
     p.marks = was;
-    setVersion((v) => v + 1);
+    selected.current = null;
+    bump();
     paint();
   }, [page, paint]);
 
@@ -347,30 +491,84 @@ export function Ink({
     if (!next) return;
     p.undo.push(p.marks);
     p.marks = next;
-    setVersion((v) => v + 1);
+    selected.current = null;
+    bump();
     paint();
   }, [page, paint]);
 
   const clear = () => {
+    selected.current = null;
     if (page().marks.length) commit([]);
+    setPanel(null);
+  };
+
+  const remove = useCallback(() => {
+    const index = selected.current;
+    if (index === null) return;
+    selected.current = null;
+    commit(page().marks.filter((_, i) => i !== index));
+  }, [commit, page]);
+
+  const choose = (next: Partial<Prefs>) => {
+    setPrefs((was) => {
+      const prefs = { ...was, ...next };
+      writeJson(PREFS_KEY, prefs);
+      return prefs;
+    });
+    // A new colour or width also goes to what is chosen.
+    const index = selected.current;
+    const mark = index === null ? undefined : page().marks[index];
+    if (mark && (next.color || next.size)) {
+      const marks = page().marks.slice();
+      marks[index!] = { ...mark, ...next, tool: mark.tool, points: mark.points };
+      // Sliding the width is one change, not one for every step.
+      if (restyled.current === marks[index!].tool + index && next.size) {
+        page().marks = marks;
+        paint();
+      } else {
+        commit(marks);
+        restyled.current = next.size ? mark.tool + index : null;
+      }
+    }
+    if (
+      next.tool &&
+      next.tool !== 'select' &&
+      !BOX_SHAPES.has(next.tool) &&
+      next.tool !== 'line' &&
+      next.tool !== 'arrow'
+    ) {
+      select(null);
+    }
   };
 
   useEffect(() => {
-    if (!active) return;
+    if (!active) {
+      setPanel(null);
+      selected.current = null;
+      paint();
+      return;
+    }
     const onKey = (event: KeyboardEvent) => {
-      if (!(event.ctrlKey || event.metaKey)) return;
-      const key = event.key.toLowerCase();
-      if (key === 'z' && !event.shiftKey) undo();
-      else if (key === 'y' || (key === 'z' && event.shiftKey)) redo();
-      else return;
+      const target = event.target as HTMLElement | null;
+      if (target?.closest?.('input')) return;
+      if ((event.key === 'Delete' || event.key === 'Backspace') && selected.current !== null) {
+        remove();
+      } else if (!(event.ctrlKey || event.metaKey)) {
+        return;
+      } else {
+        const key = event.key.toLowerCase();
+        if (key === 'z' && !event.shiftKey) undo();
+        else if (key === 'y' || (key === 'z' && event.shiftKey)) redo();
+        else return;
+      }
       event.preventDefault();
       event.stopImmediatePropagation();
     };
     window.addEventListener('keydown', onKey, true);
     return () => window.removeEventListener('keydown', onKey, true);
-  }, [active, undo, redo]);
+  }, [active, undo, redo, remove, paint]);
 
-  const at = (event: React.PointerEvent): Point => {
+  const at = (event: { clientX: number; clientY: number }): Point => {
     const rect = canvas.current!.getBoundingClientRect();
     return [event.clientX - rect.left, event.clientY - rect.top];
   };
@@ -384,43 +582,144 @@ export function Ink({
     }
   };
 
+  /** Takes hold of a mark to move it, or of one of its corners to stretch it. */
+  const grab = (index: number, p: Point, corner: number) => {
+    const before = page().marks;
+    const base = settle(before[index]);
+    if (corner < 0) {
+      edit.current = { kind: 'move', index, start: p, base, before, changed: false };
+      return;
+    }
+    const raw = corners(bounds(base));
+    edit.current = {
+      kind: 'resize',
+      index,
+      start: p,
+      base,
+      before,
+      anchor: raw[(corner + 2) % 4],
+      corner: raw[corner],
+      grip: [p[0] - raw[corner][0], p[1] - raw[corner][1]],
+      changed: false,
+    };
+  };
+
+  /** What the finger landed on, topmost first. */
+  const hit = (p: Point, loose: boolean): number => {
+    const { marks } = page();
+    for (let i = marks.length - 1; i >= 0; i--) if (touches(marks[i], p, 10)) return i;
+    if (loose) for (let i = marks.length - 1; i >= 0; i--) if (inside(frame(marks[i]), p)) return i;
+    return -1;
+  };
+
   const onDown = (event: React.PointerEvent<HTMLCanvasElement>) => {
     if (!active || (event.pointerType === 'mouse' && event.button !== 0)) return;
     event.preventDefault();
+    setPanel(null);
     event.currentTarget.setPointerCapture(event.pointerId);
     const p = at(event);
-    if (prefs.tool === 'eraser') {
-      const was = page().marks;
+    const { marks } = page();
+    const tool = prefs.tool;
+
+    if (tool === 'eraser') {
+      selected.current = null;
+      const was = marks;
       erasing.current = was;
       page().undo.push(was);
       page().redo = [];
       erase(p);
       return;
     }
-    current.current = { tool: prefs.tool, color: prefs.color, size: prefs.size, points: [p] };
+
+    // What is chosen can be taken by a corner, or by itself to move it.
+    const index = selected.current;
+    const chosen = index === null ? undefined : marks[index];
+    if (chosen && !FREEHAND.has(tool)) {
+      const corner = handleAt(chosen, p);
+      if (corner >= 0) return grab(index!, p, corner);
+      if (tool === 'select' ? inside(frame(chosen), p) : touches(chosen, p, 10))
+        return grab(index!, p, -1);
+    }
+
+    if (tool === 'select') {
+      const found = hit(p, true);
+      selected.current = found < 0 ? null : found;
+      if (found >= 0) grab(found, p, -1);
+      bump();
+      paint();
+      return;
+    }
+
+    selected.current = null;
+    current.current = { tool, color: prefs.color, size: prefs.size, points: [p] };
     paint();
   };
+
   const onMove = (event: React.PointerEvent<HTMLCanvasElement>) => {
     if (erasing.current) {
       erase(at(event));
       return;
     }
+    const e = edit.current;
+    if (e) {
+      const p = at(event);
+      if (!e.changed && Math.hypot(p[0] - e.start[0], p[1] - e.start[1]) < 3) return;
+      e.changed = true;
+      const mark =
+        e.kind === 'move' ? moved(e.base, p[0] - e.start[0], p[1] - e.start[1]) : stretched(e, p);
+      const marks = e.before.slice();
+      marks[e.index] = mark;
+      page().marks = marks;
+      paint();
+      return;
+    }
     const mark = current.current;
-    if (!mark) return;
+    if (!mark) {
+      // Show what a press would do here.
+      const el = canvas.current;
+      if (!el || !active) return;
+      const index = selected.current;
+      const chosen = index === null ? undefined : page().marks[index];
+      const p = at(event);
+      let cursor = '';
+      if (chosen && !FREEHAND.has(prefs.tool) && prefs.tool !== 'eraser') {
+        const corner = handleAt(chosen, p);
+        if (corner >= 0) cursor = corner % 2 ? 'nesw-resize' : 'nwse-resize';
+        else if (prefs.tool === 'select' ? inside(frame(chosen), p) : touches(chosen, p, 10))
+          cursor = 'move';
+      }
+      if (!cursor && prefs.tool === 'select' && hit(p, true) >= 0) cursor = 'pointer';
+      el.style.cursor = cursor;
+      return;
+    }
     const events = event.nativeEvent.getCoalescedEvents?.() ?? [event.nativeEvent];
-    const rect = canvas.current!.getBoundingClientRect();
-    const points = events.map((e): Point => [e.clientX - rect.left, e.clientY - rect.top]);
+    const points = events.map(at);
     if (FREEHAND.has(mark.tool)) mark.points.push(...points);
     else mark.points = [mark.points[0], points[points.length - 1]];
     paint();
   };
+
   const onUp = () => {
     if (erasing.current) {
       const p = page();
       // An eraser that touched nothing leaves nothing to undo.
       if (p.undo[p.undo.length - 1] === erasing.current) p.undo.pop();
       erasing.current = null;
-      setVersion((v) => v + 1);
+      bump();
+      return;
+    }
+    const e = edit.current;
+    if (e) {
+      edit.current = null;
+      const p = page();
+      if (e.changed) {
+        p.undo.push(e.before);
+        p.redo = [];
+      } else {
+        p.marks = e.before;
+      }
+      bump();
+      paint();
       return;
     }
     const mark = current.current;
@@ -433,19 +732,111 @@ export function Ink({
       paint();
       return;
     }
-    commit([...page().marks, mark]);
+    const marks = [...page().marks, FREEHAND.has(mark.tool) ? mark : settle(mark)];
+    // A shape just drawn stays chosen, ready to be moved or stretched.
+    selected.current = FREEHAND.has(mark.tool) ? null : marks.length - 1;
+    commit(marks);
   };
 
   // A different slide: its own drawings.
   useEffect(() => {
     current.current = null;
     erasing.current = null;
-    setVersion((v) => v + 1);
+    edit.current = null;
+    selected.current = null;
+    bump();
     paint();
   }, [pageKey, paint]);
 
+  /* ── The bar: dragged by its grip, folded into one button, kept in view ── */
+
+  const keepInView = useCallback((x: number, y: number) => {
+    const el = bar.current;
+    const parent = el?.offsetParent as HTMLElement | null;
+    if (!el || !parent) return { x, y };
+    const margin = 8;
+    return {
+      x: Math.min(Math.max(margin, x), parent.clientWidth - el.offsetWidth - margin),
+      y: Math.min(Math.max(margin, y), parent.clientHeight - el.offsetHeight - margin),
+    };
+  }, []);
+
+  useLayoutEffect(() => {
+    if (!spot) return;
+    const fixed = keepInView(spot.x, spot.y);
+    if (fixed.x !== spot.x || fixed.y !== spot.y) setSpot(fixed);
+  }, [spot, mini, keepInView]);
+  useEffect(() => {
+    const onResize = () => setSpot((was) => (was ? keepInView(was.x, was.y) : was));
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, [keepInView]);
+
+  const dragging = useRef<{ dx: number; dy: number; sx: number; sy: number; far: boolean } | null>(
+    null,
+  );
+  const drag = {
+    onPointerDown: (event: React.PointerEvent<HTMLElement>) => {
+      const el = bar.current;
+      if (!el || (event.pointerType === 'mouse' && event.button !== 0)) return;
+      event.currentTarget.setPointerCapture(event.pointerId);
+      dragging.current = {
+        dx: event.clientX - el.offsetLeft,
+        dy: event.clientY - el.offsetTop,
+        sx: event.clientX,
+        sy: event.clientY,
+        far: false,
+      };
+    },
+    onPointerMove: (event: React.PointerEvent<HTMLElement>) => {
+      const d = dragging.current;
+      if (!d) return;
+      if (!d.far && Math.hypot(event.clientX - d.sx, event.clientY - d.sy) < 5) return;
+      d.far = true;
+      setPanel(null);
+      setSpot(keepInView(event.clientX - d.dx, event.clientY - d.dy));
+    },
+    onPointerUp: () => {
+      setTimeout(() => (dragging.current = null));
+    },
+    onPointerCancel: () => {
+      dragging.current = null;
+    },
+  };
+  // A drag that ends on a button is not a press.
+  const pressed = (then: () => void) => () => {
+    if (dragging.current?.far) return;
+    then();
+  };
+  const nudge = (event: React.KeyboardEvent) => {
+    const steps: Record<string, [number, number]> = {
+      ArrowLeft: [-24, 0],
+      ArrowRight: [24, 0],
+      ArrowUp: [0, -24],
+      ArrowDown: [0, 24],
+    };
+    const step = steps[event.key];
+    const el = bar.current;
+    if (!step || !el) return;
+    event.preventDefault();
+    setSpot(keepInView(el.offsetLeft + step[0], el.offsetTop + step[1]));
+  };
+
+  const open = (which: Exclude<Panel, null>) => {
+    if (panel === which) return setPanel(null);
+    const el = bar.current;
+    const parent = el?.offsetParent as HTMLElement | null;
+    // Open towards the larger space.
+    if (el && parent) setBelow(el.offsetTop + el.offsetHeight / 2 < parent.clientHeight / 2);
+    setPanel(which);
+  };
+
   const p = page();
   const presetColor = INK_COLORS.some(([, hex]) => hex === prefs.color);
+  const toolIcon = (TOOLS.find(([tool]) => tool === prefs.tool) ?? TOOLS[1])[1];
+  const chosen = active && selected.current !== null ? p.marks[selected.current] : undefined;
+  const chosenFrame = chosen ? frame(chosen) : null;
+  const place = spot ? { left: spot.x, top: spot.y, right: 'auto', bottom: 'auto' } : undefined;
 
   return (
     <>
@@ -461,109 +852,222 @@ export function Ink({
         onPointerCancel={onUp}
         onClick={(event) => event.stopPropagation()}
       />
-      {active ? (
-        <div className="rd-ink-bar" role="toolbar" aria-label={t('toolbar')}>
-          <div className="rd-ink-row">
-            {TOOLS.map(([tool, icon]) => (
-              <button
-                key={tool}
-                type="button"
-                className="rd-ink-btn"
-                aria-pressed={prefs.tool === tool}
-                aria-label={t(`tool.${tool}`)}
-                title={t(`tool.${tool}`)}
-                onClick={() => choose({ tool })}
-              >
-                {icon(20)}
-              </button>
-            ))}
-          </div>
-          <div className="rd-ink-row">
-            <div className="rd-ink-colors" role="group" aria-label={t('color')}>
-              {INK_COLORS.map(([name, hex]) => (
-                <button
-                  key={name}
-                  type="button"
-                  className="rd-ink-swatch"
-                  style={{ background: hex }}
-                  aria-pressed={prefs.color === hex}
-                  aria-label={t(`colors.${name}`)}
-                  title={t(`colors.${name}`)}
-                  onClick={() => choose({ color: hex })}
-                />
-              ))}
-              <label
-                className="rd-ink-swatch rd-ink-custom"
-                data-on={presetColor ? 'off' : 'on'}
-                style={presetColor ? undefined : { background: prefs.color }}
-                title={t('customColor')}
-              >
-                <input
-                  type="color"
-                  value={prefs.color}
-                  aria-label={t('customColor')}
-                  onChange={(event) => choose({ color: event.target.value })}
-                />
-              </label>
-            </div>
-            <label className="rd-ink-size">
-              <span className="rd-ink-dot" aria-hidden="true">
-                <i
-                  style={{
-                    inlineSize: Math.min(28, prefs.size),
-                    blockSize: Math.min(28, prefs.size),
-                    background: prefs.color,
-                  }}
-                />
-              </span>
-              <input
-                type="range"
-                min={2}
-                max={48}
-                step={1}
-                value={prefs.size}
-                aria-label={t('size')}
-                aria-valuetext={`${prefs.size} px`}
-                onChange={(event) => choose({ size: Number(event.target.value) })}
+      {chosenFrame && !edit.current ? (
+        <button
+          type="button"
+          className="rd-ink-remove"
+          style={{
+            left: (chosenFrame.x0 + chosenFrame.x1) / 2,
+            top: chosenFrame.y0 > 56 ? chosenFrame.y0 - 46 : chosenFrame.y1 + 10,
+          }}
+          aria-label={t('remove')}
+          title={t('remove')}
+          onClick={remove}
+        >
+          <Trash size={18} weight="duotone" aria-hidden="true" />
+        </button>
+      ) : null}
+      {active && mini ? (
+        <button
+          ref={bar as React.RefObject<HTMLButtonElement>}
+          type="button"
+          className="rd-ink-mini"
+          style={{ ...place, color: prefs.color }}
+          aria-label={t('expand')}
+          title={t('expand')}
+          {...drag}
+          onKeyDown={nudge}
+          onClick={pressed(() => setMini(false))}
+        >
+          {toolIcon(22)}
+        </button>
+      ) : null}
+      {active && !mini ? (
+        <div
+          ref={bar as React.RefObject<HTMLDivElement>}
+          className="rd-ink-bar"
+          role="toolbar"
+          aria-label={t('toolbar')}
+          style={place}
+        >
+          <button
+            type="button"
+            className="rd-ink-grip"
+            aria-label={t('move')}
+            title={t('move')}
+            {...drag}
+            onKeyDown={nudge}
+          >
+            <DotsSixVertical size={20} weight="bold" aria-hidden="true" />
+          </button>
+          <button
+            type="button"
+            className="rd-ink-btn rd-ink-pick"
+            aria-label={`${t('tools')}: ${t(`tool.${prefs.tool}`)}`}
+            title={t('tools')}
+            aria-expanded={panel === 'tool'}
+            onClick={() => open('tool')}
+          >
+            {toolIcon(20)}
+            <CaretDown size={10} weight="bold" aria-hidden="true" />
+          </button>
+          <button
+            type="button"
+            className="rd-ink-btn"
+            aria-label={t('color')}
+            title={t('color')}
+            aria-expanded={panel === 'color'}
+            onClick={() => open('color')}
+          >
+            <span className="rd-ink-current" style={{ background: prefs.color }} />
+          </button>
+          <button
+            type="button"
+            className="rd-ink-btn"
+            aria-label={`${t('size')}: ${prefs.size} px`}
+            title={t('size')}
+            aria-expanded={panel === 'size'}
+            onClick={() => open('size')}
+          >
+            <span className="rd-ink-dot" aria-hidden="true">
+              <i
+                style={{
+                  inlineSize: Math.min(22, Math.max(3, prefs.size / 2)),
+                  blockSize: Math.min(22, Math.max(3, prefs.size / 2)),
+                  background: prefs.color,
+                }}
               />
-            </label>
-            <div className="rd-ink-actions">
-              <button
-                type="button"
-                className="rd-ink-btn"
-                aria-label={t('undo')}
-                title={t('undo')}
-                disabled={!p.undo.length}
-                onClick={undo}
-              >
-                <ArrowCounterClockwise size={20} weight="bold" aria-hidden="true" />
-              </button>
-              <button
-                type="button"
-                className="rd-ink-btn"
-                aria-label={t('redo')}
-                title={t('redo')}
-                disabled={!p.redo.length}
-                onClick={redo}
-              >
-                <ArrowClockwise size={20} weight="bold" aria-hidden="true" />
-              </button>
-              <button
-                type="button"
-                className="rd-ink-btn"
-                aria-label={t('clear')}
-                title={t('clear')}
-                disabled={!p.marks.length}
-                onClick={clear}
-              >
-                <Trash size={20} weight="duotone" aria-hidden="true" />
-              </button>
-              <button type="button" className="rd-ink-done" onClick={onDone}>
-                <Check size={18} weight="bold" aria-hidden="true" />
-                <span>{t('done')}</span>
-              </button>
+            </span>
+          </button>
+          <button
+            type="button"
+            className="rd-ink-btn"
+            aria-label={t('undo')}
+            title={t('undo')}
+            disabled={!p.undo.length}
+            onClick={undo}
+          >
+            <ArrowCounterClockwise size={20} weight="bold" aria-hidden="true" />
+          </button>
+          <button
+            type="button"
+            className="rd-ink-btn"
+            aria-label={t('redo')}
+            title={t('redo')}
+            disabled={!p.redo.length}
+            onClick={redo}
+          >
+            <ArrowClockwise size={20} weight="bold" aria-hidden="true" />
+          </button>
+          <button
+            type="button"
+            className="rd-ink-btn"
+            aria-label={t('minimize')}
+            title={t('minimize')}
+            onClick={() => {
+              setPanel(null);
+              setMini(true);
+            }}
+          >
+            <Minus size={20} weight="bold" aria-hidden="true" />
+          </button>
+          <button
+            type="button"
+            className="rd-ink-done"
+            onClick={onDone}
+            aria-label={t('done')}
+            title={t('done')}
+          >
+            <Check size={18} weight="bold" aria-hidden="true" />
+          </button>
+
+          {panel ? (
+            <div className="rd-ink-panel" data-side={below ? 'below' : 'above'}>
+              {panel === 'tool' ? (
+                <>
+                  <div className="rd-ink-tools" role="group" aria-label={t('tools')}>
+                    {TOOLS.map(([tool, icon]) => (
+                      <button
+                        key={tool}
+                        type="button"
+                        className="rd-ink-btn"
+                        aria-pressed={prefs.tool === tool}
+                        aria-label={t(`tool.${tool}`)}
+                        title={t(`tool.${tool}`)}
+                        onClick={() => {
+                          choose({ tool });
+                          setPanel(null);
+                        }}
+                      >
+                        {icon(20)}
+                      </button>
+                    ))}
+                  </div>
+                  <button
+                    type="button"
+                    className="rd-ink-clear"
+                    disabled={!p.marks.length}
+                    onClick={clear}
+                  >
+                    <Trash size={18} weight="duotone" aria-hidden="true" />
+                    <span>{t('clear')}</span>
+                  </button>
+                </>
+              ) : null}
+              {panel === 'color' ? (
+                <div className="rd-ink-colors" role="group" aria-label={t('color')}>
+                  {INK_COLORS.map(([name, hex]) => (
+                    <button
+                      key={name}
+                      type="button"
+                      className="rd-ink-swatch"
+                      style={{ background: hex }}
+                      aria-pressed={prefs.color === hex}
+                      aria-label={t(`colors.${name}`)}
+                      title={t(`colors.${name}`)}
+                      onClick={() => choose({ color: hex })}
+                    />
+                  ))}
+                  <label
+                    className="rd-ink-swatch rd-ink-custom"
+                    data-on={presetColor ? 'off' : 'on'}
+                    style={presetColor ? undefined : { background: prefs.color }}
+                    title={t('customColor')}
+                  >
+                    <input
+                      type="color"
+                      value={prefs.color}
+                      aria-label={t('customColor')}
+                      onChange={(event) => choose({ color: event.target.value })}
+                    />
+                  </label>
+                </div>
+              ) : null}
+              {panel === 'size' ? (
+                <label className="rd-ink-size">
+                  <span className="rd-ink-dot" aria-hidden="true">
+                    <i
+                      style={{
+                        inlineSize: Math.min(28, prefs.size),
+                        blockSize: Math.min(28, prefs.size),
+                        background: prefs.color,
+                      }}
+                    />
+                  </span>
+                  <input
+                    type="range"
+                    min={2}
+                    max={48}
+                    step={1}
+                    value={prefs.size}
+                    aria-label={t('size')}
+                    aria-valuetext={`${prefs.size} px`}
+                    onChange={(event) => choose({ size: Number(event.target.value) })}
+                  />
+                </label>
+              ) : null}
             </div>
-          </div>
+          ) : null}
         </div>
       ) : null}
     </>

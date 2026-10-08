@@ -134,10 +134,18 @@ export function Present({
       const forward = rtl ? 'ArrowLeft' : 'ArrowRight';
       const back = rtl ? 'ArrowRight' : 'ArrowLeft';
       // The drawing tools keep their own keys: Enter and Space press a
-      // button, the arrows move the pen's width.
+      // button, the arrows move the pen's width or the bar itself.
       const target = event.target as HTMLElement | null;
-      if (event.key !== 'Escape' && target?.closest?.('.rd-ink-bar input')) return;
-      if ((event.key === 'Enter' || event.key === ' ') && target?.closest?.('.rd-ink-bar')) return;
+      if (
+        event.key !== 'Escape' &&
+        target?.closest?.('.rd-ink-bar input, .rd-ink-grip, .rd-ink-mini')
+      )
+        return;
+      if (
+        (event.key === 'Enter' || event.key === ' ') &&
+        target?.closest?.('.rd-ink-bar, .rd-ink-mini, .rd-ink-remove')
+      )
+        return;
       if ([forward, 'PageDown', 'ArrowDown', 'Enter'].includes(event.key)) {
         event.preventDefault();
         onStep(1);

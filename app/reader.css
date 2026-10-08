@@ -1709,30 +1709,44 @@ button.rd-medal:active {
   inset-inline: 12px;
   inset-block-end: calc(76px + env(safe-area-inset-bottom));
   display: flex;
-  flex-direction: column;
-  gap: 6px;
+  align-items: center;
+  gap: 2px;
   inline-size: fit-content;
-  max-inline-size: calc(100% - 24px);
+  max-inline-size: calc(100% - 16px);
   margin-inline: auto;
-  padding: 8px;
+  padding: 5px;
   border: 1px solid rgba(247, 243, 232, 0.14);
-  border-radius: 18px;
-  background: rgba(4, 38, 26, 0.92);
+  border-radius: 16px;
+  background: rgba(4, 38, 26, 0.94);
   box-shadow: 0 14px 40px rgba(0, 0, 0, 0.35);
   backdrop-filter: blur(10px);
   animation: rd-present-in 260ms var(--rd-ease) both;
 }
-.rd-ink-row {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  overflow-x: auto;
-  scrollbar-width: none;
+.rd-ink-bar[style*='left'],
+.rd-ink-mini[style*='left'] {
+  margin: 0;
+  animation: none;
 }
-.rd-ink-row + .rd-ink-row {
-  gap: 10px;
-  padding-block-start: 6px;
-  border-block-start: 1px solid rgba(247, 243, 232, 0.1);
+.rd-ink-grip,
+.rd-ink-mini {
+  touch-action: none;
+  cursor: grab;
+}
+.rd-ink-grip {
+  display: grid;
+  flex: none;
+  place-items: center;
+  inline-size: 26px;
+  block-size: 40px;
+  padding: 0;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: rgba(247, 243, 232, 0.6) !important;
+}
+.rd-ink-grip:active,
+.rd-ink-mini:active {
+  cursor: grabbing;
 }
 .rd-ink-btn {
   display: grid;
@@ -1746,7 +1760,8 @@ button.rd-medal:active {
   background: transparent;
   cursor: pointer;
 }
-.rd-ink-btn:hover:not(:disabled) {
+.rd-ink-btn:hover:not(:disabled),
+.rd-ink-btn[aria-expanded='true'] {
   background: rgba(247, 243, 232, 0.1);
 }
 .rd-ink-btn[aria-pressed='true'] {
@@ -1757,19 +1772,82 @@ button.rd-medal:active {
   opacity: 0.35;
   cursor: default;
 }
-.rd-ink-colors,
-.rd-ink-actions {
-  display: flex;
+.rd-ink-pick {
+  display: inline-flex;
+  gap: 1px;
+  justify-content: center;
+  inline-size: 48px;
+  color: #c8a45d !important;
+}
+.rd-ink-current {
+  inline-size: 22px;
+  block-size: 22px;
+  border: 2px solid rgba(247, 243, 232, 0.6);
+  border-radius: 50%;
+}
+.rd-ink-done {
+  display: grid;
   flex: none;
-  align-items: center;
+  place-items: center;
+  inline-size: 40px;
+  block-size: 40px;
+  margin-inline-start: 2px;
+  padding: 0;
+  border: 0;
+  border-radius: 12px;
+  background: #c8a45d;
+  color: #073b29 !important;
+  cursor: pointer;
+}
+.rd-ink-panel {
+  position: absolute;
+  inset-inline: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px;
+  border: 1px solid rgba(247, 243, 232, 0.14);
+  border-radius: 16px;
+  background: rgba(4, 38, 26, 0.97);
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.35);
+}
+.rd-ink-panel[data-side='above'] {
+  inset-block-end: calc(100% + 8px);
+}
+.rd-ink-panel[data-side='below'] {
+  inset-block-start: calc(100% + 8px);
+}
+.rd-ink-tools,
+.rd-ink-colors {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
   gap: 4px;
+}
+.rd-ink-clear {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-block-size: 38px;
+  padding: 0 12px;
+  border: 1px solid rgba(240, 82, 82, 0.4);
+  border-radius: 12px;
+  background: transparent;
+  color: #f8a5a5 !important;
+  font-size: 0.875rem !important;
+  cursor: pointer;
+}
+.rd-ink-clear:disabled {
+  opacity: 0.35;
+  cursor: default;
 }
 .rd-ink-swatch {
   position: relative;
   flex: none;
-  inline-size: 28px;
-  block-size: 28px;
-  margin: 4px 2px;
+  inline-size: 34px;
+  block-size: 34px;
+  margin: 4px;
   padding: 0;
   border: 2px solid rgba(247, 243, 232, 0.35);
   border-radius: 50%;
@@ -1797,12 +1875,12 @@ button.rd-medal:active {
 }
 .rd-ink-size {
   display: flex;
-  flex: none;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
 }
 .rd-ink-dot {
   display: grid;
+  flex: none;
   place-items: center;
   inline-size: 30px;
   block-size: 30px;
@@ -1814,22 +1892,38 @@ button.rd-medal:active {
   border-radius: 50%;
 }
 .rd-ink-size input {
-  inline-size: 120px;
+  flex: 1;
+  min-inline-size: 0;
   accent-color: #c8a45d;
 }
-.rd-ink-done {
-  display: inline-flex;
-  flex: none;
-  align-items: center;
-  gap: 6px;
-  min-block-size: 40px;
-  padding: 0 14px;
-  border: 0;
-  border-radius: 12px;
-  background: #c8a45d;
-  color: #073b29 !important;
-  font-weight: 600 !important;
-  font-size: 0.875rem !important;
+.rd-ink-mini {
+  position: absolute;
+  z-index: 3;
+  inset-inline-end: 16px;
+  inset-block-end: calc(80px + env(safe-area-inset-bottom));
+  display: grid;
+  place-items: center;
+  inline-size: 52px;
+  block-size: 52px;
+  padding: 0;
+  border: 2px solid currentColor;
+  border-radius: 50%;
+  background: rgba(4, 38, 26, 0.94);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+}
+.rd-ink-remove {
+  position: absolute;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  inline-size: 36px;
+  block-size: 36px;
+  padding: 0;
+  border: 1px solid rgba(247, 243, 232, 0.2);
+  border-radius: 50%;
+  background: rgba(4, 38, 26, 0.94);
+  color: #f8a5a5 !important;
+  transform: translateX(-50%);
   cursor: pointer;
 }
 .rd-present[data-drawing='on'] .rd-present-stage {
@@ -1838,19 +1932,17 @@ button.rd-medal:active {
 @media (max-width: 640px) {
   .rd-ink-bar {
     inset-block-end: calc(70px + env(safe-area-inset-bottom));
-    inline-size: auto;
   }
-  .rd-ink-row {
-    flex-wrap: wrap;
-    justify-content: center;
-    overflow: visible;
+  .rd-ink-btn,
+  .rd-ink-done {
+    inline-size: 36px;
+    block-size: 36px;
   }
-  .rd-ink-btn {
-    inline-size: 38px;
-    block-size: 38px;
+  .rd-ink-pick {
+    inline-size: 44px;
   }
-  .rd-ink-size input {
-    inline-size: 96px;
+  .rd-ink-grip {
+    inline-size: 22px;
   }
 }
 

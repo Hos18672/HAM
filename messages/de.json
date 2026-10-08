@@ -915,6 +915,7 @@
     "toggle": "Zeichnen",
     "toolbar": "Zeichenwerkzeuge",
     "tool": {
+      "select": "Auswählen und verschieben",
       "pen": "Stift",
       "marker": "Textmarker",
       "eraser": "Radierer",
@@ -943,6 +944,11 @@
     "undo": "Rückgängig",
     "redo": "Wiederholen",
     "clear": "Alles löschen",
-    "done": "Fertig"
+    "done": "Fertig",
+    "tools": "Werkzeug",
+    "minimize": "Werkzeugleiste verkleinern",
+    "expand": "Zeichenwerkzeuge öffnen",
+    "move": "Werkzeugleiste verschieben",
+    "remove": "Auswahl löschen"
   }
 }

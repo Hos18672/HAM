@@ -242,13 +242,30 @@ test.describe('the du‘as', () => {
       await page.mouse.up();
     };
 
+    /** Whether ink lies near a point on the screen. */
+    const inkAt = (x: number, y: number) =>
+      canvas.evaluate(
+        (el: HTMLCanvasElement, [x, y]) => {
+          const rect = el.getBoundingClientRect();
+          const ratio = el.width / rect.width;
+          const cx = Math.round((x - rect.left) * ratio);
+          const cy = Math.round((y - rect.top) * ratio);
+          const r = Math.round(4 * ratio);
+          const data = el.getContext('2d')!.getImageData(cx - r, cy - r, r * 2, r * 2).data;
+          for (let i = 3; i < data.length; i += 4) if (data[i]) return true;
+          return false;
+        },
+        [x, y],
+      );
+
     await page.getByRole('button', { name: 'Zeichnen' }).click();
     const tools = page.getByRole('toolbar', { name: 'Zeichenwerkzeuge' });
     await expect(tools).toBeVisible();
-    await expect(tools.getByRole('button', { name: 'Stift' })).toHaveAttribute(
-      'aria-pressed',
-      'true',
-    );
+    const pick = async (tool: string) => {
+      await tools.getByRole('button', { name: /^Werkzeug:/ }).click();
+      await tools.getByRole('button', { name: tool, exact: true }).click();
+    };
+    await expect(tools.getByRole('button', { name: 'Werkzeug: Stift' })).toBeVisible();
 
     // A line with the pen, which does not turn the slide as a tap would.
     await stroke([300, 300], [600, 340]);
@@ -256,17 +273,40 @@ test.describe('the du‘as', () => {
     await expect.poll(inked).toBeGreaterThan(200);
     const pen = await inked();
 
-    // A red circle, thicker.
+    // A red circle, thicker; once drawn it stays chosen.
+    await tools.getByRole('button', { name: 'Farbe', exact: true }).click();
     await tools.getByRole('button', { name: 'Rot' }).click();
+    await tools.getByRole('button', { name: /^Stärke/ }).click();
     await tools.getByRole('slider', { name: 'Stärke' }).fill('20');
-    await tools.getByRole('button', { name: 'Kreis' }).click();
+    await pick('Kreis');
     await stroke([700, 250], [820, 330]);
     await expect.poll(inked).toBeGreaterThan(pen * 2);
+    await expect(page.getByRole('button', { name: 'Auswahl löschen' })).toBeVisible();
 
     await tools.getByRole('button', { name: 'Rückgängig' }).click();
     await expect.poll(inked).toBe(pen);
+    await expect(page.getByRole('button', { name: 'Auswahl löschen' })).toHaveCount(0);
     await tools.getByRole('button', { name: 'Wiederholen' }).click();
     await expect.poll(inked).toBeGreaterThan(pen * 2);
+
+    // Taken and moved: the circle (700–820 × 250–370) goes 100 left and 60 down.
+    await pick('Auswählen und verschieben');
+    await page.mouse.click(760, 310);
+    await expect(page.getByRole('button', { name: 'Auswahl löschen' })).toBeVisible();
+    expect(await inkAt(820, 310)).toBe(true);
+    await stroke([760, 310], [660, 370]);
+    await expect.poll(() => inkAt(820, 310)).toBe(false);
+    expect(await inkAt(600, 370)).toBe(true);
+
+    // Stretched by its corner, now at 738 × 448: twice as wide.
+    const small = await inked();
+    await stroke([738, 448], [858, 568]);
+    await expect.poll(inked).toBeGreaterThan(small * 1.5);
+    expect(await inkAt(840, 430)).toBe(true);
+
+    // A tap on nothing lets go.
+    await page.mouse.click(1100, 150);
+    await expect(page.getByRole('button', { name: 'Auswahl löschen' })).toHaveCount(0);
     const both = await inked();
 
     // Each slide has its own; back again, and they are still there.
@@ -276,6 +316,25 @@ test.describe('the du‘as', () => {
     await page.keyboard.press('ArrowLeft');
     await expect.poll(inked).toBe(both);
 
+    // The bar moves out of the way by its grip, and folds into one button.
+    const before = (await tools.boundingBox())!;
+    const grip = (await tools
+      .getByRole('button', { name: 'Werkzeugleiste verschieben' })
+      .boundingBox())!;
+    await stroke(
+      [grip.x + grip.width / 2, grip.y + grip.height / 2],
+      [grip.x + grip.width / 2 - 200, grip.y + grip.height / 2 - 300],
+    );
+    const after = (await tools.boundingBox())!;
+    expect(before.y - after.y).toBeGreaterThan(250);
+    await expect(title).toContainText('Eröffnung');
+    await tools.getByRole('button', { name: 'Werkzeugleiste verkleinern' }).click();
+    await expect(tools).toHaveCount(0);
+    await page.getByRole('button', { name: 'Zeichenwerkzeuge öffnen' }).click();
+    await expect(tools).toBeVisible();
+
+    await pick('Stift');
+    await tools.getByRole('button', { name: /^Werkzeug:/ }).click();
     await tools.getByRole('button', { name: 'Alles löschen' }).click();
     await expect.poll(inked).toBe(0);
 

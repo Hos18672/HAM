@@ -155,7 +155,7 @@ export const PAGES: {
     fa: {
       kicker: 'قبله',
       title: 'جهت قبله از وین',
-      lead: 'جهت قبله از ساختمان انجمن، و راهی برای یافتن آن از هر جایی که هستید.',
+      lead: 'جهت قبله از ساختمان انجمن، و راهی برای پیدا کردن آن از هر جایی که هستید.',
     },
     de: {
       kicker: 'Qibla',
@@ -246,7 +246,7 @@ export const PAGES: {
   {
     key: 'imprint',
     sort: 15,
-    fa: { kicker: 'حقوقی', title: 'شناسنامهٔ حقوقی', lead: 'اطلاعات قانونی مطابق قوانین اتریش.' },
+    fa: { kicker: 'حقوقی', title: 'اطلاعات حقوقی', lead: 'اطلاعات قانونی مطابق قوانین اتریش.' },
     de: {
       kicker: 'Rechtliches',
       title: 'Impressum',

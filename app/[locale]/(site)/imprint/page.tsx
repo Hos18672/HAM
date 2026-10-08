@@ -61,7 +61,7 @@ export default async function ImprintPage({ params }: { params: Promise<{ locale
         ] as [string, React.ReactNode][])
       : []),
     [
-      de ? 'Sitz' : 'نشانی',
+      de ? 'Sitz' : 'آدرس',
       <span key="seat" className="ltr-island">
         {settings.address || `${ASSOCIATION.street}, ${ASSOCIATION.postcode} ${ASSOCIATION.city}`}
       </span>,

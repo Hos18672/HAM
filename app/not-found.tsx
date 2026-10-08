@@ -22,7 +22,7 @@ export default function RootNotFound() {
               Zur Startseite
             </Link>
             <Link href="/fa" className="btn btn-secondary">
-              به صفحهٔ نخست
+              به صفحهٔ اصلی
             </Link>
           </p>
         </main>

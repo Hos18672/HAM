@@ -15,7 +15,6 @@ import {
   Highlighter,
   LineSegment,
   Minus,
-  Palette,
   PencilSimple,
   Rectangle,
   Square,
@@ -880,7 +879,7 @@ export function Ink({
           onKeyDown={nudge}
           onClick={pressed(() => setMini(false))}
         >
-          <Palette size={26} weight="duotone" aria-hidden="true" />
+          {toolIcon(24)}
           <span className="rd-ink-mini-dot" style={{ background: prefs.color }} />
         </button>
       ) : null}

@@ -2126,31 +2126,11 @@
   /* The Vienna skyline standing on the footer band. The box is sized here as
      well as by the script (art 2172 × 560), so the space is held before the
      skyline loads and nothing jumps when it arrives. */
-  /* The city and the footer are one piece.
-
-     The band's colour comes up out of the river: transparent where the sky
-     is, so the page continues into it without a line, and dark by the time
-     the water reaches the footer, which carries the same colour on.
-
-     Two things make the join disappear rather than merely line up. The stops
-     are an ease rather than a straight ramp, so neither end of the fade has
-     a shoulder you can pick out; and the fade is fully dark a little before
-     the element ends, so its steep part never lands on the boundary itself,
-     where any subpixel rounding would print it as a rule. The band is pulled
-     up a pixel under it as well, so there is nothing to round.
-
-     The skyline's own box must stay transparent at the top, where the page's
-     paper has to show through the sky — so the band's colour can only come
-     from this gradient, never from anything behind it.
-
-     The shading also does not stop at that boundary — the darkest point sits
-     on it and comes up into the band as a contact shadow. It is only a
-     whisper deeper than the band itself: enough that the eye cannot find
-     where one ends, not enough to read as a shadow in its own right.
-
-     The gradient only starts below the rooftops. The city is drawn in
-     `--gold`, which would sink into the near-black, so the buildings
-     stay on light ground and it is the water that turns to night. */
+  /* The city and the footer are one piece: the skyline's box is transparent
+     where the sky and the buildings are, so the page's paper shows through,
+     and turns into the band's colour at the ground line, so the river runs
+     on into the footer. The band is pulled up a pixel under it so the two
+     boxes never leave a crack between them. */
   .footer-city {
     position: relative;
   }
@@ -2194,15 +2174,17 @@
     max-block-size: 160px;
     margin-block-end: -1px;
     overflow: hidden;
+    /* The band starts at the city's ground line and not a pixel above it:
+       the buildings stand on the paper, whole, and only the river below
+       them is night. The ground line sits 78 of the art's 560 units up from
+       the bottom (`GROUND_Y` in lib/vienna-skyline), and the script always
+       maps the art's full height onto this box, so it is at 86.1% at every
+       width. The edge is a hair soft so it never prints as a stair-step. */
     background: linear-gradient(
       to bottom,
-      rgb(var(--micro-rgb) / 0) 66%,
-      rgb(var(--micro-rgb) / 0.03) 75%,
-      rgb(var(--micro-rgb) / 0.14) 82%,
-      rgb(var(--micro-rgb) / 0.44) 88%,
-      rgb(var(--micro-rgb) / 0.82) 93%,
-      var(--micro) 96%,
-      var(--microDeep) 100%
+      rgb(var(--micro-rgb) / 0) 86.6%,
+      var(--micro) 87.8%,
+      var(--micro) 100%
     );
   }
   /* On a phone the city is a strip of noise above the footer: it goes. */
@@ -6979,42 +6961,75 @@ a.week-link:hover {
   background: #e8e4d8;
   direction: ltr;
 }
-.house-map-tiles {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-}
-.house-map-tiles img {
-  position: absolute;
-  inline-size: 256px;
-  block-size: 256px;
-  max-inline-size: none;
-  filter: none;
-}
-.house-map-pin {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -100%);
-  color: var(--green);
-  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.35));
-}
 .house-map-caption {
-  display: flex;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-block-start: 6px;
+  margin-block-start: 4px;
   font-size: 12.5px;
   color: var(--ink2);
 }
-.house-map-caption a {
+.house-map .contact-map-actions {
+  justify-content: space-between;
+  margin-block-start: 8px;
+}
+.house-map-open {
   display: inline-flex;
   align-items: center;
   gap: 4px;
   min-block-size: 32px;
   font-weight: var(--weight-semibold);
+  color: var(--green);
+}
+
+/* ─── The map, both pages ────────────────────────────────────────────────────
+   The picture with a pill over it that loads Google Maps, then Google's own
+   map filling the same frame. */
+.map-embed {
+  position: absolute;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+  border: 0;
+}
+.map-load {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 14px;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+.map-load-pill {
+  display: inline-flex;
+  align-items: center;
+  min-block-size: 40px;
+  padding-inline: 16px;
+  border-radius: var(--radius-pill);
+  background: var(--card);
+  color: var(--head);
+  font-weight: var(--weight-semibold);
+  font-size: var(--text-sm);
+  box-shadow:
+    0 0 0 1px var(--line),
+    var(--shadow-soft);
+  transition: background-color var(--duration-fast) var(--ease-standard);
+}
+.map-load:hover .map-load-pill {
+  background: var(--chip-2);
+}
+.map-load:focus-visible {
+  outline: none;
+}
+.map-load:focus-visible .map-load-pill {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}
+.map-load-note {
+  margin: 0;
+  flex-basis: 100%;
+  font-size: 12.5px;
+  color: var(--ink2);
 }
 /* ─── The contact page ───────────────────────────────────────────────────────
    Four bands on the paper ground — the head, the visit (address, hours, map,
@@ -7397,19 +7412,6 @@ body:has(.contact-page) .footer-contact {
   block-size: 100%;
   max-inline-size: none;
   object-fit: cover;
-}
-.contact-map-live {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  direction: ltr;
-}
-.contact-map-live img {
-  position: absolute;
-  inline-size: 256px;
-  block-size: 256px;
-  max-inline-size: none;
 }
 .contact-map-pin {
   position: absolute;

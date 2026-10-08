@@ -195,16 +195,33 @@ test.describe('public site', () => {
 
     // No font CDN, no analytics, no embeds, anywhere. The single exception
     // is OpenStreetMap's tiles, fetched as plain images by the qibla page's
-    // map and by the house map on the home page — nothing else of theirs runs
-    // in the page, and the privacy policy says so. The contact page shows a
-    // picture and asks OpenStreetMap for nothing until a visitor loads the
-    // live map. If anything else ever appears here, the policy has stopped
+    // map — nothing else of theirs runs in the page, and the privacy policy
+    // says so. The home and contact pages show a picture of the street from
+    // our own server and ask Google for nothing until a visitor taps to load
+    // the map. If anything else ever appears here, the policy has stopped
     // being true.
-    const MAP_PAGES = ['/qibla', ''];
+    const MAP_PAGES = ['/qibla'];
     const unexpected = external.filter(
       (r) => !(MAP_PAGES.includes(r.path) && r.url.startsWith('https://tile.openstreetmap.org/')),
     );
     expect(unexpected).toEqual([]);
+  });
+
+  test('loads Google Maps only when asked to', async ({ page }) => {
+    const google: string[] = [];
+    await page.route('https://www.google.com/**', (route) => {
+      google.push(route.request().url());
+      return route.fulfill({ contentType: 'text/html', body: '<!doctype html><title>map</title>' });
+    });
+
+    await page.goto('/de/contact');
+    await page.waitForLoadState('networkidle');
+    expect(google).toEqual([]);
+
+    await page.getByRole('button', { name: /Google Maps laden/ }).click();
+    const map = page.locator('iframe.map-embed');
+    await expect(map).toHaveAttribute('src', /google\.com\/maps\?q=Sautergasse/);
+    await expect.poll(() => google.length).toBeGreaterThan(0);
   });
 });
 

@@ -1,11 +1,10 @@
 'use client';
 
 import { useEffect, useState, type ReactNode } from 'react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { ArrowRight, Check, Copy } from '@phosphor-icons/react/dist/ssr';
 import { Link } from '@/lib/i18n/navigation';
 import { houseStatus, viennaNow, FACTS, type HouseStatus } from '@/lib/site-facts';
-import { tilesFor } from '@/lib/slippy';
 
 /**
  * The contact page's live parts. The page is built once and served for hours,
@@ -150,8 +149,11 @@ export function CopyAddress({ value }: { value: string }) {
   );
 }
 
-const ROUTE_WEB = `https://www.google.com/maps/dir/?api=1&destination=${FACTS.latitude},${FACTS.longitude}`;
-const ROUTE_APPLE = `maps://?daddr=${FACTS.latitude},${FACTS.longitude}`;
+// By address, not by coordinates: the map app then routes to the building's
+// own entrance rather than to a point that may sit in the next street.
+const DESTINATION = encodeURIComponent(FACTS.mapQuery);
+const ROUTE_WEB = `https://www.google.com/maps/dir/?api=1&destination=${DESTINATION}`;
+const ROUTE_APPLE = `maps://?daddr=${DESTINATION}`;
 
 /**
  * Directions to the house: Google Maps on the web, Apple Maps on an iPhone or
@@ -172,79 +174,82 @@ export function RouteLink({ className, children }: { className?: string; childre
 }
 
 const BASE = process.env.NEXT_PUBLIC_BASE_PATH ?? '';
-/** The live mosaic's size: enough to cover the frame at any width it takes. */
-const LIVE_W = 1024;
-const LIVE_H = 768;
+
+/** Google's embeddable map of the address, in the reader's language. */
+function googleEmbed(locale: string) {
+  return `https://www.google.com/maps?q=${DESTINATION}&hl=${locale}&z=17&output=embed`;
+}
 
 /**
- * The street around the house: a picture rendered once from OpenStreetMap,
- * swapped for the live tiles only when the visitor asks — until then the
- * browser makes no request to a third party.
+ * The street around the house: a picture rendered once from OpenStreetMap
+ * and served from our own server, swapped for Google Maps only when the
+ * visitor asks. Until that click the browser makes no request to Google —
+ * an embedded Google map sets cookies and reports the visit, which is not
+ * something to do to everyone who opens the page.
  */
 export function ContactMap({
   label,
   hasImage,
+  frameClassName = 'contact-map-frame',
   children,
 }: {
   label: string;
   hasImage: boolean;
+  /** The frame's look: the contact page's, or the home page's. */
+  frameClassName?: string;
   /** The actions under the map; the load button joins them. */
   children: ReactNode;
 }) {
   const t = useTranslations('contact');
+  const locale = useLocale();
   const [live, setLive] = useState(false);
-  const tiles = live
-    ? tilesFor({ latitude: FACTS.latitude, longitude: FACTS.longitude }, 17, LIVE_W, LIVE_H)
-    : [];
   return (
     <>
-      <div className="contact-map-frame" role="img" aria-label={label}>
+      {/* No role="img" on the frame: the load button lives in it, and a
+          button inside an image is a control a screen reader cannot reach.
+          The picture carries the label instead. */}
+      <div className={frameClassName} data-live={live || undefined}>
         {live ? (
-          <div className="contact-map-live" style={{ width: LIVE_W, height: LIVE_H }}>
-            {tiles.map((tile) => (
+          <iframe
+            className="map-embed"
+            src={googleEmbed(locale)}
+            title={label}
+            allowFullScreen
+            referrerPolicy="no-referrer-when-downgrade"
+          />
+        ) : (
+          <>
+            {hasImage ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
-                key={tile.key}
-                src={`https://tile.openstreetmap.org/${tile.z}/${tile.x}/${tile.y}.png`}
-                alt=""
-                width={256}
-                height={256}
+                className="contact-map-img"
+                src={`${BASE}/map-contact@1x.webp`}
+                srcSet={`${BASE}/map-contact@1x.webp 800w, ${BASE}/map-contact@2x.webp 1600w`}
+                alt={label}
+                width={800}
+                height={500}
+                sizes="(min-width: 1024px) 680px, 100vw"
+                loading="lazy"
                 decoding="async"
-                style={{ left: tile.left, top: tile.top }}
               />
-            ))}
-          </div>
-        ) : hasImage ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            className="contact-map-img"
-            src={`${BASE}/map-contact@1x.webp`}
-            srcSet={`${BASE}/map-contact@1x.webp 800w, ${BASE}/map-contact@2x.webp 1600w`}
-            alt=""
-            width={800}
-            height={500}
-            sizes="(min-width: 1024px) 680px, 100vw"
-            decoding="async"
-          />
-        ) : null}
-        <svg className="contact-map-pin" viewBox="0 0 32 44" aria-hidden="true">
-          <path d="M16 2C8.3 2 2 8.2 2 15.9 2 26.4 16 42 16 42s14-15.6 14-26.1C30 8.2 23.7 2 16 2Z" />
-          <circle cx="16" cy="16" r="5" />
-        </svg>
+            ) : (
+              <span className="visually-hidden">{label}</span>
+            )}
+            <svg className="contact-map-pin" viewBox="0 0 32 44" aria-hidden="true">
+              <path d="M16 2C8.3 2 2 8.2 2 15.9 2 26.4 16 42 16 42s14-15.6 14-26.1C30 8.2 23.7 2 16 2Z" />
+              <circle cx="16" cy="16" r="5" />
+            </svg>
+            {/* The picture itself is the button too: a map invites a tap. */}
+            <button type="button" className="map-load" onClick={() => setLive(true)}>
+              <span className="map-load-pill">{t('loadMap')}</span>
+              <span className="visually-hidden"> — {t('loadMapNote')}</span>
+            </button>
+          </>
+        )}
       </div>
       <div className="contact-map-actions">
         {children}
-        {live ? null : (
-          <button
-            type="button"
-            className="contact-text-link"
-            onClick={() => setLive(true)}
-            title={t('loadMapNote')}
-          >
-            {t('loadMap')}
-            <span className="visually-hidden"> — {t('loadMapNote')}</span>
-          </button>
-        )}
+        {live ? null : <p className="map-load-note">{t('loadMapNote')}</p>}
       </div>
     </>
   );

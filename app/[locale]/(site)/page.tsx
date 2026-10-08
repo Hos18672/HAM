@@ -21,7 +21,7 @@ import { readTheme } from '@/lib/preferences';
 import { OpeningHours, Directions, HouseMap } from '@/components/site/house-info';
 import { OpenNow } from '@/components/site/open-now';
 import { getPrayerDay } from '@/lib/prayer-page';
-import { FACTS } from '@/lib/site-facts';
+import { houseMapUrl } from '@/lib/site-facts';
 import { CourseCard } from '@/components/site/course-card';
 import { EditableText } from '@/components/editable/editable-text';
 import { EditableEntry, EditableAdd } from '@/components/editable/editable-list';
@@ -428,7 +428,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
             </div>
 
             <div data-rise>
-              <HouseMap locale={typed} mapUrl={settings.mapUrl || FACTS.mapUrl} />
+              <HouseMap locale={typed} mapUrl={houseMapUrl(settings.mapUrl)} />
             </div>
           </div>
         </div>

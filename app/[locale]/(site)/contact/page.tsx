@@ -27,7 +27,7 @@ import {
   OpenStatus,
   RouteLink,
 } from '@/components/site/contact-visit';
-import { DIRECTIONS, FACTS, OPENING_HOURS } from '@/lib/site-facts';
+import { DIRECTIONS, FACTS, OPENING_HOURS, houseMapUrl } from '@/lib/site-facts';
 import { digits, timeRange } from '@/lib/i18n/format';
 import { weekdayName } from '@/lib/schedule';
 import { EditableText } from '@/components/editable/editable-text';
@@ -179,12 +179,12 @@ export default async function ContactPage({ params }: { params: Promise<{ locale
               {t('route')}
             </RouteLink>
             <a
-              href={settings.mapUrl || FACTS.mapUrl}
+              href={houseMapUrl(settings.mapUrl)}
               className="contact-text-link"
               target="_blank"
               rel="noopener noreferrer"
             >
-              {t('openOsm')}
+              {t('openGoogle')}
               <ArrowSquareOut size={16} weight="bold" aria-hidden="true" />
               {external}
             </a>

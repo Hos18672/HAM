@@ -527,14 +527,17 @@ countdown and the toasts, and `lang`/`dir` set from the locale.
 
 ### Privacy
 
-There is no analytics, no tracker, no font CDN, no map embed and no social
-button anywhere in the codebase — fonts are self-hosted from `public/fonts`.
-That is why there is no cookie banner: the only cookies are the theme
-preference and the editorial session, and neither needs consent. The one
-third-party request is OpenStreetMap's tiles, fetched as plain images by the
-qibla map and by the small house map on the home and contact pages (lazy, and
-always the same patch of Hernals). An e2e test asserts that no page makes any
-other third-party request, so this stays true.
+There is no analytics, no tracker, no font CDN and no social button anywhere
+in the codebase — fonts are self-hosted from `public/fonts`. That is why there
+is no cookie banner: the only cookies are the theme preference and the
+editorial session, and neither needs consent. The one third-party request a
+page makes on its own is OpenStreetMap's tiles, fetched as plain images by the
+qibla map. The home and contact pages show a picture of the street around the
+house from our own server; Google Maps replaces it only when the visitor taps
+"Google Maps laden" (a two-click embed — the tap is the consent, and the
+privacy page names Google). An e2e test asserts that no page makes any other
+third-party request, and another that Google is asked for nothing before the
+tap, so this stays true.
 
 ---
 
@@ -697,9 +700,15 @@ Recorded here rather than left implicit:
     - **The static map** (`public/map-contact@1x.webp`, `@2x`) is rendered by
       `scripts/contact-map.mjs`, which the **Contact map** workflow runs
       whenever the script changes: the build sandbox cannot reach the tile
-      server. Until the visitor taps "Interaktive Karte laden" the page
-      makes no third-party request; the privacy page says so. The home
-      page's small map is unchanged and still loads tiles on scroll.
+      server. Until the visitor taps "Google Maps laden" the page makes no
+      third-party request; the privacy page says so. The home page's map
+      works the same way, with the same picture.
+    - **Where the house is** (`lib/house-location.json`) is looked up from the
+      address by `scripts/geocode-house.mjs` (Nominatim: Sautergasse 34 and
+      38, averaged), in the same workflow, before the map is drawn. The
+      hand-entered guess it replaced was about 800 m off. Google Maps and the
+      route links search by the address itself, so Google pins the building
+      even if the coordinates were ever wrong.
     - **The open status in the built page is neutral** ("Öffnungszeiten"),
       not today's hours: the page is built once and served for days, so any
       day-specific text baked in would be wrong most of the time. The

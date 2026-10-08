@@ -17,6 +17,7 @@ const withNextIntl = createNextIntlPlugin('./lib/i18n/request.ts');
  * back to a map drawn from our own data when the tiles cannot be had.
  */
 const TILE_ORIGIN = 'https://tile.openstreetmap.org';
+const GOOGLE_MAPS_ORIGIN = 'https://www.google.com';
 const supabaseOrigin = (() => {
   try {
     return process.env.SUPABASE_URL ? new URL(process.env.SUPABASE_URL).origin : '';
@@ -35,6 +36,9 @@ const csp = [
   "style-src 'self' 'unsafe-inline'",
   `img-src 'self' data: blob: ${TILE_ORIGIN}${supabaseOrigin ? ' ' + supabaseOrigin : ''}`,
   "font-src 'self'",
+  // Google Maps, embedded on the home and contact pages — and only after the
+  // visitor taps "Google Maps laden"; until then no request goes to Google.
+  `frame-src ${GOOGLE_MAPS_ORIGIN}`,
   `connect-src 'self'${supabaseOrigin ? ' ' + supabaseOrigin : ''}`,
   "frame-ancestors 'none'",
   "base-uri 'self'",

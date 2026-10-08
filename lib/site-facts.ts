@@ -7,6 +7,11 @@
  * prints a fact hides the row when it is empty — never a row of zeros.
  */
 
+import house from './house-location.json';
+
+/** The address as a map search reads it: Google pins the building itself. */
+const MAP_QUERY = 'Sautergasse 34-38, 1170 Wien, Österreich';
+
 export const FACTS = {
   nameFa: 'خانهٔ همهٔ انسان‌ها — انصار المهدی (عج)',
   nameDe: 'Haus aller Menschen – Ansar al-Mahdi (a.j.)',
@@ -24,10 +29,21 @@ export const FACTS = {
   iban: '',
   bic: '',
   instagram: 'ansarolmahdi_Wien',
-  mapUrl: 'https://www.openstreetmap.org/?mlat=48.2175&mlon=16.3260#map=17/48.2175/16.3260',
-  latitude: 48.2175,
-  longitude: 16.326,
+  mapQuery: MAP_QUERY,
+  mapUrl: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(MAP_QUERY)}`,
+  // Looked up from the address by scripts/geocode-house.mjs, not typed in.
+  latitude: house.latitude,
+  longitude: house.longitude,
 } as const;
+
+/**
+ * The map link to print: the one stored in the admin settings, unless it is
+ * empty or still the old OpenStreetMap link seeded before the maps moved to
+ * Google — that one pointed at the wrong street.
+ */
+export function houseMapUrl(stored: string | null | undefined) {
+  return stored && !stored.includes('openstreetmap.org') ? stored : FACTS.mapUrl;
+}
 
 /** One opening window. Days are ISO weekdays: 1 = Monday … 7 = Sunday. */
 export interface OpeningWindow {

@@ -2,10 +2,18 @@ import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 
 test.describe('prayer times', () => {
-  test('shows seven times, a next prayer and both calendars', async ({ page }) => {
+  test('shows the eight times, a next prayer and both calendars', async ({ page }) => {
     await page.goto('/de/prayer');
 
-    for (const name of ['Fadschr', 'Sonnenaufgang', 'Dhuhr', 'Asr', 'Maghrib', 'Ischa']) {
+    for (const name of [
+      'Fadschr',
+      'Sonnenaufgang',
+      'Dhuhr',
+      'Asr',
+      'Sonnenuntergang',
+      'Maghrib',
+      'Ischa',
+    ]) {
       await expect(page.getByText(name, { exact: true }).first()).toBeVisible();
     }
 

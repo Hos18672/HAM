@@ -34,8 +34,11 @@ import type { Locale } from '@/lib/i18n/config';
 import { Button } from '../ui/button';
 import { PatternPlate } from './ornaments';
 
+/** The rows of the list: the seven times, with sunset shown between Asr and Maghrib. */
+type RowKey = PrayerKey | 'sunset';
+
 const ICONS: Record<
-  PrayerKey,
+  RowKey,
   React.ComponentType<{
     size?: number;
     weight?: 'duotone';
@@ -47,12 +50,22 @@ const ICONS: Record<
   sunrise: Sun,
   dhuhr: SunDim,
   asr: CloudSun,
+  sunset: SunHorizon,
   maghrib: SunHorizon,
   isha: MoonStars,
   midnight: Moon,
 };
 
-const ORDER: PrayerKey[] = ['fajr', 'sunrise', 'dhuhr', 'asr', 'maghrib', 'isha', 'midnight'];
+const ORDER: RowKey[] = [
+  'fajr',
+  'sunrise',
+  'dhuhr',
+  'asr',
+  'sunset',
+  'maghrib',
+  'isha',
+  'midnight',
+];
 
 /**
  * The next-prayer hero, the seven daily times and the four extra ones.
@@ -221,7 +234,7 @@ export function PrayerList({ day: vienna, locale }: { day: PrayerDay; locale: Lo
         </div>
       </section>
 
-      {/* Today's seven times, one row each, the next one marked. */}
+      {/* Today's times, sunset among them, one row each, the next one marked. */}
       <section aria-labelledby="prayer-today-title">
         <h2 id="prayer-today-title" className="visually-hidden">
           {placeLabel}
@@ -230,7 +243,7 @@ export function PrayerList({ day: vienna, locale }: { day: PrayerDay; locale: Lo
           {ORDER.map((key) => {
             const IconComponent = ICONS[key] ?? Clock;
             const isNext = next?.key === key && !next.tomorrow;
-            const value = day.times[key];
+            const value = key === 'sunset' ? day.extras.sunset : day.times[key];
             return (
               <li key={key} className="ptimes-row" data-next={isNext ? 'true' : undefined}>
                 <IconComponent size={22} weight="duotone" aria-hidden="true" color="var(--gold)" />

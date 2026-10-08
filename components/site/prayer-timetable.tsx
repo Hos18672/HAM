@@ -10,7 +10,17 @@ import type { Timetable } from '@/lib/prayer-page';
 import type { Locale } from '@/lib/i18n/config';
 import { Button } from '../ui/button';
 
-const COLUMNS: PrayerKey[] = ['fajr', 'sunrise', 'dhuhr', 'asr', 'maghrib', 'isha', 'midnight'];
+/** Sunset sits between Asr and Maghrib, which in this method is 4° after it. */
+const COLUMNS: (PrayerKey | 'sunset')[] = [
+  'fajr',
+  'sunrise',
+  'dhuhr',
+  'asr',
+  'sunset',
+  'maghrib',
+  'isha',
+  'midnight',
+];
 
 /**
  * One month of prayer times — for the place the page is showing — a row a day.
@@ -177,7 +187,9 @@ export function PrayerTimetable({
                     </th>
                     <td className="timetable-hij">{digits(toHijri(date).day, locale)}</td>
                     {COLUMNS.map((key) => (
-                      <td key={key}>{formatClock(day.times[key], locale)}</td>
+                      <td key={key}>
+                        {formatClock(key === 'sunset' ? day.extras.sunset : day.times[key], locale)}
+                      </td>
                     ))}
                   </tr>
                 );

@@ -53,7 +53,9 @@ export default async function SupportPage({ params }: { params: Promise<{ locale
     <div className="support-panel">
       <h2 className="support-h">{t('memberTitle')}</h2>
       <p className="support-lead">{t('memberLead')}</p>
-      <SupportForm locale={typed} mode="membership" options={tierOptions} />
+      <div className="form-card">
+        <SupportForm locale={typed} mode="membership" options={tierOptions} />
+      </div>
     </div>
   );
 
@@ -63,7 +65,9 @@ export default async function SupportPage({ params }: { params: Promise<{ locale
         <h2 className="support-h">{t('donationTitle')}</h2>
         <p className="support-lead">{t('donationLead')}</p>
         {purposeOptions.length > 0 ? (
-          <SupportForm locale={typed} mode="donation" options={purposeOptions} />
+          <div className="form-card">
+            <SupportForm locale={typed} mode="donation" options={purposeOptions} />
+          </div>
         ) : null}
       </div>
 

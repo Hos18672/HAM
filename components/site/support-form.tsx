@@ -132,7 +132,8 @@ export function SupportForm({
         }
         setState(result.error === 'form.rateLimited' ? 'rate-limited' : 'error');
       })}
-      style={{ display: 'grid', gap: compact ? 'var(--space-3)' : 'var(--space-4)' }}
+      className="form-stack"
+      style={compact ? { gap: 'var(--space-3)' } : undefined}
     >
       {/* Honeypot: off-screen, out of the tab order, no label for autofill to
           match — but a bot fills it in. */}
@@ -141,8 +142,6 @@ export function SupportForm({
       </div>
 
       <input type="hidden" {...register('locale')} value={locale} />
-
-      <p className="form-legend">{t('requiredLegend')}</p>
 
       <fieldset className="choice-set" data-kind={mode}>
         <legend>
@@ -214,7 +213,13 @@ export function SupportForm({
       ) : null}
 
       <div>
-        <Button type="submit" loading={isSubmitting} disabled={isSubmitting}>
+        <Button
+          type="submit"
+          size="lg"
+          className="form-submit"
+          loading={isSubmitting}
+          disabled={isSubmitting}
+        >
           {isSubmitting ? tActions('sending') : tActions('send')}
         </Button>
       </div>

@@ -44,7 +44,7 @@ export default async function LoginPage({
             Melden Sie sich an, um die Inhalte der Website zu bearbeiten.
           </p>
 
-          <div style={{ marginBlockStart: 'var(--space-6)' }}>
+          <div className="form-card" style={{ marginBlockStart: 'var(--space-6)' }}>
             <LoginForm
               redirectTo={from && from.startsWith('/admin') ? from : '/admin'}
               initialError={error}

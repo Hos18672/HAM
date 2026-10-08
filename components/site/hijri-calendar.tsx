@@ -17,6 +17,9 @@ import type { Timetable } from '@/lib/prayer-page';
 import type { Locale } from '@/lib/i18n/config';
 import { PrayerTimetable } from './prayer-timetable';
 
+/** The preview's `/HAM` prefix, empty everywhere else. */
+const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH ?? '';
+
 type TimetableEntry = Timetable | 'loading' | 'failed';
 const monthKey = ({ year, month }: { year: number; month: number }) => `${year}-${month}`;
 
@@ -146,12 +149,18 @@ export function HijriCalendar({
 
   /** Move, and leave the address bar telling the truth. */
   function go(next: { year: number; month: number }) {
+    if (next.year === year && next.month === month) return;
     setShown(next);
+    // With the deployment's base path in front. Without it, on the preview
+    // (served under `/HAM`) the address bar left the site: the router read
+    // that as a different page, and the page transition, keyed on the path,
+    // remounted the whole page to change the numbers in one grid.
+    const path = `${BASE_PATH}${basePath}`;
     const url =
       next.year === currentMonth.year && next.month === currentMonth.month
-        ? basePath
-        : `${basePath}?y=${next.year}&m=${next.month}`;
-    window.history.replaceState(null, '', url);
+        ? path
+        : `${path}?y=${next.year}&m=${next.month}`;
+    window.history.replaceState(window.history.state, '', url);
   }
 
   const previous = previousMonth({ year, month });
@@ -318,11 +327,11 @@ export function HijriCalendar({
         <table
           className="cal-grid"
           style={{
-            marginBlockStart: 'var(--space-4)',
+            marginBlockStart: 'var(--space-3)',
             inlineSize: '100%',
             tableLayout: 'fixed',
             borderCollapse: 'separate',
-            borderSpacing: '7px',
+            borderSpacing: 'var(--cal-gap)',
           }}
         >
           <caption className="visually-hidden">
@@ -335,7 +344,7 @@ export function HijriCalendar({
                   key={day}
                   scope="col"
                   className="kicker"
-                  style={{ textAlign: 'center', paddingBlockEnd: 'var(--space-1)' }}
+                  style={{ textAlign: 'center', paddingBlockEnd: 0 }}
                 >
                   {day}
                 </th>

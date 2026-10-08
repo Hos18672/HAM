@@ -112,6 +112,25 @@ test.describe('prayer times', () => {
     expect(await page.evaluate(() => document.documentElement.dataset.marker)).toBe('original');
   });
 
+  test('the Today button redraws the calendar, not the page', async ({ page }) => {
+    await page.goto('/de/prayer?y=2026&m=3');
+
+    // Not just the document: the page transition is keyed on the path, so a
+    // wrong address remounts everything under the header. Mark the page's own
+    // element and the mark has to survive.
+    await page.evaluate(() => {
+      (document.querySelector('.page-enter') as HTMLElement & { marker?: string }).marker = 'kept';
+    });
+    await page.getByRole('button', { name: 'Heute', exact: true }).click();
+    await expect(page).toHaveURL(/\/de\/prayer$/);
+    await expect(page.locator('table.cal-grid [aria-current="date"]')).toHaveCount(1);
+    expect(
+      await page.evaluate(
+        () => (document.querySelector('.page-enter') as HTMLElement & { marker?: string }).marker,
+      ),
+    ).toBe('kept');
+  });
+
   test('a month linked directly still renders on the server', async ({ page }) => {
     // The month has to survive being shared, bookmarked or reloaded, and it
     // has to be in the first paint rather than appearing after hydration.

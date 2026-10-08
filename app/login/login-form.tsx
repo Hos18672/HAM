@@ -53,7 +53,7 @@ export function LoginForm({
         // just been set and the admin layout has to be rendered with it.
         window.location.href = redirectTo;
       })}
-      style={{ display: 'grid', gap: 'var(--space-4)' }}
+      className="form-stack"
     >
       <Field
         label="E-Mail"
@@ -90,7 +90,7 @@ export function LoginForm({
       <div aria-live="polite">{formError ? <p className="field-error">{formError}</p> : null}</div>
 
       <div>
-        <Button type="submit" size="lg" loading={isSubmitting} disabled={isSubmitting}>
+        <Button type="submit" size="lg" className="form-submit" loading={isSubmitting} disabled={isSubmitting}>
           {isSubmitting ? 'Anmeldung läuft …' : 'Anmelden'}
         </Button>
       </div>

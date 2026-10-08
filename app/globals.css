@@ -2546,19 +2546,29 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 3px;
-    min-block-size: 3.4rem;
-    padding: var(--space-2) 2px;
+    gap: 2px;
+    /* Compact: a month is five or six rows and has to sit on a phone screen
+       with the controls above it, not run past the tab bar. */
+    min-block-size: 2.75rem;
+    padding: 5px 2px 7px;
     border: var(--rule-hair) solid var(--line);
-    border-radius: 10px;
+    border-radius: 8px;
     background: var(--card);
     transition:
       border-color var(--duration-fast) var(--ease-standard),
       background-color var(--duration-fast) var(--ease-standard);
   }
+  .cal-grid {
+    --cal-gap: 4px;
+  }
+  @media (min-width: 768px) {
+    .cal-grid {
+      --cal-gap: 5px;
+    }
+  }
   .cal-day-greg {
     font-family: var(--font-display);
-    font-size: 1.0625rem;
+    font-size: 1rem;
     line-height: 1;
     color: var(--head);
   }
@@ -2566,7 +2576,7 @@
     font-family: var(--font-naskh);
   }
   .cal-day-hij {
-    font-size: 0.75rem;
+    font-size: 0.6875rem;
     line-height: 1;
     color: var(--goldInk);
   }
@@ -2619,8 +2629,12 @@
      well as the wash: the wash is gold on cream and it is the first thing to
      go on a bright screen held outdoors. */
   .cal-day-dot {
-    inline-size: 5px;
-    block-size: 5px;
+    position: absolute;
+    inset-block-end: 3px;
+    left: 50%;
+    translate: -50% 0;
+    inline-size: 4px;
+    block-size: 4px;
     border-radius: 50%;
     background: transparent;
   }
@@ -6589,13 +6603,26 @@ a.week-link:hover {
 }
 .city-box-field input {
   inline-size: 100%;
-  min-block-size: 44px;
+  min-block-size: 2.75rem;
   padding-inline: 38px 34px;
+  /* The same field as every form's: paper ground, hairline with a heavier
+     foot, gold when it has the focus. */
   border-radius: var(--radius-baseline);
   border: var(--rule-hair) solid var(--line);
-  background: var(--card);
+  border-block-end-width: 2px;
+  background: var(--color-bg);
   color: var(--ink);
   font: inherit;
+  transition:
+    border-color var(--duration-fast) var(--ease-standard),
+    background-color var(--duration-fast) var(--ease-standard);
+}
+.city-box-field input:hover:not(:focus) {
+  border-color: var(--color-accent-400);
+}
+.city-box-field input:focus {
+  border-color: var(--gold);
+  background: var(--card);
 }
 .city-box-field input:focus-visible {
   outline: 2px solid var(--gold);
@@ -6989,12 +7016,6 @@ a.week-link:hover {
   min-block-size: 32px;
   font-weight: var(--weight-semibold);
 }
-.form-legend {
-  font-size: var(--text-sm);
-  color: var(--ink2);
-  margin: 0;
-}
-
 /* ─── The contact page ───────────────────────────────────────────────────────
    Four bands on the paper ground — the head, the visit (address, hours, map,
    how to get here), the ways to reach us, the form — and no decoration
@@ -7539,7 +7560,8 @@ body:has(.contact-page) .footer-contact {
   line-height: 1.6;
   color: var(--ink2);
 }
-.contact-form-card {
+.contact-form-card,
+.form-card {
   margin-inline: calc(-1 * var(--page-gutter));
   padding: clamp(24px, 3vw, 40px) var(--page-gutter);
   background: var(--card);
@@ -7554,7 +7576,8 @@ body:has(.contact-page) .footer-contact {
     position: sticky;
     top: calc(var(--header-h) + 24px);
   }
-  .contact-form-card {
+  .contact-form-card,
+  .form-card {
     margin-inline: 0;
     padding: clamp(24px, 3vw, 40px);
     border-radius: var(--radius-soft);
@@ -7562,10 +7585,11 @@ body:has(.contact-page) .footer-contact {
   }
 }
 
-/* The contact form: the site's own fields and buttons. No asterisks — the
-   one optional field says so instead — and an error carries a warning icon,
-   never colour alone. */
-.contact-form {
+/* Every form on the site: contact, membership and donation, the login. One
+   look for all of them — the same labels, fields, spacing and button. No
+   asterisks — an optional field says so instead — and an error carries a
+   warning icon, never colour alone. */
+.form-stack {
   display: grid;
   gap: 20px;
 }
@@ -7578,34 +7602,34 @@ body:has(.contact-page) .footer-contact {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
-.contact-form .field {
+.form-stack .field {
   gap: 6px;
 }
-.contact-form .field-label {
+.form-stack .field-label {
   font-size: 15px;
   font-weight: 600;
   color: var(--ink);
 }
-.contact-form .field-required {
+.form-stack .field-required {
   display: none;
 }
-.contact-form .field-label .field-hint {
+.form-stack .field-label .field-hint {
   font-size: inherit;
   font-weight: 400;
   color: var(--ink2);
 }
-:root[dir='rtl'] .contact-form input[dir='ltr'] {
+:root[dir='rtl'] .form-stack input[dir='ltr'] {
   text-align: end;
 }
-.contact-form textarea.input {
+.form-stack textarea.input {
   min-block-size: 160px;
 }
-.contact-form .field-error {
+.form-stack .field-error {
   display: flex;
   align-items: center;
   gap: 6px;
 }
-.contact-form .field-error svg {
+.form-stack .field-error svg {
   flex-shrink: 0;
 }
 .contact-message .field-hint {
@@ -7680,6 +7704,7 @@ body:has(.contact-page) .footer-contact {
   text-underline-offset: 2px;
 }
 .contact-failed,
+.form-failed,
 .contact-summary {
   padding: 12px 16px;
   border-radius: var(--radius-baseline);
@@ -7688,7 +7713,9 @@ body:has(.contact-page) .footer-contact {
   color: var(--goldInk);
   font-weight: 600;
 }
-.contact-failed {
+.contact-failed,
+.form-failed {
+  margin: 0;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -7702,11 +7729,13 @@ body:has(.contact-page) .footer-contact {
   text-decoration: underline;
   text-underline-offset: 2px;
 }
-.contact-submit {
+.contact-submit,
+.form-submit {
   inline-size: 100%;
 }
 @media (min-width: 640px) {
-  .contact-submit {
+  .contact-submit,
+  .form-submit {
     inline-size: auto;
   }
 }
@@ -8641,7 +8670,7 @@ body:has(.edit-bar) .tab-bar,
   min-block-size: 48px;
   border-radius: var(--radius-soft);
   border: var(--rule-hair) solid var(--line);
-  background: var(--card);
+  background: var(--card2);
   cursor: pointer;
 }
 :root[dir='rtl'] .choice-card {
@@ -8707,18 +8736,6 @@ body:has(.edit-bar) .tab-bar,
 .form-done-title {
   font-weight: var(--weight-bold);
   font-size: var(--text-lg);
-  margin: 0;
-}
-.form-failed {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 12px 14px;
-  border-radius: var(--radius-baseline);
-  background: color-mix(in srgb, var(--color-accent-2-text) 10%, var(--card));
-  border: var(--rule-hair) solid var(--color-accent-2-text);
-  color: var(--color-accent-2-text);
-  font-weight: var(--weight-semibold);
   margin: 0;
 }
 .bank-card {

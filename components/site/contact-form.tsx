@@ -184,7 +184,7 @@ export function ContactForm({
   return (
     <form
       noValidate
-      className="contact-form"
+      className="contact-form form-stack"
       onSubmit={handleSubmit(async (values) => {
         const result = await submitContact({
           ...values,

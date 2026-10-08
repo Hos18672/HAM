@@ -115,6 +115,32 @@ test.describe('the du‘as', () => {
     await expect(page.locator('.rd-dua-title')).toContainText('Ziyarat');
   });
 
+  test('bookmarks a whole du‘a or one line, and goes back to either', async ({ page }) => {
+    await page.goto('/de/duas/faraj');
+    await hydrated(page);
+    await page.getByRole('button', { name: 'Bittgebet als Lesezeichen setzen' }).click();
+    await expect(page.locator('.rd-toast')).toHaveText('Lesezeichen gesetzt');
+    const third = page.locator('li.rd-verse').nth(2);
+    await third.getByRole('button', { name: 'Lesezeichen setzen' }).click();
+    await expect(third.locator('.rd-flag')).toBeVisible();
+
+    await page.goto('/de/duas/tawassul');
+    await hydrated(page);
+    const side = page.locator('.rd-side');
+    await side.getByRole('button', { name: /Lesezeichen/ }).click();
+    const marks = side.locator('.rd-surah-row');
+    await expect(marks).toHaveCount(2);
+    await expect(marks.first()).toContainText('Zeile 3');
+    await expect(marks.nth(1)).toContainText('Ganzes Bittgebet');
+
+    await marks.first().click();
+    await expect(page).toHaveURL(/\/de\/duas\/faraj#line-3$/);
+    await expect(page.locator('#line-3')).toHaveAttribute('aria-current', 'true');
+    await expect(
+      page.getByRole('button', { name: 'Lesezeichen für dieses Bittgebet entfernen' }),
+    ).toHaveAttribute('aria-pressed', 'true');
+  });
+
   test('opens the du‘a from anywhere on its card', async ({ page }) => {
     await page.goto('/de/duas');
     const card = page.locator('.dua').first();

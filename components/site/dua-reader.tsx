@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import {
   ArrowLeft,
   BookOpen,
+  BookmarkSimple,
   CaretDown,
   CaretLeft,
   CaretRight,
@@ -41,7 +42,7 @@ import {
   useToast,
 } from './rd/ui';
 import { Present } from './rd/present';
-import { useStored } from './rd/storage';
+import { readJson, useStored, writeJson } from './rd/storage';
 import { useScheme } from './rd/scheme';
 
 /**
@@ -121,6 +122,42 @@ interface DuaPrefs {
   translated: boolean;
 }
 
+/**
+ * Bookmarks, in this browser only (`ham:dua:bm`): a whole du'a, or one line
+ * of it. Keyed by the slug, and the line's number after a `#`.
+ */
+export interface DuaBookmark {
+  slug: string;
+  n: number | null;
+  en: number;
+}
+const BM_KEY = 'ham:dua:bm';
+const markKey = (slug: string, n: number | null) => (n === null ? slug : `${slug}#${n}`);
+
+function useDuaBookmarks() {
+  const [marks, setMarks] = useState<Record<string, DuaBookmark>>({});
+  useEffect(() => {
+    const read = readJson<Record<string, DuaBookmark>>(BM_KEY);
+    if (read && typeof read === 'object') setMarks(read);
+  }, []);
+  /** Adds or takes away; says which it did. */
+  const toggle = useCallback(
+    (slug: string, n: number | null) => {
+      const key = markKey(slug, n);
+      const added = !marks[key];
+      const next = { ...marks };
+      if (added) next[key] = { slug, n, en: Date.now() };
+      else delete next[key];
+      writeJson(BM_KEY, next);
+      setMarks(next);
+      return added;
+    },
+    [marks],
+  );
+  const has = (slug: string, n: number | null) => Boolean(marks[markKey(slug, n)]);
+  return { marks, toggle, has };
+}
+
 /** `#line-12` → 12. */
 const lineFromHash = () => {
   const match = /^#line-(\d+)$/.exec(window.location.hash);
@@ -184,6 +221,10 @@ export function DuaReader({
   const scheme = useScheme();
   const desktop = useMedia('(min-width: 1024px)');
   const [toastNode, toast] = useToast();
+  const bm = useDuaBookmarks();
+  const toggleMark = (n: number | null) =>
+    toast(bm.toggle(dua.slug, n) ? tr('bookmarked') : tr('unbookmarked'));
+  const duaMarked = bm.has(dua.slug, null);
 
   /* ── The lines that are said, numbered ───────────────────────────────── */
   const spoken = useMemo(() => {
@@ -207,13 +248,23 @@ export function DuaReader({
 
   /* ── Turning, without telling the router ─────────────────────────────── */
   const [highlight, setHighlight] = useState<number | null>(null);
+  // Bumped by a pick from the bookmarks, so the same line can be gone to twice.
+  const [jump, setJump] = useState(0);
   const turn = useCallback(
-    async (slug: string | undefined) => {
-      if (!slug || slug === dua.slug) return;
+    async (slug: string | undefined, line: number | null = null) => {
+      if (!slug) return;
+      if (slug === dua.slug) {
+        if (line !== null) {
+          setHighlight(line);
+          setJump((was) => was + 1);
+        }
+        return;
+      }
       try {
         const data = await fetchDua(slug, locale);
         setDua(data);
-        setHighlight(null);
+        setHighlight(line);
+        setJump((was) => was + 1);
         setFailed(false);
         // Through `History.prototype` on purpose: Next replaces
         // `history.replaceState` with a version that tells its router the
@@ -222,7 +273,7 @@ export function DuaReader({
           window.history,
           window.history.state,
           '',
-          `${BASE_PATH}${basePath}/${slug}`,
+          `${BASE_PATH}${basePath}/${slug}${line === null ? '' : `#line-${line}`}`,
         );
         window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior });
       } catch {
@@ -251,7 +302,7 @@ export function DuaReader({
     if (highlight === null) return;
     const element = document.getElementById(`line-${highlight}`);
     element?.scrollIntoView({ block: 'start', behavior: reduceMotion() ? 'auto' : 'smooth' });
-  }, [highlight, prefs.view]);
+  }, [highlight, prefs.view, dua.slug, jump]);
 
   /* ── How far down the du'a ───────────────────────────────────────────── */
   const [progress, setProgress] = useState(0);
@@ -417,9 +468,10 @@ export function DuaReader({
     locale,
     catalogue,
     current: dua.slug,
-    onPick: (slug: string) => {
+    marks: bm.marks,
+    onPick: (slug: string, line: number | null = null) => {
       setPickerOpen(false);
-      void turn(slug);
+      void turn(slug, line);
     },
   };
 
@@ -477,6 +529,21 @@ export function DuaReader({
           </button>
 
           <div className="rd-bar-end">
+            <button
+              type="button"
+              className="rd-round"
+              aria-pressed={duaMarked}
+              onClick={() => toggleMark(null)}
+              aria-label={duaMarked ? t('unbookmarkDua') : t('bookmarkDua')}
+              title={duaMarked ? t('unbookmarkDua') : t('bookmarkDua')}
+            >
+              <BookmarkSimple
+                size={20}
+                weight={duaMarked ? 'fill' : 'duotone'}
+                aria-hidden="true"
+                className={duaMarked ? 'rd-flag' : undefined}
+              />
+            </button>
             <button
               type="button"
               className="rd-round"
@@ -630,6 +697,7 @@ export function DuaReader({
                   const line = bySource.get(index)!;
                   if (line.number === null) return null;
                   const active = highlight === line.number;
+                  const marked = bm.has(dua.slug, line.number);
                   return (
                     <li
                       key={index}
@@ -642,7 +710,28 @@ export function DuaReader({
                     >
                       <div className="rd-verse-top">
                         <Medallion label={d(line.number)} active={active} />
+                        {marked ? (
+                          <BookmarkSimple
+                            size={18}
+                            weight="fill"
+                            className="rd-flag"
+                            aria-label={tr('bookmarks')}
+                          />
+                        ) : null}
                         <div className="rd-verse-actions rd-desk">
+                          <button
+                            type="button"
+                            className="rd-ghost"
+                            aria-pressed={marked}
+                            onClick={() => toggleMark(line.number)}
+                            aria-label={marked ? tr('bookmarkRemove') : tr('bookmarkAdd')}
+                          >
+                            <BookmarkSimple
+                              size={18}
+                              weight={marked ? 'fill' : 'duotone'}
+                              aria-hidden="true"
+                            />
+                          </button>
                           <button
                             type="button"
                             className="rd-ghost"
@@ -812,6 +901,27 @@ export function DuaReader({
             <p className="rd-menu-preview" lang="ar" dir="rtl">
               {menuLine.arabic}
             </p>
+            {menuLine.number !== null ? (
+              <button
+                type="button"
+                className="rd-row rd-row-action"
+                onClick={() => {
+                  toggleMark(menuLine.number);
+                  closeLineMenu();
+                }}
+              >
+                <span className="rd-row-icon">
+                  <BookmarkSimple
+                    size={20}
+                    weight={bm.has(dua.slug, menuLine.number) ? 'fill' : 'duotone'}
+                    aria-hidden="true"
+                  />
+                </span>
+                <span className="rd-row-label">
+                  {bm.has(dua.slug, menuLine.number) ? tr('bookmarkRemove') : tr('bookmarkAdd')}
+                </span>
+              </button>
+            ) : null}
             <button
               type="button"
               className="rd-row rd-row-action"
@@ -903,17 +1013,26 @@ function DuaPicker({
   variant,
   catalogue,
   current,
+  marks,
   onPick,
 }: {
   locale: Locale;
   variant: 'side' | 'sheet';
   catalogue: readonly DuaStub[];
   current: string;
-  onPick: (slug: string) => void;
+  marks: Record<string, DuaBookmark>;
+  onPick: (slug: string, line?: number | null) => void;
 }) {
   const t = useTranslations('duas');
   const tr = useTranslations('reader');
+  const d = (value: number) => digits(value, locale);
+  const [tab, setTab] = useState<'duas' | 'bookmarks'>('duas');
   const [kind, setKind] = useState<DuaCategory | 'all'>('all');
+  // Newest first; one whose du'a is no longer listed is left out.
+  const bySlug = useMemo(() => new Map(catalogue.map((entry) => [entry.slug, entry])), [catalogue]);
+  const saved = Object.values(marks)
+    .filter((mark) => bySlug.has(mark.slug))
+    .sort((a, b) => b.en - a.en);
   const [query, setQuery] = useState('');
   const kinds = (['dua', 'ziyara', 'taqib'] as const).filter((k) =>
     catalogue.some((entry) => entry.category === k),
@@ -932,54 +1051,108 @@ function DuaPicker({
 
   return (
     <div className="rd-picker" data-variant={variant}>
-      {kinds.length > 1 ? (
-        <Seg
-          label={t('filterByCategory')}
-          value={kind}
-          onChange={setKind}
-          options={[
-            { value: 'all', label: tr('all') },
-            ...kinds.map((k) => ({ value: k, label: t(`category.${k}`) })),
-          ]}
-        />
-      ) : null}
-      <label className="rd-search">
-        <MagnifyingGlass size={18} weight="bold" aria-hidden="true" />
-        <span className="visually-hidden">{tr('search')}</span>
-        <input
-          type="search"
-          value={query}
-          onChange={(event) => setQuery(event.target.value)}
-          placeholder={tr('search')}
-          autoComplete="off"
-          enterKeyHint="search"
-        />
-      </label>
-      {shown.length === 0 ? <p className="rd-empty">{tr('noMatch')}</p> : null}
-      <ul className="rd-list">
-        {shown.map(({ entry, index }) => (
-          <li key={entry.slug}>
-            <button
-              type="button"
-              className="rd-surah-row"
-              aria-current={entry.slug === current || undefined}
-              onClick={() => onPick(entry.slug)}
-            >
-              <span className="rd-chip-n tabular">{digits(index + 1, locale)}</span>
-              <span className="rd-surah-row-text">
-                <span className="rd-surah-row-name">{entry.title}</span>
-                <span className="rd-surah-row-meta">{t(`category.${entry.category}`)}</span>
-              </span>
-              {/* In Persian the title already reads much as the Arabic does. */}
-              {locale === 'fa' ? null : (
-                <span className="rd-surah-row-ar" lang="ar" dir="rtl">
-                  {entry.arabicTitle}
-                </span>
-              )}
-            </button>
-          </li>
-        ))}
-      </ul>
+      <Seg
+        label={tr('contents')}
+        value={tab}
+        onChange={setTab}
+        options={[
+          { value: 'duas', label: t('tabDuas') },
+          {
+            value: 'bookmarks',
+            label: (
+              <>
+                {tr('bookmarks')}
+                {saved.length ? (
+                  <span className="rd-count tabular"> · {d(saved.length)}</span>
+                ) : null}
+              </>
+            ),
+          },
+        ]}
+      />
+      {tab === 'bookmarks' ? (
+        saved.length === 0 ? (
+          <p className="rd-empty">{t('bookmarksEmpty')}</p>
+        ) : (
+          <ul className="rd-list">
+            {saved.map((mark) => {
+              const entry = bySlug.get(mark.slug)!;
+              return (
+                <li key={markKey(mark.slug, mark.n)}>
+                  <button
+                    type="button"
+                    className="rd-surah-row"
+                    onClick={() => onPick(mark.slug, mark.n)}
+                  >
+                    <span className="rd-chip-n">
+                      <BookmarkSimple size={16} weight="fill" aria-hidden="true" />
+                    </span>
+                    <span className="rd-surah-row-text">
+                      <span className="rd-surah-row-name">{entry.title}</span>
+                      <span className="rd-surah-row-meta">
+                        {mark.n === null ? t('wholeDua') : tr('lineTitle', { n: d(mark.n) })}
+                        {' · '}
+                        {t(`category.${entry.category}`)}
+                      </span>
+                    </span>
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        )
+      ) : (
+        <>
+          {kinds.length > 1 ? (
+            <Seg
+              label={t('filterByCategory')}
+              value={kind}
+              onChange={setKind}
+              options={[
+                { value: 'all', label: tr('all') },
+                ...kinds.map((k) => ({ value: k, label: t(`category.${k}`) })),
+              ]}
+            />
+          ) : null}
+          <label className="rd-search">
+            <MagnifyingGlass size={18} weight="bold" aria-hidden="true" />
+            <span className="visually-hidden">{tr('search')}</span>
+            <input
+              type="search"
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder={tr('search')}
+              autoComplete="off"
+              enterKeyHint="search"
+            />
+          </label>
+          {shown.length === 0 ? <p className="rd-empty">{tr('noMatch')}</p> : null}
+          <ul className="rd-list">
+            {shown.map(({ entry, index }) => (
+              <li key={entry.slug}>
+                <button
+                  type="button"
+                  className="rd-surah-row"
+                  aria-current={entry.slug === current || undefined}
+                  onClick={() => onPick(entry.slug)}
+                >
+                  <span className="rd-chip-n tabular">{digits(index + 1, locale)}</span>
+                  <span className="rd-surah-row-text">
+                    <span className="rd-surah-row-name">{entry.title}</span>
+                    <span className="rd-surah-row-meta">{t(`category.${entry.category}`)}</span>
+                  </span>
+                  {/* In Persian the title already reads much as the Arabic does. */}
+                  {locale === 'fa' ? null : (
+                    <span className="rd-surah-row-ar" lang="ar" dir="rtl">
+                      {entry.arabicTitle}
+                    </span>
+                  )}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
     </div>
   );
 }

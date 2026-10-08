@@ -569,7 +569,12 @@
       "mafatih": "Arabisch und persische Übersetzung nach Mafatih al-Dschinan. Die deutsche Übertragung stammt vom Verein und ist eine Arbeitsfassung — Hinweise auf Fehler sind willkommen.",
       "ziyarat": "Arabisch nach den überlieferten Ziyarat-Sammlungen. Die persische und die deutsche Übertragung stammen vom Verein und sind Arbeitsfassungen.",
       "house": "Zusammengestellt vom Verein."
-    }
+    },
+    "tabDuas": "Bittgebete",
+    "bookmarkDua": "Bittgebet als Lesezeichen setzen",
+    "unbookmarkDua": "Lesezeichen für dieses Bittgebet entfernen",
+    "wholeDua": "Ganzes Bittgebet",
+    "bookmarksEmpty": "Noch keine Lesezeichen. Setzen Sie oben eines für das ganze Bittgebet, oder tippen Sie bei einer Zeile auf das Lesezeichen oder auf ⋯."
   },
   "support": {
     "membership": "Mitgliedschaft",

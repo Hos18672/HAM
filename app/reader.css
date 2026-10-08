@@ -7,16 +7,6 @@
    design's own and nothing else; night only derives from it.
    ═══════════════════════════════════════════════════════════════════════════ */
 
-/* Amiri Quran (Amiri Project, Open Font License): drawn for the Quran, with
-   the verse-end sign that encloses its number. */
-@font-face {
-  font-family: 'Amiri Quran';
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-  src: url('../assets/fonts/amiri-quran-arabic-400-normal.woff2') format('woff2');
-}
-
 :root {
   --rd-paper: #f7f3e8;
   --rd-card: #ffffff;
@@ -32,7 +22,7 @@
   --rd-line-2: rgba(20, 38, 29, 0.24);
   --rd-glass: rgba(255, 255, 255, 0.86);
   --rd-shadow: 0 14px 36px rgba(7, 59, 41, 0.16);
-  --rd-ar-face: 'Amiri Quran', 'Scheherazade New', var(--font-naskh), serif;
+  --rd-ar-face: 'Scheherazade New', var(--font-naskh), serif;
   --rd-ease: cubic-bezier(0.16, 1, 0.3, 1);
   --rd-sheet-ease: cubic-bezier(0.32, 0.72, 0, 1);
   --rd-spring: cubic-bezier(0.34, 1.4, 0.64, 1);

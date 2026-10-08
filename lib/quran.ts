@@ -180,6 +180,9 @@ export interface PageAyah {
   segments: Segment[];
   translation: string;
   juz: number;
+  /** Which of the 240 quarter-hizbs the verse falls in; missing from pages
+   *  cached before it was added. */
+  hizbQuarter?: number;
   sajda: boolean;
 }
 
@@ -195,6 +198,7 @@ interface RawPage {
     numberInSurah: number;
     text: string;
     juz: number;
+    hizbQuarter?: number;
     sajda: unknown;
     surah: RawSurah;
   }[];
@@ -267,6 +271,7 @@ export async function getMushafPage(page: number, locale: Locale): Promise<Musha
         segments: first ? segmentsWithoutBasmala(segments) : segments,
         translation: translation.ayahs[index]?.text ?? '',
         juz: ayah.juz,
+        hizbQuarter: ayah.hizbQuarter,
         sajda: Boolean(ayah.sajda),
       };
     });

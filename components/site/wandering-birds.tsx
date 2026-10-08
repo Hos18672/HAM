@@ -33,10 +33,12 @@ const CARDS = '.card, .tile, .surf, .cta-panel, .card-plate, .frame, .pull-quote
  *
  * The contact page has none: it is there to be read at once, and the scene's
  * frame loop cost a phone seconds of main thread before the page answered.
+ * Nor do the Quran and du'a readers: birds crossing a verse are in the way.
  */
 export function WanderingBirds() {
   const hostRef = useRef<HTMLDivElement>(null);
-  const grounded = usePathname() === '/contact';
+  const path = usePathname();
+  const grounded = path === '/contact' || /^\/(quran\/page|duas)\/./.test(path);
 
   useEffect(() => {
     const host = hostRef.current;

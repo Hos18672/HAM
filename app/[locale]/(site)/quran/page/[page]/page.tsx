@@ -6,7 +6,6 @@ import { isLocale } from '@/lib/i18n/config';
 import { digits } from '@/lib/i18n/format';
 import { getMushafPage, getQuranIndex, getSurahList, PAGE_COUNT, TRANSLATION } from '@/lib/quran';
 import { getQuranHeader } from '@/lib/quran-page';
-import { PageHead } from '@/components/site/page-head';
 import { QuranReader } from '@/components/site/quran-reader';
 
 /**
@@ -57,8 +56,7 @@ export default async function MushafRoute({
   if (!n) notFound();
 
   const t = await getTranslations({ locale, namespace: 'quran' });
-  const [header, page, index, surahs] = await Promise.all([
-    getQuranHeader(typed),
+  const [page, index, surahs] = await Promise.all([
     getMushafPage(n, typed),
     getQuranIndex(),
     getSurahList(),
@@ -67,24 +65,13 @@ export default async function MushafRoute({
   if (!page || !index || !surahs) throw new Error(t('unavailable'));
 
   return (
-    <>
-      <PageHead header={header} locale={typed} />
-      <section className="section mushaf-section">
-        <QuranReader
-          initialPage={page}
-          surahs={surahs}
-          surahPage={index.surahPage}
-          juzPage={index.juzPage}
-          locale={typed}
-        />
-
-        {/* The notes under the reader: how to work it, and where the words
-            come from. Both stand down when the reader fills the screen. */}
-        <div className="qr-notes">
-          <p>{t('readerKeys')}</p>
-          <p>{t('source', { translator: TRANSLATION[typed].translator })}</p>
-        </div>
-      </section>
-    </>
+    <QuranReader
+      initialPage={page}
+      surahs={surahs}
+      surahPage={index.surahPage}
+      juzPage={index.juzPage}
+      locale={typed}
+      translator={TRANSLATION[typed].translator}
+    />
   );
 }

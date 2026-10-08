@@ -40,6 +40,9 @@ const csp = [
   // visitor taps "Google Maps laden"; until then no request goes to Google.
   `frame-src ${GOOGLE_MAPS_ORIGIN}`,
   `connect-src 'self'${supabaseOrigin ? ' ' + supabaseOrigin : ''}`,
+  // The Quran's recitation, one file per verse — fetched only when somebody
+  // presses play in the reader.
+  "media-src 'self' https://cdn.islamic.network",
   "frame-ancestors 'none'",
   "base-uri 'self'",
   "form-action 'self'",

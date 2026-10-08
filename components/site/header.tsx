@@ -299,7 +299,7 @@ function Dateline({ locale }: { locale: Locale }) {
   );
 }
 
-function Brand() {
+export function Brand() {
   const t = useTranslations('brand');
   return (
     <Link href="/" className="brand" aria-label={t('name')}>

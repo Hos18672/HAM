@@ -3,58 +3,84 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useTranslations } from 'next-intl';
 import {
+  ArrowLeft,
+  BookmarkSimple,
   BookOpen,
+  CaretDown,
   CaretLeft,
   CaretRight,
-  CornersIn,
-  CornersOut,
+  CircleNotch,
+  Copy,
+  DotsThree,
+  LinkSimple,
+  ListBullets,
   ListNumbers,
-  Minus,
+  MagnifyingGlass,
   Moon,
-  Plus,
-  Presentation,
+  Pause,
+  Play,
+  ProjectorScreen,
+  SidebarSimple,
+  SkipBack,
+  SkipForward,
   SlidersHorizontal,
   Sun,
   Translate,
 } from '@phosphor-icons/react/dist/ssr';
+import { Link } from '@/lib/i18n/navigation';
 import { arabicIndic, digits } from '@/lib/i18n/format';
 import { BASMALA, JUZ_COUNT, PAGE_COUNT } from '@/lib/quran-constants';
-import { Rosette } from './ornaments';
-import { Fixed } from './reader-fixed';
-import { usePaperTurn } from './use-paper-turn';
-import { useQuranSettings, rememberPage } from './use-quran-settings';
-import { QuranPresent } from './quran-present';
 import type { MushafPage, PageAyah, SurahInfo } from '@/lib/quran';
 import type { Locale } from '@/lib/i18n/config';
+import { Brand } from './header';
+import {
+  Equaliser,
+  Medallion,
+  Popover,
+  Portal,
+  Seg,
+  Sheet,
+  SizeControl,
+  Toggle,
+  copyText,
+  shareLink,
+  useMedia,
+  useSwipe,
+  useToast,
+} from './rd/ui';
+import { Present } from './rd/present';
+import { RECITERS, useQuranAudio, type Reciter, type Track } from './use-quran-audio';
+import {
+  MAX_SCALE,
+  MIN_SCALE,
+  rememberLast,
+  useQuranStore,
+  type Bookmark,
+} from './use-quran-store';
 
 /**
- * The Quran as a book, one page at a time.
+ * The Quran, one page of the Medina mushaf at a time.
  *
- * **Only the book turns.** The page's data comes from `/api/quran/page/[n]`
- * on the live site, and from a file the preview snapshot writes out
+ * **Only the book turns.** A page's data comes from `/api/quran/page/[n]` on
+ * the live site, and from a file the preview snapshot writes out
  * (`quran-data/<locale>/<n>.json`) where there is no server. The address is
  * then written with `History.prototype.replaceState` — the method itself,
  * not the one Next replaces it with, which tells the router the path has
- * changed and makes it rebuild the whole route. Turning a leaf is not a
- * navigation: the route is the same page of the site before and after, and
- * only the reader's place in the book has moved.
+ * changed and makes it rebuild the whole route. Turning a page is not a
+ * navigation: the route is the same before and after, and only the reader's
+ * place in the book has moved.
  *
- * Two ways to read it. **Verse by verse** sets each ayah on its own with its
- * translation under it, which is how somebody studies. **Mushaf** sets the
- * page as it is printed, justified and continuous, which is how somebody
- * recites — and there the leaf turns like paper (`use-paper-turn`). On top
- * of both sits presentation, for a room (`quran-present`).
+ * The screen is the reader's own on this route: a bar along the top that
+ * says where you are, a list of the surahs and juz beside the page on a
+ * wide screen, and a dock along the foot that plays the recitation and —
+ * on a phone — turns the pages.
  */
 
 /** Pages fetched so far, kept across turns — and across readers. */
 const loaded = new Map<string, MushafPage>();
+const pending = new Map<string, Promise<MushafPage>>();
 /** Empty on the live site; the sub-path on the GitHub Pages preview. */
 const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH ?? '';
-const pending = new Map<string, Promise<MushafPage>>();
-
-/** A finger has to travel this far across, and mostly across, to turn. */
-const SWIPE_DISTANCE = 70;
-const SWIPE_STRAIGHTNESS = 1.5;
 
 const pageFromUrl = () => {
   if (typeof window === 'undefined') return null;
@@ -62,21 +88,46 @@ const pageFromUrl = () => {
   return match ? Number(match[1]) : null;
 };
 
+/** `#2:106` → surah 2, verse 106. */
+const verseFromHash = (): { s: number; n: number } | null => {
+  const match = /^#(\d{1,3}):(\d{1,3})$/.exec(decodeURIComponent(window.location.hash));
+  return match ? { s: Number(match[1]), n: Number(match[2]) } : null;
+};
+
+const verseId = (s: number, n: number) => `v-${s}-${n}`;
+const plain = (ayah: PageAyah) => ayah.segments.map((segment) => segment.text).join('');
+
+/** Folded for search: no case, no Latin accents, no Arabic marks. */
+const fold = (text: string) =>
+  text
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[̀-ͯؐ-ًؚ-ٰٟۖ-ۭ'ʿʾ`-]/g, '')
+    .replace(/ٱ/g, 'ا')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+const reduceMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
 export function QuranReader({
   initialPage,
   surahs,
   surahPage,
   juzPage,
   locale,
+  translator,
 }: {
   initialPage: MushafPage;
   surahs: SurahInfo[];
   surahPage: number[];
   juzPage: number[];
   locale: Locale;
+  translator: string;
 }) {
   const t = useTranslations('quran');
+  const tr = useTranslations('reader');
   const rtl = locale === 'fa';
+  const d = useCallback((value: number) => digits(value, locale), [locale]);
 
   loaded.set(`${locale}:${initialPage.number}`, initialPage);
   const [page, setPage] = useState(() => {
@@ -85,18 +136,33 @@ export function QuranReader({
   });
   const [loading, setLoading] = useState(false);
   const [failed, setFailed] = useState(false);
-  const [open, setOpen] = useState(false);
-  const [full, setFull] = useState(false);
-  const [presenting, setPresenting] = useState(false);
-  /** Which verse of the page is on the wall; -1 means "the last one". */
-  const [verse, setVerse] = useState(0);
-  /** The slider's value while it is being dragged, before it is let go. */
-  const [scrub, setScrub] = useState<number | null>(null);
-
-  const settings = useQuranSettings();
   const n = page.number;
 
-  /* ── The pages ────────────────────────────────────────────────────────── */
+  const store = useQuranStore();
+  const { prefs } = store;
+  const desktop = useMedia('(min-width: 1024px)');
+  const [toastNode, toast] = useToast();
+
+  /* ── Where every verse stands in the whole Quran ─────────────────────── */
+  const offset = useMemo(() => {
+    const out = [0, 0];
+    for (const surah of surahs) out[surah.number + 1] = (out[surah.number] ?? 0) + surah.ayahCount;
+    return out;
+  }, [surahs]);
+  const globalOf = useCallback(
+    (ayah: { surah: number; number: number }) => (offset[ayah.surah] ?? 0) + ayah.number,
+    [offset],
+  );
+  const surahOf = useCallback(
+    (s: number) => page.surahs[s] ?? surahs.find((surah) => surah.number === s),
+    [page.surahs, surahs],
+  );
+  const nameOf = useCallback(
+    (s: number) => (rtl ? surahOf(s)?.name : surahOf(s)?.transliteration) ?? '',
+    [rtl, surahOf],
+  );
+
+  /* ── The pages ───────────────────────────────────────────────────────── */
   const fetchPage = useCallback(
     (want: number): Promise<MushafPage> => {
       const key = `${locale}:${want}`;
@@ -104,9 +170,6 @@ export function QuranReader({
       if (done) return Promise.resolve(done);
       let entry = pending.get(key);
       if (!entry) {
-        // On the preview there is no server to ask: the snapshot writes the
-        // same answer out as a file beside the pages, so a turn is a fetch
-        // there too rather than a fresh load of the whole site page.
         const url = BASE_PATH
           ? `${BASE_PATH}/quran-data/${locale}/${want}.json`
           : `/api/quran/page/${want}?locale=${locale}`;
@@ -127,65 +190,65 @@ export function QuranReader({
     [locale],
   );
 
-  const prepare = useCallback(
-    async (want: number) => {
-      if (want < 1 || want > PAGE_COUNT) return false;
-      if (loaded.has(`${locale}:${want}`)) return true;
-      setLoading(true);
-      try {
-        await fetchPage(want);
-        setFailed(false);
-        return true;
-      } catch {
-        setFailed(true);
-        return false;
-      } finally {
-        setLoading(false);
-      }
-    },
-    [fetchPage, locale],
-  );
-
   const pageUrl = useCallback(
     (want: number) => `${BASE_PATH}/${locale}/quran/page/${want}`,
     [locale],
   );
 
-  const commit = useCallback(
-    (want: number, at = 0) => {
-      const data = loaded.get(`${locale}:${want}`);
-      if (!data) return;
-      setPage(data);
-      setVerse(at);
-      setScrub(null);
-      rememberPage(want);
-      // Through `History.prototype` on purpose — see the note at the top.
-      // The entry's own state object is passed back unchanged: it is the
-      // router's, and overwriting it would lose what the browser needs to
-      // restore this entry on the way back.
-      History.prototype.replaceState.call(window.history, window.history.state, '', pageUrl(want));
-    },
-    [locale, pageUrl],
-  );
+  /** The verse to light up once a page has arrived, by surah and number. */
+  const highlightNext = useRef<{ s: number; n: number } | null>(null);
+  const [highlight, setHighlight] = useState<number | null>(null);
+  /** Which verse presentation shows; -1 is "the last of the page". */
+  const [presentAt, setPresentAt] = useState<number | null>(null);
 
-  /** Go to a page by name — a surah, a juz, a number typed in. */
   const go = useCallback(
-    async (want: number, at = 0) => {
+    async (want: number, options: { at?: number; verse?: { s: number; n: number } } = {}) => {
       const target = Math.min(PAGE_COUNT, Math.max(1, want));
-      if (!(await prepare(target))) return;
-      commit(target, at);
-      if (!presenting) window.scrollTo({ top: 0 });
+      const key = `${locale}:${target}`;
+      if (!loaded.has(key)) {
+        setLoading(true);
+        try {
+          await fetchPage(target);
+          setFailed(false);
+        } catch {
+          setFailed(true);
+          setLoading(false);
+          return;
+        }
+        setLoading(false);
+      }
+      const data = loaded.get(key);
+      if (!data) return;
+      highlightNext.current = options.verse ?? null;
+      setPage(data);
+      setHighlight(null);
+      if (options.at !== undefined) setPresentAt((was) => (was === null ? null : options.at!));
+      History.prototype.replaceState.call(
+        window.history,
+        window.history.state,
+        '',
+        pageUrl(target) + (options.verse ? `#${options.verse.s}:${options.verse.n}` : ''),
+      );
+      if (!options.verse) window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior });
     },
-    [commit, prepare, presenting],
+    [fetchPage, locale, pageUrl],
   );
 
-  // The page after this one, fetched ahead, so a turn is usually instant.
+  // The pages either side, fetched once the browser has a moment.
   useEffect(() => {
-    if (n < PAGE_COUNT) fetchPage(n + 1).catch(() => {});
-    if (n > 1) fetchPage(n - 1).catch(() => {});
+    const ahead = () => {
+      if (n < PAGE_COUNT) fetchPage(n + 1).catch(() => {});
+      if (n > 1) fetchPage(n - 1).catch(() => {});
+    };
+    if (typeof window.requestIdleCallback === 'function') {
+      const id = window.requestIdleCallback(ahead, { timeout: 2500 });
+      return () => window.cancelIdleCallback(id);
+    }
+    const id = setTimeout(ahead, 600);
+    return () => clearTimeout(id);
   }, [n, fetchPage]);
 
-  // The address can still be stepped through with the back button.
+  // The back button can still step through the addresses.
   useEffect(() => {
     const onPop = () => {
       const want = pageFromUrl();
@@ -195,558 +258,1151 @@ export function QuranReader({
     return () => window.removeEventListener('popstate', onPop);
   }, [n, go]);
 
-  /* ── The leaf, in the mushaf view ─────────────────────────────────────── */
-  const inBook = useCallback((want: number) => want >= 1 && want <= PAGE_COUNT, []);
-  const paper = usePaperTurn({ page: n, canGo: inBook, prepare, commit });
-  const mushaf = settings.view === 'mushaf';
-  const turn = useCallback(
-    (want: number) => {
-      if (mushaf) paper.turn(want);
-      else void go(want);
+  // A deep link — `#2:106` — lights its verse, on arrival and on change.
+  useEffect(() => {
+    const read = () => {
+      const want = verseFromHash();
+      if (!want) return;
+      const at = page.ayahs.findIndex((a) => a.surah === want.s && a.number === want.n);
+      if (at >= 0) setHighlight(at);
+    };
+    read();
+    window.addEventListener('hashchange', read);
+    return () => window.removeEventListener('hashchange', read);
+    // Only on arrival; a page turned to with a verse uses `highlightNext`.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  useEffect(() => {
+    const want = highlightNext.current;
+    highlightNext.current = null;
+    if (!want) return;
+    const at = page.ayahs.findIndex((a) => a.surah === want.s && a.number === want.n);
+    if (at >= 0) setHighlight(at);
+  }, [page]);
+
+  /* ── The recitation ──────────────────────────────────────────────────── */
+  const tracks: Track[] = useMemo(
+    () =>
+      page.ayahs.map((ayah) => ({
+        global: globalOf(ayah),
+        title: t('verseTitle', { surah: nameOf(ayah.surah), n: d(ayah.number) }),
+      })),
+    [page.ayahs, globalOf, t, nameOf, d],
+  );
+  const reciterName = t(`reciters.${prefs.reciter}`);
+  const audio = useQuranAudio({
+    tracks,
+    reciter: prefs.reciter,
+    speed: prefs.speed,
+    artist: reciterName,
+    album: t('header.title'),
+    onPageEnd: () => {
+      if (n < PAGE_COUNT) void go(n + 1, { at: 0 });
     },
-    [mushaf, paper, go],
-  );
+    onPageStart: () => {
+      if (n > 1) void go(n - 1, { at: -1 });
+    },
+    onError: () => toast(t('audioUnavailable')),
+  });
 
-  /* ── The whole screen ─────────────────────────────────────────────────── */
-  const toggleFull = useCallback(() => {
-    const element = document.documentElement;
-    if (document.fullscreenElement) {
-      void document.exitFullscreen().catch(() => {});
-      setFull(false);
-      return;
-    }
-    if (element.requestFullscreen) {
-      element.requestFullscreen({ navigationUI: 'hide' }).catch(() => setFull((on) => !on));
-      setFull(true);
-      return;
-    }
-    // iOS Safari refuses fullscreen for anything but a video. The overlay
-    // below is the whole feature there, and works.
-    setFull((on) => !on);
-  }, []);
+  const active = audio.index ?? highlight;
 
+  // The place to come back to: this page, and the verse being heard.
   useEffect(() => {
-    const onChange = () => {
-      if (!document.fullscreenElement) setFull(false);
-    };
-    document.addEventListener('fullscreenchange', onChange);
-    return () => document.removeEventListener('fullscreenchange', onChange);
-  }, []);
+    const ayah = page.ayahs[active ?? 0];
+    if (ayah) rememberLast({ page: n, s: ayah.surah, n: ayah.number });
+  }, [n, page.ayahs, active]);
 
-  // Filling the screen means the reader and nothing else: the site's header,
-  // its footer and the notes under the page all stand down.
+  // The verse being heard is brought into view, if it is not already.
   useEffect(() => {
-    const root = document.documentElement;
-    if (full || presenting) root.dataset.readerFull = 'true';
-    else delete root.dataset.readerFull;
-    return () => {
-      delete root.dataset.readerFull;
-    };
-  }, [full, presenting]);
+    if (active === null) return;
+    const ayah = page.ayahs[active];
+    if (!ayah) return;
+    const element = document.getElementById(verseId(ayah.surah, ayah.number));
+    if (!element) return;
+    const box = element.getBoundingClientRect();
+    const dock = document.querySelector('.rd-dock')?.getBoundingClientRect().top ?? innerHeight;
+    if (box.top >= 80 && box.bottom <= dock - 10) return;
+    element.scrollIntoView({ block: 'start', behavior: reduceMotion() ? 'auto' : 'smooth' });
+  }, [active, page.ayahs, prefs.view]);
 
-  /* ── Presentation ─────────────────────────────────────────────────────── */
-  const at = Math.min(
-    verse < 0 ? page.ayahs.length - 1 : verse,
-    Math.max(0, page.ayahs.length - 1),
-  );
-  const current = page.ayahs[at] ?? null;
+  /* ── Panels ──────────────────────────────────────────────────────────── */
+  const [sideOpen, setSideOpen] = useState(true);
+  const [picker, setPicker] = useState<null | 'surahs' | 'juz' | 'bookmarks'>(null);
+  const [pickerTab, setPickerTab] = useState<'surahs' | 'juz' | 'bookmarks'>('surahs');
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [verseMenu, setVerseMenu] = useState<number | null>(null);
+  const settingsAnchor = useRef<HTMLButtonElement>(null);
+  const closeSettings = useCallback(() => setSettingsOpen(false), []);
+  const closePicker = useCallback(() => setPicker(null), []);
+  const closeVerseMenu = useCallback(() => setVerseMenu(null), []);
+  const openPicker = (tab: 'surahs' | 'juz' | 'bookmarks') => {
+    setPickerTab(tab);
+    setPicker(tab);
+  };
 
-  const step = useCallback(
+  /* ── Verse actions ───────────────────────────────────────────────────── */
+  const isMarked = (ayah: PageAyah) => Boolean(store.bookmarks[globalOf(ayah)]);
+  const toggleMark = (ayah: PageAyah) => {
+    const added = store.toggleBookmark(globalOf(ayah), { s: ayah.surah, n: ayah.number, page: n });
+    toast(added ? tr('bookmarked') : tr('unbookmarked'));
+  };
+  const reference = (ayah: PageAyah) => `${nameOf(ayah.surah)} ${d(ayah.surah)}:${d(ayah.number)}`;
+  const copyVerse = async (ayah: PageAyah) => {
+    const text = [plain(ayah), ayah.translation, `— ${reference(ayah)}`]
+      .filter(Boolean)
+      .join('\n\n');
+    if (await copyText(text)) toast(t('verseCopied'));
+  };
+  const shareVerse = async (ayah: PageAyah) => {
+    const url = `${window.location.origin}${pageUrl(n)}#${ayah.surah}:${ayah.number}`;
+    const done = await shareLink(url, reference(ayah));
+    if (done === 'copied') toast(tr('linkCopied'));
+  };
+  const playVerse = (at: number) => {
+    if (audio.index === at) audio.toggle();
+    else audio.playAt(at);
+  };
+  const present = (at: number) => {
+    setSettingsOpen(false);
+    setVerseMenu(null);
+    setPresentAt(at);
+  };
+
+  /* ── Presentation ────────────────────────────────────────────────────── */
+  const presenting = presentAt !== null;
+  const shownAt =
+    presentAt === null
+      ? 0
+      : Math.min(presentAt < 0 ? page.ayahs.length - 1 : presentAt, page.ayahs.length - 1);
+  // Playing carries the wall along with it.
+  useEffect(() => {
+    if (presenting && audio.index !== null) setPresentAt(audio.index);
+  }, [presenting, audio.index]);
+  const stepPresent = useCallback(
     (by: 1 | -1) => {
-      const next = at + by;
+      const next = shownAt + by;
       if (next >= page.ayahs.length) {
-        if (n < PAGE_COUNT) void go(n + 1, 0);
+        if (n >= PAGE_COUNT) return;
+        if (audio.playing) audio.queue(0);
+        void go(n + 1, { at: 0 });
       } else if (next < 0) {
-        if (n > 1) void go(n - 1, -1);
+        if (n <= 1) return;
+        if (audio.playing) audio.queue(-1);
+        void go(n - 1, { at: -1 });
       } else {
-        setVerse(next);
+        setPresentAt(next);
+        if (audio.playing) audio.playAt(next);
       }
     },
-    [at, go, n, page.ayahs.length],
+    [shownAt, page.ayahs.length, n, audio, go],
   );
+  const closePresent = useCallback(() => setPresentAt(null), []);
 
-  const present = useCallback((from = 0) => {
-    setVerse(from);
-    setPresenting(true);
-    setOpen(false);
-  }, []);
+  /* ── Turning ─────────────────────────────────────────────────────────── */
+  const forward = useCallback(() => {
+    if (n < PAGE_COUNT) void go(n + 1);
+  }, [n, go]);
+  const backward = useCallback(() => {
+    if (n > 1) void go(n - 1);
+  }, [n, go]);
+  // Onwards is the way the script runs: leftwards in German, rightwards in
+  // Persian — for the swipe and the arrow keys alike.
+  const swipe = useSwipe(rtl ? backward : forward, rtl ? forward : backward);
 
-  /* ── Keys ─────────────────────────────────────────────────────────────── */
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
+      if (presenting || picker || verseMenu !== null) return;
       const el = event.target as HTMLElement | null;
-      const typing = el?.closest('input, select, textarea, [contenteditable]');
-      if (typing && event.key !== 'Escape') return;
-
-      if (presenting) {
-        if (['ArrowLeft', ' ', 'PageDown', 'Enter', 'ArrowDown'].includes(event.key)) {
-          event.preventDefault();
-          step(1);
-        } else if (['ArrowRight', 'PageUp', 'ArrowUp'].includes(event.key)) {
-          event.preventDefault();
-          step(-1);
-        } else if (event.key === 'Escape') setPresenting(false);
-        else if (event.key.toLowerCase() === 't') settings.toggleTranslated();
-        return;
-      }
-
-      // Onwards is leftwards here, as it is in the book: the next page of a
-      // mushaf lies to the left of the one you are reading.
-      if (event.key === 'ArrowLeft') turn(n + 1);
-      else if (event.key === 'ArrowRight') turn(n - 1);
-      else if (event.key.toLowerCase() === 'f') toggleFull();
-      else if (event.key.toLowerCase() === 'p') present(0);
-      else if (event.key.toLowerCase() === 't') settings.toggleTranslated();
-      else if (event.key === 'Escape' && full) toggleFull();
+      if (el?.closest('input, select, textarea, [contenteditable], [role="slider"]')) return;
+      if (event.altKey || event.ctrlKey || event.metaKey) return;
+      if (event.key === 'ArrowRight') (rtl ? backward : forward)();
+      else if (event.key === 'ArrowLeft') (rtl ? forward : backward)();
+      else if (event.key === ' ' && !el?.closest('button, a')) {
+        event.preventDefault();
+        audio.toggle();
+      } else return;
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [presenting, step, settings, turn, n, toggleFull, present, full]);
+  }, [presenting, picker, verseMenu, rtl, forward, backward, audio]);
 
-  /* ── The finger ───────────────────────────────────────────────────────── */
-  const touch = useRef<{ x: number; y: number } | null>(null);
-  const onTouchStart = (event: React.TouchEvent) => {
-    const first = event.touches[0];
-    touch.current = first ? { x: first.clientX, y: first.clientY } : null;
-  };
-  const onTouchEnd = (event: React.TouchEvent) => {
-    const from = touch.current;
-    const last = event.changedTouches[0];
-    touch.current = null;
-    if (!from || !last) return;
-    const dx = last.clientX - from.x;
-    const dy = last.clientY - from.y;
-    if (Math.abs(dx) < SWIPE_DISTANCE || Math.abs(dx) < Math.abs(dy) * SWIPE_STRAIGHTNESS) return;
-    if (window.getSelection()?.toString()) return;
-    // Carried to the right is onwards: a mushaf is bound on the right, so
-    // the leaf you have finished is the one on the left and you take it
-    // over the spine.
-    turn(n + (dx > 0 ? 1 : -1));
-  };
-
+  /* ── What the bar says ───────────────────────────────────────────────── */
   const first = page.ayahs[0];
+  const firstSurah = first ? surahOf(first.surah) : undefined;
+  const ofFirst = page.ayahs.filter((a) => a.surah === first?.surah);
+  const range =
+    ofFirst.length > 1
+      ? `${d(ofFirst[0]!.number)}–${d(ofFirst[ofFirst.length - 1]!.number)}`
+      : d(first?.number ?? 1);
+  const juz = first?.juz ?? 1;
+  const hizb = first?.hizbQuarter ? Math.ceil(first.hizbQuarter / 4) : null;
+  const barMeta = t('barMeta', { page: d(n), juz: d(juz), range });
+
   const blocks = useMemo(() => groupBySurah(page), [page]);
-  const arSize = `calc(${settings.scale} * clamp(1.3rem, 3.6vw, 1.95rem))`;
-  const scrubAt = scrub ?? n;
+  const mushaf = prefs.view === 'mushaf';
+  const arPx = desktop ? 30 : 24;
+
+  /* ── Settings, for the popover and the sheet alike ───────────────────── */
+  const settings = (
+    <div className="rd-settings">
+      <div className="rd-field">
+        <p className="rd-field-label">{t('viewSelect')}</p>
+        <Seg
+          label={t('viewSelect')}
+          value={prefs.view}
+          onChange={store.setView}
+          options={[
+            {
+              value: 'verse',
+              label: t('viewVerse'),
+              icon: <ListNumbers size={17} weight="duotone" aria-hidden="true" />,
+            },
+            {
+              value: 'mushaf',
+              label: t('viewMushaf'),
+              icon: <BookOpen size={17} weight="duotone" aria-hidden="true" />,
+            },
+          ]}
+        />
+      </div>
+      <div className="rd-field">
+        <p className="rd-field-label">{t('textSize')}</p>
+        <SizeControl
+          value={prefs.scale}
+          min={MIN_SCALE}
+          max={MAX_SCALE}
+          onSmaller={store.smaller}
+          onLarger={store.larger}
+          label={t('textSize')}
+          smallerLabel={t('smaller')}
+          largerLabel={t('larger')}
+          readout={`${d(Math.round(prefs.scale * 100))}%`}
+        />
+      </div>
+      <Toggle
+        checked={prefs.translated}
+        onChange={store.toggleTranslated}
+        label={t('translationShort')}
+        hint={t('translationBy', { translator })}
+        icon={<Translate size={18} weight="duotone" aria-hidden="true" />}
+      />
+      <Toggle
+        checked={prefs.silent}
+        onChange={store.toggleSilent}
+        label={t('markSilentShort')}
+        hint={t('silentLegend')}
+        icon={
+          <span lang="ar" className="rd-alif" aria-hidden="true">
+            ٱ
+          </span>
+        }
+      />
+      <div className="rd-field">
+        <p className="rd-field-label" id="rd-reciter">
+          {t('reciter')}
+        </p>
+        <div className="rd-radios" role="radiogroup" aria-labelledby="rd-reciter">
+          {RECITERS.map((voice: Reciter) => (
+            <button
+              key={voice}
+              type="button"
+              role="radio"
+              aria-checked={prefs.reciter === voice}
+              className="rd-radio"
+              onClick={() => store.setReciter(voice)}
+            >
+              <span className="rd-radio-dot" aria-hidden="true" />
+              {t(`reciters.${voice}`)}
+            </button>
+          ))}
+        </div>
+      </div>
+      <div className="rd-field">
+        <p className="rd-field-label">{tr('scheme')}</p>
+        <Seg
+          label={tr('scheme')}
+          value={store.night ? 'night' : 'light'}
+          onChange={(value) => store.setScheme(value === 'night')}
+          options={[
+            {
+              value: 'light',
+              label: tr('light'),
+              icon: <Sun size={17} weight="duotone" aria-hidden="true" />,
+            },
+            {
+              value: 'night',
+              label: tr('night'),
+              icon: <Moon size={17} weight="duotone" aria-hidden="true" />,
+            },
+          ]}
+        />
+      </div>
+      <button type="button" className="rd-row rd-row-action" onClick={() => present(active ?? 0)}>
+        <span className="rd-row-icon">
+          <ProjectorScreen size={18} weight="duotone" aria-hidden="true" />
+        </span>
+        <span className="rd-row-label">{tr('startPresentation')}</span>
+      </button>
+    </div>
+  );
+
+  const pickerProps = {
+    locale,
+    tab: pickerTab,
+    onTab: setPickerTab,
+    surahs,
+    surahPage,
+    juzPage,
+    currentSurah: first?.surah ?? 1,
+    currentJuz: juz,
+    bookmarks: store.bookmarks,
+    nameOf: (s: number) => nameOf(s),
+    onPick: (want: number, verse?: { s: number; n: number }) => {
+      setPicker(null);
+      void go(want, { verse });
+    },
+  };
+
+  const menuAyah = verseMenu === null ? undefined : page.ayahs[verseMenu];
+  const presented = page.ayahs[shownAt];
+  const presentedSurah = presented ? surahOf(presented.surah) : undefined;
+  const ThemeIcon = store.night ? Sun : Moon;
+  const PrevIcon = rtl ? CaretRight : CaretLeft;
+  const NextIcon = rtl ? CaretLeft : CaretRight;
 
   return (
     <div
-      className="qr"
-      data-view={settings.view}
-      data-full={full || undefined}
-      data-silent={settings.silent ? 'on' : 'off'}
-      style={{ ['--qr-ar' as string]: arSize, ['--qr-scale' as string]: settings.scale }}
+      className="rd rd-app"
+      data-view={prefs.view}
+      data-side={sideOpen ? 'open' : 'closed'}
+      data-silent={prefs.silent ? 'on' : 'off'}
+      style={
+        {
+          ['--rd-scale' as string]: prefs.scale,
+          ['--rd-ar' as string]: `${arPx * prefs.scale}px`,
+        } as React.CSSProperties
+      }
     >
-      {/* ── Every choice there is ──────────────────────────────────────
-          And nothing else. The bar used to name the surah as well, which
-          the page's own running head already does a finger's width below
-          it — on a real surah's name it took a second row of the bar to
-          say it twice. */}
-      <div className="qr-bar">
-        {/* On a narrow screen only these three stay out; the rest fold
-            behind the first of them. */}
-        <div className="qr-compact">
-          <button
-            type="button"
-            className="qr-chip"
-            aria-expanded={open}
-            aria-controls="qr-controls"
-            onClick={() => setOpen((was) => !was)}
-            aria-label={t('settings')}
-          >
-            <SlidersHorizontal size={20} weight="duotone" aria-hidden="true" />
-          </button>
-          <button
-            type="button"
-            className="qr-chip"
-            aria-pressed={full}
-            onClick={toggleFull}
-            aria-label={full ? t('exitFullscreen') : t('fullscreen')}
-          >
-            {full ? (
-              <CornersIn size={20} weight="duotone" aria-hidden="true" />
-            ) : (
-              <CornersOut size={20} weight="duotone" aria-hidden="true" />
-            )}
-          </button>
-          <button
-            type="button"
-            className="qr-chip qr-present"
-            onClick={() => present(0)}
-            aria-label={t('present')}
-          >
-            <Presentation size={20} weight="duotone" aria-hidden="true" />
-          </button>
-        </div>
-
-        <div className="qr-controls" id="qr-controls" data-open={open || undefined}>
-          <label className="qr-select">
-            <span className="visually-hidden">{t('surahSelect')}</span>
-            <select
-              value={first?.surah ?? 1}
-              onChange={(event) => void go(surahPage[Number(event.target.value)] ?? n)}
-            >
-              {surahs.map((s) => (
-                <option key={s.number} value={s.number}>
-                  {digits(s.number, locale)}. {rtl ? s.name : s.transliteration}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <label className="qr-select qr-select-narrow">
-            <span className="visually-hidden">{t('juzSelect')}</span>
-            <select
-              value={first?.juz ?? 1}
-              onChange={(event) => void go(juzPage[Number(event.target.value)] ?? n)}
-            >
-              {Array.from({ length: JUZ_COUNT }, (_, i) => i + 1).map((juz) => (
-                <option key={juz} value={juz}>
-                  {t('juz', { n: digits(juz, locale) })}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <div className="qr-seg" role="group" aria-label={t('viewSelect')}>
+      {/* ── The bar ──────────────────────────────────────────────────── */}
+      <header className="rd-bar">
+        <div className="rd-bar-row">
+          <div className="rd-bar-start">
             <button
               type="button"
-              aria-pressed={settings.view === 'verse'}
-              onClick={() => settings.setView('verse')}
+              className="rd-round rd-desk"
+              aria-pressed={sideOpen}
+              onClick={() => setSideOpen((open) => !open)}
+              aria-label={tr('sidebar')}
             >
-              <ListNumbers size={17} weight="duotone" aria-hidden="true" />
-              {t('viewVerse')}
+              <SidebarSimple size={20} weight="duotone" aria-hidden="true" className="mirror" />
             </button>
-            <button type="button" aria-pressed={mushaf} onClick={() => settings.setView('mushaf')}>
-              <BookOpen size={17} weight="duotone" aria-hidden="true" />
-              {t('viewMushaf')}
-            </button>
+            <span className="rd-desk rd-brand-wrap">
+              <Brand />
+            </span>
+            <Link href="/quran" className="rd-round rd-mob" aria-label={tr('backToIndex')}>
+              <ArrowLeft size={20} weight="bold" aria-hidden="true" className="mirror" />
+            </Link>
           </div>
 
           <button
             type="button"
-            className="qr-chip qr-chip-wide"
-            aria-pressed={settings.translated}
-            onClick={settings.toggleTranslated}
+            className="rd-title"
+            onClick={() => (desktop ? setSideOpen(true) : openPicker('surahs'))}
+            aria-haspopup={desktop ? undefined : 'dialog'}
           >
-            <Translate size={17} weight="duotone" aria-hidden="true" />
-            {t('translationShort')}
-          </button>
-
-          <button
-            type="button"
-            className="qr-chip qr-chip-wide"
-            aria-pressed={settings.silent}
-            onClick={settings.toggleSilent}
-            title={t('silentLegend')}
-          >
-            <span lang="ar" aria-hidden="true" className="qr-alif">
-              ٱ
+            <span className="rd-title-ar" lang="ar" dir="rtl">
+              {firstSurah?.name}
             </span>
-            <span className="qr-chip-word">{t('markSilentShort')}</span>
-          </button>
-
-          <div className="qr-size" role="group" aria-label={t('textSize')}>
-            <button
-              type="button"
-              onClick={settings.smaller}
-              disabled={!settings.canReduce}
-              aria-label={t('smaller')}
-            >
-              <Minus size={13} weight="bold" aria-hidden="true" />
-            </button>
-            <span className="tabular" aria-hidden="true">
-              {digits(Math.round(settings.scale * 100), locale)}%
+            <span className="rd-title-text">
+              <span className="rd-title-name">
+                {rtl ? firstSurah?.name : firstSurah?.transliteration}
+                <CaretDown size={13} weight="bold" aria-hidden="true" className="rd-mob" />
+              </span>
+              <span className="rd-title-meta tabular">{barMeta}</span>
             </span>
-            <button
-              type="button"
-              onClick={settings.larger}
-              disabled={!settings.canEnlarge}
-              aria-label={t('larger')}
-            >
-              <Plus size={13} weight="bold" aria-hidden="true" />
-            </button>
-          </div>
-
-          <button
-            type="button"
-            className="qr-chip"
-            aria-pressed={settings.night}
-            onClick={settings.toggleNight}
-            aria-label={t('night')}
-          >
-            {settings.night ? (
-              <Sun size={17} weight="duotone" aria-hidden="true" />
-            ) : (
-              <Moon size={17} weight="duotone" aria-hidden="true" />
-            )}
           </button>
 
-          <div className="qr-screen">
+          <div className="rd-bar-end">
             <button
               type="button"
-              className="qr-chip qr-chip-wide"
-              aria-pressed={full}
-              onClick={toggleFull}
+              className="rd-round"
+              onClick={() => store.setScheme(!store.night)}
+              aria-label={store.night ? tr('themeToLight') : tr('themeToNight')}
             >
-              {full ? (
-                <CornersIn size={17} weight="duotone" aria-hidden="true" />
-              ) : (
-                <CornersOut size={17} weight="duotone" aria-hidden="true" />
-              )}
-              {full ? t('exitFullscreen') : t('fullscreen')}
+              <ThemeIcon size={20} weight="duotone" aria-hidden="true" />
             </button>
             <button
+              ref={settingsAnchor}
               type="button"
-              className="qr-chip qr-present qr-chip-wide"
-              onClick={() => present(0)}
+              className="rd-pill rd-desk"
+              aria-expanded={settingsOpen && desktop}
+              aria-haspopup="dialog"
+              onClick={() => setSettingsOpen((open) => !open)}
             >
-              <Presentation size={17} weight="duotone" aria-hidden="true" />
-              {t('present')}
+              <SlidersHorizontal size={18} weight="duotone" aria-hidden="true" />
+              {tr('display')}
             </button>
+            {desktop ? (
+              <Popover
+                open={settingsOpen}
+                onClose={closeSettings}
+                label={tr('display')}
+                anchor={settingsAnchor}
+              >
+                {settings}
+              </Popover>
+            ) : null}
           </div>
         </div>
-      </div>
+        <div className="rd-progress" aria-hidden="true">
+          <i style={{ inlineSize: `${(n / PAGE_COUNT) * 100}%` }} />
+        </div>
+      </header>
 
-      {/* ── The page ───────────────────────────────────────────────────── */}
-      <div
-        className="qr-main"
-        onTouchStart={onTouchStart}
-        onTouchEnd={onTouchEnd}
-        aria-busy={loading}
-      >
-        {failed ? (
-          <div className="qr-failed">
-            <p>{t('unavailable')}</p>
-            <button type="button" className="qr-retry" onClick={() => void go(n)}>
-              {t('retry')}
-            </button>
+      <div className="rd-layout">
+        {/* ── Beside the page, on a wide screen ─────────────────────── */}
+        <aside className="rd-side" aria-label={t('surahSelect')} inert={!sideOpen || undefined}>
+          <div className="rd-side-inner">
+            <Picker {...pickerProps} variant="side" />
           </div>
-        ) : mushaf ? (
-          <MushafView
-            page={page}
-            blocks={blocks}
-            locale={locale}
-            translated={settings.translated}
-            paper={paper}
-            onPresentFrom={present}
-          />
-        ) : (
-          <VerseView
-            page={page}
-            blocks={blocks}
-            locale={locale}
-            translated={settings.translated}
-            onPresentFrom={present}
-            presentLabel={t('presentFrom')}
-          />
-        )}
-      </div>
+        </aside>
 
-      <Fixed scale={settings.scale} arSize={arSize} silent={settings.silent}>
-        {/* ── Either side, where there is room for them ──────────────────── */}
-        <button
-          type="button"
-          className="qr-side qr-side-prev"
-          onClick={() => turn(n - 1)}
-          disabled={n <= 1}
-          aria-label={t('previousPage')}
-        >
-          <CaretRight size={22} weight="bold" aria-hidden="true" />
-        </button>
-        <button
-          type="button"
-          className="qr-side qr-side-next"
-          onClick={() => turn(n + 1)}
-          disabled={n >= PAGE_COUNT}
-          aria-label={t('nextPage')}
-        >
-          <CaretLeft size={22} weight="bold" aria-hidden="true" />
-        </button>
-
-        {/* ── Along the foot: where you are in 604 pages ─────────────────── */}
-        <div className="qr-foot">
-          <div className="qr-foot-inner" dir="rtl">
-            <button
-              type="button"
-              className="qr-step"
-              onClick={() => turn(n - 1)}
-              disabled={n <= 1}
-              aria-label={t('previousPage')}
-            >
-              <CaretRight size={18} weight="bold" aria-hidden="true" />
-              <span className="qr-step-word">{t('back')}</span>
-            </button>
-            <div className="qr-slider">
-              <input
-                type="range"
-                min={1}
-                max={PAGE_COUNT}
-                value={scrubAt}
-                dir="rtl"
-                aria-label={t('pageSelect')}
-                // Said in full to a screen reader; printed short beside the
-                // slider, where it is a readout and not a caption.
-                aria-valuetext={t('pageOf', { n: digits(scrubAt, locale) })}
-                onChange={(event) => setScrub(Number(event.target.value))}
-                // Only when it is let go: a page per pixel would ask the
-                // server for six hundred pages on one drag.
-                onPointerUp={() => scrub !== null && void go(scrub)}
-                onKeyUp={() => scrub !== null && void go(scrub)}
-                onTouchEnd={() => scrub !== null && void go(scrub)}
-              />
-              <p className="qr-slider-label tabular" aria-hidden="true" dir="ltr">
-                {digits(scrubAt, locale)} / {digits(PAGE_COUNT, locale)}
-              </p>
+        {/* ── The page ──────────────────────────────────────────────── */}
+        <div className="rd-main" {...swipe} aria-busy={loading} data-loading={loading || undefined}>
+          {failed ? (
+            <div className="rd-failed" role="alert">
+              <p>{t('unavailable')}</p>
+              <button type="button" className="rd-pill" onClick={() => void go(n)}>
+                {t('retry')}
+              </button>
             </div>
+          ) : null}
+
+          <div className="rd-col" key={`${n}-${prefs.view}`}>
+            {mushaf ? (
+              <MushafView
+                page={page}
+                blocks={blocks}
+                locale={locale}
+                translated={prefs.translated}
+                active={active}
+                playing={audio.playing}
+                juzLabel={[
+                  t('juzShort', { n: d(juz) }),
+                  hizb ? t('hizbShort', { n: d(hizb) }) : null,
+                ]
+                  .filter(Boolean)
+                  .join(' · ')}
+                surahLabel={nameOf(first?.surah ?? 1)}
+                onAyah={playVerse}
+              />
+            ) : (
+              blocks.map((block) => {
+                const surah = surahOf(block.surah);
+                return (
+                  <section key={`${block.surah}-${block.ayahs[0]?.number}`}>
+                    {block.opens ? (
+                      <header className="rd-surah rd-rise" id={`surah-${block.surah}`}>
+                        <p className="rd-kicker">{t('surahKicker', { n: d(block.surah) })}</p>
+                        <h2 className="rd-surah-ar" lang="ar" dir="rtl">
+                          {surah?.name}
+                        </h2>
+                        <p className="rd-surah-meta">
+                          {[
+                            surah?.transliteration,
+                            t('surahMeta', {
+                              n: d(surah?.ayahCount ?? 0),
+                              place:
+                                surah?.revelation === 'medinan'
+                                  ? t('placeMedinan')
+                                  : t('placeMeccan'),
+                            }),
+                          ]
+                            .filter(Boolean)
+                            .join(' · ')}
+                        </p>
+                        {opensWithBasmala(block) ? (
+                          <p className="rd-bism" lang="ar" dir="rtl">
+                            {BASMALA}
+                          </p>
+                        ) : null}
+                      </header>
+                    ) : null}
+                    {block.ayahs.map((ayah) => {
+                      const at = block.start + block.ayahs.indexOf(ayah);
+                      const isActive = active === at;
+                      const isPlaying = audio.index === at && audio.playing;
+                      const marked = isMarked(ayah);
+                      return (
+                        <article
+                          key={`${ayah.surah}:${ayah.number}`}
+                          id={verseId(ayah.surah, ayah.number)}
+                          className="rd-verse rd-rise"
+                          style={{ ['--i' as string]: Math.min(at, 8) }}
+                          aria-label={t('ayahLabel', { n: d(ayah.number) })}
+                          aria-current={isActive || undefined}
+                          data-active={isActive || undefined}
+                        >
+                          <div className="rd-verse-top">
+                            <Medallion
+                              label={d(ayah.number)}
+                              active={isActive}
+                              onClick={() => playVerse(at)}
+                              ariaLabel={t('playVerse', { n: d(ayah.number) })}
+                            />
+                            {audio.index === at ? <Equaliser paused={!isPlaying} /> : null}
+                            {marked ? (
+                              <BookmarkSimple
+                                size={18}
+                                weight="fill"
+                                className="rd-flag"
+                                aria-label={tr('bookmarks')}
+                              />
+                            ) : null}
+                            <div className="rd-verse-actions rd-desk">
+                              <button
+                                type="button"
+                                className="rd-ghost"
+                                onClick={() => playVerse(at)}
+                                aria-label={
+                                  isPlaying ? t('pause') : t('playVerse', { n: d(ayah.number) })
+                                }
+                              >
+                                {isPlaying ? (
+                                  <Pause size={18} weight="fill" aria-hidden="true" />
+                                ) : (
+                                  <Play size={18} weight="fill" aria-hidden="true" />
+                                )}
+                              </button>
+                              <button
+                                type="button"
+                                className="rd-ghost"
+                                aria-pressed={marked}
+                                onClick={() => toggleMark(ayah)}
+                                aria-label={marked ? tr('bookmarkRemove') : tr('bookmarkAdd')}
+                              >
+                                <BookmarkSimple
+                                  size={18}
+                                  weight={marked ? 'fill' : 'duotone'}
+                                  aria-hidden="true"
+                                />
+                              </button>
+                              <button
+                                type="button"
+                                className="rd-ghost"
+                                onClick={() => void copyVerse(ayah)}
+                                aria-label={t('copyVerse')}
+                              >
+                                <Copy size={18} weight="duotone" aria-hidden="true" />
+                              </button>
+                              <button
+                                type="button"
+                                className="rd-ghost"
+                                onClick={() => present(at)}
+                                aria-label={t('presentFrom')}
+                              >
+                                <ProjectorScreen size={18} weight="duotone" aria-hidden="true" />
+                              </button>
+                            </div>
+                            <button
+                              type="button"
+                              className="rd-ghost rd-more rd-mob"
+                              onClick={() => setVerseMenu(at)}
+                              aria-label={t('verseMenu', { n: d(ayah.number) })}
+                              aria-haspopup="dialog"
+                            >
+                              <DotsThree size={24} weight="bold" aria-hidden="true" />
+                            </button>
+                          </div>
+                          <p className="rd-ar" lang="ar" dir="rtl">
+                            <Arabic ayah={ayah} />
+                          </p>
+                          {prefs.translated ? (
+                            <p className="rd-tr" lang={locale} dir={rtl ? 'rtl' : 'ltr'}>
+                              {ayah.translation}
+                            </p>
+                          ) : null}
+                        </article>
+                      );
+                    })}
+                  </section>
+                );
+              })
+            )}
+          </div>
+
+          {/* ── The end of the page: the pages either side ───────────── */}
+          <nav className="rd-pagenav" aria-label={t('pageSelect')}>
             <button
               type="button"
-              className="qr-step qr-step-next"
-              onClick={() => turn(n + 1)}
-              disabled={n >= PAGE_COUNT}
-              aria-label={t('nextPage')}
+              className="rd-pill rd-pill-outline"
+              onClick={backward}
+              disabled={n <= 1}
             >
-              <span className="qr-step-word">{t('forward')}</span>
-              <CaretLeft size={18} weight="bold" aria-hidden="true" />
+              <PrevIcon size={16} weight="bold" aria-hidden="true" />
+              {t('pageShort', { n: d(Math.max(1, n - 1)) })}
             </button>
+            <span className="rd-pagenav-at tabular">{t('pageOf', { n: d(n) })}</span>
+            <button type="button" className="rd-pill" onClick={forward} disabled={n >= PAGE_COUNT}>
+              {t('pageShort', { n: d(Math.min(PAGE_COUNT, n + 1)) })}
+              <NextIcon size={16} weight="bold" aria-hidden="true" />
+            </button>
+          </nav>
+          <p className="rd-credits">{t('credits', { translator, reciter: reciterName })}</p>
+        </div>
+      </div>
+
+      {/* ── The dock ─────────────────────────────────────────────────── */}
+      <Portal>
+        <div className="rd-dock-wrap" data-side={sideOpen ? 'open' : 'closed'}>
+          <div className="rd-dock" dir={rtl ? 'rtl' : 'ltr'} lang={locale}>
+            <div className="rd-dock-player">
+              <button
+                type="button"
+                className="rd-play"
+                aria-pressed={audio.playing}
+                aria-label={audio.playing ? t('pause') : t('play')}
+                onClick={audio.toggle}
+                data-buffering={(audio.buffering && audio.index !== null) || undefined}
+                style={{
+                  ['--p' as string]: audio.duration ? Math.min(1, audio.time / audio.duration) : 0,
+                }}
+              >
+                <span className="rd-play-core">
+                  {audio.buffering && audio.index !== null ? (
+                    <CircleNotch size={22} weight="bold" className="rd-spin" aria-hidden="true" />
+                  ) : audio.playing ? (
+                    <Pause size={22} weight="fill" aria-hidden="true" />
+                  ) : (
+                    <Play size={22} weight="fill" aria-hidden="true" />
+                  )}
+                </span>
+              </button>
+              <div className="rd-dock-text">
+                <p className="rd-dock-title">
+                  {audio.index !== null ? (
+                    <>
+                      <span>{tracks[audio.index]?.title}</span>
+                      <Equaliser paused={!audio.playing} />
+                    </>
+                  ) : (
+                    <span>{t('listen')}</span>
+                  )}
+                </p>
+                <p className="rd-dock-sub">{reciterName}</p>
+                <span className="rd-dock-line rd-desk" aria-hidden="true">
+                  <i
+                    style={{
+                      inlineSize: `${audio.duration ? (audio.time / audio.duration) * 100 : 0}%`,
+                    }}
+                  />
+                </span>
+              </div>
+              <div className="rd-skip" role="group">
+                <button
+                  type="button"
+                  className="rd-skip-btn"
+                  onClick={audio.previous}
+                  disabled={audio.index === null || (audio.index === 0 && n <= 1)}
+                  aria-label={t('previousVerse')}
+                >
+                  <SkipBack size={18} weight="fill" aria-hidden="true" className="mirror" />
+                </button>
+                <button
+                  type="button"
+                  className="rd-skip-btn"
+                  onClick={audio.next}
+                  aria-label={t('nextVerse')}
+                >
+                  <SkipForward size={18} weight="fill" aria-hidden="true" className="mirror" />
+                </button>
+              </div>
+              <button
+                type="button"
+                className="rd-speed rd-desk"
+                onClick={store.cycleSpeed}
+                aria-label={t('speed')}
+              >
+                {d(prefs.speed)}×
+              </button>
+            </div>
+
+            <div className="rd-dock-scrub rd-mob" data-dim={audio.index === null || undefined}>
+              <span className="rd-time tabular">{clock(audio.time, locale)}</span>
+              <Scrubber
+                time={audio.time}
+                duration={audio.duration}
+                onSeek={audio.seek}
+                label={t('seek')}
+                rtl={rtl}
+                locale={locale}
+              />
+              <span className="rd-time tabular">{clock(audio.duration, locale)}</span>
+              <button
+                type="button"
+                className="rd-speed"
+                onClick={store.cycleSpeed}
+                aria-label={t('speed')}
+              >
+                {d(prefs.speed)}×
+              </button>
+            </div>
+
+            <nav className="rd-dock-nav rd-mob" aria-label={tr('dock')}>
+              <button type="button" className="rd-dock-word" onClick={() => openPicker('surahs')}>
+                <ListBullets size={20} weight="duotone" aria-hidden="true" />
+                <span>{tr('contents')}</span>
+              </button>
+              <button
+                type="button"
+                className="rd-round rd-round-lg"
+                onClick={backward}
+                disabled={n <= 1}
+                aria-label={t('previousPage')}
+              >
+                <PrevIcon size={20} weight="bold" aria-hidden="true" />
+              </button>
+              <button type="button" className="rd-dock-centre" onClick={() => openPicker('juz')}>
+                <span className="rd-dock-centre-top tabular">{t('pageShort', { n: d(n) })}</span>
+                <span className="rd-dock-centre-sub tabular">
+                  {t('navCentre', { juz: d(juz) })}
+                </span>
+              </button>
+              <button
+                type="button"
+                className="rd-round rd-round-lg"
+                onClick={forward}
+                disabled={n >= PAGE_COUNT}
+                aria-label={t('nextPage')}
+              >
+                <NextIcon size={20} weight="bold" aria-hidden="true" />
+              </button>
+              <button type="button" className="rd-dock-word" onClick={() => setSettingsOpen(true)}>
+                <SlidersHorizontal size={20} weight="duotone" aria-hidden="true" />
+                <span>{t('viewSelect')}</span>
+              </button>
+            </nav>
           </div>
         </div>
+      </Portal>
 
-        {presenting ? (
-          <QuranPresent
-            ayah={current}
-            surah={current ? page.surahs[current.surah] : undefined}
-            pageNumber={n}
-            locale={locale}
-            translated={settings.translated}
-            silent={settings.silent}
-            scale={settings.scale}
-            onStep={step}
-            onClose={() => setPresenting(false)}
-            onToggleTranslated={settings.toggleTranslated}
-            onToggleSilent={settings.toggleSilent}
-            onLarger={settings.larger}
-            onSmaller={settings.smaller}
-          />
+      {/* ── Sheets, on a phone ───────────────────────────────────────── */}
+      {!desktop ? (
+        <>
+          <Sheet
+            open={picker !== null}
+            onClose={closePicker}
+            title={tr('contents')}
+            closeLabel={tr('close')}
+            className="rd-sheet-tall"
+          >
+            <Picker {...pickerProps} variant="sheet" />
+          </Sheet>
+          <Sheet
+            open={settingsOpen}
+            onClose={closeSettings}
+            title={tr('display')}
+            closeLabel={tr('close')}
+          >
+            {settings}
+          </Sheet>
+        </>
+      ) : null}
+      <Sheet
+        open={menuAyah !== undefined}
+        onClose={closeVerseMenu}
+        title={
+          menuAyah ? t('verseTitle', { surah: nameOf(menuAyah.surah), n: d(menuAyah.number) }) : ''
+        }
+        closeLabel={tr('close')}
+      >
+        {menuAyah ? (
+          <div className="rd-menu">
+            <p className="rd-menu-preview" lang="ar" dir="rtl">
+              {plain(menuAyah)}
+            </p>
+            <MenuRow
+              icon={<Play size={20} weight="fill" aria-hidden="true" />}
+              label={t('playFromHere')}
+              onClick={() => {
+                audio.playAt(verseMenu!);
+                closeVerseMenu();
+              }}
+            />
+            <MenuRow
+              icon={
+                <BookmarkSimple
+                  size={20}
+                  weight={isMarked(menuAyah) ? 'fill' : 'duotone'}
+                  aria-hidden="true"
+                />
+              }
+              label={isMarked(menuAyah) ? tr('bookmarkRemove') : tr('bookmarkAdd')}
+              onClick={() => {
+                toggleMark(menuAyah);
+                closeVerseMenu();
+              }}
+            />
+            <MenuRow
+              icon={<Copy size={20} weight="duotone" aria-hidden="true" />}
+              label={t('copyVerse')}
+              onClick={() => {
+                void copyVerse(menuAyah);
+                closeVerseMenu();
+              }}
+            />
+            <MenuRow
+              icon={<LinkSimple size={20} weight="duotone" aria-hidden="true" />}
+              label={tr('shareLink')}
+              onClick={() => {
+                void shareVerse(menuAyah);
+                closeVerseMenu();
+              }}
+            />
+            <MenuRow
+              icon={<ProjectorScreen size={20} weight="duotone" aria-hidden="true" />}
+              label={t('presentFrom')}
+              onClick={() => present(verseMenu!)}
+            />
+          </div>
         ) : null}
-      </Fixed>
+      </Sheet>
+
+      {presenting && presented ? (
+        <Present
+          locale={locale}
+          arabicName={presentedSurah?.name ?? ''}
+          title={t('verseTitle', { surah: nameOf(presented.surah), n: d(presented.number) })}
+          progress={presentedSurah?.ayahCount ? presented.number / presentedSurah.ayahCount : 0}
+          counter={`${d(presented.number)} / ${d(presentedSurah?.ayahCount ?? 0)}`}
+          above={
+            presented.number === 1 && presented.surah !== 1 && presented.surah !== 9 ? (
+              <p lang="ar" dir="rtl" className="rd-present-bism">
+                {BASMALA}
+              </p>
+            ) : null
+          }
+          arabic={<Arabic ayah={presented} />}
+          length={plain(presented).length}
+          translation={presented.translation}
+          translated={prefs.translated}
+          silent={prefs.silent}
+          stepKey={`${presented.surah}:${presented.number}`}
+          playing={audio.playing && audio.index === shownAt}
+          labels={{
+            dialog: t('present'),
+            close: t('exitPresent'),
+            translation: t('translationToggle'),
+            play: t('playVerse', { n: d(presented.number) }),
+            pause: t('pause'),
+            next: t('nextVerse'),
+            previous: t('previousVerse'),
+          }}
+          onStep={stepPresent}
+          onClose={closePresent}
+          onToggleTranslated={store.toggleTranslated}
+          onPlay={() => playVerse(shownAt)}
+        />
+      ) : null}
+
+      {toastNode}
     </div>
   );
 }
 
-/* ─── The page, grouped by the surahs on it ──────────────────────────────── */
+/* ─── Pieces ───────────────────────────────────────────────────────────── */
+
+function MenuRow({
+  icon,
+  label,
+  onClick,
+}: {
+  icon: ReactNode;
+  label: string;
+  onClick: () => void;
+}) {
+  return (
+    <button type="button" className="rd-row rd-row-action" onClick={onClick}>
+      <span className="rd-row-icon">{icon}</span>
+      <span className="rd-row-label">{label}</span>
+    </button>
+  );
+}
+
+const clock = (seconds: number, locale: Locale) => {
+  const whole = Math.max(0, Math.floor(seconds || 0));
+  return digits(`${Math.floor(whole / 60)}:${String(whole % 60).padStart(2, '0')}`, locale);
+};
+
+function Scrubber({
+  time,
+  duration,
+  onSeek,
+  label,
+  rtl,
+  locale,
+}: {
+  time: number;
+  duration: number;
+  onSeek: (seconds: number) => void;
+  label: string;
+  rtl: boolean;
+  locale: Locale;
+}) {
+  const track = useRef<HTMLDivElement>(null);
+  const [drag, setDrag] = useState<number | null>(null);
+  const at = drag ?? time;
+  const fraction = duration ? Math.min(1, at / duration) : 0;
+
+  const fromPointer = (x: number) => {
+    const box = track.current?.getBoundingClientRect();
+    if (!box || !duration) return 0;
+    const f = rtl ? (box.right - x) / box.width : (x - box.left) / box.width;
+    return Math.max(0, Math.min(1, f)) * duration;
+  };
+
+  return (
+    <div
+      ref={track}
+      className="rd-scrub"
+      role="slider"
+      tabIndex={duration ? 0 : -1}
+      aria-label={label}
+      aria-valuemin={0}
+      aria-valuemax={Math.round(duration)}
+      aria-valuenow={Math.round(at)}
+      aria-valuetext={`${clock(at, locale)} / ${clock(duration, locale)}`}
+      aria-disabled={!duration || undefined}
+      onPointerDown={(event) => {
+        if (!duration) return;
+        event.currentTarget.setPointerCapture(event.pointerId);
+        setDrag(fromPointer(event.clientX));
+      }}
+      onPointerMove={(event) => {
+        if (drag !== null) setDrag(fromPointer(event.clientX));
+      }}
+      onPointerUp={(event) => {
+        if (drag === null) return;
+        onSeek(fromPointer(event.clientX));
+        setDrag(null);
+      }}
+      onPointerCancel={() => setDrag(null)}
+      onKeyDown={(event) => {
+        const forward = rtl ? 'ArrowLeft' : 'ArrowRight';
+        const back = rtl ? 'ArrowRight' : 'ArrowLeft';
+        if (event.key === forward || event.key === 'ArrowUp') onSeek(time + 5);
+        else if (event.key === back || event.key === 'ArrowDown') onSeek(time - 5);
+        else if (event.key === 'Home') onSeek(0);
+        else if (event.key === 'End') onSeek(duration);
+        else return;
+        event.preventDefault();
+      }}
+    >
+      <span className="rd-scrub-track">
+        <i style={{ inlineSize: `${fraction * 100}%` }} />
+      </span>
+      <span className="rd-scrub-thumb" style={{ insetInlineStart: `${fraction * 100}%` }} />
+    </div>
+  );
+}
+
+/* ─── The surahs, the juz and the bookmarks ────────────────────────────── */
+
+function Picker({
+  locale,
+  variant,
+  tab,
+  onTab,
+  surahs,
+  surahPage,
+  juzPage,
+  currentSurah,
+  currentJuz,
+  bookmarks,
+  nameOf,
+  onPick,
+}: {
+  locale: Locale;
+  variant: 'side' | 'sheet';
+  tab: 'surahs' | 'juz' | 'bookmarks';
+  onTab: (tab: 'surahs' | 'juz' | 'bookmarks') => void;
+  surahs: SurahInfo[];
+  surahPage: number[];
+  juzPage: number[];
+  currentSurah: number;
+  currentJuz: number;
+  bookmarks: Record<number, Bookmark>;
+  nameOf: (s: number) => string;
+  onPick: (page: number, verse?: { s: number; n: number }) => void;
+}) {
+  const t = useTranslations('quran');
+  const d = (value: number) => digits(value, locale);
+  const [query, setQuery] = useState('');
+  const marks = Object.values(bookmarks).sort((a, b) => b.en - a.en);
+
+  const shown = useMemo(() => {
+    const q = fold(query);
+    if (!q) return surahs;
+    const number = Number(q.replace(/[۰-۹]/g, (c) => String('۰۱۲۳۴۵۶۷۸۹'.indexOf(c))));
+    return surahs.filter(
+      (s) =>
+        (Number.isInteger(number) && number > 0 && s.number === number) ||
+        fold(s.transliteration).includes(q) ||
+        fold(s.name).includes(q),
+    );
+  }, [query, surahs]);
+
+  // The current surah's row is in view when the list opens.
+  const list = useRef<HTMLUListElement>(null);
+  useEffect(() => {
+    if (tab !== 'surahs') return;
+    const row = list.current?.querySelector<HTMLElement>('[aria-current="true"]');
+    row?.scrollIntoView({ block: 'center' });
+  }, [tab, variant]);
+
+  return (
+    <div className="rd-picker" data-variant={variant}>
+      <Seg
+        label={t('surahSelect')}
+        value={tab}
+        onChange={onTab}
+        options={[
+          { value: 'surahs', label: t('tabSurahs') },
+          { value: 'juz', label: t('tabJuz') },
+          {
+            value: 'bookmarks',
+            label: (
+              <>
+                {t('tabBookmarks')}
+                {marks.length ? (
+                  <span className="rd-count tabular"> · {d(marks.length)}</span>
+                ) : null}
+              </>
+            ),
+          },
+        ]}
+      />
+
+      {tab === 'surahs' ? (
+        <>
+          <label className="rd-search">
+            <MagnifyingGlass size={18} weight="bold" aria-hidden="true" />
+            <span className="visually-hidden">{t('search')}</span>
+            <input
+              type="search"
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder={t('searchSurahs')}
+              autoComplete="off"
+              enterKeyHint="search"
+            />
+          </label>
+          {shown.length === 0 ? <p className="rd-empty">{t('none')}</p> : null}
+          <ul className="rd-list" ref={list}>
+            {shown.map((s) => (
+              <li key={s.number}>
+                <button
+                  type="button"
+                  className="rd-surah-row"
+                  aria-current={s.number === currentSurah || undefined}
+                  onClick={() => onPick(surahPage[s.number] ?? 1)}
+                >
+                  <span className="rd-chip-n tabular">{d(s.number)}</span>
+                  <span className="rd-surah-row-text">
+                    <span className="rd-surah-row-name">
+                      {locale === 'fa' ? s.name : s.transliteration}
+                    </span>
+                    <span className="rd-surah-row-meta">
+                      {t('surahMeta', {
+                        n: d(s.ayahCount),
+                        place: s.revelation === 'medinan' ? t('placeMedinan') : t('placeMeccan'),
+                      })}
+                    </span>
+                  </span>
+                  {/* In Persian the name is already the Arabic one. */}
+                  {locale === 'fa' ? null : (
+                    <span className="rd-surah-row-ar" lang="ar" dir="rtl">
+                      {s.name.replace(/^سُورَةُ\s*/, '')}
+                    </span>
+                  )}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </>
+      ) : tab === 'juz' ? (
+        <ul className="rd-juz">
+          {Array.from({ length: JUZ_COUNT }, (_, i) => i + 1).map((j) => (
+            <li key={j}>
+              <button
+                type="button"
+                className="rd-juz-tile"
+                aria-current={j === currentJuz || undefined}
+                aria-label={`${t('juzShort', { n: d(j) })} · ${t('pageShort', { n: d(juzPage[j] ?? 1) })}`}
+                onClick={() => onPick(juzPage[j] ?? 1)}
+              >
+                <span className="rd-juz-n tabular">{d(j)}</span>
+                <span className="rd-juz-page tabular">
+                  {t('juzTile', { n: d(juzPage[j] ?? 1) })}
+                </span>
+              </button>
+            </li>
+          ))}
+        </ul>
+      ) : marks.length === 0 ? (
+        <p className="rd-empty">{t('bookmarksEmpty')}</p>
+      ) : (
+        <ul className="rd-list">
+          {marks.map((mark) => (
+            <li key={`${mark.s}:${mark.n}`}>
+              <button
+                type="button"
+                className="rd-surah-row"
+                onClick={() => onPick(mark.page, { s: mark.s, n: mark.n })}
+              >
+                <span className="rd-chip-n">
+                  <BookmarkSimple size={16} weight="fill" aria-hidden="true" />
+                </span>
+                <span className="rd-surah-row-text">
+                  <span className="rd-surah-row-name">
+                    {nameOf(mark.s) || surahs[mark.s - 1]?.transliteration} {d(mark.s)}:{d(mark.n)}
+                  </span>
+                  <span className="rd-surah-row-meta">{t('pageShort', { n: d(mark.page) })}</span>
+                </span>
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
+/* ─── The page, grouped by the surahs on it ────────────────────────────── */
 
 interface Block {
   surah: number;
   /** Whether this surah begins here, and so takes its header. */
   opens: boolean;
+  /** Where on the page its first verse is. */
+  start: number;
   ayahs: PageAyah[];
 }
 
 function groupBySurah(page: MushafPage): Block[] {
   const blocks: Block[] = [];
-  for (const ayah of page.ayahs) {
+  page.ayahs.forEach((ayah, index) => {
     const last = blocks[blocks.length - 1];
     if (!last || last.surah !== ayah.surah) {
-      blocks.push({ surah: ayah.surah, opens: ayah.number === 1, ayahs: [ayah] });
+      blocks.push({ surah: ayah.surah, opens: ayah.number === 1, start: index, ayahs: [ayah] });
     } else last.ayahs.push(ayah);
-  }
+  });
   return blocks;
 }
 
 /** The Basmala stands on its own line wherever a surah opens with it. */
 const opensWithBasmala = (block: Block) => block.opens && block.surah !== 1 && block.surah !== 9;
-
-/**
- * The sheet the words are printed on, which is the one this site has always
- * drawn: a gold double rule with a rosette at each corner, a running head
- * naming the surah and the juz, and the folio in its ring at the foot. The
- * du'a reader sits in the same frame, and somebody who has read one page
- * here knows the other.
- *
- * Both views use it. Verse by verse the column of verses is printed on it;
- * in the mushaf view the continuous page is. What the frame does not carry
- * is the page turns — those are in the bar along the bottom of the window.
- */
-function Paper({
-  page,
-  locale,
-  className,
-  label,
-  opensHere,
-  children,
-}: {
-  page: MushafPage;
-  locale: Locale;
-  className: string;
-  label: string;
-  /** Whether the surah this page opens in begins on this page. */
-  opensHere: boolean;
-  children: ReactNode;
-}) {
-  const t = useTranslations('quran');
-  const first = page.ayahs[0];
-  return (
-    <article className={`mushaf qr-paper ${className}`} aria-label={label}>
-      <Rosette className="mushaf-corner" />
-      <Rosette className="mushaf-corner" />
-      <Rosette className="mushaf-corner" />
-      <Rosette className="mushaf-corner" />
-
-      {/* The cartouche where the surah begins, and only there. A surah
-          runs for pages — al-Baqara for forty-eight — and naming it again
-          at the head of every one of them is a label, not an opening: the
-          page where it starts should be the page that announces it. A
-          surah that begins further down a page still gets its own
-          cartouche where it begins. */}
-      {opensHere ? (
-        <header className="mushaf-head qr-head-band">
-          <h2 className="qr-banner mushaf-banner" lang="ar" dir="rtl">
-            <Rosette className="mushaf-banner-star" />
-            <span>{first ? page.surahs[first.surah]?.name : ''}</span>
-            <Rosette className="mushaf-banner-star" />
-          </h2>
-        </header>
-      ) : null}
-
-      {children}
-
-      {/* Which page, and which thirtieth of the book it falls in. */}
-      <footer className="mushaf-foot">
-        <span className="mushaf-folio">{digits(page.number, locale)}</span>
-        <span className="qr-foot-juz">{t('juz', { n: digits(first?.juz ?? 1, locale) })}</span>
-      </footer>
-    </article>
-  );
-}
-
-function SurahHead({
-  surah,
-  locale,
-  meta,
-  banner,
-}: {
-  surah: SurahInfo | undefined;
-  locale: Locale;
-  meta: string;
-  banner: boolean;
-}) {
-  return (
-    <header className="qr-surah" data-bannerless={banner ? undefined : 'true'}>
-      {banner ? (
-        <div className="qr-banner mushaf-banner-wrap">
-          <h2 lang="ar" dir="rtl" className="mushaf-banner">
-            <Rosette className="mushaf-banner-star" />
-            <span>{surah?.name}</span>
-            <Rosette className="mushaf-banner-star" />
-          </h2>
-        </div>
-      ) : null}
-      <p className="qr-surah-meta">{meta}</p>
-      <span className="visually-hidden">{digits(surah?.number ?? 0, locale)}</span>
-    </header>
-  );
-}
 
 function Arabic({ ayah }: { ayah: PageAyah }) {
   return (
@@ -760,287 +1416,127 @@ function Arabic({ ayah }: { ayah: PageAyah }) {
           <span key={i}>{segment.text}</span>
         ),
       )}
-      <span className="qr-mark">
-        {'۝'}
+      <span className="rd-mark">
+        {' ۝'}
         {arabicIndic(ayah.number)}
       </span>
     </>
   );
 }
 
-/* ─── Verse by verse ─────────────────────────────────────────────────────── */
-
-function VerseView({
-  page,
-  blocks,
-  locale,
-  translated,
-  onPresentFrom,
-  presentLabel,
-}: {
-  page: MushafPage;
-  blocks: Block[];
-  locale: Locale;
-  translated: boolean;
-  onPresentFrom: (index: number) => void;
-  presentLabel: string;
-}) {
-  const t = useTranslations('quran');
-  let index = -1;
-  return (
-    <Paper
-      page={page}
-      locale={locale}
-      className="qr-verses"
-      label={t('pageOf', { n: digits(page.number, locale) })}
-      opensHere={blocks[0]?.opens ?? false}
-    >
-      {blocks.map((block) => {
-        const surah = page.surahs[block.surah];
-        return (
-          <section key={`${block.surah}-${block.ayahs[0]?.number}`} id={`surah-${block.surah}`}>
-            {block.opens ? (
-              <>
-                <SurahHead
-                  surah={surah}
-                  locale={locale}
-                  // The sheet's head carries the cartouche for the surah
-                  // that begins this page; every other opening needs its
-                  // own, here where it happens.
-                  banner={block !== blocks[0]}
-                  meta={[
-                    digits(block.surah, locale),
-                    surah?.transliteration,
-                    t('ayahCount', { n: digits(surah?.ayahCount ?? 0, locale) }),
-                    surah ? t(surah.revelation) : '',
-                  ]
-                    .filter(Boolean)
-                    .join(' · ')}
-                />
-                {opensWithBasmala(block) ? (
-                  <p lang="ar" dir="rtl" className="qr-bism">
-                    {BASMALA}
-                  </p>
-                ) : null}
-              </>
-            ) : null}
-            {block.ayahs.map((ayah) => {
-              index += 1;
-              const from = index;
-              return (
-                <article key={`${ayah.surah}:${ayah.number}`} className="qr-verse">
-                  <div className="qr-verse-top">
-                    <span className="qr-pill">{digits(ayah.number, locale)}</span>
-                    <button
-                      type="button"
-                      className="qr-from"
-                      onClick={() => onPresentFrom(from)}
-                      title={presentLabel}
-                    >
-                      <Presentation size={18} weight="duotone" aria-hidden="true" />
-                      <span>{presentLabel}</span>
-                    </button>
-                  </div>
-                  <p lang="ar" dir="rtl" className="qr-ar">
-                    <Arabic ayah={ayah} />
-                  </p>
-                  {translated ? (
-                    <p className="qr-tr" lang={locale} dir={locale === 'fa' ? 'rtl' : 'ltr'}>
-                      {ayah.translation}
-                    </p>
-                  ) : null}
-                </article>
-              );
-            })}
-          </section>
-        );
-      })}
-    </Paper>
-  );
-}
-
-/* ─── The page as it is printed ──────────────────────────────────────────── */
+/* ─── The page as it is printed ────────────────────────────────────────── */
 
 function MushafView({
   page,
   blocks,
   locale,
   translated,
-  paper,
-  onPresentFrom,
+  active,
+  playing,
+  juzLabel,
+  surahLabel,
+  onAyah,
 }: {
   page: MushafPage;
   blocks: Block[];
   locale: Locale;
   translated: boolean;
-  paper: ReturnType<typeof usePaperTurn>;
-  onPresentFrom: (index: number) => void;
+  active: number | null;
+  playing: boolean;
+  juzLabel: string;
+  surahLabel: string;
+  onAyah: (index: number) => void;
 }) {
   const t = useTranslations('quran');
-  const leaf = paper.turning
-    ? paper.direction === 1
-      ? page
-      : (loaded.get(`${locale}:${paper.to}`) ?? null)
-    : null;
-  const under =
-    paper.turning && paper.direction === 1 ? (loaded.get(`${locale}:${paper.to}`) ?? page) : page;
-
-  return (
-    <>
-      <div className="qr-stage" ref={paper.stageRef} {...paper.gesture}>
-        <div className="qr-deck">
-          <Sheet
-            page={under}
-            blocks={under === page ? blocks : groupBySurah(under)}
-            locale={locale}
-            onPresentFrom={under === page ? onPresentFrom : undefined}
-          />
-          {leaf ? (
-            <div
-              ref={paper.leafRef}
-              className="qr-leaf"
-              aria-hidden="true"
-              style={{ transform: paper.direction === 1 ? 'rotateY(0deg)' : 'rotateY(180deg)' }}
-            >
-              <div className="qr-leaf-face">
-                <Sheet page={leaf} blocks={groupBySurah(leaf)} locale={locale} />
-              </div>
-              <div className="qr-leaf-back" />
-              <div className="qr-leaf-shade" />
-            </div>
-          ) : null}
-        </div>
-      </div>
-
-      {translated ? (
-        <div className="qr-mushaf-tr">
-          <p className="qr-mushaf-tr-head">{t('translationShort')}</p>
-          <p lang={locale} dir={locale === 'fa' ? 'rtl' : 'ltr'}>
-            {page.ayahs.map((ayah) => (
-              <span key={`${ayah.surah}:${ayah.number}`}>
-                <sup>{digits(ayah.number, locale)}</sup>
-                {ayah.translation}{' '}
-              </span>
-            ))}
-          </p>
-        </div>
-      ) : null}
-    </>
-  );
-}
-
-/** One verse of the printed page: the words, and a press to present them. */
-function Ayah({
-  ayah,
-  at,
-  onPresentFrom,
-}: {
-  ayah: PageAyah;
-  at: number;
-  onPresentFrom?: (index: number) => void;
-}) {
-  if (!onPresentFrom) return <Arabic ayah={ayah} />;
-  return (
+  const ayah = (item: PageAyah, at: number) => (
     <span
-      className="qr-sheet-ayah"
+      key={`${item.surah}:${item.number}`}
+      id={verseId(item.surah, item.number)}
+      className="rd-ayah"
       role="button"
       tabIndex={0}
-      onClick={() => onPresentFrom(at)}
+      aria-label={t('playVerse', { n: digits(item.number, locale) })}
+      data-active={active === at || undefined}
+      data-playing={(active === at && playing) || undefined}
+      onClick={() => onAyah(at)}
       onKeyDown={(event) => {
         if (event.key === 'Enter' || event.key === ' ') {
           event.preventDefault();
-          onPresentFrom(at);
+          event.stopPropagation();
+          onAyah(at);
         }
       }}
     >
-      <Arabic ayah={ayah} />
+      <Arabic ayah={item} />{' '}
     </span>
   );
-}
 
-function Sheet({
-  page,
-  blocks,
-  locale,
-  onPresentFrom,
-}: {
-  page: MushafPage;
-  blocks: Block[];
-  locale: Locale;
-  onPresentFrom?: (index: number) => void;
-}) {
-  const t = useTranslations('quran');
-  let index = -1;
   return (
-    <Paper
-      page={page}
-      locale={locale}
-      className="qr-sheet"
-      label={t('pageOf', { n: digits(page.number, locale) })}
-      opensHere={blocks[0]?.opens ?? false}
-    >
-      {blocks.map((block) => (
-        <div key={`${block.surah}-${block.ayahs[0]?.number}`} id={`surah-${block.surah}`}>
-          {block.opens ? (
-            <>
-              {/* Not for the first: the sheet's head is its cartouche. */}
-              {block === blocks[0] ? null : (
-                <div className="qr-banner mushaf-banner-wrap">
-                  <h2 lang="ar" dir="rtl" className="mushaf-banner">
-                    <Rosette className="mushaf-banner-star" />
+    <>
+      <article
+        className="rd-mushaf rd-rise"
+        aria-label={t('pageOf', { n: digits(page.number, locale) })}
+      >
+        <div className="rd-mushaf-frame">
+          <header className="rd-mushaf-head">
+            <span>{surahLabel}</span>
+            <span className="tabular">{juzLabel}</span>
+          </header>
+          {blocks.map((block) => {
+            const fatiha = block.opens && block.surah === 1;
+            return (
+              <div
+                key={`${block.surah}-${block.ayahs[0]?.number}`}
+                id={block.opens ? `surah-${block.surah}` : undefined}
+              >
+                {block.opens ? (
+                  <h2 className="rd-mushaf-title" lang="ar" dir="rtl">
                     <span>{page.surahs[block.surah]?.name}</span>
-                    <Rosette className="mushaf-banner-star" />
                   </h2>
-                </div>
-              )}
-              {opensWithBasmala(block) ? (
-                <p lang="ar" dir="rtl" className="qr-bism">
-                  {BASMALA}
+                ) : null}
+                {opensWithBasmala(block) ? (
+                  <p className="rd-bism" lang="ar" dir="rtl">
+                    {BASMALA}
+                  </p>
+                ) : null}
+                {/* Al-Fatiha's first verse *is* the Basmala, and stands on
+                    its own line with its ۝١, as it is printed. */}
+                {fatiha ? (
+                  <p className="rd-mushaf-text rd-mushaf-alone" lang="ar" dir="rtl">
+                    {ayah(block.ayahs[0]!, block.start)}
+                  </p>
+                ) : null}
+                <p className="rd-mushaf-text" lang="ar" dir="rtl">
+                  {(fatiha ? block.ayahs.slice(1) : block.ayahs).map((item) =>
+                    ayah(item, block.start + block.ayahs.indexOf(item)),
+                  )}
                 </p>
-              ) : null}
-            </>
-          ) : null}
-          {/* Al-Fatiha's first verse *is* the Basmala — it is not folded
-              into verse one as it is elsewhere, so it is not taken off and
-              set on its own line as it is elsewhere either, and it ran on
-              into "ٱلْحَمْدُ" with the opening of the Quran halfway along a
-              justified line. It stands alone here, as it is printed — and
-              it keeps its ۝١, which is what makes the verse after it ۝٢
-              rather than a page that starts counting at two. */}
-          {block.opens && block.surah === 1 ? (
-            <p lang="ar" dir="rtl" className="qr-sheet-text qr-sheet-alone">
-              <Ayah ayah={block.ayahs[0]!} at={(index += 1)} onPresentFrom={onPresentFrom} />
-            </p>
-          ) : null}
-          <p lang="ar" dir="rtl" className="qr-sheet-text">
-            {(block.opens && block.surah === 1 ? block.ayahs.slice(1) : block.ayahs).map((ayah) => {
-              index += 1;
-              const from = index;
-              return onPresentFrom ? (
-                <span
-                  key={`${ayah.surah}:${ayah.number}`}
-                  className="qr-sheet-ayah"
-                  role="button"
-                  tabIndex={0}
-                  onClick={() => onPresentFrom(from)}
-                  onKeyDown={(event) => {
-                    if (event.key === 'Enter' || event.key === ' ') {
-                      event.preventDefault();
-                      onPresentFrom(from);
-                    }
-                  }}
-                >
-                  <Arabic ayah={ayah} />
-                </span>
-              ) : (
-                <span key={`${ayah.surah}:${ayah.number}`}>
-                  <Arabic ayah={ayah} />
-                </span>
-              );
-            })}
-          </p>
+              </div>
+            );
+          })}
+          <footer className="rd-mushaf-foot">
+            <span className="rd-folio tabular">{digits(page.number, locale)}</span>
+          </footer>
         </div>
-      ))}
-    </Paper>
+      </article>
+
+      {translated ? (
+        <section
+          className="rd-mushaf-tr rd-rise"
+          lang={locale}
+          dir={locale === 'fa' ? 'rtl' : 'ltr'}
+        >
+          <h2 className="rd-kicker">{t('translationShort')}</h2>
+          <p>
+            {page.ayahs.map((item) => (
+              <span key={`${item.surah}:${item.number}`}>
+                <sup className="tabular">{digits(item.number, locale)}</sup>
+                {item.translation}{' '}
+              </span>
+            ))}
+          </p>
+        </section>
+      ) : null}
+    </>
   );
 }

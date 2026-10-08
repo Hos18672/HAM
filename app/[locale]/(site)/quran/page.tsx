@@ -6,6 +6,7 @@ import { getQuranIndex, getSurahList } from '@/lib/quran';
 import { getQuranHeader } from '@/lib/quran-page';
 import { PageHead } from '@/components/site/page-head';
 import { SurahIndex } from '@/components/site/surah-index';
+import { QuranContinue } from '@/components/site/quran-continue';
 import { Link } from '@/lib/i18n/navigation';
 
 /** The text does not change; the list is rebuilt once a month at most. */
@@ -54,6 +55,7 @@ export default async function QuranPage({ params }: { params: Promise<{ locale: 
       <PageHead header={header} locale={typed} />
       <section className="section" data-rise>
         <div className="page">
+          <QuranContinue surahs={surahs} locale={typed} />
           <Link
             href="/quran/page/1"
             className="btn btn-primary"

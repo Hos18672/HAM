@@ -5,7 +5,7 @@ import { requireLocale } from '@/lib/i18n/locale-param';
 import { getPageHeader, getBlocks } from '@/lib/db/queries/content';
 import { FACTS, HISTORY, BOARD } from '@/lib/site-facts';
 import { digits } from '@/lib/i18n/format';
-import { Mark, PatternPlate, ViennaSkyline } from '@/components/site/ornaments';
+import { PatternPlate, ViennaSkyline } from '@/components/site/ornaments';
 import { PageHead, SectionHead } from '@/components/site/page-head';
 import { EditableText } from '@/components/editable/editable-text';
 import { pageMetadata } from '@/lib/page-meta';
@@ -53,14 +53,21 @@ export default async function AboutPage({ params }: { params: Promise<{ locale: 
       <section className="section section-alt" data-rise>
         <div className="page">
           <div className="split">
-            <div
-              className="frame ornament-panel"
-              style={{ aspectRatio: '4 / 5', maxBlockSize: '640px' }}
-              data-rise
-            >
+            <div className="frame ornament-panel" data-rise>
               <PatternPlate tiling="shesh" opacity={0.5} />
+              {/* The seal itself, the full 512px PNG: at this size the small
+                  WebP the masthead uses goes soft. */}
               <div className="ornament-mark">
-                <Mark className="" sizes="320px" />
+                {/* eslint-disable-next-line @next/next/no-img-element -- a fixed,
+                    decorative image; the optimiser is off for the static preview. */}
+                <img
+                  src={`${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/logo.png`}
+                  width={512}
+                  height={512}
+                  alt=""
+                  aria-hidden="true"
+                  decoding="async"
+                />
               </div>
               <ViennaSkyline tone="var(--gold)" opacity={0.3} />
             </div>

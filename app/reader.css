@@ -22,6 +22,8 @@
   --rd-line-2: rgba(20, 38, 29, 0.24);
   --rd-glass: rgba(255, 255, 255, 0.86);
   --rd-shadow: 0 14px 36px rgba(7, 59, 41, 0.16);
+  /* Silent letters: well apart from the ink, still easy to read. */
+  --rd-silent: #aaa392;
   --rd-ar-face: 'Scheherazade New', var(--font-naskh), serif;
   --rd-ease: cubic-bezier(0.16, 1, 0.3, 1);
   --rd-sheet-ease: cubic-bezier(0.32, 0.72, 0, 1);
@@ -40,6 +42,7 @@
   --rd-line-2: rgba(239, 233, 216, 0.26);
   --rd-glass: rgba(17, 37, 28, 0.88);
   --rd-shadow: 0 14px 36px rgba(0, 0, 0, 0.45);
+  --rd-silent: rgba(239, 233, 216, 0.4);
 }
 
 /* ── The route is the reader's: the site's header, tab bar and footer stand
@@ -1213,6 +1216,7 @@ button.rd-medal:active {
   font-family: var(--rd-ar-face);
   font-size: 22px;
   line-height: 1;
+  color: var(--rd-silent);
 }
 .rd-size {
   display: grid;
@@ -1622,6 +1626,9 @@ button.rd-medal:active {
 }
 .rd-present-tr:lang(fa) {
   font-family: 'Vazirmatn', var(--font-naskh), sans-serif;
+}
+.rd[data-silent='on'] .silent {
+  color: var(--rd-silent);
 }
 .rd-present[data-silent='on'] .silent {
   color: rgba(247, 243, 232, 0.45);

@@ -554,6 +554,7 @@ export function HijriCalendar({
               marginBlockStart: 'var(--space-3)',
               padding: 0,
               display: 'grid',
+              gridTemplateColumns: 'minmax(0, 1fr)',
               gap: 'var(--space-2)',
             }}
           >
@@ -572,7 +573,7 @@ export function HijriCalendar({
                       calendar: 'gregory',
                     })}
                   </span>
-                  <span>
+                  <span className="occ-text">
                     <span className="occ-name">{occasion.name}</span>
                     {occasion.note ? <span className="occ-note"> — {occasion.note}</span> : null}
                     {tagFor(occasion) ? (

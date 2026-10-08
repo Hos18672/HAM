@@ -2664,6 +2664,7 @@
     line-height: 1.5;
     color: var(--color-ink-muted);
     white-space: nowrap;
+    max-inline-size: 100%;
   }
   .cal-tag[data-off='true'] {
     border-color: currentColor;
@@ -2719,6 +2720,7 @@
      Each row picks its own day out of the grid above, so the two are one
      thing rather than two lists side by side. */
   .occ-row {
+    min-inline-size: 0;
     border-radius: 14px;
     background: var(--card);
     border: var(--rule-hair) solid var(--line);
@@ -2726,11 +2728,15 @@
       border-color var(--duration-fast) var(--ease-standard),
       background-color var(--duration-fast) var(--ease-standard);
   }
+  /* The date and the name side by side; when the row is too narrow for both
+     (a phone, or larger text), the name drops under the date rather than
+     pushing the card past the screen's edge. */
   .occ-row > button {
     inline-size: 100%;
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
-    gap: var(--space-4);
+    gap: var(--space-1) var(--space-4);
     padding: var(--space-3) var(--space-4);
     font: inherit;
     color: inherit;
@@ -2746,6 +2752,11 @@
   .occ-row[data-on='true'] {
     border-color: var(--gold);
     background: rgba(200, 164, 93, 0.12);
+  }
+  .occ-text {
+    flex: 1 1 11em;
+    min-inline-size: 0;
+    overflow-wrap: anywhere;
   }
   .occ-name {
     font-weight: var(--weight-semibold);
@@ -6772,7 +6783,9 @@ a.week-link:hover {
   color: var(--holiday);
 }
 .occ-row .occ-day {
+  flex: none;
   min-inline-size: 5.5em;
+  white-space: nowrap;
   font-weight: var(--weight-bold);
   color: var(--goldInk);
   font-size: var(--text-sm);

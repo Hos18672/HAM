@@ -58,6 +58,35 @@ test.describe('prayer times', () => {
     await expect(page.getByText('Der Standortzugriff wurde nicht erlaubt.')).toBeVisible();
   });
 
+  test('the city list opens in full on a phone, over the times', async ({ page }) => {
+    await page.setViewportSize({ width: 412, height: 860 });
+    // The field is scrolled up as the list opens; without motion that is
+    // done at once, so the rows are measured where they come to rest.
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.goto('/de/prayer');
+    const input = page.getByRole('combobox', { name: 'Ort' });
+    await input.scrollIntoViewIfNeeded();
+    await input.click();
+
+    // Several rows, and each one is what a tap at its centre lands on —
+    // neither clipped by the panel nor covered by the times below.
+    const options = page.getByRole('option');
+    await expect(options.nth(3)).toBeVisible();
+    for (const i of [0, 1, 2, 3]) {
+      const option = options.nth(i);
+      await option.scrollIntoViewIfNeeded();
+      const box = (await option.boundingBox())!;
+      const hit = await page.evaluate(
+        ([x, y]) => document.elementFromPoint(x, y)?.closest('[role="option"]')?.id ?? null,
+        [box.x + box.width / 2, box.y + box.height / 2],
+      );
+      expect(hit).toBe(await option.getAttribute('id'));
+    }
+
+    await options.nth(2).click();
+    await expect(page.getByRole('listbox')).toBeHidden();
+  });
+
   test('moves the month without reloading the page', async ({ page }) => {
     await page.goto('/de/prayer');
 

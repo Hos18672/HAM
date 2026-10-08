@@ -97,6 +97,22 @@ export function CityCombobox({
     }
   }
 
+  /**
+   * On a phone or tablet the list opens downwards into the bottom of the
+   * screen, where the tab bar and the keyboard sit over it. Bringing the
+   * field up under the header gives the list the screen below it. Wide
+   * screens have neither, and are left where they are.
+   */
+  function liftIntoView() {
+    if (!window.matchMedia('(max-width: 1099.98px)').matches) return;
+    const box = inputRef.current?.closest('.city-box');
+    if (!box) return;
+    const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    requestAnimationFrame(() =>
+      box.scrollIntoView({ block: 'start', behavior: still ? 'auto' : 'smooth' }),
+    );
+  }
+
   const activeId = open && options[active] ? `${id}-opt-${options[active].city.id}` : undefined;
 
   return (
@@ -122,6 +138,7 @@ export function CityCombobox({
           onFocus={() => {
             setOpen(true);
             setActive(0);
+            liftIntoView();
           }}
           onClick={() => setOpen(true)}
           onBlur={() => {

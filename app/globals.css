@@ -6510,6 +6510,17 @@ a.week-link:hover {
 .prayer-next-place-pick .city-box {
   flex: 1 1 14rem;
 }
+/* The panel clips its contents for the sheen, and that cut the city list
+   off at the panel's edge — one row showing, the rest hidden. While the list
+   is open the panel lets it out and stands above the times under it; the
+   sheen, which only the clipping kept inside, is off for that while. */
+.prayer-next:has(.city-box-list:not([hidden])) {
+  overflow: visible;
+  z-index: 30;
+}
+.prayer-next:has(.city-box-list:not([hidden]))::after {
+  display: none;
+}
 .prayer-next-place-pick .btn {
   min-block-size: 44px;
 }
@@ -6560,11 +6571,13 @@ a.week-link:hover {
   color: var(--head);
 }
 
-/* The city combobox. */
+/* The city combobox. When it opens on a phone it is scrolled up to sit under
+   the floating header, with its list below. */
 .city-box {
   position: relative;
   display: grid;
   gap: 6px;
+  scroll-margin-block-start: calc(var(--header-h-m) + 28px);
 }
 .city-box-label {
   font-size: var(--text-sm);

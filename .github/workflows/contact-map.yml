@@ -1,13 +1,17 @@
 name: Contact map
 
-# Renders the contact page's static map from OpenStreetMap's tiles and commits
-# it, when the script that draws it changes. Some fifty tiles, once — not a
+# Looks the house up from its address (Nominatim), then renders the contact
+# page's static map from OpenStreetMap's tiles around it, and commits both,
+# when either script changes. Three lookups and some fifty tiles, once — not a
 # service the site leans on at runtime.
 
 on:
   push:
     branches: ['claude/haus-aller-menschen-build-8h94uf']
-    paths: ['scripts/contact-map.mjs', '.github/workflows/contact-map.yml']
+    paths:
+      - 'scripts/contact-map.mjs'
+      - 'scripts/geocode-house.mjs'
+      - '.github/workflows/contact-map.yml'
   workflow_dispatch:
 
 permissions:
@@ -30,16 +34,18 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
+      - run: node scripts/geocode-house.mjs
+
       - run: node scripts/contact-map.mjs
 
       - name: Commit the map if it changed
         run: |
-          git add public/map-contact@1x.webp public/map-contact@2x.webp
+          git add lib/house-location.json public/map-contact@1x.webp public/map-contact@2x.webp
           if git diff --cached --quiet; then
             echo "The map is unchanged."
             exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git commit -m "Contact map: render from OpenStreetMap"
+          git commit -m "House location and contact map: from the address, via OpenStreetMap"
           git push

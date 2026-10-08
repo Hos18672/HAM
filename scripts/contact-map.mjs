@@ -3,7 +3,7 @@
  *
  * The page shows this picture rather than live tiles, so a visitor's browser
  * asks nothing of OpenStreetMap until they choose to load the interactive map.
- * Run it again only when the house moves:
+ * Centred on lib/house-location.json. Run it again only when the house moves:
  *
  *   node scripts/contact-map.mjs
  *
@@ -16,17 +16,20 @@
  * without access to the tile server cannot.
  */
 import { createRequire } from 'node:module';
-import { writeFile } from 'node:fs/promises';
+import { readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
 // sharp comes with Next, so it is resolved through Next rather than added.
 const require = createRequire(import.meta.url);
 const sharp = createRequire(require.resolve('next/package.json'))('sharp');
 
-const CENTRE = { latitude: 48.2175, longitude: 16.326 };
+const OUT = path.join(path.dirname(new URL(import.meta.url).pathname), '..', 'public');
+// Where the house is, as scripts/geocode-house.mjs found it.
+const CENTRE = JSON.parse(
+  await readFile(new URL('../lib/house-location.json', import.meta.url), 'utf8'),
+);
 const TILE = 256;
 const AGENT = 'HausAllerMenschen-site-build/1.0 (+https://github.com/hos18672/HAM)';
-const OUT = path.join(path.dirname(new URL(import.meta.url).pathname), '..', 'public');
 
 /** Web-Mercator pixel position at a zoom level. */
 function project({ latitude, longitude }, zoom) {

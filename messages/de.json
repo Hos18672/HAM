@@ -325,14 +325,14 @@
     "legend": "Legende",
     "legendToday": "Heute",
     "legendOccasion": "Gedenktag",
-    "occasions": "Gedenktage in diesem Monat",
-    "occasionsNone": "In diesem Monat sind keine Gedenktage eingetragen.",
+    "occasions": "Gedenk- und Feiertage in diesem Monat",
+    "occasionsNone": "In diesem Monat sind keine Gedenk- oder Feiertage eingetragen.",
     "weekdays": ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"],
     "previousMonth": "Vorheriger Monat",
     "nextMonth": "Nächster Monat",
     "countdownLabel": "Verbleibende Zeit bis zum nächsten Gebet",
     "todayHere": "Heute in Wien",
-    "calendarLead": "Der Hidschri-Monat neben dem gregorianischen — mit den Gedenktagen der Ahl al-Bait.",
+    "calendarLead": "Der Hidschri-Monat neben dem gregorianischen – mit den Gedenktagen der Ahl al-Bait und den Feier- und Gedenktagen Österreichs und des Iran.",
     "extrasTitle": "Weitere Zeiten",
     "extras": {
       "imsak": "Imsak",
@@ -410,7 +410,143 @@
     "showTable": "Monatstabelle anzeigen",
     "hideTable": "Monatstabelle ausblenden",
     "dstNote": "Zeitumstellung",
-    "placeYours": "Ihr Standort"
+    "placeYours": "Ihr Standort",
+    "legendOff": "Feiertag",
+    "offIn": {
+      "at": "Feiertag in Österreich",
+      "ir": "Feiertag im Iran"
+    },
+    "country": {
+      "at": "Österreich",
+      "ir": "Iran"
+    },
+    "civil": {
+      "atNewYear": {
+        "name": "Neujahr"
+      },
+      "atEpiphany": {
+        "name": "Heilige Drei Könige"
+      },
+      "atEasterSunday": {
+        "name": "Ostersonntag"
+      },
+      "atEasterMonday": {
+        "name": "Ostermontag"
+      },
+      "atLabourDay": {
+        "name": "Staatsfeiertag",
+        "note": "Tag der Arbeit"
+      },
+      "atAscension": {
+        "name": "Christi Himmelfahrt"
+      },
+      "atWhitSunday": {
+        "name": "Pfingstsonntag"
+      },
+      "atWhitMonday": {
+        "name": "Pfingstmontag"
+      },
+      "atCorpusChristi": {
+        "name": "Fronleichnam",
+        "note": "Das katholische Fest des Leibes Christi"
+      },
+      "atAssumption": {
+        "name": "Mariä Himmelfahrt"
+      },
+      "atNationalDay": {
+        "name": "Nationalfeiertag",
+        "note": "Zur Erinnerung an die immerwährende Neutralität, 1955"
+      },
+      "atAllSaints": {
+        "name": "Allerheiligen"
+      },
+      "atImmaculate": {
+        "name": "Mariä Empfängnis"
+      },
+      "atChristmas": {
+        "name": "Christtag",
+        "note": "Weihnachten"
+      },
+      "atStStephen": {
+        "name": "Stefanitag",
+        "note": "Der zweite Weihnachtstag"
+      },
+      "atGoodFriday": {
+        "name": "Karfreitag",
+        "note": "Kein gesetzlicher Feiertag"
+      },
+      "atChristmasEve": {
+        "name": "Heiliger Abend",
+        "note": "Geschäfte schließen am frühen Nachmittag"
+      },
+      "atNewYearsEve": {
+        "name": "Silvester",
+        "note": "Geschäfte schließen am frühen Nachmittag"
+      },
+      "atSummerTime": {
+        "name": "Beginn der Sommerzeit",
+        "note": "Die Uhren gehen eine Stunde vor – die Gebetszeiten auch"
+      },
+      "atWinterTime": {
+        "name": "Ende der Sommerzeit",
+        "note": "Die Uhren gehen eine Stunde zurück – die Gebetszeiten auch"
+      },
+      "irNowruz": {
+        "name": "Nowruz",
+        "note": "Das persische Neujahr"
+      },
+      "irNowruzHoliday": {
+        "name": "Nowruz-Feiertage"
+      },
+      "irRepublicDay": {
+        "name": "Tag der Islamischen Republik"
+      },
+      "irNatureDay": {
+        "name": "Sizdah Bedar",
+        "note": "Tag der Natur"
+      },
+      "irKhomeini": {
+        "name": "Todestag Imam Khomeinis"
+      },
+      "irKhordad15": {
+        "name": "Aufstand vom 15. Chordad"
+      },
+      "irRevolution": {
+        "name": "Jahrestag der Islamischen Revolution",
+        "note": "Am 22. Bahman"
+      },
+      "irOilDay": {
+        "name": "Tag der Verstaatlichung des Erdöls"
+      },
+      "irEidFitr2": {
+        "name": "Zweiter Tag des Fitr-Festes"
+      },
+      "irSafarEnd": {
+        "name": "Letzter Tag des Safar",
+        "note": "Im Iran der Tag des Martyriums Imam ar-Ridas (a.)"
+      },
+      "irChaharshanbeSuri": {
+        "name": "Tschaharschanbe Suri",
+        "note": "Das Feuerfest am Vorabend des letzten Mittwochs im Jahr"
+      },
+      "irSaadi": {
+        "name": "Tag Saadis"
+      },
+      "irFerdowsi": {
+        "name": "Tag Ferdousis",
+        "note": "Tag der persischen Sprache"
+      },
+      "irRumi": {
+        "name": "Tag Rumis"
+      },
+      "irHafez": {
+        "name": "Tag des Hafis"
+      },
+      "irYalda": {
+        "name": "Schab-e Yalda",
+        "note": "Die längste Nacht des Jahres"
+      }
+    }
   },
   "duas": {
     "filterByCategory": "Nach Art filtern",

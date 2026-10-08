@@ -1,4 +1,5 @@
 import { toHijri, type HijriDate } from './hijri';
+import { civilDaysOn, type CivilKey, type Country } from './civil-days';
 import type { Occasion } from './db/queries/content';
 
 /**
@@ -11,13 +12,25 @@ import type { Occasion } from './db/queries/content';
  * them is small and month-independent, so it is handed over once and reused.
  */
 
+/**
+ * Anything named on a day: an occasion, or one of Austria's or Iran's civil
+ * days (`lib/civil-days`), which carry the country and whether the day is
+ * off.
+ */
+export interface DayEntry extends Occasion {
+  country?: Country;
+  off?: boolean;
+}
+
 export interface CalendarCell {
   /** ISO date of the day, or null for the leading blanks of the first week. */
   iso: string | null;
   gregorianDay: number;
   hijri: HijriDate | null;
   isToday: boolean;
-  occasions: Occasion[];
+  occasions: DayEntry[];
+  /** The countries in which this day is a public holiday. */
+  off: Country[];
 }
 
 export interface CalendarMonth {
@@ -26,7 +39,7 @@ export interface CalendarMonth {
   month: number;
   cells: CalendarCell[];
   /** Occasions falling anywhere in this Gregorian month. */
-  occasions: (Occasion & { iso: string; gregorianDay: number })[];
+  occasions: (DayEntry & { iso: string; gregorianDay: number })[];
 }
 
 /**
@@ -44,6 +57,7 @@ export function buildCalendarMonth(
   occasions: Occasion[],
   todayIso: string,
   fallback: Occasion[] = [],
+  civilText?: (key: CivilKey) => { name: string; note: string },
 ): CalendarMonth {
   const byHijri = new Map<string, Occasion[]>();
   for (const occasion of occasions) {
@@ -66,10 +80,17 @@ export function buildCalendarMonth(
   const leadingBlanks = (firstOfMonth.getUTCDay() + 6) % 7;
 
   const cells: CalendarCell[] = [];
-  const monthOccasions: (Occasion & { iso: string; gregorianDay: number })[] = [];
+  const monthOccasions: (DayEntry & { iso: string; gregorianDay: number })[] = [];
 
   for (let i = 0; i < leadingBlanks; i += 1) {
-    cells.push({ iso: null, gregorianDay: 0, hijri: null, isToday: false, occasions: [] });
+    cells.push({
+      iso: null,
+      gregorianDay: 0,
+      hijri: null,
+      isToday: false,
+      occasions: [],
+      off: [],
+    });
   }
 
   for (let day = 1; day <= daysInMonth; day += 1) {
@@ -79,7 +100,29 @@ export function buildCalendarMonth(
     const iso = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
     const key = `${hijri.month}-${hijri.day}`;
     const own = byHijri.get(key) ?? [];
-    const dayOccasions = own.length > 0 ? own : (fallbackByHijri.get(key) ?? []);
+    // A copy: the civil days are added to it, and the lists in the maps serve
+    // every day with the same Hijri date.
+    const dayOccasions: DayEntry[] = [...(own.length > 0 ? own : (fallbackByHijri.get(key) ?? []))];
+    const off: Country[] = [];
+
+    if (civilText) {
+      // The house's own days first, then Austria's, then Iran's.
+      const civil = civilDaysOn(year, month, day);
+      for (const entry of civil) {
+        if (entry.off && !off.includes(entry.country)) off.push(entry.country);
+      }
+      for (const entry of civil) {
+        if (!entry.key) continue;
+        dayOccasions.push({
+          id: `civil-${entry.key}`,
+          hijriMonth: hijri.month,
+          hijriDay: hijri.day,
+          ...civilText(entry.key),
+          country: entry.country,
+          off: entry.off,
+        });
+      }
+    }
 
     for (const occasion of dayOccasions) {
       monthOccasions.push({ ...occasion, iso, gregorianDay: day });
@@ -91,6 +134,7 @@ export function buildCalendarMonth(
       hijri,
       isToday: iso === todayIso,
       occasions: dayOccasions,
+      off,
     });
   }
 

@@ -168,6 +168,10 @@
   --goldInk: #86692c;
   --goldHi: #e8c98a;
   --goldLo: #a9823f;
+  /* A day off by law, in the calendar: the red a wall calendar prints its
+     Sundays and holidays in, warmed to sit with the gold. */
+  --holiday: #b42318;
+  --holidayOnBand: #ffb4a8;
   --band: #073b29;
   --bandInk: #f7f3e8;
   --bandDim: rgba(247, 243, 232, 0.82);
@@ -435,6 +439,8 @@
   --goldInk: #dcbb7b;
   --goldHi: #f2dca9;
   --goldLo: #be9550;
+  --holiday: #ff9b8a;
+  --holidayOnBand: #ffb4a8;
   --band: #04180f;
   --bandInk: #efe8d8;
   --bandDim: rgba(239, 232, 216, 0.78);
@@ -2635,6 +2641,36 @@
   }
   .cal-day[data-on='true'][data-occ='true'] .cal-day-dot {
     background: var(--gold);
+  }
+  /* A public holiday, in Austria or Iran: the day's number in red, as a
+     wall calendar prints it. Spelled out for a reader in the cell too. */
+  .cal-day[data-off='true'] .cal-day-greg {
+    color: var(--holiday);
+    font-weight: var(--weight-bold);
+  }
+  .cal-day[data-on='true'][data-off='true'] .cal-day-greg {
+    color: var(--holidayOnBand);
+  }
+
+  /* The small label after a civil day's name: which country, or that the
+     day is off there. */
+  .cal-tag {
+    display: inline-block;
+    padding: 1px 8px;
+    border-radius: 999px;
+    border: var(--rule-hair) solid var(--line);
+    font-size: var(--text-xs);
+    font-weight: var(--weight-semibold);
+    line-height: 1.5;
+    color: var(--color-ink-muted);
+    white-space: nowrap;
+  }
+  .cal-tag[data-off='true'] {
+    border-color: currentColor;
+    color: var(--holiday);
+  }
+  p.cal-tag {
+    margin-block-start: var(--space-2);
   }
 
   /* ── What the chosen day is ───────────────────────────────────────────
@@ -6725,6 +6761,15 @@ a.week-link:hover {
 .cal-legend-mark[data-kind='occ'] {
   border-width: 1px;
   background: rgba(200, 164, 93, 0.16);
+}
+.cal-legend-mark[data-kind='off'] {
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--line);
+  font-size: 10px;
+  font-weight: var(--weight-bold);
+  line-height: 1;
+  color: var(--holiday);
 }
 .occ-row .occ-day {
   min-inline-size: 5.5em;

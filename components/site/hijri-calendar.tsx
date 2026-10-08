@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { Fragment, useEffect, useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { CaretLeft, CaretRight } from '@phosphor-icons/react/dist/ssr';
 import { digits, formatDate, formatDay } from '@/lib/i18n/format';
@@ -11,7 +11,8 @@ import { VIENNA } from '@/lib/prayer-times';
 import { placeKey, placeOf, usePrayerPlace } from '@/lib/prayer-place';
 import { buildCalendarMonth, previousMonth, nextMonth } from '@/lib/calendar';
 import { HOLIDAYS } from '@/lib/holidays';
-import type { CalendarMonth } from '@/lib/calendar';
+import type { CalendarMonth, DayEntry } from '@/lib/calendar';
+import type { CivilKey, Country } from '@/lib/civil-days';
 import type { Occasion } from '@/lib/db/queries/content';
 import type { Timetable } from '@/lib/prayer-page';
 import type { Locale } from '@/lib/i18n/config';
@@ -129,10 +130,43 @@ export function HijriCalendar({
     [t],
   );
 
-  const shown = useMemo(
-    () => buildCalendarMonth(year, month, occasions, todayIso, holidayOccasions),
-    [year, month, occasions, todayIso, holidayOccasions],
+  // Austria's and Iran's civil days (`lib/civil-days`), in words.
+  const civilText = useMemo(
+    () => (key: CivilKey) => ({
+      name: t(`civil.${key}.name`),
+      note: t.has(`civil.${key}.note`) ? t(`civil.${key}.note`) : '',
+    }),
+    [t],
   );
+
+  const shown = useMemo(
+    () => buildCalendarMonth(year, month, occasions, todayIso, holidayOccasions, civilText),
+    [year, month, occasions, todayIso, holidayOccasions, civilText],
+  );
+
+  /**
+   * The countries each day of the month is off in without a civil entry
+   * saying so — Iran's religious holidays — and which occasion carries that
+   * label in the month's list: the first one of the day the house names.
+   */
+  const unnamedOffBy = useMemo(() => {
+    const byEntry = new Map<string, Country[]>();
+    for (const cell of shown.cells) {
+      if (!cell.iso) continue;
+      const off = unnamedOff(cell.off, cell.occasions);
+      const first = cell.occasions.find((o) => !o.country);
+      if (off.length > 0 && first) byEntry.set(`${first.id}-${cell.iso}`, off);
+    }
+    return byEntry;
+  }, [shown]);
+
+  /** The small label after a civil day's name: a day off, or which country's. */
+  const tagFor = (entry: DayEntry) =>
+    entry.country
+      ? entry.off
+        ? t(`offIn.${entry.country}`)
+        : t(`country.${entry.country}`)
+      : null;
 
   const occasionDays = useMemo(() => {
     const days = new Map<string, string[]>();
@@ -359,6 +393,7 @@ export function HijriCalendar({
                     return <td key={`blank-${dayIndex}`} />;
                   }
                   const hasOccasion = cell.occasions.length > 0;
+                  const isOff = cell.off.length > 0;
                   const iso = cell.iso;
                   return (
                     <td
@@ -375,6 +410,7 @@ export function HijriCalendar({
                         className="cal-day"
                         data-today={cell.isToday ? 'true' : undefined}
                         data-occ={hasOccasion ? 'true' : undefined}
+                        data-off={isOff ? 'true' : undefined}
                         data-on={iso === selectedIso ? 'true' : undefined}
                         aria-pressed={iso === selectedIso}
                         onClick={() => setSelectedIso(iso)}
@@ -395,6 +431,12 @@ export function HijriCalendar({
                         {cell.isToday ? (
                           <span className="visually-hidden"> — {t('legendToday')}</span>
                         ) : null}
+                        {cell.off.map((country) => (
+                          <span key={country} className="visually-hidden">
+                            {' '}
+                            — {t(`offIn.${country}`)}
+                          </span>
+                        ))}
                         {hasOccasion ? (
                           <span className="visually-hidden">
                             {' '}
@@ -432,6 +474,14 @@ export function HijriCalendar({
               </p>
             ) : null}
             {selectedPersian ? <p className="cal-detail-alt">{selectedPersian}</p> : null}
+            {/* A day off that nothing on the list already says is one — Iran's
+                religious holidays, which the occasions name without saying
+                the country closes for them. */}
+            {unnamedOff(selected.off, selected.occasions).map((country) => (
+              <p key={country} className="cal-tag" data-off="true">
+                {t(`offIn.${country}`)}
+              </p>
+            ))}
             {selected.occasions.length > 0 ? (
               <ul className="cal-detail-list">
                 {selected.occasions.map((occasion) => (
@@ -439,6 +489,14 @@ export function HijriCalendar({
                     <span className="cal-detail-name">{occasion.name}</span>
                     {occasion.note ? (
                       <span className="cal-detail-note"> — {occasion.note}</span>
+                    ) : null}
+                    {tagFor(occasion) ? (
+                      <>
+                        {' '}
+                        <span className="cal-tag" data-off={occasion.off ? 'true' : undefined}>
+                          {tagFor(occasion)}
+                        </span>
+                      </>
                     ) : null}
                   </li>
                 ))}
@@ -461,6 +519,12 @@ export function HijriCalendar({
             <li>
               <span className="cal-legend-mark" data-kind="occ" aria-hidden="true" />
               {t('legendOccasion')}
+            </li>
+            <li>
+              <span className="cal-legend-mark tabular" data-kind="off" aria-hidden="true">
+                {digits(1, locale)}
+              </span>
+              {t('legendOff')}
             </li>
           </ul>
         </div>
@@ -511,6 +575,22 @@ export function HijriCalendar({
                   <span>
                     <span className="occ-name">{occasion.name}</span>
                     {occasion.note ? <span className="occ-note"> — {occasion.note}</span> : null}
+                    {tagFor(occasion) ? (
+                      <>
+                        {' '}
+                        <span className="cal-tag" data-off={occasion.off ? 'true' : undefined}>
+                          {tagFor(occasion)}
+                        </span>
+                      </>
+                    ) : null}
+                    {(unnamedOffBy.get(`${occasion.id}-${occasion.iso}`) ?? []).map((country) => (
+                      <Fragment key={country}>
+                        {' '}
+                        <span className="cal-tag" data-off="true">
+                          {t(`offIn.${country}`)}
+                        </span>
+                      </Fragment>
+                    ))}
                   </span>
                 </button>
               </li>
@@ -533,6 +613,11 @@ export function HijriCalendar({
       </section>
     </>
   );
+}
+
+/** The countries a day is off in that none of its named entries says so for. */
+function unnamedOff(off: Country[], entries: DayEntry[]): Country[] {
+  return off.filter((country) => !entries.some((e) => e.country === country && e.off));
 }
 
 function chunk<T>(items: T[], size: number): T[][] {

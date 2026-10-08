@@ -1,5 +1,5 @@
 {
-  "latitude": 48.2175,
-  "longitude": 16.326,
-  "source": "placeholder until scripts/geocode-house.mjs runs"
+  "latitude": 48.221218,
+  "longitude": 16.319284,
+  "source": "Nominatim (OpenStreetMap), Sautergasse 34/38, 1170 Wien"
 }

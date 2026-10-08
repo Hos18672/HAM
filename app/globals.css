@@ -4412,6 +4412,12 @@
     margin: 0;
     color: var(--color-ink-muted);
   }
+  /* The swipe hint is pulled up under the page in the Qur'an reader; here
+     it follows the facts list, so it needs its own room instead. */
+  .dua-facts + .reader-hint {
+    margin-block-start: var(--space-5);
+    line-height: 1.8;
+  }
   @media (max-width: 40rem) {
     .dua-facts {
       grid-template-columns: minmax(0, 1fr);

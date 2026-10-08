@@ -90,7 +90,13 @@ export function LoginForm({
       <div aria-live="polite">{formError ? <p className="field-error">{formError}</p> : null}</div>
 
       <div>
-        <Button type="submit" size="lg" className="form-submit" loading={isSubmitting} disabled={isSubmitting}>
+        <Button
+          type="submit"
+          size="lg"
+          className="form-submit"
+          loading={isSubmitting}
+          disabled={isSubmitting}
+        >
           {isSubmitting ? 'Anmeldung läuft …' : 'Anmelden'}
         </Button>
       </div>

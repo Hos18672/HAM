@@ -8,7 +8,7 @@ const withNextIntl = createNextIntlPlugin('./lib/i18n/request.ts');
  * self-hosted, icons ship in the bundle, and there is no analytics anywhere.
  *
  * `img-src` allows two: the Supabase Storage origin, because uploaded media
- * is served from there, and OpenStreetMap's tile server, because the qibla
+ * is served from there, and CARTO's tile server (OpenStreetMap data), because the qibla
  * page draws the direction on the reader's own street and no amount of data
  * we carry ourselves can show which way that is against the buildings in
  * front of them. Images only — no script, no stylesheet, no frame — so the
@@ -16,7 +16,7 @@ const withNextIntl = createNextIntlPlugin('./lib/i18n/request.ts');
  * looking, and nothing else. The privacy page says so, and the page falls
  * back to a map drawn from our own data when the tiles cannot be had.
  */
-const TILE_ORIGIN = 'https://tile.openstreetmap.org';
+const TILE_ORIGIN = 'https://basemaps.cartocdn.com';
 const GOOGLE_MAPS_ORIGIN = 'https://www.google.com';
 const supabaseOrigin = (() => {
   try {

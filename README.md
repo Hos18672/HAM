@@ -310,7 +310,8 @@ about).
 
 ### The qibla map is the street you are standing in
 
-The view that opens is a street map — OpenStreetMap's own tiles — with your
+The view that opens is a street map — CARTO's calm "Voyager" tiles of
+OpenStreetMap data, at twice the pixels for a phone — with your
 position in the middle and a gold arrow leaving it in the direction of
 prayer. That is the one thing a drawing from our own data cannot give: a
 bearing is only usable if you can see it **against the buildings in front of
@@ -531,7 +532,7 @@ There is no analytics, no tracker, no font CDN and no social button anywhere
 in the codebase — fonts are self-hosted from `public/fonts`. That is why there
 is no cookie banner: the only cookies are the theme preference and the
 editorial session, and neither needs consent. The one third-party request a
-page makes on its own is OpenStreetMap's tiles, fetched as plain images by the
+page makes on its own is CARTO's map tiles, fetched as plain images by the
 qibla map. The home and contact pages show a picture of the street around the
 house from our own server; Google Maps replaces it only when the visitor taps
 "Google Maps laden" (a two-click embed — the tap is the consent, and the
@@ -656,7 +657,7 @@ Recorded here rather than left implicit:
      page has the typography the reference asks for and still makes no
      request to a font host (see assumption 3 and the privacy page).
    - **No Leaflet.** The reference loads Leaflet and its stylesheet from
-     unpkg. OpenStreetMap's tile host is the only third-party request this
+     unpkg. CARTO's tile host is the only third-party request this
      site makes, and the repository already carries its own slippy-tile map
      (`lib/slippy.ts`, unit-tested) with panning, zoom, a drawn fallback for
      when the tiles cannot be had, and now the great-circle path
@@ -705,7 +706,8 @@ Recorded here rather than left implicit:
       works the same way, with the same picture.
     - **Where the house is** (`lib/house-location.json`) is looked up from the
       address by `scripts/geocode-house.mjs` (Nominatim: Sautergasse 34 and
-      38, averaged), in the same workflow, before the map is drawn. The
+      38, averaged), in the same workflow, before the map is drawn; the qibla page reads the
+      same file (`HOUSE` in `lib/qibla.ts`). The
       hand-entered guess it replaced was about 800 m off. Google Maps and the
       route links search by the address itself, so Google pins the building
       even if the coordinates were ever wrong.

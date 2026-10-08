@@ -8,10 +8,15 @@
  * is not what the fiqh means.
  */
 
+import house from './house-location.json';
+
 export const KAABA = { latitude: 21.4225, longitude: 39.8262 } as const;
 
-/** The association house: Sautergasse 34–38, 1170 Wien. */
-export const HOUSE = { latitude: 48.2175, longitude: 16.326 } as const;
+/**
+ * The association house: Sautergasse 34–38, 1170 Wien — looked up from its
+ * address by `scripts/geocode-house.mjs`, not typed in.
+ */
+export const HOUSE = { latitude: house.latitude, longitude: house.longitude } as const;
 
 /** Mean earth radius, km (IUGG). Used by the spherical distance only. */
 const EARTH_RADIUS_KM = 6371.0088;

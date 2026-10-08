@@ -246,7 +246,7 @@ test.describe('the qibla', () => {
 
   /** One olive pixel, so the tile layer reports success without the network. */
   const stubTiles = (page: import('@playwright/test').Page) =>
-    page.route('https://tile.openstreetmap.org/**', (route) =>
+    page.route('https://basemaps.cartocdn.com/**', (route) =>
       route.fulfill({
         status: 200,
         contentType: 'image/png',
@@ -260,12 +260,12 @@ test.describe('the qibla', () => {
   test('shows the computed direction from the association house', async ({ page }) => {
     await page.goto('/de/qibla');
 
-    // 136.7° and about 3 637 km: the great-circle qibla from Hernals. It
+    // 136.6° and about 3 638 km: the great-circle qibla from Hernals. It
     // needs no permission and no sensor, so it is on the page from the start.
-    await expect(page.locator('.qibla-figure-value').first()).toHaveText('136,7°');
-    await expect(page.locator('.qibla-figure-value').nth(1)).toHaveText(/3\s?637/);
+    await expect(page.locator('.qibla-figure-value').first()).toHaveText('136,6°');
+    await expect(page.locator('.qibla-figure-value').nth(1)).toHaveText(/3\s?638/);
     await expect(page.locator('.qibla-origin')).toContainText('Vereinshaus');
-    await expect(page.locator('.qibla-deg')).toHaveText('136,7°');
+    await expect(page.locator('.qibla-deg')).toHaveText('136,6°');
   });
 
   test('opens on where the reader is, not on the house', async ({ page, context }) => {
@@ -275,7 +275,7 @@ test.describe('the qibla', () => {
     await page.goto('/de/qibla');
 
     await expect(page.locator('.qibla-origin')).toContainText('Ihrem Standort');
-    await expect(page.locator('.qibla-figure-value').first()).not.toHaveText('136,7°');
+    await expect(page.locator('.qibla-figure-value').first()).not.toHaveText('136,6°');
     await expect(page.getByRole('button', { name: 'Mein Standort' })).toHaveAttribute(
       'aria-pressed',
       'true',
@@ -302,7 +302,7 @@ test.describe('the qibla', () => {
     await page.goto('/de/qibla');
 
     // The direction is still the house's, and the page says why.
-    await expect(page.locator('.qibla-figure-value').first()).toHaveText('136,7°');
+    await expect(page.locator('.qibla-figure-value').first()).toHaveText('136,6°');
     await expect(page.locator('.qibla-geo-note')).toBeVisible();
     await expect(page.locator('.qibla-origin')).toContainText('Vereinshaus');
   });
@@ -314,7 +314,7 @@ test.describe('the qibla', () => {
     await expect(page.locator('.qibla-origin')).toContainText('Ihrem Standort');
 
     await page.getByRole('button', { name: 'Vereinshaus' }).click();
-    await expect(page.locator('.qibla-figure-value').first()).toHaveText('136,7°');
+    await expect(page.locator('.qibla-figure-value').first()).toHaveText('136,6°');
     await expect(page.locator('.qibla-origin')).toContainText('Vereinshaus');
   });
 
@@ -383,7 +383,7 @@ test.describe('the qibla', () => {
     await expect(page.locator('.qibla-status[data-live="yes"]')).toBeVisible();
 
     const status = page.locator('.qibla-status');
-    // Facing north, with the qibla at 136.7°, the shorter way round is right.
+    // Facing north, with the qibla at 136.6°, the shorter way round is right.
     await expect
       .poll(async () => {
         await page.evaluate(() =>
@@ -401,7 +401,7 @@ test.describe('the qibla', () => {
         await page.evaluate(() =>
           window.dispatchEvent(
             new DeviceOrientationEvent('deviceorientationabsolute', {
-              alpha: 360 - 136.7,
+              alpha: 360 - 136.6,
               absolute: true,
             }),
           ),
@@ -445,7 +445,7 @@ test.describe('the qibla', () => {
   test('asks the tile server for nothing until the map tab is opened', async ({ page }) => {
     const tiles: string[] = [];
     page.on('request', (request) => {
-      if (request.url().includes('tile.openstreetmap.org')) tiles.push(request.url());
+      if (request.url().includes('basemaps.cartocdn.com')) tiles.push(request.url());
     });
     await stubTiles(page);
     await page.goto('/de/qibla');
@@ -500,8 +500,7 @@ test.describe('the qibla', () => {
         const clashes = await page.evaluate(() => {
           const names = [
             '.qibla-street-rose',
-            '.reader-size',
-            '.qibla-map-controls > button',
+            '.qibla-street-controls',
             '.qibla-street-who',
             '.qibla-span',
             '.qibla-attribution',
@@ -552,39 +551,26 @@ test.describe('the qibla', () => {
         );
         expect(rows, `span buttons wrapped at ${locale} ${width}x${height}`).toBe(1);
 
-        // On a phone the controls are a row along the top at a reduced
-        // size. Measured rather than assumed: these overrides sit on bases
-        // that set a `min-block-size` floor and are declared further down
-        // the file, and a rule that loses either way is silently dead —
-        // which is how the map came to carry full-size furniture.
-        if (width < 500) {
-          const sizes = await page.evaluate(() => {
-            const h = (s: string) => {
-              const el = document.querySelector(s);
-              return el ? Math.round(el.getBoundingClientRect().height) : 0;
-            };
-            return {
-              controlRow: h('.qibla-map-controls'),
-              zoom: h('.reader-size'),
-              recentre: h('.qibla-map-controls > button'),
-              rose: h('.qibla-street-rose'),
-              span: h('.qibla-span-btn'),
-            };
-          });
-          expect(sizes, `control sizes at ${locale} ${width}`).toEqual({
-            controlRow: 34,
-            zoom: 34,
-            recentre: 34,
-            rose: 38,
-            span: 34,
-          });
-        }
+        // Small furniture, so the street stays visible: measured rather than
+        // assumed, because a rule that loses to a base declared further down
+        // the file is silently dead.
+        const sizes = await page.evaluate(() => {
+          const h = (s: string) => {
+            const el = document.querySelector(s);
+            return el ? Math.round(el.getBoundingClientRect().height) : 0;
+          };
+          return {
+            recentre: h('.qibla-recentre'),
+            span: h('.qibla-span-btn'),
+          };
+        });
+        expect(sizes, `control sizes at ${locale} ${width}`).toEqual({ recentre: 34, span: 28 });
       }
     }
   });
 
   test('says so and draws it itself when the tiles cannot be had', async ({ page }) => {
-    await page.route('https://tile.openstreetmap.org/**', (route) => route.abort());
+    await page.route('https://basemaps.cartocdn.com/**', (route) => route.abort());
     await page.goto('/de/qibla');
     await page.getByRole('tab', { name: 'Karte' }).click();
     // The direction does not depend on anybody else's server.

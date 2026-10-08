@@ -174,7 +174,7 @@ test.describe('public site', () => {
       'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
       'base64',
     );
-    await page.route('https://tile.openstreetmap.org/**', (route) =>
+    await page.route('https://basemaps.cartocdn.com/**', (route) =>
       route.fulfill({ contentType: 'image/png', body: PIXEL }),
     );
 
@@ -202,7 +202,7 @@ test.describe('public site', () => {
     // being true.
     const MAP_PAGES = ['/qibla'];
     const unexpected = external.filter(
-      (r) => !(MAP_PAGES.includes(r.path) && r.url.startsWith('https://tile.openstreetmap.org/')),
+      (r) => !(MAP_PAGES.includes(r.path) && r.url.startsWith('https://basemaps.cartocdn.com/')),
     );
     expect(unexpected).toEqual([]);
   });

@@ -91,7 +91,7 @@ export async function DuaCard({ dua, locale }: { dua: DuaEntry; locale: Locale }
           lineHeight: 'var(--leading-normal)',
         }}
       >
-        <div className="flex gap-2">
+        <div className="dua-fact">
           <span style={factLabel}>{t('whenToRead')}</span>
           <EditableText
             entity="dua"
@@ -101,7 +101,7 @@ export async function DuaCard({ dua, locale }: { dua: DuaEntry; locale: Locale }
             value={dua.whenToRead}
           />
         </div>
-        <div className="flex gap-2">
+        <div className="dua-fact">
           <span style={factLabel}>{t('source')}</span>
           <EditableText
             entity="dua"

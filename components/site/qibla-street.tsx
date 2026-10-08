@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import {
-  ArrowsClockwise,
+  Crosshair,
   GlobeHemisphereEast,
   MapTrifold,
   Minus,
@@ -19,7 +19,9 @@ import type { Locale } from '@/lib/i18n/config';
 /**
  * The qibla on the street you are standing in.
  *
- * The map underneath is OpenStreetMap's own tiles. That is a request to
+ * The map underneath is CARTO's "Voyager" style of OpenStreetMap data —
+ * calmer than OpenStreetMap's own layer, so the gold line reads over it, and
+ * served at twice the pixels for a phone's screen. That is a request to
  * somebody else's server, which this site otherwise never makes, and it is
  * the one place where it is worth it: a direction is only usable if you can
  * see which way it points *relative to the buildings around you*, and no
@@ -40,8 +42,8 @@ import type { Locale } from '@/lib/i18n/config';
  * direction depends on them.
  */
 
-/** OpenStreetMap's standard layer. Their policy asks for attribution. */
-const TILES = 'https://tile.openstreetmap.org';
+/** CARTO Voyager over OpenStreetMap data. Both ask for attribution. */
+const TILES = 'https://basemaps.cartocdn.com/rastertiles/voyager';
 /** Close enough to see the street, far enough to see which way it runs. */
 const DEFAULT_ZOOM = 17;
 
@@ -265,7 +267,7 @@ export function QiblaStreet({
             // eslint-disable-next-line @next/next/no-img-element
             <img
               key={tile.key}
-              src={`${TILES}/${tile.z}/${tile.x}/${tile.y}.png`}
+              src={`${TILES}/${tile.z}/${tile.x}/${tile.y}@2x.png`}
               alt=""
               width={TILE}
               height={TILE}
@@ -376,14 +378,16 @@ export function QiblaStreet({
           </div>
         </div>
 
-        <div className="qibla-span">
+        {/* One small segmented switch in the bottom corner rather than two
+            big pills across the street: the map is what this tab is for. */}
+        <div className="qibla-span" role="group" aria-label={t('streetLabel')}>
           <button
             type="button"
             className="qibla-span-btn"
             aria-pressed={span === 'street'}
             onClick={toStreet}
           >
-            <MapTrifold size={17} weight="duotone" aria-hidden="true" />
+            <MapTrifold size={15} weight="duotone" aria-hidden="true" />
             <span>{t('streetBtn')}</span>
           </button>
           <button
@@ -392,7 +396,7 @@ export function QiblaStreet({
             aria-pressed={span === 'mecca'}
             onClick={toMecca}
           >
-            <GlobeHemisphereEast size={17} weight="duotone" aria-hidden="true" />
+            <GlobeHemisphereEast size={15} weight="duotone" aria-hidden="true" />
             <span>{t('fitMecca')}</span>
           </button>
         </div>
@@ -400,54 +404,54 @@ export function QiblaStreet({
         <p className="qibla-attribution">
           <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">
             © OpenStreetMap
+          </a>{' '}
+          <a href="https://carto.com/attributions" target="_blank" rel="noreferrer">
+            © CARTO
           </a>
         </p>
-      </div>
 
-      <div className="qibla-map-controls">
-        <div className="reader-size" role="group" aria-label={t('zoom')}>
+        {/* Zoom and recentre as a slim column in the top corner, the way
+            every phone map keeps them: out of the street, under the thumb. */}
+        <div className="qibla-street-controls">
+          <div className="qibla-zoom" role="group" aria-label={t('zoom')}>
+            <button
+              type="button"
+              onClick={() => changeZoom(1)}
+              disabled={zoom >= MAX_ZOOM}
+              aria-label={t('zoomIn')}
+            >
+              <Plus size={14} weight="bold" aria-hidden="true" />
+            </button>
+            <span className="qibla-zoom-value tabular" aria-hidden="true">
+              {across}
+            </span>
+            <button
+              type="button"
+              onClick={() => changeZoom(-1)}
+              disabled={zoom <= MIN_ZOOM}
+              aria-label={t('zoomOut')}
+            >
+              <Minus size={14} weight="bold" aria-hidden="true" />
+            </button>
+          </div>
           <button
             type="button"
-            onClick={() => changeZoom(-1)}
-            disabled={zoom <= MIN_ZOOM}
-            aria-label={t('zoomOut')}
+            className="qibla-recentre"
+            onClick={recentre}
+            disabled={!moved && zoom === DEFAULT_ZOOM}
+            aria-label={t('recentreMe')}
+            title={t('recentreMe')}
           >
-            <Minus size={13} weight="bold" aria-hidden="true" />
+            <Crosshair size={16} weight="bold" aria-hidden="true" />
           </button>
-          <span className="reader-size-value tabular" aria-hidden="true">
-            {across}
-          </span>
-          <button
-            type="button"
-            onClick={() => changeZoom(1)}
-            disabled={zoom >= MAX_ZOOM}
-            aria-label={t('zoomIn')}
-          >
-            <Plus size={13} weight="bold" aria-hidden="true" />
-          </button>
+          {/* That the compass is live is said by the north rose, which turns
+              with the phone. Still announced, for a reader not looking at it. */}
+          {headingLive ? (
+            <span className="visually-hidden" aria-live="polite">
+              {t('headingOn')}
+            </span>
+          ) : null}
         </div>
-        <button
-          type="button"
-          className="mushaf-switch reader-full-btn"
-          onClick={recentre}
-          disabled={!moved && zoom === DEFAULT_ZOOM}
-          aria-label={t('recentreMe')}
-        >
-          <ArrowsClockwise size={17} weight="duotone" aria-hidden="true" />
-          {/* The words go on a narrow map, where four pills of German over
-              the street is more furniture than map. The name stays on the
-              button for anyone not reading it with their eyes. */}
-          <span className="qibla-ctl-word">{t('recentreMe')}</span>
-        </button>
-        {/* That the compass is live is said by the north rose, which turns
-            with the phone — a third disc on a map this size said it twice
-            and cost a tenth of the street to do it. Still announced, for a
-            reader who is not looking at the rose. */}
-        {headingLive ? (
-          <span className="visually-hidden" aria-live="polite">
-            {t('headingOn')}
-          </span>
-        ) : null}
       </div>
 
       <p className="text-xs" style={{ color: 'var(--color-ink-muted)' }}>

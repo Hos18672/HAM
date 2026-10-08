@@ -709,6 +709,16 @@
        the query below instead. Nothing on the site overflows sideways at
        any width anyway: this is a net, not a floor. */
     overflow-x: clip;
+    /* A word longer than its box — "Nachbarschaftsfrühstück" in a card on a
+       narrow phone, or any label with the phone's text set large — breaks
+       rather than running out of the box, where the clip above would cut
+       it off. */
+    overflow-wrap: break-word;
+  }
+  /* German compounds are long; headings may hyphenate rather than break
+     mid-syllable where the browser knows the language. */
+  :root[lang='de'] :is(h1, h2, h3, h4) {
+    hyphens: auto;
   }
   @supports not (overflow: clip) {
     body {
@@ -4663,15 +4673,29 @@
      zoom stays top-right in both languages, as on every map. */
   .qibla-panel-map .qibla-attribution {
     position: absolute;
-    inset-block-end: 2px;
+    inset-block-end: 0;
     /* The rule it overrides pins the credit by `inset-inline-end`, which in
-       Persian is the left edge — left and right both set stretch the box
-       across the map and under the buttons. Cleared first, then pinned. */
+       Persian is the left edge. Cleared first, then pinned. */
     inset-inline: auto;
-    right: 8px;
+    right: 0;
     margin: 0;
     z-index: 2;
   }
+  /* Zoom and recentre: a slim column in the top-right corner. Physical, not
+     logical — the map is never mirrored, so north stays top-left and these
+     stay top-right in both languages. */
+  .qibla-street-controls {
+    position: absolute;
+    inset-block-start: 10px;
+    right: 10px;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+  /* The drawn map that stands in when tiles fail keeps its own controls,
+     floated the same way. */
   .qibla-panel-map .qibla-map-controls {
     position: absolute;
     inset-block-start: 10px;
@@ -4694,34 +4718,85 @@
     place-content: center;
     overflow: hidden;
   }
+  .qibla-zoom {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    min-inline-size: 34px;
+    border-radius: 17px;
+    background: var(--card);
+    box-shadow:
+      inset 0 0 0 1px var(--line),
+      0 4px 12px rgba(0, 0, 0, 0.18);
+    overflow: hidden;
+  }
+  .qibla-zoom button {
+    inline-size: 100%;
+  }
+  .qibla-zoom button,
+  .qibla-recentre {
+    min-inline-size: 34px;
+    block-size: 34px;
+    display: grid;
+    place-items: center;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--head);
+    cursor: pointer;
+  }
+  .qibla-zoom button:disabled,
+  .qibla-recentre:disabled {
+    opacity: 0.4;
+    cursor: default;
+  }
+  .qibla-zoom-value {
+    padding: 2px 4px;
+    border-block: 1px solid var(--line);
+    white-space: nowrap;
+    font-size: 9.5px;
+    font-weight: var(--weight-bold);
+    line-height: 1.2;
+    text-align: center;
+    color: var(--color-ink-muted);
+    direction: ltr;
+  }
+  .qibla-recentre {
+    inline-size: 34px;
+    border-radius: 999px;
+    background: var(--card);
+    box-shadow:
+      inset 0 0 0 1px var(--line),
+      0 4px 12px rgba(0, 0, 0, 0.18);
+  }
+  /* Street or the whole way: one small segmented switch in the bottom-left
+     corner, sitting on the line above the credit. */
   .qibla-span {
     position: absolute;
-    left: 14px;
-    inset-block-end: 14px;
-    /* The credit owns the opposite corner, so the buttons are given the rest
-       of the line and wrap upward when the panel is too narrow to hold both
-       of them beside it — rather than sliding under it. */
-    right: 120px;
+    left: 10px;
+    inset-block-end: 24px;
     z-index: 2;
     display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
+    padding: 3px;
+    gap: 2px;
+    border-radius: 999px;
+    background: var(--stage);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.22);
   }
   .qibla-span-btn {
-    block-size: 40px;
-    padding-inline: 14px;
+    block-size: 28px;
+    padding-inline: 10px;
     border: 0;
     border-radius: 999px;
     cursor: pointer;
     display: flex;
     align-items: center;
-    gap: 6px;
-    font-size: 13.5px;
+    gap: 5px;
+    font-size: 12px;
     font-weight: var(--weight-bold);
     white-space: nowrap;
-    background: var(--stage);
+    background: transparent;
     color: var(--stage-ink);
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
   }
   .qibla-span-btn[aria-pressed='true'] {
     background: var(--gold);
@@ -4743,66 +4818,12 @@
     stroke-linecap: round;
   }
 
-  /* On a phone the map panel is about a hand across, and the furniture that
-     used to sit in a row under a full-width map now floats on top of it.
-     Four pills of German over the street is more furniture than map, so the
-     words go and the icons carry it; the names stay on the controls for
-     anyone not reading them with their eyes. */
+  /* On a phone the rose shrinks to match the column of controls. Scoped to
+     the tab so it beats the rose's own rule further down the file. */
   @media (max-width: 40rem) {
-    .qibla-panel-map .qibla-ctl-word {
-      position: absolute;
-      inline-size: 1px;
-      block-size: 1px;
-      padding: 0;
-      overflow: hidden;
-      clip-path: inset(50%);
-      white-space: nowrap;
-    }
-    /* One row along the top, not a column down the middle of the street:
-       two controls stacked took a third of the map's height on a phone. */
-    .qibla-panel-map .qibla-map-controls {
-      flex-direction: row;
-      align-items: center;
-    }
-    /* `min-block-size`, not `block-size`: both of these controls are built
-       on a shared base that sets a 38px floor, and a height alone is held
-       up by it. */
-    .qibla-panel-map .qibla-map-controls .reader-full-btn {
-      inline-size: 34px;
-      min-block-size: 34px;
-      block-size: 34px;
-      padding-inline: 0;
-      justify-content: center;
-      /* Round, like the north rose and the two discs of the zoom. Square
-         with a 12px radius it read as a stray box dropped on the street. */
-      border-radius: 999px;
-    }
-    .qibla-panel-map .reader-size {
-      min-block-size: 34px;
-      block-size: 34px;
-    }
-    .qibla-panel-map .reader-size-value {
-      font-size: 11px;
-    }
-    /* Scoped to the tab so it beats the rose's own rule, which is declared
-       further down the file. */
     .qibla-panel-map .qibla-street-rose {
-      inline-size: 38px;
-      block-size: 38px;
-    }
-    /* The credit keeps its corner and the buttons sit on the line above it,
-       so the two never compete for the same width: at 360px the panel is
-       292 across, and two Persian labels beside a 100px credit do not fit —
-       they wrapped into a stack. Above it they have the whole width. */
-    .qibla-span {
-      right: 14px;
-      inset-block-end: 30px;
-    }
-    .qibla-span-btn {
+      inline-size: 34px;
       block-size: 34px;
-      padding-inline: 11px;
-      gap: 5px;
-      font-size: 12.5px;
     }
     .qibla-panel-map .qibla-attribution {
       font-size: 10px;
@@ -5166,6 +5187,9 @@
     position: absolute;
     inset-block-end: 0;
     inset-inline-end: 0;
+    /* A credit line in Latin script: kept left-to-right in Persian too, so
+       each © stays in front of its name. */
+    direction: ltr;
     margin: 0;
     padding: 2px 8px;
     font-size: 11px;
@@ -7343,18 +7367,40 @@ body:has(.contact-page) .footer-contact {
   font-weight: 600;
   color: var(--ink);
 }
+/* The hours rows are a line each, not a two-column grid: the day on one
+   side, the time on the other, and where the two do not fit beside each
+   other — a phone with its text set large — the time drops under the day
+   instead of being pushed off the edge of the screen. */
+.contact-hours {
+  display: block;
+}
 .contact-hours .contact-dl-row {
+  display: flex;
+  flex-wrap: wrap;
   align-items: center;
+  justify-content: space-between;
+  gap: 2px 16px;
   min-block-size: 44px;
-  padding-block: 4px;
+  padding-block: 6px;
   padding-inline: 12px;
   border-block-end: 1px solid var(--line);
   border-inline-start: 3px solid transparent;
 }
+.contact-hours dt {
+  min-inline-size: 0;
+  overflow-wrap: anywhere;
+}
+.contact-hours dd {
+  margin-inline-start: auto;
+  text-align: end;
+  white-space: nowrap;
+}
 .contact-dd-split {
   display: flex;
   flex-wrap: wrap;
+  justify-content: flex-end;
   column-gap: 12px;
+  white-space: normal;
 }
 /* "nach Programm" stays one phrase; only the link may drop below it. */
 .contact-dd-split > span {
@@ -7833,6 +7879,8 @@ body:has(.contact-page) .footer-contact {
 }
 .event-line-body {
   display: grid;
+  /* One column that may shrink below its widest line (the calendar link). */
+  grid-template-columns: minmax(0, 1fr);
   gap: 4px;
   align-content: start;
   min-inline-size: 0;
@@ -8621,6 +8669,20 @@ body:has(.edit-bar) .tab-bar,
   outline: 2px solid var(--gold);
   outline-offset: 2px;
 }
+/* On a narrow phone the two tabs share the width evenly instead of each
+   keeping its full label width and running off the edge. */
+@media (max-width: 479.98px) {
+  .support-tablist {
+    display: grid;
+    grid-auto-columns: minmax(0, 1fr);
+    max-inline-size: 100%;
+  }
+  .support-tablist [role='tab'] {
+    justify-content: center;
+    padding-inline: 12px;
+    text-align: center;
+  }
+}
 .support-panel {
   display: grid;
   gap: var(--space-3);
@@ -8770,6 +8832,9 @@ body:has(.edit-bar) .tab-bar,
 .cta-panel-in {
   position: relative;
   display: grid;
+  /* One column that may shrink: left as \`auto\` it grew to the widest
+     button's label and pushed the text past the panel's edge. */
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--space-5);
   align-items: center;
 }
@@ -8782,6 +8847,12 @@ body:has(.edit-bar) .tab-bar,
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
+  min-inline-size: 0;
+}
+.cta-actions .btn {
+  max-inline-size: 100%;
+  white-space: normal;
+  text-align: center;
 }
 
 /* ─── Info lists: non-clickable items without card chrome ────────────────── */
@@ -9345,4 +9416,12 @@ body:has(.edit-bar) .tab-bar,
     animation: none !important;
     transition: none !important;
   }
+}
+
+/* A dua's facts: the label, then the value, which may wrap — as flex items
+   the value kept the width of its longest word and ran past the card. */
+.dua-fact {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: var(--space-2);
 }

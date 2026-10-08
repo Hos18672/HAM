@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { readJson, useStored, writeJson } from './rd/storage';
 import { RECITERS, SPEEDS, type Reciter } from './use-quran-audio';
-import { THEME_COOKIE, type ThemeValue } from './theme';
+import { useScheme } from './rd/scheme';
 
 /**
  * What the Quran reader remembers, all of it in this browser only:
@@ -116,25 +116,7 @@ export function useQuranStore() {
     [bookmarks],
   );
 
-  /* ── Night ───────────────────────────────────────────────────────────────
-     The site's own theme rather than a second one: it follows the system
-     until somebody picks, and the pick is the same cookie the header's
-     switch writes, so the whole site turns with it. */
-  const [night, setNight] = useState(false);
-  useEffect(() => {
-    const root = document.documentElement;
-    const read = () => setNight(root.dataset.theme === 'dark');
-    read();
-    const watch = new MutationObserver(read);
-    watch.observe(root, { attributes: true, attributeFilter: ['data-theme'] });
-    return () => watch.disconnect();
-  }, []);
-  const setScheme = useCallback((dark: boolean) => {
-    const next: ThemeValue = dark ? 'dark' : 'light';
-    document.cookie = `${THEME_COOKIE}=${next}; path=/; max-age=31536000; samesite=lax`;
-    document.documentElement.dataset.theme = next;
-    setNight(dark);
-  }, []);
+  const { night, setScheme } = useScheme();
 
   return {
     prefs,

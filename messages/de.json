@@ -910,5 +910,39 @@
     "openMap": "Größere Karte öffnen",
     "reach": "So erreichen Sie uns",
     "instagram": "Instagram"
+  },
+  "ink": {
+    "toggle": "Zeichnen",
+    "toolbar": "Zeichenwerkzeuge",
+    "tool": {
+      "pen": "Stift",
+      "marker": "Textmarker",
+      "eraser": "Radierer",
+      "line": "Linie",
+      "arrow": "Pfeil",
+      "rect": "Rechteck",
+      "square": "Quadrat",
+      "ellipse": "Ellipse",
+      "circle": "Kreis",
+      "triangle": "Dreieck",
+      "star": "Stern"
+    },
+    "color": "Farbe",
+    "customColor": "Eigene Farbe",
+    "colors": {
+      "gold": "Gold",
+      "white": "Weiß",
+      "red": "Rot",
+      "yellow": "Gelb",
+      "green": "Grün",
+      "blue": "Blau",
+      "pink": "Rosa",
+      "black": "Schwarz"
+    },
+    "size": "Stärke",
+    "undo": "Rückgängig",
+    "redo": "Wiederholen",
+    "clear": "Alles löschen",
+    "done": "Fertig"
   }
 }

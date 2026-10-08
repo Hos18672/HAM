@@ -214,6 +214,79 @@ test.describe('the du‘as', () => {
     await expect(overlay).toHaveCount(0);
   });
 
+  test('draws over the presentation, slide by slide', async ({ page }) => {
+    await page.goto('/de/duas/faraj');
+    await hydrated(page);
+    await openDisplay(page);
+    await page.getByRole('button', { name: 'Präsentation starten' }).click();
+    const title = page.locator('.rd-present-title');
+    await expect(title).toContainText('Eröffnung');
+
+    const canvas = page.locator('.rd-ink');
+    /** How many pixels the ink has touched. */
+    const inked = () =>
+      canvas.evaluate((el: HTMLCanvasElement) => {
+        const data = el.getContext('2d')!.getImageData(0, 0, el.width, el.height).data;
+        let n = 0;
+        for (let i = 3; i < data.length; i += 4) if (data[i]) n++;
+        return n;
+      });
+    const stroke = async (from: [number, number], to: [number, number]) => {
+      await page.mouse.move(...from);
+      await page.mouse.down();
+      for (let i = 1; i <= 8; i++)
+        await page.mouse.move(
+          from[0] + ((to[0] - from[0]) * i) / 8,
+          from[1] + ((to[1] - from[1]) * i) / 8,
+        );
+      await page.mouse.up();
+    };
+
+    await page.getByRole('button', { name: 'Zeichnen' }).click();
+    const tools = page.getByRole('toolbar', { name: 'Zeichenwerkzeuge' });
+    await expect(tools).toBeVisible();
+    await expect(tools.getByRole('button', { name: 'Stift' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+
+    // A line with the pen, which does not turn the slide as a tap would.
+    await stroke([300, 300], [600, 340]);
+    await expect(title).toContainText('Eröffnung');
+    await expect.poll(inked).toBeGreaterThan(200);
+    const pen = await inked();
+
+    // A red circle, thicker.
+    await tools.getByRole('button', { name: 'Rot' }).click();
+    await tools.getByRole('slider', { name: 'Stärke' }).fill('20');
+    await tools.getByRole('button', { name: 'Kreis' }).click();
+    await stroke([700, 250], [820, 330]);
+    await expect.poll(inked).toBeGreaterThan(pen * 2);
+
+    await tools.getByRole('button', { name: 'Rückgängig' }).click();
+    await expect.poll(inked).toBe(pen);
+    await tools.getByRole('button', { name: 'Wiederholen' }).click();
+    await expect.poll(inked).toBeGreaterThan(pen * 2);
+    const both = await inked();
+
+    // Each slide has its own; back again, and they are still there.
+    await page.keyboard.press('ArrowRight');
+    await expect(title).toContainText('Zeile 1 von 13');
+    await expect.poll(inked).toBe(0);
+    await page.keyboard.press('ArrowLeft');
+    await expect.poll(inked).toBe(both);
+
+    await tools.getByRole('button', { name: 'Alles löschen' }).click();
+    await expect.poll(inked).toBe(0);
+
+    // Esc puts the pen down first, and only then closes.
+    await page.keyboard.press('Escape');
+    await expect(tools).toHaveCount(0);
+    await expect(page.locator('.rd-present')).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(page.locator('.rd-present')).toHaveCount(0);
+  });
+
   test('presents from the line that was asked for', async ({ page }) => {
     await page.goto('/de/duas/faraj');
     await hydrated(page);

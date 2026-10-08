@@ -1,8 +1,9 @@
 'use client';
 
-import { useEffect, useRef, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { CaretLeft, CaretRight, Pause, Play, Translate, X } from '@phosphor-icons/react/dist/ssr';
 import { Portal } from './ui';
+import { Ink, InkToggle } from './ink';
 import type { Locale } from '@/lib/i18n/config';
 
 /**
@@ -11,7 +12,8 @@ import type { Locale } from '@/lib/i18n/config';
  *
  * Tap the words or press → for the next, ← for the one before (the other
  * way round in Persian), Space to play, Esc to close. It asks for the whole
- * screen on the way in and keeps the screen awake while it is open.
+ * screen on the way in and keeps the screen awake while it is open. The pen
+ * (or D) draws over it all, for teaching; Esc puts the pen down first.
  */
 
 /** The step the Arabic is set at, by how much of it there is. */
@@ -75,6 +77,7 @@ export function Present({
 }) {
   const rtl = locale === 'fa';
   const root = useRef<HTMLDivElement>(null);
+  const [drawing, setDrawing] = useState(false);
 
   // The whole screen, the screen kept awake, and the page behind held still.
   useEffect(() => {
@@ -130,6 +133,11 @@ export function Present({
     const onKey = (event: KeyboardEvent) => {
       const forward = rtl ? 'ArrowLeft' : 'ArrowRight';
       const back = rtl ? 'ArrowRight' : 'ArrowLeft';
+      // The drawing tools keep their own keys: Enter and Space press a
+      // button, the arrows move the pen's width.
+      const target = event.target as HTMLElement | null;
+      if (event.key !== 'Escape' && target?.closest?.('.rd-ink-bar input')) return;
+      if ((event.key === 'Enter' || event.key === ' ') && target?.closest?.('.rd-ink-bar')) return;
       if ([forward, 'PageDown', 'ArrowDown', 'Enter'].includes(event.key)) {
         event.preventDefault();
         onStep(1);
@@ -142,14 +150,17 @@ export function Present({
         else onStep(1);
       } else if (event.key === 'Escape') {
         event.preventDefault();
-        onClose();
-      } else if (event.key.toLowerCase() === 't') onToggleTranslated();
+        if (drawing) setDrawing(false);
+        else onClose();
+      } else if (event.ctrlKey || event.metaKey || event.altKey) return;
+      else if (event.key.toLowerCase() === 't') onToggleTranslated();
+      else if (event.key.toLowerCase() === 'd') setDrawing((on) => !on);
       else return;
       event.stopImmediatePropagation();
     };
     window.addEventListener('keydown', onKey, true);
     return () => window.removeEventListener('keydown', onKey, true);
-  }, [rtl, onStep, onClose, onPlay, onToggleTranslated]);
+  }, [rtl, drawing, onStep, onClose, onPlay, onToggleTranslated]);
 
   const Back = rtl ? CaretRight : CaretLeft;
   const Forward = rtl ? CaretLeft : CaretRight;
@@ -164,6 +175,7 @@ export function Present({
         aria-label={labels.dialog}
         tabIndex={-1}
         data-silent={silent ? 'on' : 'off'}
+        data-drawing={drawing ? 'on' : 'off'}
         dir={rtl ? 'rtl' : 'ltr'}
       >
         <div className="rd-present-top">
@@ -174,6 +186,7 @@ export function Present({
             <span className="rd-present-title">{title}</span>
           </div>
           <div className="rd-present-tools">
+            <InkToggle active={drawing} onToggle={() => setDrawing((on) => !on)} />
             <button
               type="button"
               className="rd-present-btn"
@@ -226,6 +239,8 @@ export function Present({
             ) : null}
           </div>
         </div>
+
+        <Ink active={drawing} pageKey={stepKey} onDone={() => setDrawing(false)} />
 
         <div className="rd-present-foot">
           <button type="button" className="rd-present-step" onClick={() => onStep(-1)}>

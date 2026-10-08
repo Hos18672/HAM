@@ -1681,6 +1681,179 @@ button.rd-medal:active {
   }
 }
 
+/* ── Presentation: ink ──────────────────────────────────────────────────── */
+.rd-present-top,
+.rd-present-foot {
+  position: relative;
+  z-index: 2;
+}
+.rd-ink {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  inline-size: 100%;
+  block-size: 100%;
+  pointer-events: none;
+  touch-action: none;
+}
+.rd-ink[data-active='on'] {
+  pointer-events: auto;
+  cursor: crosshair;
+}
+.rd-ink[data-active='on'][data-tool='eraser'] {
+  cursor: cell;
+}
+.rd-ink-bar {
+  position: absolute;
+  z-index: 3;
+  inset-inline: 12px;
+  inset-block-end: calc(76px + env(safe-area-inset-bottom));
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  inline-size: fit-content;
+  max-inline-size: calc(100% - 24px);
+  margin-inline: auto;
+  padding: 8px;
+  border: 1px solid rgba(247, 243, 232, 0.14);
+  border-radius: 18px;
+  background: rgba(4, 38, 26, 0.92);
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(10px);
+  animation: rd-present-in 260ms var(--rd-ease) both;
+}
+.rd-ink-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.rd-ink-row + .rd-ink-row {
+  gap: 10px;
+  padding-block-start: 6px;
+  border-block-start: 1px solid rgba(247, 243, 232, 0.1);
+}
+.rd-ink-btn {
+  display: grid;
+  flex: none;
+  place-items: center;
+  inline-size: 40px;
+  block-size: 40px;
+  padding: 0;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  cursor: pointer;
+}
+.rd-ink-btn:hover:not(:disabled) {
+  background: rgba(247, 243, 232, 0.1);
+}
+.rd-ink-btn[aria-pressed='true'] {
+  background: rgba(200, 164, 93, 0.26);
+  color: #c8a45d !important;
+}
+.rd-ink-btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+.rd-ink-colors,
+.rd-ink-actions {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 4px;
+}
+.rd-ink-swatch {
+  position: relative;
+  flex: none;
+  inline-size: 28px;
+  block-size: 28px;
+  margin: 4px 2px;
+  padding: 0;
+  border: 2px solid rgba(247, 243, 232, 0.35);
+  border-radius: 50%;
+  cursor: pointer;
+}
+.rd-ink-swatch[aria-pressed='true'],
+.rd-ink-custom[data-on='on'] {
+  outline: 2px solid #f7f3e8;
+  outline-offset: 2px;
+}
+.rd-ink-custom {
+  background: conic-gradient(#f05252, #fde047, #4ade80, #60a5fa, #f472b6, #f05252);
+}
+.rd-ink-custom input {
+  position: absolute;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+.rd-ink-custom:focus-within {
+  outline: 2px solid #c8a45d;
+  outline-offset: 2px;
+}
+.rd-ink-size {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 8px;
+}
+.rd-ink-dot {
+  display: grid;
+  place-items: center;
+  inline-size: 30px;
+  block-size: 30px;
+}
+.rd-ink-dot i {
+  display: block;
+  min-inline-size: 2px;
+  min-block-size: 2px;
+  border-radius: 50%;
+}
+.rd-ink-size input {
+  inline-size: 120px;
+  accent-color: #c8a45d;
+}
+.rd-ink-done {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 6px;
+  min-block-size: 40px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 12px;
+  background: #c8a45d;
+  color: #073b29 !important;
+  font-weight: 600 !important;
+  font-size: 0.875rem !important;
+  cursor: pointer;
+}
+.rd-present[data-drawing='on'] .rd-present-stage {
+  cursor: crosshair;
+}
+@media (max-width: 640px) {
+  .rd-ink-bar {
+    inset-block-end: calc(70px + env(safe-area-inset-bottom));
+    inline-size: auto;
+  }
+  .rd-ink-row {
+    flex-wrap: wrap;
+    justify-content: center;
+    overflow: visible;
+  }
+  .rd-ink-btn {
+    inline-size: 38px;
+    block-size: 38px;
+  }
+  .rd-ink-size input {
+    inline-size: 96px;
+  }
+}
+
 /* ── Arrival ───────────────────────────────────────────────────────────── */
 .rd-rise {
   animation: rd-rise 560ms var(--rd-ease) both;

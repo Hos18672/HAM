@@ -227,7 +227,12 @@ export async function FeaturedEvent({
               download={`${event.slug}.ics`}
               style={{ justifyContent: 'center' }}
             >
-              <CalendarPlus size={18} weight="duotone" aria-hidden="true" />
+              <CalendarPlus
+                size="1.3em"
+                weight="bold"
+                aria-hidden="true"
+                style={{ flexShrink: 0 }}
+              />
               {t('addToCalendar')}
             </a>
             <LinkButton

@@ -101,7 +101,7 @@ export async function EventRow({
             download={`${event.slug}.ics`}
             aria-label={`${t('addToCalendar')}: ${event.title}`}
           >
-            <CalendarPlus size={18} weight="duotone" aria-hidden="true" />
+            <CalendarPlus size="1.3em" weight="bold" aria-hidden="true" style={{ flexShrink: 0 }} />
             {t('addToCalendar')}
           </a>
         ) : null}

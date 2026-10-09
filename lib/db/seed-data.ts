@@ -1263,29 +1263,269 @@ export const DUAS: {
     },
   },
   {
+    slug: 'iftitah',
+    category: 'dua',
+    arabicTitle: 'دُعاء الإفْتِتاح',
+    sort: 7,
+    fa: {
+      title: 'دعای افتتاح',
+      summary:
+        'دعای شب‌های ماه رمضان، به نقل از محمد بن عثمان، از نایبان خاص امام زمان (عج)؛ ستایش خدا و آرزوی دولت کریمهٔ آن حضرت.',
+      whenToRead: 'هر شب از ماه رمضان',
+      source: 'تهذیب الأحکام و مصباح المتهجد، شیخ طوسی',
+    },
+    de: {
+      title: 'Duʿa al-Iftitah',
+      summary:
+        'Das Gebet der Ramadan-Nächte, überliefert von Muhammad ibn Uthman, einem der Stellvertreter des Imam al-Mahdi (a.j.) — Lob Gottes und die Sehnsucht nach dem gerechten Reich des Erwarteten.',
+      whenToRead: 'In jeder Nacht des Monats Ramadan',
+      source: 'Tahdhib al-Ahkam und Misbah al-Mutahaddschid, Schaich at-Tusi',
+    },
+  },
+  {
+    slug: 'abu-hamza',
+    category: 'dua',
+    arabicTitle: 'دُعاء أبي حَمْزَة الثُّمالي',
+    sort: 8,
+    fa: {
+      title: 'دعای ابوحمزهٔ ثمالی',
+      summary:
+        'دعای امام سجاد (ع) که ابوحمزهٔ ثمالی روایت کرده؛ مناجاتی طولانی از امید و ترس، اعتراف و توبه.',
+      whenToRead: 'سحرهای ماه رمضان',
+      source: 'مصباح المتهجد، شیخ طوسی',
+    },
+    de: {
+      title: 'Duʿa Abu Hamza ath-Thumali',
+      summary:
+        'Das Gebet Imam as-Sadschads (a.), überliefert von Abu Hamza ath-Thumali — eine lange vertraute Zwiesprache voller Hoffnung und Furcht, Bekenntnis und Reue.',
+      whenToRead: 'In den Morgenstunden vor der Dämmerung im Ramadan',
+      source: 'Misbah al-Mutahaddschid, Schaich at-Tusi',
+    },
+  },
+  {
+    slug: 'sabah',
+    category: 'dua',
+    arabicTitle: 'دُعاء الصَّباح',
+    sort: 9,
+    fa: {
+      title: 'دعای صباح',
+      summary:
+        'دعای امیرالمؤمنین (ع) در آغاز روز؛ با زبانی بلیغ از روشنایی صبح به نور هدایت می‌رسد.',
+      whenToRead: 'هر روز پس از نماز صبح',
+      source: 'بحار الأنوار، علامه مجلسی',
+    },
+    de: {
+      title: 'Duʿa as-Sabah',
+      summary:
+        'Das Morgengebet Imam Alis (a.) — in kunstvoller Sprache vom Licht des Morgens zum Licht der Rechtleitung.',
+      whenToRead: 'Täglich nach dem Morgengebet',
+      source: 'Bihar al-Anwar, Allama Madschlisi',
+    },
+  },
+  {
+    slug: 'jawshan-saghir',
+    category: 'dua',
+    arabicTitle: 'دُعاء الجَوْشَن الصَّغير',
+    sort: 10,
+    fa: {
+      title: 'دعای جوشن صغیر',
+      summary:
+        'دعای امام کاظم (ع) در برابر دشمنان و سختی‌ها؛ شکر نعمت عافیت در برابر رنجی که دیگران می‌کشند.',
+      whenToRead: 'هنگام ترس از دشمن و گرفتاری، و هر زمان',
+      source: 'مهج الدعوات، سید بن طاووس',
+    },
+    de: {
+      title: 'Duʿa al-Dschauschan as-Saghir',
+      summary:
+        'Das Gebet Imam al-Kazims (a.) gegen Feinde und Bedrängnis — Dank für das eigene Wohlergehen angesichts der Not anderer.',
+      whenToRead: 'Bei Furcht vor Feinden und in Not, und jederzeit',
+      source: 'Muhaj ad-Daʿawat, Sayyid ibn Tawus',
+    },
+  },
+  {
+    slug: 'mujir',
+    category: 'dua',
+    arabicTitle: 'دُعاء المُجير',
+    sort: 11,
+    fa: {
+      title: 'دعای مُجیر',
+      summary:
+        'دعایی که جبرئیل برای پیامبر (ص) آورد؛ نام‌های خدا، دوتا دوتا، با بازگشت «أَجِرْنا مِنَ النّارِ يا مُجير».',
+      whenToRead: 'روزهای سیزدهم، چهاردهم و پانزدهم ماه رمضان',
+      source: 'البلد الأمین، کفعمی',
+    },
+    de: {
+      title: 'Duʿa al-Mudschir',
+      summary:
+        'Das Gebet, das Gabriel dem Propheten (s.) brachte: Gottes Namen paarweise, jeweils mit dem Kehrvers „Bewahre uns vor dem Feuer, o Bewahrer“.',
+      whenToRead: 'Am 13., 14. und 15. Tag des Ramadan',
+      source: 'Al-Balad al-Amin, al-Kafʿami',
+    },
+  },
+  {
+    slug: 'mashlul',
+    category: 'dua',
+    arabicTitle: 'دُعاء المَشْلول',
+    sort: 12,
+    fa: {
+      title: 'دعای مشلول',
+      summary:
+        'دعایی که امیرالمؤمنین (ع) به جوانی فلج آموخت و او شفا یافت؛ سرشار از نام‌های خدا و یاد پیامبران.',
+      whenToRead: 'هر زمان، به‌ویژه برای شفا و حاجت',
+      source: 'مهج الدعوات، سید بن طاووس',
+    },
+    de: {
+      title: 'Duʿa al-Maschlul',
+      summary:
+        'Das Gebet, das Imam Ali (a.) einem gelähmten jungen Mann lehrte, der daraufhin geheilt wurde — voller Namen Gottes und Erinnerungen an die Propheten.',
+      whenToRead: 'Jederzeit, besonders um Heilung und in einem Anliegen',
+      source: 'Muhaj ad-Daʿawat, Sayyid ibn Tawus',
+    },
+  },
+  {
+    slug: 'arafa',
+    category: 'dua',
+    arabicTitle: 'دُعاء عَرَفَة',
+    sort: 13,
+    fa: {
+      title: 'دعای عرفهٔ امام حسین (ع)',
+      summary:
+        'دعای امام حسین (ع) در صحرای عرفات؛ از آفرینش انسان تا شناخت خدا، با افزودهٔ معروف سید بن طاووس.',
+      whenToRead: 'روز عرفه، نهم ذی‌الحجه، پیش از غروب',
+      source: 'البلد الأمین، کفعمی؛ الإقبال، سید بن طاووس',
+    },
+    de: {
+      title: 'Duʿa Arafa des Imam Husain (a.)',
+      summary:
+        'Das Gebet Imam Husains (a.) auf der Ebene von Arafat — von der Erschaffung des Menschen bis zur Erkenntnis Gottes, mit der bekannten Fortsetzung nach Sayyid ibn Tawus.',
+      whenToRead: 'Am Tag von Arafa, dem 9. Dhu l-Hiddscha, vor Sonnenuntergang',
+      source: 'Al-Balad al-Amin, al-Kafʿami; al-Iqbal, Sayyid ibn Tawus',
+    },
+  },
+  {
+    slug: 'makarim-al-akhlaq',
+    category: 'dua',
+    arabicTitle: 'دُعاء مَكارِمِ الأَخْلاق',
+    sort: 14,
+    fa: {
+      title: 'دعای مکارم الأخلاق',
+      summary:
+        'دعای بیستم صحیفهٔ سجادیه؛ درخواست اخلاق نیکو، از نیّت درست تا رفتار بزرگوارانه با دشمن.',
+      whenToRead: 'هر زمان',
+      source: 'الصحیفة السجادیة، دعای ۲۰',
+    },
+    de: {
+      title: 'Duʿa Makarim al-Akhlaq',
+      summary:
+        'Das zwanzigste Gebet der Sahifa Sadschadiyya — die Bitte um edle Charakterzüge, von der lauteren Absicht bis zum großmütigen Umgang mit dem Gegner.',
+      whenToRead: 'Jederzeit',
+      source: 'As-Sahifa as-Sadschadiyya, Gebet 20',
+    },
+  },
+  {
+    slug: 'baha',
+    category: 'dua',
+    arabicTitle: 'دُعاء السَّحَر (البَهاء)',
+    sort: 15,
+    fa: {
+      title: 'دعای سحر (بهاء)',
+      summary:
+        'دعایی که امام باقر (ع) در سحرهای رمضان می‌خواند؛ درخواست از خدا به زیباترین هر صفت او.',
+      whenToRead: 'سحرهای ماه رمضان',
+      source: 'مصباح المتهجد، شیخ طوسی، به روایت امام رضا (ع)',
+    },
+    de: {
+      title: 'Duʿa as-Sahar (al-Baha)',
+      summary:
+        'Das Gebet, das Imam al-Baqir (a.) vor der Morgendämmerung im Ramadan sprach — die Bitte bei dem Herrlichsten jeder Eigenschaft Gottes.',
+      whenToRead: 'In den Morgenstunden vor der Dämmerung im Ramadan',
+      source: 'Misbah al-Mutahaddschid, Schaich at-Tusi, nach Imam ar-Rida (a.)',
+    },
+  },
+  {
+    slug: 'yastashir',
+    category: 'dua',
+    arabicTitle: 'دُعاء يَسْتَشير',
+    sort: 16,
+    fa: {
+      title: 'دعای یستشیر',
+      summary:
+        'دعایی که پیامبر (ص) به امیرالمؤمنین (ع) آموخت؛ گواهی به یگانگی خدا و اقرار بنده به نیاز خود.',
+      whenToRead: 'هر زمان، به‌ویژه در شب‌ها',
+      source: 'مهج الدعوات، سید بن طاووس',
+    },
+    de: {
+      title: 'Duʿa Yastaschir',
+      summary:
+        'Das Gebet, das der Prophet (s.) Imam Ali (a.) lehrte — Zeugnis von Gottes Einheit und Bekenntnis der eigenen Bedürftigkeit.',
+      whenToRead: 'Jederzeit, besonders in der Nacht',
+      source: 'Muhaj ad-Daʿawat, Sayyid ibn Tawus',
+    },
+  },
+  {
+    slug: 'adileh',
+    category: 'dua',
+    arabicTitle: 'دُعاء العَدِيلَة',
+    sort: 17,
+    fa: {
+      title: 'دعای عدیله',
+      summary: 'بیان عقاید حقّه — توحید، عدل، نبوت، امامت و معاد — و سپردن آن به خدا تا هنگام مرگ.',
+      whenToRead: 'هر زمان، به‌ویژه نزد محتضر',
+      source: 'مفاتیح الجنان، به نقل از علمای متقدم',
+    },
+    de: {
+      title: 'Duʿa al-ʿAdila',
+      summary:
+        'Ein Bekenntnis der Glaubensgrundsätze — Einheit Gottes, Gerechtigkeit, Prophetentum, Imamat und Auferstehung — und ihre Übergabe an Gott bis zur Stunde des Todes.',
+      whenToRead: 'Jederzeit, besonders bei Sterbenden',
+      source: 'Mafatih al-Dschinan, nach früheren Gelehrten',
+    },
+  },
+  {
     slug: 'ziyarat-ashura',
     category: 'ziyara',
     arabicTitle: 'زِيارَة عاشُوراء',
-    sort: 7,
+    sort: 18,
     fa: {
       title: 'زیارت عاشورا',
-      summary: 'سلام بر امام حسین (ع) و یارانش؛ با صد سلام و صد لعن و دعای علقمه در پایان.',
+      summary:
+        'سلام بر امام حسین (ع) و یارانش، با صد سلام و صد لعن؛ دعای علقمه پس از آن جداگانه آمده است.',
       whenToRead: 'هر روز، و به‌ویژه روز عاشورا',
       source: 'کامل الزیارات، ابن قولویه',
     },
     de: {
       title: 'Ziyarat Aschura',
       summary:
-        'Der Gruß an Imam Husain (a.) und seine Gefährten — mit hundert Grüßen, hundert Verwünschungen und dem Duʿa Alqama am Schluss.',
+        'Der Gruß an Imam Husain (a.) und seine Gefährten — mit hundert Grüßen und hundert Verwünschungen; das Duʿa Alqama danach steht als eigener Text gleich dahinter.',
       whenToRead: 'Täglich, insbesondere am Tag von Aschura',
       source: 'Kamil az-Ziyarat, Ibn Quluwaih',
+    },
+  },
+  {
+    slug: 'alqama',
+    category: 'ziyara',
+    arabicTitle: 'دُعاء عَلْقَمَة',
+    sort: 19,
+    fa: {
+      title: 'دعای علقمه',
+      summary:
+        'دعای پس از زیارت عاشورا که صفوان از امام صادق (ع) روایت کرده؛ پناه بردن به خدا از هر بدخواه و وداع با امیرالمؤمنین و امام حسین (ع).',
+      whenToRead: 'پس از زیارت عاشورا',
+      source: 'مصباح المتهجد، شیخ طوسی',
+    },
+    de: {
+      title: 'Duʿa Alqama',
+      summary:
+        'Das Gebet nach der Ziyarat Aschura, überliefert von Safwan nach Imam as-Sadiq (a.) — Zuflucht bei Gott vor jedem, der Böses will, und Abschied von Imam Ali und Imam Husain (a.).',
+      whenToRead: 'Nach der Ziyarat Aschura',
+      source: 'Misbah al-Mutahaddschid, Schaich at-Tusi',
     },
   },
   {
     slug: 'ziyarat-arbain',
     category: 'ziyara',
     arabicTitle: 'زِيارَة الأَرْبَعين',
-    sort: 8,
+    sort: 20,
     fa: {
       title: 'زیارت اربعین',
       summary:
@@ -1305,7 +1545,7 @@ export const DUAS: {
     slug: 'ziyarat-jamia-kabira',
     category: 'ziyara',
     arabicTitle: 'الزِيارَة الجامِعَة الكَبيرَة',
-    sort: 9,
+    sort: 21,
     fa: {
       title: 'زیارت جامعهٔ کبیره',
       summary: 'زیارتی که برای همهٔ ائمه (ع) خوانده می‌شود؛ از امام هادی (ع) نقل شده است.',
@@ -1324,7 +1564,7 @@ export const DUAS: {
     slug: 'ziyarat-warith',
     category: 'ziyara',
     arabicTitle: 'زِيارَة وارِث',
-    sort: 10,
+    sort: 22,
     fa: {
       title: 'زیارت وارث',
       summary: 'سلامی که امام حسین (ع) را وارث آدم، نوح، ابراهیم، موسی و عیسی (ع) می‌خواند.',
@@ -1343,7 +1583,7 @@ export const DUAS: {
     slug: 'ziyarat-al-yasin',
     category: 'ziyara',
     arabicTitle: 'زِيارَة آل ياسين',
-    sort: 11,
+    sort: 23,
     fa: {
       title: 'زیارت آل یاسین',
       summary: 'سلام بر امام زمان (عج) در قالب شهادت‌نامه‌ای بند به بند.',
@@ -1359,10 +1599,50 @@ export const DUAS: {
     },
   },
   {
+    slug: 'ziyarat-amin-allah',
+    category: 'ziyara',
+    arabicTitle: 'زِيارَة أَمِينِ الله',
+    sort: 24,
+    fa: {
+      title: 'زیارت امین‌الله',
+      summary:
+        'زیارتی که امام سجاد (ع) کنار قبر امیرالمؤمنین (ع) خواند؛ از معتبرترین زیارات، که برای همهٔ امامان خوانده می‌شود.',
+      whenToRead: 'هر زمان، به‌ویژه روز غدیر',
+      source: 'کامل الزیارات، ابن قولویه',
+    },
+    de: {
+      title: 'Ziyarat Amin Allah',
+      summary:
+        'Der Gruß, den Imam as-Sadschad (a.) am Grab Imam Alis (a.) sprach — einer der zuverlässigsten Besuchsgrüße, der für jeden der Imame gesprochen werden kann.',
+      whenToRead: 'Jederzeit, besonders am Tag von Ghadir',
+      source: 'Kamil az-Ziyarat, Ibn Quluwaih',
+    },
+  },
+  {
+    slug: 'ziyarat-sahib-al-zaman',
+    category: 'ziyara',
+    arabicTitle: 'زِيارَة صاحِبِ الزَّمان (عج) في يَوْمِ الجُمُعَة',
+    sort: 25,
+    fa: {
+      title: 'زیارت امام زمان (عج) در روز جمعه',
+      summary:
+        'جمعه روز امام زمان (عج) است؛ سلام بر او و میهمانی خواستن از او در روزی که ظهورش در آن انتظار می‌رود.',
+      whenToRead: 'روزهای جمعه',
+      source: 'جمال الأسبوع، سید بن طاووس',
+    },
+    de: {
+      title: 'Ziyarat des Herrn der Zeit (a.j.) am Freitag',
+      summary:
+        'Der Freitag ist der Tag des Imam al-Mahdi (a.j.) — ein Gruß an ihn und die Bitte, sein Gast zu sein, an dem Tag, an dem sein Erscheinen erwartet wird.',
+      whenToRead: 'An Freitagen',
+      source: 'Dschamal al-Usbuʿ, Sayyid ibn Tawus',
+    },
+  },
+  {
     slug: 'tasbih-al-zahra',
     category: 'taqib',
     arabicTitle: 'تَسبيح الزَهراء (س)',
-    sort: 12,
+    sort: 26,
     fa: {
       title: 'تسبیح حضرت زهرا (س)',
       summary:

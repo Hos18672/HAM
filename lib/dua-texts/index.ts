@@ -12,6 +12,20 @@ import { ZIYARAT_WARITH } from './ziyarat-warith';
 import { ZIYARAT_AL_YASIN } from './ziyarat-al-yasin';
 import { ZIYARAT_JAMIA_KABIRA } from './ziyarat-jamia-kabira';
 import { TASBIH_AL_ZAHRA } from './tasbih-al-zahra';
+import { IFTITAH } from './iftitah';
+import { ABU_HAMZA } from './abu-hamza';
+import { SABAH } from './sabah';
+import { JAWSHAN_SAGHIR } from './jawshan-saghir';
+import { MUJIR } from './mujir';
+import { MASHLUL } from './mashlul';
+import { ARAFA } from './arafa';
+import { MAKARIM_AL_AKHLAQ } from './makarim-al-akhlaq';
+import { BAHA } from './baha';
+import { YASTASHIR } from './yastashir';
+import { ADILEH } from './adileh';
+import { ALQAMA } from './alqama';
+import { ZIYARAT_AMIN_ALLAH } from './ziyarat-amin-allah';
+import { ZIYARAT_SAHIB_AL_ZAMAN } from './ziyarat-sahib-al-zaman';
 
 export type { Line, DuaText, DuaCategory, DuaPayload, DuaStub };
 
@@ -38,11 +52,25 @@ const TEXTS: Record<string, DuaText> = {
   faraj: { lines: FARAJ, origin: 'mafatih' },
   'jawshan-kabir': { lines: JAWSHAN_KABIR, origin: 'mafatih' },
   samat: { lines: SAMAT, origin: 'mafatih' },
+  iftitah: { lines: IFTITAH, origin: 'mafatih' },
+  'abu-hamza': { lines: ABU_HAMZA, origin: 'collections' },
+  sabah: { lines: SABAH, origin: 'mafatih' },
+  'jawshan-saghir': { lines: JAWSHAN_SAGHIR, origin: 'mafatih' },
+  mujir: { lines: MUJIR, origin: 'mafatih' },
+  mashlul: { lines: MASHLUL, origin: 'mafatih' },
+  arafa: { lines: ARAFA, origin: 'mafatih' },
+  'makarim-al-akhlaq': { lines: MAKARIM_AL_AKHLAQ, origin: 'collections' },
+  baha: { lines: BAHA, origin: 'mafatih' },
+  yastashir: { lines: YASTASHIR, origin: 'mafatih' },
+  adileh: { lines: ADILEH, origin: 'collections' },
   'ziyarat-ashura': { lines: ZIYARAT_ASHURA, origin: 'mafatih' },
+  alqama: { lines: ALQAMA, origin: 'mafatih' },
   'ziyarat-arbain': { lines: ZIYARAT_ARBAIN, origin: 'mafatih' },
+  'ziyarat-jamia-kabira': { lines: ZIYARAT_JAMIA_KABIRA, origin: 'ziyarat' },
   'ziyarat-warith': { lines: ZIYARAT_WARITH, origin: 'ziyarat' },
   'ziyarat-al-yasin': { lines: ZIYARAT_AL_YASIN, origin: 'ziyarat' },
-  'ziyarat-jamia-kabira': { lines: ZIYARAT_JAMIA_KABIRA, origin: 'ziyarat' },
+  'ziyarat-amin-allah': { lines: ZIYARAT_AMIN_ALLAH, origin: 'mafatih' },
+  'ziyarat-sahib-al-zaman': { lines: ZIYARAT_SAHIB_AL_ZAMAN, origin: 'mafatih' },
   'tasbih-al-zahra': { lines: TASBIH_AL_ZAHRA, origin: 'house' },
 };
 

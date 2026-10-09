@@ -567,6 +567,7 @@
     "textSource": "Textgrundlage",
     "textOrigin": {
       "mafatih": "Arabisch und persische Übersetzung nach Mafatih al-Dschinan. Die deutsche Übertragung stammt vom Verein und ist eine Arbeitsfassung — Hinweise auf Fehler sind willkommen.",
+      "collections": "Arabisch nach Mafatih al-Dschinan bzw. der Sahifa Sadschadiyya. Die persische und die deutsche Übertragung stammen vom Verein und sind Arbeitsfassungen — Hinweise auf Fehler sind willkommen.",
       "ziyarat": "Arabisch nach den überlieferten Ziyarat-Sammlungen. Die persische und die deutsche Übertragung stammen vom Verein und sind Arbeitsfassungen.",
       "house": "Zusammengestellt vom Verein."
     },

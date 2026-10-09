@@ -10,6 +10,7 @@ import { getSettings } from '@/lib/db/queries/content';
 import { PrintPlates } from '@/components/site/print-plates';
 import { PatternDefs } from '@/components/site/ornaments';
 import { RiseObserver } from '@/components/site/rise';
+import { ServiceWorker } from '@/components/site/service-worker';
 // The Homecoming scene's own layout and page states, first so this app's
 // tokens below can override its three variables.
 import '../globals.css';
@@ -68,7 +69,14 @@ export async function generateMetadata({
     // Next does not put `basePath` on a metadata icon, so the prefix is
     // written in: without it the preview asks the domain root for the
     // favicon and gets a 404.
-    icons: { icon: `${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/icon.png` },
+    icons: {
+      icon: `${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/icon.png`,
+      apple: `${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/icons/apple-touch-icon.png`,
+    },
+    // The manifest and the service worker in `public/` are what make the
+    // site installable as an app; the same prefix applies to the manifest.
+    manifest: `${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/manifest.webmanifest`,
+    appleWebApp: { capable: true, title: t('name'), statusBarStyle: 'default' },
   };
 }
 
@@ -175,6 +183,7 @@ export default async function LocaleLayout({
           <PatternDefs />
           {children}
           <RiseObserver />
+          <ServiceWorker />
         </NextIntlClientProvider>
       </body>
     </html>

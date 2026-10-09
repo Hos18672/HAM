@@ -1,0 +1,21 @@
+{
+  "id": "./",
+  "name": "خانهٔ همهٔ انسان‌ها — Haus aller Menschen",
+  "short_name": "Haus aller Menschen",
+  "description": "انصار المهدی (عج) · Ansar al-Mahdi, Sautergasse 34–38, 1170 Wien",
+  "lang": "fa",
+  "dir": "auto",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#f3f2f2",
+  "theme_color": "#f3f2f2",
+  "categories": ["lifestyle", "education", "books"],
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/maskable-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

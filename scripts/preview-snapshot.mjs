@@ -103,7 +103,7 @@ async function writeQuranData(locales) {
 
 /**
  * The same for the du'as, which the reader now turns the same way: it asks
- * `/api/duas/[slug]`, and on a static host there is nothing to ask. Twenty-seven
+ * `/api/duas/[slug]`, and on a static host there is nothing to ask. Twenty-eight
  * texts in two languages, so no need to go at them in parallel.
  */
 async function writeDuaData(locales, slugs) {

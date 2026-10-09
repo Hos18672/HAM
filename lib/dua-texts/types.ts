@@ -13,7 +13,7 @@ export type Line = readonly [arabic: string | null, persian: string, german: str
 export interface DuaText {
   lines: Line[];
   /** Which note under `SOURCES` says where this text came from. */
-  origin: 'mafatih' | 'collections' | 'ziyarat' | 'house';
+  origin: 'mafatih' | 'collections' | 'ziyarat' | 'quran' | 'house';
 }
 
 /** The category a du'a is filed under on the index and in the reader. */

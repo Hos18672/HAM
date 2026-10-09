@@ -465,7 +465,7 @@ lights, so the reader's night button drives the same switch.
 
 ### The du'a texts are in the code, not the database
 
-`lib/dua-texts/` holds twenty-seven full texts — one file per du'a, one line of
+`lib/dua-texts/` holds twenty-eight full texts — one file per du'a, one line of
 source per line of prayer, as `[arabic, persian, german]`. They live in the
 code and not in the database, as the Quran does and unlike everything the
 editors keep, because they are scripture rather than editorial content:
@@ -478,6 +478,8 @@ nobody is going to reword Du'a Kumail from the admin screen.
   collections, segmented into the clauses they are read in. Abu Hamza,
   ʿAdila and Makarim al-Akhlaq (Sahifa Sajjadiyya 20) come as Arabic from the
   same kind of collection; their Persian, like the ziyarat's, is the house's.
+  Ayat al-Kursi (al-Baqara 2:255–257) is the Quranic text in the same
+  Mafatih-style spelling, with the house's Persian.
 - **German is the house's own working translation**, made line by line
   against the Arabic with the Persian beside it. The page says so, under
   "Textgrundlage". **Corrections are welcome and are a one-line diff** in the

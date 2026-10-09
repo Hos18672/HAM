@@ -1639,10 +1639,30 @@ export const DUAS: {
     },
   },
   {
+    slug: 'ayat-al-kursi',
+    category: 'taqib',
+    arabicTitle: 'آيَةُ الْكُرْسيّ',
+    sort: 26,
+    fa: {
+      title: 'آیت‌الکرسی',
+      summary:
+        'آیه‌های ۲۵۵ تا ۲۵۷ سورهٔ بقره در توحید و عظمت خدا؛ پیامبر (ص) آن را بزرگ‌ترین آیهٔ قرآن خوانده است.',
+      whenToRead: 'پس از هر نماز، پیش از خواب و هنگام سفر',
+      source: 'قرآن کریم، سورهٔ بقره ۲۵۵–۲۵۷',
+    },
+    de: {
+      title: 'Ayat al-Kursi (Thronvers)',
+      summary:
+        'Die Verse 255 bis 257 der Sure al-Baqara über die Einheit und Größe Gottes — der Prophet (s.) nannte sie den gewaltigsten Vers des Korans.',
+      whenToRead: 'Nach jedem Gebet, vor dem Schlafengehen und auf Reisen',
+      source: 'Koran, Sure al-Baqara 2:255–257',
+    },
+  },
+  {
     slug: 'tasbih-al-zahra',
     category: 'taqib',
     arabicTitle: 'تَسبيح الزَهراء (س)',
-    sort: 26,
+    sort: 27,
     fa: {
       title: 'تسبیح حضرت زهرا (س)',
       summary:

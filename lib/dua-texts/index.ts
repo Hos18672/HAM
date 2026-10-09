@@ -12,6 +12,7 @@ import { ZIYARAT_WARITH } from './ziyarat-warith';
 import { ZIYARAT_AL_YASIN } from './ziyarat-al-yasin';
 import { ZIYARAT_JAMIA_KABIRA } from './ziyarat-jamia-kabira';
 import { TASBIH_AL_ZAHRA } from './tasbih-al-zahra';
+import { AYAT_AL_KURSI } from './ayat-al-kursi';
 import { IFTITAH } from './iftitah';
 import { ABU_HAMZA } from './abu-hamza';
 import { SABAH } from './sabah';
@@ -71,6 +72,7 @@ const TEXTS: Record<string, DuaText> = {
   'ziyarat-al-yasin': { lines: ZIYARAT_AL_YASIN, origin: 'ziyarat' },
   'ziyarat-amin-allah': { lines: ZIYARAT_AMIN_ALLAH, origin: 'mafatih' },
   'ziyarat-sahib-al-zaman': { lines: ZIYARAT_SAHIB_AL_ZAMAN, origin: 'mafatih' },
+  'ayat-al-kursi': { lines: AYAT_AL_KURSI, origin: 'quran' },
   'tasbih-al-zahra': { lines: TASBIH_AL_ZAHRA, origin: 'house' },
 };
 

@@ -39,22 +39,23 @@ jobs:
       SITE_URL: ${{ vars.ANDROID_SITE_URL || 'https://hos18672.github.io/HAM' }}
       HAS_KEY: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: 22
+          package-manager-cache: false
 
       # The du'a catalogue and the verses the widgets carry offline.
       - name: Export the widgets' content
         run: npx --yes tsx@4 android/scripts/export-content.ts
 
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: 17
 
-      - uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/setup-gradle@v5
 
       - name: Unit tests and debug APK
         working-directory: android
@@ -77,7 +78,7 @@ jobs:
             | grep 'SHA256:' | sed 's/.*SHA256: //' >> "$GITHUB_STEP_SUMMARY"
           rm -f "$ANDROID_KEYSTORE_FILE"
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: haus-aller-menschen-android
           path: |

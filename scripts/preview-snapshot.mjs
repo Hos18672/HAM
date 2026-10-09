@@ -248,6 +248,11 @@ async function main() {
   const duaData = await writeDuaData(locales, await readDuaSlugs());
   const searchData = await writeSearchData(locales);
 
+  // The calendar widgets' feed, at the same path the live site serves it.
+  const feed = await fetch(`${ORIGIN}${BASE_PATH}/widget-data/calendar.json`);
+  if (feed.status !== 200) throw new Error(`widget-data/calendar.json returned ${feed.status}`);
+  await writeFileAt(join(OUT, 'widget-data', 'calendar.json'), await feed.text());
+
   // The icons, which are routes built from `app/icon.*` rather than files in
   // public/. Fetched as bytes, not text: one of them is a PNG, and reading a
   // PNG as UTF-8 turns it into something that is no longer a PNG.

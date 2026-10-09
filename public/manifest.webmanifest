@@ -109,6 +109,32 @@
       ],
       "auth": false,
       "update": 900
+    },
+    {
+      "name": "تقویم · Kalender",
+      "short_name": "Kalender",
+      "description": "Das heutige Datum in drei Kalendern, die Termine im Haus und die nächsten Gedenktage.",
+      "tag": "calendar",
+      "template": "calendar",
+      "ms_ac_template": "widgets/calendar.ac.json",
+      "data": "widget-data/calendar.json",
+      "type": "application/json",
+      "screenshots": [
+        {
+          "src": "widgets/calendar-screenshot.png",
+          "sizes": "600x400",
+          "label": "Kalender-Widget"
+        }
+      ],
+      "icons": [
+        {
+          "src": "icons/widget-calendar.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ],
+      "auth": false,
+      "update": 3600
     }
   ]
 }

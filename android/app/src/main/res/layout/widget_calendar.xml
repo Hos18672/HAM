@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/root"
+    android:layout_width="match_parent" android:layout_height="match_parent"
+    android:background="@drawable/widget_bg" android:orientation="vertical"
+    android:padding="14dp">
+
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:gravity="center_vertical" android:orientation="horizontal">
+        <TextView android:id="@+id/title" style="@style/WTitle" android:layout_width="0dp" android:layout_weight="1"
+            android:textColor="@color/widget_accent" android:text="@string/cal_title" />
+        <TextView android:id="@+id/lang" style="@style/WLang" />
+    </LinearLayout>
+
+    <!-- Today: the day's number large, then the date in three calendars. -->
+    <LinearLayout android:id="@+id/today" android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:layout_marginTop="4dp" android:gravity="center_vertical" android:orientation="horizontal">
+        <TextView android:id="@+id/today_day" android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:textColor="@color/widget_accent" android:textSize="34sp" android:textStyle="bold"
+            android:includeFontPadding="false" android:text="" />
+        <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1"
+            android:layout_marginStart="10dp" android:orientation="vertical">
+            <TextView android:id="@+id/today_date" style="@style/WTitle" android:layout_width="match_parent"
+                android:maxLines="1" android:ellipsize="end" android:text="" />
+            <TextView android:id="@+id/today_other" style="@style/WSmall" android:layout_width="match_parent"
+                android:maxLines="2" android:ellipsize="end" android:text="" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <TextView android:id="@+id/upcoming" style="@style/WSmall" android:layout_width="match_parent"
+        android:layout_marginTop="10dp" android:textStyle="bold" android:text="@string/cal_upcoming" />
+
+    <LinearLayout android:id="@+id/row0" android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:layout_marginTop="6dp" android:gravity="center_vertical" android:orientation="horizontal"
+        android:visibility="gone">
+        <LinearLayout android:id="@+id/chip0" android:layout_width="44dp" android:layout_height="40dp"
+            android:background="@drawable/chip_bg" android:gravity="center" android:orientation="vertical">
+            <TextView android:id="@+id/day0" android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:textColor="@color/widget_ink" android:textSize="15sp" android:textStyle="bold"
+                android:includeFontPadding="false" android:text="" />
+            <TextView android:id="@+id/mon0" android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:textColor="@color/widget_subtle" android:textSize="9sp" android:maxLines="1"
+                android:includeFontPadding="false" android:text="" />
+        </LinearLayout>
+        <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1"
+            android:layout_marginStart="10dp" android:orientation="vertical">
+            <TextView android:id="@+id/what0" android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:textColor="@color/widget_ink" android:textSize="13sp" android:maxLines="1"
+                android:ellipsize="end" android:text="" />
+            <TextView android:id="@+id/sub0" style="@style/WSmall" android:layout_width="match_parent"
+                android:maxLines="1" android:ellipsize="end" android:text="" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout android:id="@+id/row1" android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:layout_marginTop="6dp" android:gravity="center_vertical" android:orientation="horizontal"
+        android:visibility="gone">
+        <LinearLayout android:id="@+id/chip1" android:layout_width="44dp" android:layout_height="40dp"
+            android:background="@drawable/chip_bg" android:gravity="center" android:orientation="vertical">
+            <TextView android:id="@+id/day1" android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:textColor="@color/widget_ink" android:textSize="15sp" android:textStyle="bold"
+                android:includeFontPadding="false" android:text="" />
+            <TextView android:id="@+id/mon1" android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:textColor="@color/widget_subtle" android:textSize="9sp" android:maxLines="1"
+                android:includeFontPadding="false" android:text="" />
+        </LinearLayout>
+        <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1"
+            android:layout_marginStart="10dp" android:orientation="vertical">
+            <TextView android:id="@+id/what1" android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:textColor="@color/widget_ink" android:textSize="13sp" android:maxLines="1"
+                android:ellipsize="end" android:text="" />
+            <TextView android:id="@+id/sub1" style="@style/WSmall" android:layout_width="match_parent"
+                android:maxLines="1" android:ellipsize="end" android:text="" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout android:id="@+id/row2" android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:layout_marginTop="6dp" android:gravity="center_vertical" android:orientation="horizontal"
+        android:visibility="gone">
+        <LinearLayout android:id="@+id/chip2" android:layout_width="44dp" android:layout_height="40dp"
+            android:background="@drawable/chip_bg" android:gravity="center" android:orientation="vertical">
+            <TextView android:id="@+id/day2" android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:textColor="@color/widget_ink" android:textSize="15sp" android:textStyle="bold"
+                android:includeFontPadding="false" android:text="" />
+            <TextView android:id="@+id/mon2" android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:textColor="@color/widget_subtle" android:textSize="9sp" android:maxLines="1"
+                android:includeFontPadding="false" android:text="" />
+        </LinearLayout>
+        <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1"
+            android:layout_marginStart="10dp" android:orientation="vertical">
+            <TextView android:id="@+id/what2" android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:textColor="@color/widget_ink" android:textSize="13sp" android:maxLines="1"
+                android:ellipsize="end" android:text="" />
+            <TextView android:id="@+id/sub2" style="@style/WSmall" android:layout_width="match_parent"
+                android:maxLines="1" android:ellipsize="end" android:text="" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout android:id="@+id/row3" android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:layout_marginTop="6dp" android:gravity="center_vertical" android:orientation="horizontal"
+        android:visibility="gone">
+        <LinearLayout android:id="@+id/chip3" android:layout_width="44dp" android:layout_height="40dp"
+            android:background="@drawable/chip_bg" android:gravity="center" android:orientation="vertical">
+            <TextView android:id="@+id/day3" android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:textColor="@color/widget_ink" android:textSize="15sp" android:textStyle="bold"
+                android:includeFontPadding="false" android:text="" />
+            <TextView android:id="@+id/mon3" android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:textColor="@color/widget_subtle" android:textSize="9sp" android:maxLines="1"
+                android:includeFontPadding="false" android:text="" />
+        </LinearLayout>
+        <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1"
+            android:layout_marginStart="10dp" android:orientation="vertical">
+            <TextView android:id="@+id/what3" android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:textColor="@color/widget_ink" android:textSize="13sp" android:maxLines="1"
+                android:ellipsize="end" android:text="" />
+            <TextView android:id="@+id/sub3" style="@style/WSmall" android:layout_width="match_parent"
+                android:maxLines="1" android:ellipsize="end" android:text="" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <TextView android:id="@+id/empty" style="@style/WSmall" android:layout_width="match_parent"
+        android:layout_marginTop="6dp" android:visibility="gone" android:text="@string/cal_empty" />
+</LinearLayout>

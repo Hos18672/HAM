@@ -8,6 +8,10 @@
  *   assets/verses.json  the verses of the "verse of the day", in the same three
  *                       editions as the site's reader (lib/quran.ts), fetched
  *                       once here from the Al Quran Cloud API
+ *   assets/calendar.json the calendar widget's feed as the site serves it now
+ *                       (SITE_URL, `/widget-data/calendar.json`), for a widget
+ *                       placed before the phone has been online. Best effort:
+ *                       the widget fetches the feed itself anyway.
  */
 import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
@@ -89,6 +93,13 @@ async function main() {
     });
   }
   await writeFile(join(OUT, 'verses.json'), JSON.stringify(verses));
+  const site = (process.env.SITE_URL ?? 'https://hos18672.github.io/HAM').replace(/\/+$/, '');
+  try {
+    const feed = await fetchJson(`${site}/widget-data/calendar.json`);
+    await writeFile(join(OUT, 'calendar.json'), JSON.stringify(feed));
+  } catch (error) {
+    console.warn(`no calendar feed from ${site} (${String(error)}); the widget will fetch it`);
+  }
   console.log(`wrote ${Object.keys(duas).length} du'as and ${verses.length} verses to ${OUT}`);
 }
 

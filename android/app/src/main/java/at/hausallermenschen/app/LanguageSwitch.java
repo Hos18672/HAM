@@ -17,6 +17,7 @@ public class LanguageSwitch extends BroadcastReceiver {
         AppWidgetManager manager = AppWidgetManager.getInstance(context);
         PrayerWidget.render(context, manager, manager.getAppWidgetIds(new ComponentName(context, PrayerWidget.class)));
         QuranWidget.render(context, manager, manager.getAppWidgetIds(new ComponentName(context, QuranWidget.class)));
+        CalendarWidget.renderAll(context);
         DuaWidget.render(context, manager, manager.getAppWidgetIds(new ComponentName(context, DuaWidget.class)));
     }
 }

@@ -24,4 +24,10 @@
     <string name="w_prayer_desc">Die Gebetszeiten von heute in Wien, mit dem nächsten Gebet</string>
     <string name="w_quran_desc">Jeden Tag ein Vers aus dem Koran, mit Übersetzung</string>
     <string name="w_dua_desc">Das passende Bittgebet für heute und schnelle Wege in die App</string>
+    <string name="cal_title">Kalender &amp; Termine</string>
+    <string name="cal_upcoming">Demnächst</string>
+    <string name="cal_empty">Zurzeit sind keine Termine geplant.</string>
+    <string name="cal_today">heute</string>
+    <string name="cal_off">Feiertag in Österreich</string>
+    <string name="w_cal_desc">Das heutige Datum in drei Kalendern, die Termine im Haus und die nächsten Gedenktage</string>
 </resources>

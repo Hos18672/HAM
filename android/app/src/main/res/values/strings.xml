@@ -24,4 +24,10 @@
     <string name="w_prayer_desc">اوقات شرعی امروز در وین و نماز بعدی</string>
     <string name="w_quran_desc">هر روز یک آیه از قرآن، با ترجمه</string>
     <string name="w_dua_desc">دعای مناسب امروز و دسترسی سریع</string>
+    <string name="cal_title">تقویم و برنامه‌ها</string>
+    <string name="cal_upcoming">پیش رو</string>
+    <string name="cal_empty">فعلاً برنامه‌ای ثبت نشده است.</string>
+    <string name="cal_today">امروز</string>
+    <string name="cal_off">تعطیل رسمی در اتریش</string>
+    <string name="w_cal_desc">تاریخ امروز به سه تقویم، برنامه‌های خانه و مناسبت‌های پیش رو</string>
 </resources>

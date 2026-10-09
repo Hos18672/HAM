@@ -247,14 +247,22 @@ The site installs as an app (web manifest + `public/sw.js`). Installed, it offer
 - **Shortcuts** on a long press of the icon (Android, desktop Chrome/Edge): prayer
   times, Quran, du'as. They open `/prayer`, `/quran`, `/duas`, which middleware
   sends to the reader's chosen language.
-- **A Windows 11 widget** (Edge, widget board): today's prayer times in Vienna. The
-  service worker fills `public/widgets/prayer-times.ac.json` with times from
+- **Two Windows 11 widgets** (Edge, widget board). Prayer times: the service
+  worker fills `public/widgets/prayer-times.ac.json` with times from
   `public/widgets/prayer.js`, a port of `lib/prayer-times.ts` held to it by
-  `tests/unit/widget-prayer.test.ts`.
-- **An Android app** in `android/` — the site in a Trusted Web Activity, plus three
+  `tests/unit/widget-prayer.test.ts`. Calendar: `public/widgets/calendar.ac.json`,
+  filled by `public/widgets/calendar.js` from the calendar feed.
+- **The calendar feed**, `/widget-data/calendar.json` (`app/widget-data/`): the
+  coming events, the occasions and Austrian public holidays of the next year,
+  and each day's Hijri and Persian date, in both languages. The preview snapshot
+  saves it at the same path, so the widgets ask one URL wherever the site lives.
+- **An Android app** in `android/` — the site in a Trusted Web Activity, plus four
   home-screen widgets: prayer times (computed on the phone, a Java port tested
   against the TypeScript), a verse of the day (Arabic with Makarem Shirazi's or
-  Bubenheim & Elyas' translation) and the du'a of the day with buttons into the app.
+  Bubenheim & Elyas' translation), the du'a of the day with buttons into the app,
+  and the calendar (today in three calendars, then the next events and occasions,
+  from the feed, kept for offline). A fa/de pill on each widget switches all of
+  them between Persian and German; without it they follow the phone.
   The **Android app** workflow builds it on every push and attaches the APK to
   the run. With the four `ANDROID_KEY*` secrets it also builds a signed release
   and an `.aab` for Google Play, and prints the key's SHA-256: put that in

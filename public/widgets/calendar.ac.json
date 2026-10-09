@@ -1,0 +1,45 @@
+{
+  "type": "AdaptiveCard",
+  "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+  "version": "1.5",
+  "body": [
+    { "type": "TextBlock", "text": "${title}", "weight": "Bolder", "wrap": true },
+    {
+      "type": "Container",
+      "style": "emphasis",
+      "spacing": "Small",
+      "items": [
+        { "type": "TextBlock", "text": "${today}", "weight": "Bolder", "color": "Accent", "wrap": true },
+        { "type": "TextBlock", "text": "${others}", "isSubtle": true, "size": "Small", "spacing": "None", "wrap": true }
+      ]
+    },
+    { "type": "TextBlock", "text": "${upcoming}", "size": "Small", "isSubtle": true, "spacing": "Medium" },
+    { "type": "TextBlock", "$when": "${empty}", "text": "Zurzeit sind keine Termine geplant.", "size": "Small", "wrap": true },
+    {
+      "type": "ColumnSet",
+      "$data": "${rows}",
+      "spacing": "Small",
+      "columns": [
+        {
+          "type": "Column",
+          "width": "70px",
+          "items": [{ "type": "TextBlock", "text": "${date}", "size": "Small", "weight": "Bolder", "color": "${if(event, 'Accent', 'Default')}" }]
+        },
+        {
+          "type": "Column",
+          "width": "stretch",
+          "items": [
+            { "type": "TextBlock", "text": "${de}", "size": "Small", "weight": "${if(event, 'Bolder', 'Default')}", "wrap": false },
+            { "type": "TextBlock", "text": "${fa}", "size": "Small", "isSubtle": true, "spacing": "None", "horizontalAlignment": "Right", "wrap": false }
+          ]
+        },
+        {
+          "type": "Column",
+          "width": "auto",
+          "items": [{ "type": "TextBlock", "text": "${time}", "size": "Small", "isSubtle": true }]
+        }
+      ]
+    }
+  ],
+  "actions": [{ "type": "Action.Execute", "title": "برنامه‌ها · Alle Termine", "verb": "open" }]
+}

@@ -35,6 +35,15 @@ final class Content {
         return duas;
     }
 
+    /** The calendar feed as the app was built with it, or null if it was not. */
+    static JSONObject calendar(Context context) {
+        try {
+            return new JSONObject(read(context, "calendar.json"));
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
     private static JSONArray readArray(Context context, String name) {
         try {
             return new JSONArray(read(context, name));
@@ -45,7 +54,15 @@ final class Content {
 
     private static String read(Context context, String name) throws Exception {
         try (InputStream in = context.getAssets().open(name)) {
-            return new String(in.readAllBytes(), StandardCharsets.UTF_8);
+            return readAll(in);
         }
+    }
+
+    /** All of a stream as UTF-8. InputStream.readAllBytes only exists from Android 13. */
+    static String readAll(InputStream in) throws java.io.IOException {
+        java.io.ByteArrayOutputStream out = new java.io.ByteArrayOutputStream();
+        byte[] buffer = new byte[8192];
+        for (int n; (n = in.read(buffer)) > 0; ) out.write(buffer, 0, n);
+        return new String(out.toByteArray(), StandardCharsets.UTF_8);
     }
 }

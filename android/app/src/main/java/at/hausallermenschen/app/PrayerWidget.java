@@ -61,6 +61,10 @@ public class PrayerWidget extends AppWidgetProvider {
         return context.getResources().getIdentifier(prefix + key, "id", context.getPackageName());
     }
 
+    private static String name(Context context, Context text, String key) {
+        return text.getString(context.getResources().getIdentifier("p_" + key, "string", context.getPackageName()));
+    }
+
     static void render(Context context, AppWidgetManager manager, int[] ids) {
         if (ids.length == 0) return;
         ZonedDateTime now = ZonedDateTime.now(PrayerTimes.VIENNA_ZONE);
@@ -69,27 +73,32 @@ public class PrayerWidget extends AppWidgetProvider {
         PrayerTimes.Next next = PrayerTimes.next(now);
 
         RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.widget_prayer);
+        Context text = Site.localized(context);
+        Site.decorate(context, views);
+        views.setTextViewText(R.id.title, text.getString(R.string.prayer_title));
+        views.setTextViewText(R.id.next_label, text.getString(R.string.next_prayer));
         String date = DateTimeFormatter.ofPattern("EEEE d MMMM", new Locale(Site.lang(context))).format(today);
-        views.setTextViewText(R.id.date, Site.digits(context, context.getString(R.string.place_vienna) + " · " + date));
+        views.setTextViewText(R.id.date, Site.digits(context, text.getString(R.string.place_vienna) + " · " + date));
 
         for (String key : SHOWN) {
             boolean isNext = next != null && !next.tomorrow && next.key.equals(key);
             String time = Site.digits(context, PrayerTimes.hhmm(times.get(key)));
-            CharSequence text = time;
+            CharSequence shown = time;
             if (isNext) {
                 SpannableString bold = new SpannableString(time);
                 bold.setSpan(new StyleSpan(Typeface.BOLD), 0, time.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-                text = bold;
+                shown = bold;
             }
             int accent = context.getColor(isNext ? R.color.widget_accent : R.color.widget_ink);
-            views.setTextViewText(id(context, "t_", key), text);
+            views.setTextViewText(id(context, "n_", key), name(context, text, key));
+            views.setTextViewText(id(context, "t_", key), shown);
             views.setTextColor(id(context, "t_", key), accent);
             views.setTextColor(id(context, "n_", key), context.getColor(isNext ? R.color.widget_accent : R.color.widget_subtle));
         }
 
         if (next != null) {
-            String name = context.getString(context.getResources().getIdentifier("p_" + next.key, "string", context.getPackageName()));
-            if (next.tomorrow) name += " · " + context.getString(R.string.tomorrow);
+            String name = name(context, text, next.key);
+            if (next.tomorrow) name += " · " + text.getString(R.string.tomorrow);
             views.setTextViewText(R.id.next_name, name);
             views.setTextViewText(R.id.next_time, Site.digits(context,
                 String.format(Locale.ROOT, "%02d:%02d", next.at.getHour(), next.at.getMinute())));

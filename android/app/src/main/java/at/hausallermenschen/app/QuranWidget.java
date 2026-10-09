@@ -43,6 +43,11 @@ public class QuranWidget extends AppWidgetProvider {
     static void render(Context context, AppWidgetManager manager, int[] ids) {
         if (ids.length == 0) return;
         RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.widget_quran);
+        Context text = Site.localized(context);
+        Site.decorate(context, views);
+        views.setTextViewText(R.id.title, text.getString(R.string.verse_title));
+        views.setTextViewText(R.id.verse_ar, text.getString(R.string.verse_missing));
+        views.setContentDescription(R.id.verse_next, text.getString(R.string.verse_next));
         JSONArray verses = Content.verses(context);
         String path = "/quran";
 

@@ -7,6 +7,19 @@
         <item name="android:textSize">14sp</item>
         <item name="android:textStyle">bold</item>
     </style>
+    <!-- The fa/de switch: a small pill, big enough to tap. -->
+    <style name="WLang">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">32dp</item>
+        <item name="android:minWidth">40dp</item>
+        <item name="android:layout_marginStart">6dp</item>
+        <item name="android:gravity">center</item>
+        <item name="android:paddingHorizontal">8dp</item>
+        <item name="android:background">@drawable/chip_bg</item>
+        <item name="android:textColor">@color/widget_accent</item>
+        <item name="android:textSize">12sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
     <style name="WSmall">
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">wrap_content</item>

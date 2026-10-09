@@ -43,10 +43,16 @@ export default async function middleware(request: NextRequest) {
   // every time they open the site without a path, so an explicit choice —
   // and only an explicit one, written by the switch in the bar — is
   // honoured here.
-  if (pathname === '/') {
+  //
+  // The same holds for a path without a language at all — `/prayer`,
+  // `/quran`, `/duas` — which is what the installed app's shortcuts open.
+  const [, first] = pathname.split('/');
+  if (!hasLocale(routing.locales, first)) {
     const chosen = request.cookies.get('NEXT_LOCALE')?.value;
     if (chosen && chosen !== routing.defaultLocale && hasLocale(routing.locales, chosen)) {
-      return NextResponse.redirect(new URL(`/${chosen}`, request.url));
+      const url = new URL(`/${chosen}${pathname === '/' ? '' : pathname}`, request.url);
+      url.search = request.nextUrl.search;
+      return NextResponse.redirect(url);
     }
   }
 

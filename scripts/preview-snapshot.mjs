@@ -28,6 +28,8 @@ import { dirname, join, relative, sep } from 'node:path';
 
 const ORIGIN = process.env.PREVIEW_ORIGIN ?? 'http://127.0.0.1:3100';
 const BASE_PATH = process.env.PREVIEW_BASE_PATH ?? '';
+// The paths `public/manifest.webmanifest` lists as app shortcuts.
+const APP_SHORTCUTS = ['prayer', 'quran', 'duas'];
 const OUT = process.env.PREVIEW_OUT ?? 'preview';
 /** The mushaf this site uses: 604 pages, as the Medina printing has it. */
 const QURAN_PAGES = 604;
@@ -264,10 +266,15 @@ async function main() {
   // middleware on a static host, so the root is a plain redirect instead —
   // one that honours a language the reader has already chosen, as the
   // middleware does. The meta refresh stays as the answer without script.
+  // The installed app's shortcuts open `/prayer`, `/quran` and `/duas`
+  // without a language, so those get the same redirect.
   const [defaultLocale] = locales;
-  await writeFileAt(
-    join(OUT, 'index.html'),
-    `<!doctype html>
+  for (const route of ['', ...APP_SHORTCUTS]) {
+    const up = route ? '../' : './';
+    const target = (locale) => `${up}${locale}/${route ? route + '/' : ''}`;
+    await writeFileAt(
+      join(OUT, route, 'index.html'),
+      `<!doctype html>
 <html lang="${defaultLocale}">
   <head>
     <meta charset="utf-8" />
@@ -276,20 +283,21 @@ async function main() {
       (function () {
         try {
           var m = document.cookie.match(/(?:^|; )NEXT_LOCALE=(${locales.join('|')})/);
-          if (m && m[1] !== '${defaultLocale}') location.replace('./' + m[1] + '/');
+          if (m && m[1] !== '${defaultLocale}') location.replace('${up}' + m[1] + '/${route ? route + '/' : ''}');
         } catch (e) {}
       })();
     </script>
-    <meta http-equiv="refresh" content="0; url=./${defaultLocale}/" />
-    <link rel="canonical" href="./${defaultLocale}/" />
+    <meta http-equiv="refresh" content="0; url=${target(defaultLocale)}" />
+    <link rel="canonical" href="${target(defaultLocale)}" />
     <title>Haus aller Menschen</title>
   </head>
   <body>
-    <p><a href="./${defaultLocale}/">Haus aller Menschen</a></p>
+    <p><a href="${target(defaultLocale)}">Haus aller Menschen</a></p>
   </body>
 </html>
 `,
-  );
+    );
+  }
 
   await writeFileAt(join(OUT, 'robots.txt'), 'User-agent: *\nDisallow: /\n');
   // Pages would otherwise run the artefact through Jekyll, which drops

@@ -29,5 +29,18 @@
     <string name="cal_empty">فعلاً برنامه‌ای ثبت نشده است.</string>
     <string name="cal_today">امروز</string>
     <string name="cal_off">تعطیل رسمی در اتریش</string>
-    <string name="w_cal_desc">تاریخ امروز به سه تقویم، برنامه‌های خانه و مناسبت‌های پیش رو</string>
+    <string name="w_cal_desc">ماه جاری به سه تقویم، مناسبت‌ها و برنامه‌های پیش رو</string>
+    <string name="cal_go_today">امروز</string>
+    <string name="cal_prev">ماه قبل</string>
+    <string name="cal_next">ماه بعد</string>
+    <!-- Monday first, as on the site's calendar. -->
+    <string-array name="cal_weekdays">
+        <item>دو</item>
+        <item>سه</item>
+        <item>چهار</item>
+        <item>پنج</item>
+        <item>جمعه</item>
+        <item>شنبه</item>
+        <item>یک</item>
+    </string-array>
 </resources>

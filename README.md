@@ -254,14 +254,17 @@ The site installs as an app (web manifest + `public/sw.js`). Installed, it offer
   filled by `public/widgets/calendar.js` from the calendar feed.
 - **The calendar feed**, `/widget-data/calendar.json` (`app/widget-data/`): the
   coming events, the occasions and Austrian public holidays of the next year,
-  and each day's Hijri and Persian date, in both languages. The preview snapshot
+  and each day's Hijri and Persian date from the first of last month, in both languages. The preview snapshot
   saves it at the same path, so the widgets ask one URL wherever the site lives.
 - **An Android app** in `android/` — the site in a Trusted Web Activity, plus four
   home-screen widgets: prayer times (computed on the phone, a Java port tested
   against the TypeScript), a verse of the day (Arabic with Makarem Shirazi's or
   Bubenheim & Elyas' translation), the du'a of the day with buttons into the app,
-  and the calendar (today in three calendars, then the next events and occasions,
-  from the feed, kept for offline). A fa/de pill on each widget switches all of
+  and the calendar (the month as on the prayer page — Hijri day under each date,
+  today ringed, occasions and events dotted, holidays in red, arrows through the
+  months — then the next events and occasions, as many as the widget's height
+  fits; from the feed, kept for offline). In the phone's dark mode the widgets
+  take the site's deep green and gold. A fa/de pill on each widget switches all of
   them between Persian and German; without it they follow the phone.
   The **Android app** workflow builds it on every push and attaches the APK to
   the run. With the four `ANDROID_KEY*` secrets it also builds a signed release

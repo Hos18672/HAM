@@ -1,10 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- The widgets in the phone's dark mode: the site's deep green and gold. -->
 <resources>
-    <color name="widget_bg">#06211A</color>
-    <color name="widget_ink">#EFE9DA</color>
-    <color name="widget_subtle">#A9B3AB</color>
-    <color name="widget_accent">#E8C98A</color>
-    <color name="widget_chip">#0D3328</color>
-    <color name="bar">#06211A</color>
-    <color name="ic_launcher_background">#F7F3E8</color>
+    <color name="widget_bg">#0E2A20</color>
+    <color name="widget_ink">#EDE6D3</color>
+    <color name="widget_subtle">#A3AE9F</color>
+    <color name="widget_accent">#D9B671</color>
+    <color name="widget_chip">#1A3B2E</color>
+    <color name="widget_cell">#143427</color>
+    <color name="widget_gold">#C8A45D</color>
+    <color name="widget_holiday">#EE8F80</color>
+    <color name="widget_on_accent">#0E2A20</color>
 </resources>

@@ -22,7 +22,9 @@ import { locales, type Locale } from '@/lib/i18n/config';
  */
 export const revalidate = 3600;
 
-const DAYS = 400;
+// From the first of last month, so a widget's month view can page back one
+// month and has every day of the month it opens on; about a year ahead.
+const DAYS = 430;
 const DAY_MS = 86_400_000;
 
 type Named = Record<Locale, string>;
@@ -86,7 +88,8 @@ export async function GET() {
   }
 
   const today = viennaToday();
-  const start = Date.UTC(today.year, today.month - 1, today.day, 12);
+  const start = Date.UTC(today.year, today.month - 2, 1, 12);
+  const first = new Date(start);
   const days: number[][] = [];
   const dayNames: { date: string; off: boolean; names: Named }[] = [];
   for (let i = 0; i < DAYS; i += 1) {
@@ -118,7 +121,7 @@ export async function GET() {
       generated: new Date().toISOString(),
       // Day 0 of `days` is this date; each entry after it the next day:
       // [Hijri day, month, year, Persian day, month, year].
-      from: `${today.year}-${String(today.month).padStart(2, '0')}-${String(today.day).padStart(2, '0')}`,
+      from: `${first.getUTCFullYear()}-${String(first.getUTCMonth() + 1).padStart(2, '0')}-01`,
       days,
       hijriMonths: { fa: HIJRI_MONTHS.fa.slice(1), de: HIJRI_MONTHS.de.slice(1) },
       persianMonths: PERSIAN_MONTHS,

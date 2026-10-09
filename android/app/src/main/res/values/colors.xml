@@ -5,6 +5,10 @@
     <color name="widget_subtle">#6B6F6A</color>
     <color name="widget_accent">#0B5D3B</color>
     <color name="widget_chip">#ECE6D6</color>
+    <color name="widget_cell">#EFE9DA</color>
+    <color name="widget_gold">#C8A45D</color>
+    <color name="widget_holiday">#B3412F</color>
+    <color name="widget_on_accent">#F7F3E8</color>
     <color name="bar">#F3F2F2</color>
     <color name="ic_launcher_background">#F7F3E8</color>
 </resources>

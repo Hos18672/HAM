@@ -14,7 +14,7 @@ import com.google.androidbrowserhelper.trusted.LauncherActivity;
 final class Site {
     private Site() {}
 
-    private static final String PREFS = "widgets";
+    static final String PREFS = "widgets";
 
     /**
      * fa or de: the language the widgets are in, and the site's language in

@@ -187,7 +187,7 @@ public class CalendarWidget extends AppWidgetProvider {
     static void render(Context context, AppWidgetManager manager, int[] ids) {
         if (ids.length == 0) return;
         for (int id : ids) {
-            manager.updateAppWidget(id, views(context, rowsFor(manager.getAppWidgetOptions(id))));
+            manager.updateAppWidget(id, views(context, heightOf(manager.getAppWidgetOptions(id))));
         }
         // A new day: a new date and a shorter list.
         LocalDate today = LocalDate.now(PrayerTimes.VIENNA_ZONE);
@@ -195,17 +195,22 @@ public class CalendarWidget extends AppWidgetProvider {
         context.getSystemService(AlarmManager.class).setAndAllowWhileIdle(AlarmManager.RTC, midnight, tick(context));
     }
 
-    /**
-     * Events that fit under the month at the widget's height: the month takes
-     * about 330dp, each event 44dp. Three when the launcher does not say.
-     */
-    private static int rowsFor(Bundle options) {
-        int height = options == null ? 0 : options.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT);
-        if (height <= 0) return 3;
-        return Math.max(0, Math.min(ROWS, (height - 330) / 44));
+    /** The widget's height in dp, or 0 when the launcher does not say. */
+    private static int heightOf(Bundle options) {
+        return options == null ? 0 : options.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT);
     }
 
-    private static RemoteViews views(Context context, int rows) {
+    /**
+     * Events that fit under the month: the heading and weekdays take about
+     * 110dp, each week 46dp, the list's label 30dp and each event 52dp.
+     * Three when the launcher does not say.
+     */
+    private static int rowsFor(int height, int weeks) {
+        if (height <= 0) return 3;
+        return Math.max(0, Math.min(ROWS, (height - 110 - weeks * 46 - 30) / 52));
+    }
+
+    private static RemoteViews views(Context context, int height) {
         String lang = Site.lang(context);
         boolean fa = "fa".equals(lang);
         Locale locale = new Locale(lang);
@@ -243,6 +248,7 @@ public class CalendarWidget extends AppWidgetProvider {
         int lead = first.getDayOfWeek().getValue() - 1; // Monday first
         int length = first.lengthOfMonth();
         int weeks = (lead + length + 6) / 7;
+        int rows = rowsFor(height, weeks);
         for (int w = 0; w < 6; w++) views.setViewVisibility(id(context, "wk", w), w < weeks ? View.VISIBLE : View.GONE);
         for (int i = 0; i < 42; i++) {
             int cell = id(context, "c", i);
@@ -265,12 +271,13 @@ public class CalendarWidget extends AppWidgetProvider {
                 isToday ? R.color.widget_on_accent : off.contains(day) ? R.color.widget_holiday : R.color.widget_ink));
             views.setTextColor(id(context, "h", i), context.getColor(
                 isToday ? R.color.widget_on_accent : R.color.widget_subtle));
-            views.setViewVisibility(id(context, "d", i), mark ? View.VISIBLE : View.INVISIBLE);
         }
 
         views.setTextViewText(R.id.upcoming, text.getString(R.string.cal_upcoming));
         views.setTextViewText(R.id.empty, text.getString(R.string.cal_empty));
-        List<Item> items = upcoming(data, now, lang, text);
+        // Paged ahead, the list starts with that month; otherwise from now.
+        ZonedDateTime from = first.isAfter(today) ? first.atStartOfDay(PrayerTimes.VIENNA_ZONE) : now;
+        List<Item> items = upcoming(data, from, lang, text);
         for (int i = 0; i < ROWS; i++) {
             int row = id(context, "row", i);
             if (i >= items.size() || i >= rows) {
@@ -358,8 +365,9 @@ public class CalendarWidget extends AppWidgetProvider {
         try {
             JSONArray hijri = data.getJSONObject("hijriMonths").getJSONArray(lang);
             JSONArray persian = data.getJSONObject("persianMonths").getJSONArray(lang);
-            return span(hijri, a.getInt(1), a.getInt(2), b.getInt(1), b.getInt(2))
-                + " · " + span(persian, a.getInt(4), a.getInt(5), b.getInt(4), b.getInt(5));
+            // Each calendar's range holds together; a narrow widget wraps between the two.
+            return span(hijri, a.getInt(1), a.getInt(2), b.getInt(1), b.getInt(2)).replace(' ', '\u00A0')
+                + " · " + span(persian, a.getInt(4), a.getInt(5), b.getInt(4), b.getInt(5)).replace(' ', '\u00A0');
         } catch (Exception e) {
             return "";
         }
@@ -385,7 +393,7 @@ public class CalendarWidget extends AppWidgetProvider {
         }
     }
 
-    /** Events not yet over and named days from today on, soonest first. */
+    /** Events not yet over and named days from the given moment on, soonest first. */
     private static List<Item> upcoming(JSONObject data, ZonedDateTime now, String lang, Context text) {
         List<Item> items = new ArrayList<>();
         if (data == null) return items;

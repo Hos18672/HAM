@@ -1,0 +1,86 @@
+name: Android app
+
+# Builds the Android app in android/: the website in a Trusted Web Activity,
+# plus three home-screen widgets (prayer times, verse of the day, du'a of the
+# day). The APK is attached to every run as an artifact.
+#
+# Signing. Without secrets the run builds a debug APK, which installs on any
+# phone but is signed with a throwaway key — a later build will not install
+# over it. For releases add these repository secrets (Settings → Secrets and
+# variables → Actions), never in a file or a chat:
+#   ANDROID_KEYSTORE_BASE64   the upload keystore, base64-encoded
+#   ANDROID_KEYSTORE_PASSWORD
+#   ANDROID_KEY_ALIAS
+#   ANDROID_KEY_PASSWORD
+# and the run also builds a signed release APK and an .aab for Google Play.
+#
+# The site the app opens is the repository variable ANDROID_SITE_URL, or the
+# preview when that is unset.
+
+on:
+  push:
+    branches: ['claude/haus-aller-menschen-build-8h94uf']
+    paths:
+      - 'android/**'
+      - 'lib/db/seed-data.ts'
+      - 'lib/prayer-times.ts'
+      - '.github/workflows/android.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build the APK
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      SITE_URL: ${{ vars.ANDROID_SITE_URL || 'https://hos18672.github.io/HAM' }}
+      HAS_KEY: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      # The du'a catalogue and the verses the widgets carry offline.
+      - name: Export the widgets' content
+        run: npx --yes tsx@4 android/scripts/export-content.ts
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Unit tests and debug APK
+        working-directory: android
+        run: ./gradlew --no-daemon testDebugUnitTest assembleDebug -PsiteUrl="$SITE_URL" -PversionCode=${{ github.run_number }}
+
+      - name: Signed release
+        if: ${{ env.HAS_KEY == 'true' }}
+        working-directory: android
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/upload.jks"
+          export ANDROID_KEYSTORE_FILE="$RUNNER_TEMP/upload.jks"
+          ./gradlew --no-daemon assembleRelease bundleRelease -PsiteUrl="$SITE_URL" -PversionCode=${{ github.run_number }}
+          echo "### Signing key SHA-256 (for ANDROID_CERT_SHA256 on the website)" >> "$GITHUB_STEP_SUMMARY"
+          keytool -list -v -keystore "$ANDROID_KEYSTORE_FILE" -storepass "$ANDROID_KEYSTORE_PASSWORD" -alias "$ANDROID_KEY_ALIAS" \
+            | grep 'SHA256:' | sed 's/.*SHA256: //' >> "$GITHUB_STEP_SUMMARY"
+          rm -f "$ANDROID_KEYSTORE_FILE"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: haus-aller-menschen-android
+          path: |
+            android/app/build/outputs/apk/**/*.apk
+            android/app/build/outputs/bundle/**/*.aab
+          if-no-files-found: error

@@ -82,5 +82,33 @@
         }
       ]
     }
+  ],
+  "widgets": [
+    {
+      "name": "اوقات شرعی · Gebetszeiten",
+      "short_name": "Gebetszeiten",
+      "description": "Die Gebetszeiten von heute in Wien, das nächste Gebet hervorgehoben.",
+      "tag": "prayer-times",
+      "template": "prayer-times",
+      "ms_ac_template": "widgets/prayer-times.ac.json",
+      "data": "widgets/prayer-times.json",
+      "type": "application/json",
+      "screenshots": [
+        {
+          "src": "widgets/prayer-times-screenshot.png",
+          "sizes": "600x400",
+          "label": "Gebetszeiten-Widget"
+        }
+      ],
+      "icons": [
+        {
+          "src": "icons/shortcut-prayer.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ],
+      "auth": false,
+      "update": 900
+    }
   ]
 }

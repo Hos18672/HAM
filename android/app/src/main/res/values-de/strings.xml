@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Haus aller Menschen</string>
+    <string name="lang">de</string>
+    <string name="prayer_title">Gebetszeiten</string>
+    <string name="place_vienna">Wien</string>
+    <string name="next_prayer">Nächstes Gebet</string>
+    <string name="tomorrow">morgen</string>
+    <string name="p_fajr">Fadschr</string>
+    <string name="p_sunrise">Aufgang</string>
+    <string name="p_dhuhr">Dhuhr</string>
+    <string name="p_asr">Asr</string>
+    <string name="p_maghrib">Maghrib</string>
+    <string name="p_isha">Ischa</string>
+    <string name="p_midnight">Mitternacht</string>
+    <string name="verse_title">Vers des Tages</string>
+    <string name="verse_next">Anderer Vers</string>
+    <string name="verse_missing">Den Koran öffnen</string>
+    <string name="dua_title">Bittgebet des Tages</string>
+    <string name="btn_prayer">Gebet</string>
+    <string name="btn_quran">Koran</string>
+    <string name="btn_duas">Duʿas</string>
+    <string name="btn_qibla">Qibla</string>
+    <string name="w_prayer_desc">Die Gebetszeiten von heute in Wien, mit dem nächsten Gebet</string>
+    <string name="w_quran_desc">Jeden Tag ein Vers aus dem Koran, mit Übersetzung</string>
+    <string name="w_dua_desc">Das passende Bittgebet für heute und schnelle Wege in die App</string>
+</resources>

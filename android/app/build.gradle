@@ -1,0 +1,72 @@
+plugins {
+    id 'com.android.application'
+}
+
+// The site, without a trailing slash: https://example.org or https://host/sub.
+def siteUrl = (findProperty('siteUrl') ?: 'https://hos18672.github.io/HAM').toString().replaceAll('/+$', '')
+def siteUri = new URI(siteUrl)
+def sitePath = siteUri.path ?: ''
+
+android {
+    namespace 'at.hausallermenschen.app'
+    compileSdk 35
+
+    defaultConfig {
+        applicationId 'at.hausallermenschen.app'
+        minSdk 26
+        targetSdk 35
+        versionCode((findProperty('versionCode') ?: '1').toString().toInteger())
+        versionName((findProperty('versionName') ?: '1.0').toString())
+
+        buildConfigField 'String', 'SITE_URL', "\"${siteUrl}\""
+        manifestPlaceholders = [
+            siteUrl : siteUrl,
+            siteHost: siteUri.host,
+            sitePath: sitePath.isEmpty() ? '/' : sitePath,
+        ]
+        // Digital Asset Links: the site's /.well-known/assetlinks.json names
+        // this app back, and the app then opens full-screen without a URL bar.
+        resValue 'string', 'asset_statements',
+            "[{\\\"relation\\\": [\\\"delegate_permission/common.handle_all_urls\\\"], \\\"target\\\": {\\\"namespace\\\": \\\"web\\\", \\\"site\\\": \\\"${siteUri.scheme}://${siteUri.host}\\\"}}]"
+    }
+
+    signingConfigs {
+        release {
+            // Supplied by CI from repository secrets; absent locally, where
+            // only the debug build is signed.
+            def store = System.getenv('ANDROID_KEYSTORE_FILE')
+            if (store) {
+                storeFile file(store)
+                storePassword System.getenv('ANDROID_KEYSTORE_PASSWORD')
+                keyAlias System.getenv('ANDROID_KEY_ALIAS')
+                keyPassword System.getenv('ANDROID_KEY_PASSWORD')
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            if (System.getenv('ANDROID_KEYSTORE_FILE')) signingConfig signingConfigs.release
+        }
+    }
+
+    buildFeatures {
+        buildConfig true
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    androidResources {
+        generateLocaleConfig true
+    }
+}
+
+dependencies {
+    implementation 'com.google.androidbrowserhelper:androidbrowserhelper:2.5.0'
+    testImplementation 'junit:junit:4.13.2'
+    testImplementation 'org.json:json:20240303'
+}

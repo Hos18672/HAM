@@ -11,9 +11,12 @@
  * Nothing behind a login is touched: the admin, the login page, Auth.js and
  * every POST go straight to the network and are never stored.
  */
-const CACHE = 'ham-v1';
+const CACHE = 'ham-v2';
 // '/' in production, '/HAM/' on the preview.
 const SCOPE = new URL(self.registration.scope).pathname;
+
+// The prayer times, computed here for the Windows widget (see below).
+importScripts('widgets/prayer.js');
 
 self.addEventListener('install', () => self.skipWaiting());
 
@@ -75,4 +78,71 @@ self.addEventListener('fetch', (event) => {
   } else {
     event.respondWith(networkFirst(request));
   }
+});
+
+/*
+ * The Windows 11 widget: today's prayer times at the house, with the next
+ * one picked out. The widget board asks the service worker for its content,
+ * which is the Adaptive Card template in `widgets/` filled with times
+ * computed right here — no server, no network, the same minute as the page.
+ * It refreshes on the board's own schedule (the manifest's `update`), when
+ * the board is opened again, and whenever this worker is updated.
+ */
+const WIDGET_TAG = 'prayer-times';
+
+async function renderWidget(widget) {
+  const template = await (await fetch(widget.definition.msAcTemplate)).text();
+  const data = JSON.stringify(self.HamPrayer.widgetData(new Date()));
+  await self.widgets.updateByTag(widget.definition.tag, { template, data });
+}
+
+self.addEventListener('widgetinstall', (event) => {
+  event.waitUntil(
+    (async () => {
+      const sync = self.registration.periodicSync;
+      if (sync && event.widget.definition.update) {
+        const tags = await sync.getTags();
+        if (!tags.includes(event.widget.definition.tag)) {
+          await sync.register(event.widget.definition.tag, {
+            minInterval: event.widget.definition.update * 1000,
+          });
+        }
+      }
+      await renderWidget(event.widget);
+    })(),
+  );
+});
+
+self.addEventListener('widgetuninstall', (event) => {
+  event.waitUntil(
+    (async () => {
+      if (event.widget.instances.length <= 1 && self.registration.periodicSync) {
+        await self.registration.periodicSync.unregister(event.widget.definition.tag);
+      }
+    })(),
+  );
+});
+
+self.addEventListener('widgetresume', (event) => event.waitUntil(renderWidget(event.widget)));
+
+self.addEventListener('periodicsync', (event) => {
+  if (event.tag !== WIDGET_TAG || !self.widgets) return;
+  event.waitUntil(
+    self.widgets.getByTag(WIDGET_TAG).then((widget) => widget && renderWidget(widget)),
+  );
+});
+
+self.addEventListener('widgetclick', (event) => {
+  if (event.action === 'open') event.waitUntil(self.clients.openWindow(`${SCOPE}prayer`));
+});
+
+// A new version of this worker brings fresh times to a widget already pinned.
+self.addEventListener('activate', (event) => {
+  if (!self.widgets) return;
+  event.waitUntil(
+    self.widgets
+      .getByTag(WIDGET_TAG)
+      .then((widget) => widget && widget.instances.length && renderWidget(widget))
+      .catch(() => {}),
+  );
 });

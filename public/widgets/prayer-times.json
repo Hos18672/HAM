@@ -1,0 +1,52 @@
+{
+  "title": "اوقات شرعی · Gebetszeiten",
+  "place": "وین · Wien",
+  "date": "Freitag, 9. Oktober",
+  "nextLabel": "نماز بعدی · Nächstes Gebet",
+  "nextName": "عصر · Asr",
+  "nextTime": "15:43",
+  "rows": [
+    {
+      "fa": "اذان صبح",
+      "de": "Fadschr",
+      "time": "05:34",
+      "next": false
+    },
+    {
+      "fa": "طلوع آفتاب",
+      "de": "Sonnenaufgang",
+      "time": "07:05",
+      "next": false
+    },
+    {
+      "fa": "اذان ظهر",
+      "de": "Dhuhr",
+      "time": "12:42",
+      "next": false
+    },
+    {
+      "fa": "عصر",
+      "de": "Asr",
+      "time": "15:43",
+      "next": true
+    },
+    {
+      "fa": "اذان مغرب",
+      "de": "Maghrib",
+      "time": "18:38",
+      "next": false
+    },
+    {
+      "fa": "عشا",
+      "de": "Ischa",
+      "time": "19:38",
+      "next": false
+    },
+    {
+      "fa": "نیمه‌شب شرعی",
+      "de": "Mitternacht",
+      "time": "23:57",
+      "next": false
+    }
+  ]
+}

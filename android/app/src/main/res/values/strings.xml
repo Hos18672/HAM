@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">خانهٔ همهٔ انسان‌ها</string>
+    <string name="lang">fa</string>
+    <string name="prayer_title">اوقات شرعی</string>
+    <string name="place_vienna">وین</string>
+    <string name="next_prayer">نماز بعدی</string>
+    <string name="tomorrow">فردا</string>
+    <string name="p_fajr">صبح</string>
+    <string name="p_sunrise">طلوع</string>
+    <string name="p_dhuhr">ظهر</string>
+    <string name="p_asr">عصر</string>
+    <string name="p_maghrib">مغرب</string>
+    <string name="p_isha">عشا</string>
+    <string name="p_midnight">نیمه‌شب</string>
+    <string name="verse_title">آیهٔ روز</string>
+    <string name="verse_next">آیهٔ دیگر</string>
+    <string name="verse_missing">قرآن را باز کنید</string>
+    <string name="dua_title">دعای امروز</string>
+    <string name="btn_prayer">اوقات</string>
+    <string name="btn_quran">قرآن</string>
+    <string name="btn_duas">ادعیه</string>
+    <string name="btn_qibla">قبله</string>
+    <string name="w_prayer_desc">اوقات شرعی امروز در وین و نماز بعدی</string>
+    <string name="w_quran_desc">هر روز یک آیه از قرآن، با ترجمه</string>
+    <string name="w_dua_desc">دعای مناسب امروز و دسترسی سریع</string>
+</resources>

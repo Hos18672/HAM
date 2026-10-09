@@ -53,6 +53,7 @@ Every variable in `.env.example`, and what it is for:
 | `RESEND_API_KEY`            | for email   | Resend API key for form notifications. Without it, submissions are still stored — only the notification email is skipped. |
 | `CONTACT_TO_EMAIL`          | for email   | Where those notifications are delivered.                                                                                  |
 | `NEXT_PUBLIC_SITE_URL`      | yes         | Public origin, used for canonical URLs, `hreflang`, the sitemap and JSON-LD.                                              |
+| `ANDROID_CERT_SHA256`       | for the app | SHA-256 of the Android app's signing key(s), comma-separated; served as `/.well-known/assetlinks.json`. See **App**.      |
 
 Nothing else. See **Cost** below for why the list is this short.
 
@@ -238,6 +239,32 @@ refused, set **Settings → Pages → Source** to **GitHub Actions** once and
 re-run it.
 
 ---
+
+## App, widgets and shortcuts
+
+The site installs as an app (web manifest + `public/sw.js`). Installed, it offers:
+
+- **Shortcuts** on a long press of the icon (Android, desktop Chrome/Edge): prayer
+  times, Quran, du'as. They open `/prayer`, `/quran`, `/duas`, which middleware
+  sends to the reader's chosen language.
+- **A Windows 11 widget** (Edge, widget board): today's prayer times in Vienna. The
+  service worker fills `public/widgets/prayer-times.ac.json` with times from
+  `public/widgets/prayer.js`, a port of `lib/prayer-times.ts` held to it by
+  `tests/unit/widget-prayer.test.ts`.
+- **An Android app** in `android/` — the site in a Trusted Web Activity, plus three
+  home-screen widgets: prayer times (computed on the phone, a Java port tested
+  against the TypeScript), a verse of the day (Arabic with Makarem Shirazi's or
+  Bubenheim & Elyas' translation) and the du'a of the day with buttons into the app.
+  The **Android app** workflow builds it on every push and attaches the APK to
+  the run. With the four `ANDROID_KEY*` secrets it also builds a signed release
+  and an `.aab` for Google Play, and prints the key's SHA-256: put that in
+  `ANDROID_CERT_SHA256` on the site and the app opens without Chrome's address bar.
+  The repository variable `ANDROID_SITE_URL` sets the site it opens (the preview
+  until then). GitHub Pages cannot serve asset links for a sub-path, so against
+  the preview the app shows the address bar.
+
+  Building locally needs the Android SDK: `npx tsx android/scripts/export-content.ts`,
+  then `cd android && ./gradlew assembleDebug`.
 
 ## Architecture notes
 

@@ -17,3 +17,9 @@ lib/homecoming
 
 # Vendored Vienna skyline for the footer — kept as shipped.
 lib/vienna-skyline
+
+# Android: build output, and the fixture the TypeScript writes for the Java tests.
+android/.gradle
+android/app/build
+android/app/src/test/resources
+android/app/src/main/assets

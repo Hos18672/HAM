@@ -78,6 +78,10 @@ const nextConfig: NextConfig = {
       ? [{ protocol: 'https', hostname: new URL(supabaseOrigin).hostname }]
       : [],
   },
+  // The Android app's Digital Asset Links, which must sit at this exact path.
+  async rewrites() {
+    return [{ source: '/.well-known/assetlinks.json', destination: '/api/assetlinks' }];
+  },
   async headers() {
     return [
       {

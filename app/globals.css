@@ -5715,7 +5715,9 @@ a.week-link:hover {
   display: block;
   font-size: 11px;
   font-weight: var(--weight-bold);
-  color: var(--goldInk);
+  /* A shade under the gold ink: on a tinted occasion row the plain ink
+     fell just short of 4.5:1. */
+  color: color-mix(in srgb, var(--goldInk) 78%, var(--ink));
 }
 .prayer-source {
   font-size: var(--text-xs, 12.5px);
@@ -5790,7 +5792,7 @@ a.week-link:hover {
 .chip-count {
   font-size: 12px;
   font-weight: var(--weight-bold);
-  opacity: 0.75;
+  opacity: 0.9;
   margin-inline-start: 2px;
 }
 @media (max-width: 767px) {

@@ -14,7 +14,9 @@ test.describe('prayer times', () => {
       'Maghrib',
       'Ischa',
     ]) {
-      await expect(page.getByText(name, { exact: true }).first()).toBeVisible();
+      await expect(
+        page.getByText(name, { exact: true }).locator('visible=true').first(),
+      ).toBeVisible();
     }
 
     // The next prayer is highlighted and counts down.
@@ -72,6 +74,8 @@ test.describe('prayer times', () => {
     // done at once, so the rows are measured where they come to rest.
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await page.goto('/de/prayer');
+    // On a phone the place is chosen from the row under the day switcher.
+    await page.getByRole('button', { name: 'Wien', exact: true }).click();
     const input = page.getByRole('combobox', { name: 'Ort' });
     await input.scrollIntoViewIfNeeded();
     await input.click();
@@ -150,7 +154,7 @@ test.describe('prayer times', () => {
 
   test('lists the occasions for the month, or says there are none', async ({ page }) => {
     await page.goto('/de/prayer');
-    await expect(page.getByText('Gedenktage in diesem Monat')).toBeVisible();
+    await expect(page.getByText('Gedenk- und Feiertage in diesem Monat')).toBeVisible();
   });
 
   test('falls back to this month for junk in ?y= and ?m=', async ({ page }) => {

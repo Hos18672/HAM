@@ -13,8 +13,9 @@ test.describe('public site', () => {
         const response = await page.goto(`/${locale}${path}`);
         expect(response?.status(), `${locale}${path}`).toBeLessThan(400);
 
-        // Exactly one h1 per page — the document outline depends on it.
-        await expect(page.locator('h1'), `${locale}${path} h1 count`).toHaveCount(1);
+        // Exactly one h1 per page — the document outline depends on it. A
+        // page with a phone view carries one in each view, one of them hidden.
+        await expect(page.locator('h1:visible'), `${locale}${path} h1 count`).toHaveCount(1);
 
         // The direction and language must match the locale, or the Persian
         // pages read left-to-right.

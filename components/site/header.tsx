@@ -40,7 +40,12 @@ const HOVER_INTENT_MS = 150;
 export function Header({ locale }: { locale: Locale }) {
   const t = useTranslations('nav');
   const tActions = useTranslations('actions');
-  const pathname = usePathname();
+  // Without a trailing slash: the preview serves every page as a folder's
+  // index, so a page opened directly arrives as `/more/`, and the tab and
+  // title checks below would not know it.
+  const raw = usePathname();
+  const pathname = raw.length > 1 ? raw.replace(/\/+$/, '') : raw;
+  useHistoryDepth(pathname);
 
   const [scrolled, setScrolled] = useState(false);
   const [openGroup, setOpenGroup] = useState<string | null>(null);
@@ -301,6 +306,35 @@ export function Brand() {
 /** The tab pages: the bottom navigation's first four and "More". */
 const TAB_PATHS = TABS.map((tab) => tab.href);
 
+/**
+ * How many of our own pages lie behind this one in the tab's history: one
+ * more for each page opened, one fewer for each step back (a popstate). Kept
+ * at module level, so it survives the page transition remounting the bar.
+ * The back button steps back through the history while there is something
+ * of ours behind, and goes to the page's parent otherwise — rather than
+ * leaving the site, or closing the app.
+ */
+let depth = 0;
+let lastPath: string | null = null;
+let popped = false;
+let listening = false;
+
+function useHistoryDepth(pathname: string) {
+  useEffect(() => {
+    if (!listening) {
+      listening = true;
+      window.addEventListener('popstate', () => {
+        popped = true;
+      });
+    }
+    if (lastPath !== null && lastPath !== pathname) {
+      depth = popped ? Math.max(0, depth - 1) : depth + 1;
+    }
+    popped = false;
+    lastPath = pathname;
+  }, [pathname]);
+}
+
 /** Where the back button goes when there is no page of ours to go back to. */
 function parentOf(pathname: string) {
   const match = /^\/(events|duas|quran)\/./.exec(pathname);
@@ -317,7 +351,6 @@ function TopBarStart({ pathname }: { pathname: string }) {
   const t = useTranslations('nav');
   const tBrand = useTranslations('brand');
   const router = useRouter();
-  const first = useRef(pathname);
 
   if (pathname === '/') {
     return (
@@ -339,7 +372,7 @@ function TopBarStart({ pathname }: { pathname: string }) {
   const tab = TAB_PATHS.includes(pathname);
 
   function back() {
-    if (first.current !== pathname && window.history.length > 1) router.back();
+    if (depth > 0) router.back();
     else router.push(parentOf(pathname));
   }
 

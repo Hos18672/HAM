@@ -277,6 +277,14 @@ test.describe('phone width', () => {
     await expect(page).toHaveURL(/\/de\/more$/);
   });
 
+  test('back returns to the page it came from, not to "Mehr"', async ({ page }) => {
+    await page.goto('/de');
+    await page.locator('.a-quick').getByRole('link', { name: 'Bittgebete' }).click();
+    await expect(page).toHaveURL(/\/de\/duas$/);
+    await page.getByRole('button', { name: 'Zurück' }).click();
+    await expect(page).toHaveURL(/\/de$/);
+  });
+
   test('the calendar has a page of its own, with Iran and Austria in it', async ({ page }) => {
     await page.goto('/de/more');
     await page.getByRole('link', { name: 'Kalender' }).click();

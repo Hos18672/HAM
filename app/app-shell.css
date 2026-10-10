@@ -1,0 +1,698 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   APP SHELL — phones, small tablets and the Android app
+   The design for screens under 1024px: a floating top bar and bottom
+   navigation, rounded white cards on the paper, mint chips and dark lattice
+   cards. Nothing here may change a screen 1024px wide or wider: the page
+   views are switched with .m-view / .d-view, and every rule that would reach
+   a shared element sits inside a max-width query.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+:root {
+  --a-chip: #edf5f0;
+  --a-chip2: #d9ebe1;
+  --a-sand: #f1ead8;
+  --a-card: #ffffff;
+  --a-track: #d6d0c2;
+  --a-muted: #8a8272;
+  --a-on-dark: #f7f3e8;
+  --a-on-dark-dim: rgba(247, 243, 232, 0.82);
+  --a-dark: #073b29;
+  --a-r-sm: 14px;
+  --a-r-md: 20px;
+  --a-r-lg: 24px;
+  --a-r-xl: 28px;
+  --a-shadow-card: 0 2px 12px rgba(7, 59, 41, 0.07);
+  --a-shadow-float: 0 10px 30px rgba(7, 59, 41, 0.16);
+  --a-shadow-btn: 0 8px 20px rgba(7, 59, 41, 0.24);
+  --a-shadow-bar: 0 6px 20px rgba(7, 59, 41, 0.1);
+  --a-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --a-ease-spring: cubic-bezier(0.34, 1.4, 0.64, 1);
+  --a-ease-sheet: cubic-bezier(0.32, 0.72, 0, 1);
+  /* The brand lattice: gold diagonals at 24px over faint squares at 17px. */
+  --a-lattice-dark:
+    repeating-linear-gradient(45deg, rgba(200, 164, 93, 0.16) 0 1px, transparent 1px 24px),
+    repeating-linear-gradient(-45deg, rgba(200, 164, 93, 0.16) 0 1px, transparent 1px 24px),
+    repeating-linear-gradient(0deg, rgba(247, 243, 232, 0.05) 0 1px, transparent 1px 17px),
+    repeating-linear-gradient(90deg, rgba(247, 243, 232, 0.05) 0 1px, transparent 1px 17px);
+  --a-lattice-light:
+    repeating-linear-gradient(45deg, rgba(11, 93, 59, 0.07) 0 1px, transparent 1px 24px),
+    repeating-linear-gradient(-45deg, rgba(11, 93, 59, 0.07) 0 1px, transparent 1px 24px),
+    repeating-linear-gradient(0deg, rgba(11, 93, 59, 0.035) 0 1px, transparent 1px 17px),
+    repeating-linear-gradient(90deg, rgba(11, 93, 59, 0.035) 0 1px, transparent 1px 17px);
+  --a-lattice-sand:
+    repeating-linear-gradient(45deg, rgba(134, 105, 44, 0.14) 0 1px, transparent 1px 24px),
+    repeating-linear-gradient(-45deg, rgba(134, 105, 44, 0.14) 0 1px, transparent 1px 24px),
+    repeating-linear-gradient(0deg, rgba(134, 105, 44, 0.06) 0 1px, transparent 1px 17px),
+    repeating-linear-gradient(90deg, rgba(134, 105, 44, 0.06) 0 1px, transparent 1px 17px);
+}
+:root[data-theme='dark'] {
+  --a-chip: rgba(220, 187, 123, 0.12);
+  --a-chip2: rgba(220, 187, 123, 0.22);
+  --a-sand: #123a2c;
+  --a-card: #0b3125;
+  --a-track: #2c4a3e;
+  --a-muted: #9fb6a8;
+  --a-dark: #04180f;
+  --a-shadow-card: 0 2px 12px rgba(0, 0, 0, 0.28);
+  --a-shadow-float: 0 10px 30px rgba(0, 0, 0, 0.45);
+  --a-shadow-btn: 0 8px 20px rgba(0, 0, 0, 0.4);
+  --a-shadow-bar: 0 6px 20px rgba(0, 0, 0, 0.35);
+  --a-lattice-light:
+    repeating-linear-gradient(45deg, rgba(220, 187, 123, 0.08) 0 1px, transparent 1px 24px),
+    repeating-linear-gradient(-45deg, rgba(220, 187, 123, 0.08) 0 1px, transparent 1px 24px);
+  --a-lattice-sand: var(--a-lattice-light);
+}
+
+/* ── Which view of a page shows. Both are in the document; one is hidden.
+      The desktop view's wrapper is display: contents, so on a wide screen
+      it adds no box and the page lays out exactly as it did without it. ── */
+.m-view {
+  display: none;
+}
+.d-view {
+  display: contents;
+}
+@media (max-width: 1023.98px) {
+  .m-view {
+    display: block;
+  }
+  .d-view {
+    display: none;
+  }
+  /* The app has no footer: the legal pages and everything else are on
+     "More". The bottom navigation keeps its room at the end of the page. */
+  .footer-band,
+  .footer-city {
+    display: none;
+  }
+  body:has(.tab-bar) #main {
+    padding-block-end: calc(104px + env(safe-area-inset-bottom));
+  }
+  #main {
+    padding-block-end: calc(24px + env(safe-area-inset-bottom));
+  }
+}
+
+/* ── Top bar: the phone header pill's start. ─────────────────────────────── */
+.topbar-m {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1 1 auto;
+  min-inline-size: 0;
+  color: var(--head);
+  text-decoration: none;
+}
+.topbar-title {
+  flex: 1;
+  min-inline-size: 0;
+  padding-inline-start: 10px;
+  overflow: hidden;
+  font-size: 19px;
+  font-weight: 800;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.topbar-back + .topbar-title {
+  padding-inline-start: 4px;
+}
+.topbar-home {
+  gap: 10px;
+}
+.topbar-hello {
+  display: grid;
+  min-inline-size: 0;
+  line-height: 1.35;
+  font-size: 13px;
+  color: var(--ink2);
+}
+.topbar-name {
+  overflow: hidden;
+  font-size: 17px;
+  font-weight: 800;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: var(--head);
+}
+@media (max-width: 1099.98px) {
+  :root .site-header .brand {
+    display: none;
+  }
+  :root .site-header-bar {
+    block-size: 60px;
+    background: var(--glass);
+    -webkit-backdrop-filter: blur(14px);
+    backdrop-filter: blur(14px);
+    box-shadow: var(--a-shadow-bar);
+  }
+  :root .site-header .icon-circle {
+    inline-size: 44px;
+    block-size: 44px;
+    background: var(--a-chip);
+  }
+  :root .tab-bar {
+    background: var(--glass);
+    -webkit-backdrop-filter: blur(14px);
+    backdrop-filter: blur(14px);
+  }
+}
+@media (min-width: 1100px) {
+  .topbar-m {
+    display: none;
+  }
+}
+
+/* ══ Building blocks of the phone views ════════════════════════════════════ */
+.a-screen {
+  display: grid;
+  align-content: start;
+  gap: 16px;
+  padding: 6px 16px 0;
+  color: var(--ink);
+}
+.a-screen > * {
+  min-inline-size: 0;
+}
+.a-card {
+  border-radius: var(--a-r-lg);
+  background: var(--a-card);
+  box-shadow: var(--a-shadow-card);
+}
+.a-dark {
+  border-radius: var(--a-r-xl);
+  background-color: var(--a-dark);
+  background-image: var(--a-lattice-dark);
+  color: var(--a-on-dark);
+}
+.a-dark-dim {
+  color: var(--a-on-dark-dim);
+}
+.a-gold-text {
+  color: var(--gold);
+}
+.a-sand {
+  border-radius: var(--a-r-lg);
+  background-color: var(--a-sand);
+  background-image: var(--a-lattice-sand);
+}
+.a-mint {
+  border-radius: var(--a-r-lg);
+  background: var(--a-chip);
+}
+.a-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0;
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--head);
+}
+.a-head a {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--green);
+  text-decoration: none;
+}
+.a-label {
+  margin: 0;
+  padding-inline: 6px;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--goldInk);
+}
+.a-muted {
+  color: var(--ink2);
+}
+.a-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.a-grow {
+  flex: 1;
+  min-inline-size: 0;
+}
+.a-stack {
+  display: grid;
+  gap: 2px;
+  line-height: 1.45;
+}
+.a-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--head);
+}
+.a-sub {
+  font-size: 12.5px;
+  color: var(--ink2);
+}
+a.a-card,
+a.a-mint,
+a.a-dark,
+a.a-sand {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+}
+.a-press {
+  transition: transform 160ms var(--a-ease-out);
+}
+.a-press:active {
+  transform: scale(0.97);
+}
+
+/* Square-ish icon tile on mint. */
+.a-ico {
+  display: grid;
+  place-items: center;
+  flex: none;
+  inline-size: 48px;
+  block-size: 48px;
+  border-radius: 16px;
+  background: var(--a-chip);
+  color: var(--green);
+}
+.a-ico[data-size='44'] {
+  inline-size: 44px;
+  block-size: 44px;
+  border-radius: 14px;
+}
+.a-ico[data-size='42'] {
+  inline-size: 42px;
+  block-size: 42px;
+  border-radius: 14px;
+}
+.a-ico[data-on='white'] {
+  background: var(--a-card);
+  box-shadow: var(--a-shadow-card);
+}
+
+/* Round 40–44px icon button on mint. */
+.a-circle {
+  display: grid;
+  place-items: center;
+  flex: none;
+  inline-size: 44px;
+  block-size: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--a-chip);
+  color: var(--head);
+  text-decoration: none;
+  cursor: pointer;
+  transition: transform 160ms var(--a-ease-out);
+}
+.a-circle[data-size='40'] {
+  inline-size: 40px;
+  block-size: 40px;
+}
+.a-circle:active {
+  transform: scale(0.94);
+}
+.a-circle:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+/* Pill buttons: primary green, soft mint, outline, gold (on dark cards). */
+.a-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  block-size: 44px;
+  padding-inline: 18px;
+  border: 0;
+  border-radius: var(--r-pill);
+  background: var(--btnBg);
+  color: var(--btnFg);
+  box-shadow: var(--a-shadow-btn);
+  font: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  white-space: nowrap;
+  text-decoration: none;
+  cursor: pointer;
+  transition: transform 160ms var(--a-ease-out);
+}
+.a-btn:active {
+  transform: scale(0.96);
+}
+.a-btn[data-size='40'] {
+  block-size: 40px;
+  padding-inline: 16px;
+  font-size: 14px;
+}
+.a-btn[data-size='56'] {
+  block-size: 56px;
+  font-size: 16.5px;
+}
+.a-btn[data-variant='soft'] {
+  background: var(--a-chip);
+  color: var(--head);
+  box-shadow: none;
+}
+.a-btn[data-variant='outline'] {
+  background: transparent;
+  color: var(--head);
+  box-shadow: inset 0 0 0 1.5px var(--line);
+}
+.a-btn[data-variant='gold'] {
+  background: var(--gold);
+  color: #073b29;
+  box-shadow: none;
+  font-weight: 800;
+}
+.a-btn[data-variant='ghost-dark'] {
+  background: rgba(247, 243, 232, 0.14);
+  color: var(--a-on-dark);
+  box-shadow: none;
+  font-weight: 600;
+}
+.a-btn[data-block] {
+  inline-size: 100%;
+}
+
+/* Segmented tabs: a mint track with a white active segment. */
+.a-seg {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  border-radius: var(--r-pill);
+  background: var(--a-chip);
+}
+.a-seg > * {
+  flex: 1;
+  display: grid;
+  place-items: center;
+  min-block-size: 40px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: var(--r-pill);
+  background: transparent;
+  color: var(--head);
+  font: inherit;
+  font-size: 15px;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background 250ms var(--a-ease-out),
+    box-shadow 250ms var(--a-ease-out);
+}
+.a-seg > [aria-selected='true'],
+.a-seg > [aria-current='page'],
+.a-seg > [aria-pressed='true'] {
+  background: var(--a-card);
+  font-weight: 700;
+  box-shadow: 0 1px 4px rgba(7, 59, 41, 0.12);
+}
+
+/* Horizontal filter chips. */
+.a-chips {
+  display: flex;
+  gap: 8px;
+  margin-inline: -16px;
+  padding: 2px 16px 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.a-chips::-webkit-scrollbar {
+  display: none;
+}
+.a-chip {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  block-size: 38px;
+  padding-inline: 16px;
+  border: 0;
+  border-radius: var(--r-pill);
+  background: var(--a-card);
+  color: var(--head);
+  box-shadow: 0 2px 10px rgba(7, 59, 41, 0.06);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.a-chip[aria-pressed='true'],
+.a-chip[aria-current='page'] {
+  background: var(--btnBg);
+  color: var(--btnFg);
+  font-weight: 700;
+  box-shadow: 0 6px 14px rgba(7, 59, 41, 0.22);
+}
+
+/* Small pill tags. */
+.a-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  block-size: 30px;
+  padding-inline: 12px;
+  border-radius: var(--r-pill);
+  background: var(--a-chip);
+  color: var(--head);
+  font-size: 12.5px;
+  white-space: nowrap;
+}
+.a-tag[data-size='s'] {
+  block-size: 20px;
+  padding-inline: 8px;
+  font-size: 11px;
+}
+.a-tag[data-tone='green'] {
+  background: var(--a-chip2);
+  font-weight: 700;
+}
+.a-tag[data-tone='sand'] {
+  background: var(--a-sand);
+  color: var(--goldInk);
+  font-weight: 700;
+}
+
+/* Grouped list card (More, Settings). */
+.a-list {
+  overflow: hidden;
+  border-radius: var(--a-r-lg);
+  background: var(--a-card);
+  box-shadow: var(--a-shadow-card);
+}
+.a-list-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  inline-size: 100%;
+  min-block-size: 56px;
+  padding: 8px 16px;
+  border: 0;
+  background: none;
+  box-shadow: inset 0 -1px 0 var(--line2);
+  color: var(--ink);
+  font: inherit;
+  font-size: 15.5px;
+  text-align: start;
+  text-decoration: none;
+  cursor: pointer;
+}
+.a-list-row:last-child {
+  box-shadow: none;
+}
+.a-list-row > svg:first-child {
+  flex: none;
+  color: var(--green);
+}
+.a-list-row .a-val {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--green);
+}
+
+/* Switch. */
+.a-switch {
+  position: relative;
+  flex: none;
+  inline-size: 52px;
+  block-size: 32px;
+  border: 0;
+  border-radius: var(--r-pill);
+  background: var(--a-track);
+  cursor: pointer;
+  transition: background 250ms var(--a-ease-out);
+}
+.a-switch::after {
+  content: '';
+  position: absolute;
+  inset-block-start: 4px;
+  inset-inline-start: 4px;
+  inline-size: 24px;
+  block-size: 24px;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  transition: transform 300ms var(--a-ease-spring);
+}
+.a-switch[aria-checked='true'] {
+  background: var(--btnBg);
+}
+.a-switch[aria-checked='true']::after {
+  transform: translateX(20px);
+}
+:root[dir='rtl'] .a-switch[aria-checked='true']::after {
+  transform: translateX(-20px);
+}
+
+/* 8-point medallion: two rounded squares, one turned 45°, gold rings. */
+.a-medal {
+  position: relative;
+  display: grid;
+  place-items: center;
+  flex: none;
+  inline-size: 40px;
+  block-size: 40px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--head);
+  font-variant-numeric: tabular-nums;
+}
+.a-medal::before,
+.a-medal::after {
+  content: '';
+  position: absolute;
+  inset: 5px;
+  border-radius: 7px;
+  background: var(--a-card);
+  box-shadow: inset 0 0 0 1.5px var(--gold);
+}
+.a-medal::after {
+  transform: rotate(45deg);
+}
+.a-medal > span {
+  position: relative;
+  z-index: 1;
+}
+
+/* Floating action bar along the bottom (event detail, support). */
+.a-fab-bar {
+  position: fixed;
+  inset-inline: 12px;
+  inset-block-end: calc(12px + env(safe-area-inset-bottom));
+  z-index: var(--z-header);
+  display: flex;
+  gap: 8px;
+  padding: 8px;
+  border-radius: var(--r-pill);
+  background: var(--glass);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  box-shadow: var(--a-shadow-float);
+}
+.m-view:has(.a-fab-bar) {
+  padding-block-end: 84px;
+}
+
+/* Live dots. */
+@keyframes a-pulse-gold {
+  0% {
+    box-shadow: 0 0 0 0 rgba(200, 164, 93, 0.6);
+  }
+  70% {
+    box-shadow: 0 0 0 9px rgba(200, 164, 93, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(200, 164, 93, 0);
+  }
+}
+@keyframes a-pulse-green {
+  0% {
+    box-shadow: 0 0 0 0 rgba(11, 93, 59, 0.45);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(11, 93, 59, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(11, 93, 59, 0);
+  }
+}
+@keyframes a-rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.a-rise {
+  animation: a-rise 600ms var(--a-ease-out) both;
+}
+.a-rise:nth-child(2) {
+  animation-delay: 100ms;
+}
+.a-rise:nth-child(3) {
+  animation-delay: 200ms;
+}
+.a-rise:nth-child(4) {
+  animation-delay: 300ms;
+}
+.a-live {
+  display: inline-block;
+  flex: none;
+  inline-size: 8px;
+  block-size: 8px;
+  border-radius: 50%;
+  background: var(--green);
+  animation: a-pulse-green 2s infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .a-rise,
+  .a-live,
+  .m-view * {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* ══ More ══════════════════════════════════════════════════════════════════ */
+.more-tiles {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.more-tile {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  padding: 16px 8px 12px;
+  border-radius: 22px;
+  background: var(--a-card);
+  box-shadow: var(--a-shadow-card);
+  color: var(--head);
+  font-size: 13.5px;
+  font-weight: 600;
+  text-align: center;
+  text-decoration: none;
+}
+.more-page {
+  max-inline-size: 640px;
+  margin-inline: auto;
+  padding-block: 24px 40px;
+}
+.more-prefs {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 16px;
+}

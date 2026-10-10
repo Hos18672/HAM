@@ -34,6 +34,7 @@ const CARDS = '.card, .tile, .surf, .cta-panel, .card-plate, .frame, .pull-quote
  * The contact page has none: it is there to be read at once, and the scene's
  * frame loop cost a phone seconds of main thread before the page answered.
  * Nor do the Quran and du'a readers: birds crossing a verse are in the way.
+ * Nor does any screen under 1024px, whose app views are cards edge to edge.
  */
 export function WanderingBirds() {
   const hostRef = useRef<HTMLDivElement>(null);
@@ -44,6 +45,8 @@ export function WanderingBirds() {
     const host = hostRef.current;
     if (!host || grounded) return undefined;
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return undefined;
+    // The app's phone views are cards edge to edge, with no sky between them.
+    if (window.matchMedia('(max-width: 1023.98px)').matches) return undefined;
 
     const root = document.documentElement;
     let disposed = false;

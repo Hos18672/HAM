@@ -40,7 +40,11 @@
     "tabMenu": "منو",
     "groupDirect": "دسترسی مستقیم",
     "dateline": "وین، هرنالس",
-    "otherLanguage": "این صفحه به آلمانی"
+    "otherLanguage": "این صفحه به آلمانی",
+    "greeting": "سلام علیکم",
+    "back": "بازگشت",
+    "tabQuran": "قرآن",
+    "settings": "تنظیمات"
   },
   "actions": {
     "readMore": "بیشتر بخوانید",
@@ -952,5 +956,14 @@
     "expand": "باز کردن ابزارهای طراحی",
     "move": "جابه‌جایی نوار ابزار",
     "remove": "حذف انتخاب‌شده"
+  },
+  "app": {
+    "groupAssociation": "انجمن",
+    "groupApp": "اپ",
+    "groupLegal": "حقوقی",
+    "language": "زبان",
+    "darkMode": "حالت تیره",
+    "shareApp": "اشتراک‌گذاری اپ",
+    "linkCopied": "پیوند کپی شد"
   }
 }

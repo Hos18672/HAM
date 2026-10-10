@@ -40,7 +40,11 @@
     "tabMenu": "Menü",
     "groupDirect": "Direkt",
     "dateline": "Wien-Hernals",
-    "otherLanguage": "Diese Seite auf Persisch"
+    "otherLanguage": "Diese Seite auf Persisch",
+    "greeting": "Salām ʿalaikum",
+    "back": "Zurück",
+    "tabQuran": "Quran",
+    "settings": "Einstellungen"
   },
   "actions": {
     "readMore": "Mehr erfahren",
@@ -952,5 +956,14 @@
     "expand": "Zeichenwerkzeuge öffnen",
     "move": "Werkzeugleiste verschieben",
     "remove": "Auswahl löschen"
+  },
+  "app": {
+    "groupAssociation": "Verein",
+    "groupApp": "App",
+    "groupLegal": "Rechtliches",
+    "language": "Sprache",
+    "darkMode": "Dunkler Modus",
+    "shareApp": "App teilen",
+    "linkCopied": "Link kopiert"
   }
 }

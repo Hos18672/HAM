@@ -2,30 +2,35 @@
 
 import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { CalendarDots, ChatCircleText, House, List, Mosque } from '@phosphor-icons/react/dist/ssr';
+import {
+  BookOpenText,
+  CalendarBlank,
+  Clock,
+  House,
+  SquaresFour,
+} from '@phosphor-icons/react/dist/ssr';
 import { Link } from '@/lib/i18n/navigation';
-import { TABS } from './nav.config';
+import { TABS, type TabIcon } from './nav.config';
 
-const ICONS = { home: House, prayer: Mosque, events: CalendarDots, contact: ChatCircleText };
+const ICONS: Record<TabIcon, typeof House> = {
+  home: House,
+  prayer: Clock,
+  quran: BookOpenText,
+  events: CalendarBlank,
+  more: SquaresFour,
+};
 
 /**
- * The tab bar on phones and tablets: four destinations and the menu, floating
- * above the bottom edge. One chip slides under the active tab. The menu tab
- * is active while the sheet is open.
+ * The bottom navigation on phones and tablets: five destinations, floating
+ * above the bottom edge. One chip slides under the active tab, whose icon
+ * fills and grows a little. A page that is none of the first four marks
+ * "More", since that is where it lives.
  *
  * It steps aside while a phone's keyboard is up — the visual viewport drops
  * by more than a typical keyboard — so a form's fields and buttons are not
- * covered, and while the Quran reader fills the screen (CSS).
+ * covered.
  */
-export function TabBar({
-  isCurrent,
-  menuOpen,
-  onMenu,
-}: {
-  isCurrent: (href: string) => boolean;
-  menuOpen: boolean;
-  onMenu: (event: React.MouseEvent<HTMLButtonElement>) => void;
-}) {
+export function TabBar({ isCurrent }: { isCurrent: (href: string) => boolean }) {
   const t = useTranslations('nav');
   const [keyboard, setKeyboard] = useState(false);
 
@@ -37,17 +42,17 @@ export function TabBar({
     return () => viewport.removeEventListener('resize', check);
   }, []);
 
-  const found = TABS.findIndex((tab) => isCurrent(tab.href));
-  const active = menuOpen ? TABS.length : found;
+  const found = TABS.slice(0, 4).findIndex((tab) => isCurrent(tab.href));
+  const active = found < 0 ? TABS.length - 1 : found;
 
   return (
     <nav
       className="tab-bar"
       aria-label={t('bottomBar')}
       data-hidden={keyboard || undefined}
-      style={{ '--tab': active < 0 ? 0 : active } as React.CSSProperties}
+      style={{ '--tab': active } as React.CSSProperties}
     >
-      {active >= 0 ? <span className="tab-indicator" aria-hidden="true" /> : null}
+      <span className="tab-indicator" aria-hidden="true" />
       {TABS.map((tab, index) => {
         const Icon = ICONS[tab.icon];
         const on = index === active;
@@ -58,22 +63,11 @@ export function TabBar({
             className="tab"
             aria-current={on ? 'page' : undefined}
           >
-            <Icon size={24} weight="duotone" aria-hidden="true" />
+            <Icon size={24} weight={on ? 'fill' : 'duotone'} aria-hidden="true" />
             <span>{t(tab.key)}</span>
           </Link>
         );
       })}
-      <button
-        type="button"
-        className="tab"
-        aria-expanded={menuOpen}
-        aria-controls="menu-sheet"
-        data-on={menuOpen || undefined}
-        onClick={onMenu}
-      >
-        <List size={24} weight="duotone" aria-hidden="true" />
-        <span>{t('tabMenu')}</span>
-      </button>
     </nav>
   );
 }

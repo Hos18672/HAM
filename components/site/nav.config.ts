@@ -58,14 +58,6 @@ export const NAV_GROUPS: NavGroup[] = [
   { key: 'contact', href: '/contact' },
 ];
 
-/** The menu sheet: the same three groups, and the direct links as a fourth. */
-export const MENU_GROUPS: NavGroup[] = [
-  HOUSE,
-  OFFERS,
-  FAITH,
-  { key: 'groupDirect', items: [entry('events'), entry('contact'), entry('home')] },
-];
-
 /** The footer's link columns (the brand and the visit column frame them). */
 export const FOOTER_GROUPS: NavGroup[] = [
   { ...HOUSE, items: [...HOUSE.items!, entry('events')] },
@@ -73,14 +65,22 @@ export const FOOTER_GROUPS: NavGroup[] = [
   FAITH,
 ];
 
-/** The tab bar on phones and tablets; the fifth tab opens the menu sheet. */
-export const TABS: { href: string; key: string; icon: 'home' | 'prayer' | 'events' | 'contact' }[] =
-  [
-    { href: '/', key: 'home', icon: 'home' },
-    { href: '/prayer', key: 'tabPrayer', icon: 'prayer' },
-    { href: '/events', key: 'events', icon: 'events' },
-    { href: '/contact', key: 'contact', icon: 'contact' },
-  ];
+/**
+ * The bottom navigation on phones and tablets: four destinations and "More",
+ * a page with everything else. Any page that is not one of the four marks
+ * "More", since that is where it is reached from.
+ */
+export type TabIcon = 'home' | 'prayer' | 'quran' | 'events' | 'more';
+export const TABS: { href: string; key: string; icon: TabIcon }[] = [
+  { href: '/', key: 'home', icon: 'home' },
+  { href: '/prayer', key: 'tabPrayer', icon: 'prayer' },
+  { href: '/quran', key: 'tabQuran', icon: 'quran' },
+  { href: '/events', key: 'events', icon: 'events' },
+  { href: '/more', key: 'more', icon: 'more' },
+];
+
+/** Pages that show the back button and no bottom navigation: details and tools. */
+export const FOCUS_PAGES = ['/qibla', '/support', '/settings', '/events/'];
 
 export const LEGAL_NAV: NavEntry[] = [
   { href: '/privacy', key: 'privacy' },

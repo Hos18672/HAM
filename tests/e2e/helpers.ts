@@ -21,6 +21,7 @@ export const PUBLIC_PATHS = [
   '/contact',
   '/privacy',
   '/imprint',
+  '/more',
 ] as const;
 
 /** Sign in through the real form, as a member of staff would. */

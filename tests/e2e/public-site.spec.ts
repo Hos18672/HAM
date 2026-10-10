@@ -264,19 +264,19 @@ test.describe('phone width', () => {
     await expect.poll(opacity).toBe('1');
   });
 
-  test('the menu sheet opens from the tab bar and returns focus', async ({ page }) => {
-    await page.goto('/de/about');
-    const opener = page.getByRole('navigation', { name: 'Schnellzugriff' }).getByRole('button', {
-      name: 'Menü',
-    });
-    await opener.click();
+  test('"Mehr" leads to every other page and the back button returns', async ({ page }) => {
+    await page.goto('/de');
+    const tabs = page.getByRole('navigation', { name: 'Schnellzugriff' });
+    await tabs.getByRole('link', { name: 'Mehr' }).click();
+    await expect(page).toHaveURL(/\/de\/more$/);
+    await expect(tabs.getByRole('link', { name: 'Mehr' })).toHaveAttribute('aria-current', 'page');
 
-    const drawer = page.getByRole('dialog', { name: 'Menü' });
-    await expect(drawer).toBeVisible();
+    await page.getByRole('link', { name: 'Über uns' }).click();
+    await expect(page).toHaveURL(/\/de\/about$/);
+    // Any page that is not a tab is reached from "Mehr", and marks it.
+    await expect(tabs.getByRole('link', { name: 'Mehr' })).toHaveAttribute('aria-current', 'page');
 
-    await page.keyboard.press('Escape');
-    await expect(drawer).toBeHidden();
-    // A keyboard user must not be dropped at the top of the document.
-    await expect(opener).toBeFocused();
+    await page.getByRole('button', { name: 'Zurück' }).click();
+    await expect(page).toHaveURL(/\/de\/more$/);
   });
 });

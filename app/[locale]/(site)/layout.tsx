@@ -26,7 +26,7 @@ export default async function SiteLayout({
 
   const page = (
     <>
-      <Header theme={theme} locale={typed} />
+      <Header locale={typed} />
       <main
         id="main"
         style={{ minBlockSize: '60vh', paddingBlockEnd: editing ? 'var(--space-8)' : undefined }}

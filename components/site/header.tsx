@@ -1,10 +1,10 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { MagnifyingGlass, CaretDown } from '@phosphor-icons/react/dist/ssr';
-import { Link, usePathname } from '@/lib/i18n/navigation';
-import { NAV_GROUPS, type NavGroup } from './nav.config';
+import { ArrowLeft, MagnifyingGlass, CaretDown } from '@phosphor-icons/react/dist/ssr';
+import { Link, usePathname, useRouter } from '@/lib/i18n/navigation';
+import { FOCUS_PAGES, NAV_GROUPS, TABS, type NavGroup } from './nav.config';
 import { Mark } from './ornaments';
 import { SearchPopup } from './search-popup';
 import { IconCircle } from '../ui/icon-circle';
@@ -12,12 +12,10 @@ import { LangCircle, LangSwitch } from '../ui/lang-switch';
 import { PillLink } from '../ui/pill-button';
 import { NextPrayerInline } from '../ui/next-prayer';
 import { TabBar } from './tab-bar';
-import { MenuSheet } from './menu-sheet';
 import { formatDate } from '@/lib/i18n/format';
 import { localPrayerDay } from '@/lib/prayer-local';
 import { VIENNA } from '@/lib/prayer-times';
 import type { PrayerDay } from '@/lib/prayer-page';
-import type { ThemeValue } from './theme';
 import type { Locale } from '@/lib/i18n/config';
 
 /** How long the pointer must rest on a group before it opens, or leave before it closes. */
@@ -32,24 +30,24 @@ const HOVER_INTENT_MS = 150;
  * and the next prayer. The bar never changes size on scroll; it only takes a
  * soft shadow.
  *
- * Phones and tablets: a floating pill with the mark and name, the other
- * language and search. Everything else is in the tab bar along the bottom
- * and the menu sheet it opens.
+ * Phones and tablets: a floating pill. On the home page it carries the mark,
+ * a greeting and the name; everywhere else the page's title, with a back
+ * button on any page that is not one of the bottom navigation's tabs. The
+ * other language and search sit at its end. Everything else is in the bottom
+ * navigation and the "More" page it leads to.
  */
-export function Header({ theme, locale }: { theme: ThemeValue; locale: Locale }) {
+export function Header({ locale }: { locale: Locale }) {
   const t = useTranslations('nav');
   const tActions = useTranslations('actions');
   const pathname = usePathname();
 
   const [scrolled, setScrolled] = useState(false);
-  const [sheetOpen, setSheetOpen] = useState(false);
   const [openGroup, setOpenGroup] = useState<string | null>(null);
   const [searchOpen, setSearchOpen] = useState(false);
 
   /** The search button that opened the popup — the bar has one per width. */
   const searchButtonRef = useRef<HTMLButtonElement | null>(null);
   const navRef = useRef<HTMLElement>(null);
-  const sheetOpenerRef = useRef<HTMLElement | null>(null);
   const hoverTimer = useRef<number | undefined>(undefined);
 
   useEffect(() => {
@@ -61,7 +59,6 @@ export function Header({ theme, locale }: { theme: ThemeValue; locale: Locale })
 
   // Any navigation closes whatever is open.
   useEffect(() => {
-    setSheetOpen(false);
     setOpenGroup(null);
   }, [pathname]);
 
@@ -93,16 +90,6 @@ export function Header({ theme, locale }: { theme: ThemeValue; locale: Locale })
     href === '/' ? pathname === '/' : pathname === href || pathname.startsWith(`${href}/`);
   const groupIsCurrent = (group: NavGroup) =>
     group.href ? isCurrent(group.href) : (group.items ?? []).some((i) => isCurrent(i.href));
-
-  function openSheet(event: React.MouseEvent<HTMLElement>) {
-    if (sheetOpen) {
-      setSheetOpen(false);
-      return;
-    }
-    sheetOpenerRef.current = event.currentTarget;
-    setSheetOpen(true);
-  }
-  const closeSheet = useCallback(() => setSheetOpen(false), []);
 
   function openSearch(event: React.MouseEvent<HTMLButtonElement>) {
     searchButtonRef.current = event.currentTarget;
@@ -145,6 +132,10 @@ export function Header({ theme, locale }: { theme: ThemeValue; locale: Locale })
 
   // The reader pages carry their own controls along the bottom edge.
   const readerPage = /^\/(quran|duas)\/.+/.test(pathname);
+  // Detail and tool pages bring their own actions along the bottom, if any.
+  const focusPage = FOCUS_PAGES.some((p) =>
+    p.endsWith('/') ? pathname.startsWith(p) : pathname === p || pathname.startsWith(`${p}/`),
+  );
   const home = pathname === '/';
 
   return (
@@ -161,6 +152,7 @@ export function Header({ theme, locale }: { theme: ThemeValue; locale: Locale })
         {home ? <Dateline locale={locale} /> : null}
 
         <div className="site-header-bar">
+          <TopBarStart pathname={pathname} />
           <Brand />
 
           <nav ref={navRef} className="main-nav" aria-label={t('primary')}>
@@ -245,21 +237,7 @@ export function Header({ theme, locale }: { theme: ThemeValue; locale: Locale })
         </div>
       </header>
 
-      {sheetOpen ? (
-        <MenuSheet
-          theme={theme}
-          isCurrent={isCurrent}
-          onClose={closeSheet}
-          onSearch={() => {
-            setSheetOpen(false);
-            searchButtonRef.current = null;
-            setSearchOpen(true);
-          }}
-          opener={sheetOpenerRef.current}
-        />
-      ) : null}
-
-      {readerPage ? null : <TabBar isCurrent={isCurrent} menuOpen={sheetOpen} onMenu={openSheet} />}
+      {readerPage || focusPage ? null : <TabBar isCurrent={isCurrent} />}
 
       <SearchPopup
         open={searchOpen}
@@ -312,5 +290,62 @@ export function Brand() {
         <span className="brand-sub">{t('sub')}</span>
       </span>
     </Link>
+  );
+}
+
+/** The tab pages: the bottom navigation's first four and "More". */
+const TAB_PATHS = TABS.map((tab) => tab.href);
+
+/** Where the back button goes when there is no page of ours to go back to. */
+function parentOf(pathname: string) {
+  const match = /^\/(events|duas|quran)\/./.exec(pathname);
+  return match ? `/${match[1]}` : '/more';
+}
+
+/**
+ * The phone bar's start: on the home page the mark, a greeting and the name;
+ * elsewhere the page's title, after a back button on any page that is not a
+ * tab. Back returns to the previous page when it was one of ours, and to the
+ * page's parent otherwise (a page opened from a link or a widget).
+ */
+function TopBarStart({ pathname }: { pathname: string }) {
+  const t = useTranslations('nav');
+  const tBrand = useTranslations('brand');
+  const router = useRouter();
+  const first = useRef(pathname);
+
+  if (pathname === '/') {
+    return (
+      <Link href="/" className="topbar-m topbar-home" aria-label={tBrand('name')}>
+        <span className="brand-mark">
+          <span className="brand-ring" aria-hidden="true" />
+          <Mark />
+        </span>
+        <span className="topbar-hello">
+          <span>{t('greeting')}</span>
+          <span className="topbar-name">{tBrand('name')}</span>
+        </span>
+      </Link>
+    );
+  }
+
+  const segment = pathname.split('/')[1] ?? '';
+  const title = t.has(segment) ? t(segment) : tBrand('name');
+  const tab = TAB_PATHS.includes(pathname);
+
+  function back() {
+    if (first.current !== pathname && window.history.length > 1) router.back();
+    else router.push(parentOf(pathname));
+  }
+
+  return (
+    <div className="topbar-m">
+      {tab ? null : (
+        <IconCircle className="topbar-back" aria-label={t('back')} onClick={back}>
+          <ArrowLeft size={22} weight="bold" aria-hidden="true" className="mirror" />
+        </IconCircle>
+      )}
+      <span className="topbar-title">{title}</span>
+    </div>
   );
 }

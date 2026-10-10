@@ -964,6 +964,25 @@
     "language": "Sprache",
     "darkMode": "Dunkler Modus",
     "shareApp": "App teilen",
-    "linkCopied": "Link kopiert"
+    "linkCopied": "Link kopiert",
+    "short": {
+      "fajr": "Fadschr",
+      "sunrise": "Sonne",
+      "dhuhr": "Dhuhr",
+      "asr": "Asr",
+      "maghrib": "Maghrib",
+      "isha": "Ischa"
+    },
+    "duasShort": "Bittgebete",
+    "all": "Alle",
+    "surahAyah": "{surah} · Vers {n}",
+    "startReading": "Ab al-Fātiḥa",
+    "continueShort": "Weiter",
+    "previousDay": "Vorheriger Tag",
+    "nextDay": "Nächster Tag",
+    "methodChip": "Methode: Dschaʿfari",
+    "adhanOn": "Adhan für {prayer} einschalten",
+    "adhanOff": "Adhan für {prayer} ausschalten",
+    "monthCalendar": "Monatskalender"
   }
 }

@@ -8,6 +8,7 @@ import { PageHead } from '@/components/site/page-head';
 import { SurahIndex } from '@/components/site/surah-index';
 import { QuranContinue } from '@/components/site/quran-continue';
 import { Link } from '@/lib/i18n/navigation';
+import { QuranIndexMobile } from '@/components/app/quran-index-mobile';
 
 /** The text does not change; the list is rebuilt once a month at most. */
 export const revalidate = 2592000;
@@ -52,20 +53,30 @@ export default async function QuranPage({ params }: { params: Promise<{ locale: 
 
   return (
     <>
-      <PageHead header={header} locale={typed} />
-      <section className="section" data-rise>
-        <div className="page">
-          <QuranContinue surahs={surahs} locale={typed} />
-          <Link
-            href="/quran/page/1"
-            className="btn btn-primary"
-            style={{ marginBlockEnd: 'var(--space-6)' }}
-          >
-            {t('readAsBook')}
-          </Link>
-          <SurahIndex surahs={surahs} startPage={index.surahPage} locale={typed} />
-        </div>
-      </section>
+      <div className="m-view">
+        <QuranIndexMobile
+          surahs={surahs}
+          surahPage={index.surahPage}
+          juzPage={index.juzPage}
+          locale={typed}
+        />
+      </div>
+      <div className="d-view">
+        <PageHead header={header} locale={typed} />
+        <section className="section" data-rise>
+          <div className="page">
+            <QuranContinue surahs={surahs} locale={typed} />
+            <Link
+              href="/quran/page/1"
+              className="btn btn-primary"
+              style={{ marginBlockEnd: 'var(--space-6)' }}
+            >
+              {t('readAsBook')}
+            </Link>
+            <SurahIndex surahs={surahs} startPage={index.surahPage} locale={typed} />
+          </div>
+        </section>
+      </div>
     </>
   );
 }

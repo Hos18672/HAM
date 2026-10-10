@@ -22,7 +22,7 @@ import { cn } from './cn';
 
 const SIX: PrayerKey[] = ['fajr', 'sunrise', 'dhuhr', 'asr', 'maghrib', 'isha'];
 
-function usePlaceName(place: PlaceState, locale: Locale) {
+export function usePlaceName(place: PlaceState, locale: Locale) {
   const t = useTranslations('prayer');
   if (place.choice.kind === 'located') return t('placeYours');
   if (place.choice.kind === 'city') return cityName(place.choice.city, locale);
@@ -30,13 +30,13 @@ function usePlaceName(place: PlaceState, locale: Locale) {
 }
 
 /** The day, the next prayer and the time left to it, for the chosen place. */
-function useNext(initial: PrayerDay, locale: Locale) {
+export function useNext(initial: PrayerDay, locale: Locale) {
   const t = useTranslations('prayer');
   const { day: shown, place } = usePlaceDay(initial);
   const { day, remaining } = useNextPrayer(shown);
   const where = usePlaceName(place, locale);
   const left = remaining === null ? '' : `${t('in')} ${formatDuration(remaining, locale)}`;
-  return { day, next: day.next, where, left };
+  return { day, next: day.next, where, left, remaining };
 }
 
 export function NextPrayerCard({

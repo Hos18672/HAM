@@ -131,8 +131,9 @@ export default async function LocaleLayout({
           because by the time a script in the body runs the header has already
           had a chance to paint.
 
-          Only on the home page, and only the first time this browsing session
-          reaches it. Inside the app a client-side navigation never re-runs
+          Only on the home page, only on screens 1024px wide or wider (a phone
+          opens on the app's home screen, which has no scene), and only the
+          first time this browsing session reaches it. Inside the app a client-side navigation never re-runs
           this at all, so the flag matters most on the static preview, where
           every internal link falls back to a full load: without it, coming
           home from the logo in the bar played the whole four seconds again.
@@ -158,6 +159,8 @@ export default async function LocaleLayout({
               "var p=location.pathname.replace(/\\/+$/,'');" +
               'if(b&&p.indexOf(b)===0)p=p.slice(b.length);' +
               'if(!/^(\\/(fa|de))?$/.test(p))return;' +
+              // Phones open on the app's home screen, which has no scene to build.
+              "if(matchMedia('(max-width: 1023.98px)').matches)return;" +
               "try{if(sessionStorage.getItem('ham:hc')==='1')return;" +
               "sessionStorage.setItem('ham:hc','1')}catch(e){}" +
               "document.documentElement.dataset.hc='boot';" +

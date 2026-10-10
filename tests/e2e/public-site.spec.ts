@@ -248,20 +248,16 @@ test.describe('phone width', () => {
     });
   }
 
-  test('the tab bar waits for the home loader to finish', async ({ page }) => {
+  test('a phone opens straight on the app home screen, without the loader', async ({ page }) => {
     await page.goto('/de');
-    const opacity = () =>
-      page.evaluate(() => getComputedStyle(document.querySelector('.tab-bar')!).opacity);
-
+    // The scene belongs to wide screens: on a phone the head script never arms it.
+    expect(await page.evaluate(() => document.documentElement.dataset.hc)).toBeUndefined();
+    await expect(page.getByRole('link', { name: /Nächstes Gebet/ })).toBeVisible();
     await expect
-      .poll(() => page.evaluate(() => document.documentElement.dataset.hc))
-      .toBe('loading');
-    expect(await opacity()).toBe('0');
-
-    await expect
-      .poll(() => page.evaluate(() => document.documentElement.dataset.hc), { timeout: 45_000 })
-      .toBe('ready');
-    await expect.poll(opacity).toBe('1');
+      .poll(() =>
+        page.evaluate(() => getComputedStyle(document.querySelector('.tab-bar')!).opacity),
+      )
+      .toBe('1');
   });
 
   test('"Mehr" leads to every other page and the back button returns', async ({ page }) => {

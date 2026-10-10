@@ -9,6 +9,7 @@ import { PrayerList, PrayerPlaceNote } from '@/components/site/prayer-list';
 import { HijriCalendar } from '@/components/site/hijri-calendar';
 import { pageMetadata } from '@/lib/page-meta';
 import { VIENNA } from '@/lib/prayer-times';
+import { PrayerMobile } from '@/components/app/prayer-mobile';
 
 /**
  * Prayer times change every day, so this page is revalidated hourly rather
@@ -73,13 +74,22 @@ export default async function PrayerPage({
 
   return (
     <>
-      <PageHead header={header} locale={typed} />
+      <div className="d-view">
+        <PageHead header={header} locale={typed} />
+      </div>
+      {/* Phones and the app: the design's prayer screen. The month's
+          calendar and table below are shared with the wide layout. */}
+      <div className="m-view">
+        <PrayerMobile day={day} locale={typed} />
+      </div>
 
       {/* One grid: the next prayer and today's times beside the month's
           calendar, and the month's table across both. */}
       <section className="section">
         <div className="page prayer-layout">
-          <PrayerList day={day} locale={typed} />
+          <div className="d-view">
+            <PrayerList day={day} locale={typed} />
+          </div>
           <HijriCalendar
             initialMonth={calendar}
             initialTimetable={timetable}

@@ -250,10 +250,12 @@
 }
 a.a-card,
 a.a-mint,
-a.a-dark,
 a.a-sand {
-  display: block;
   color: inherit;
+  text-decoration: none;
+}
+a.a-dark {
+  color: var(--a-on-dark);
   text-decoration: none;
 }
 .a-press {
@@ -695,4 +697,452 @@ a.a-sand {
   justify-content: space-between;
   gap: 12px;
   padding: 10px 16px;
+}
+
+/* ══ Home ══════════════════════════════════════════════════════════════════ */
+.a-hero {
+  display: grid;
+  gap: 16px;
+  padding: 20px;
+  text-decoration: none;
+}
+a.a-hero {
+  color: var(--a-on-dark);
+}
+.a-hero-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 13.5px;
+  color: var(--a-on-dark-dim);
+}
+.a-hero-where {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 4px;
+}
+.a-hero-main {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.a-hero-name {
+  font-size: 30px;
+  font-weight: 800;
+  line-height: 1.3;
+}
+.a-ring {
+  display: grid;
+  place-items: center;
+  flex: none;
+  inline-size: 84px;
+  block-size: 84px;
+  border-radius: 50%;
+  background: conic-gradient(var(--gold) 0 var(--share, 0%), rgba(247, 243, 232, 0.14) 0);
+  animation: a-pulse-gold 2.4s infinite;
+}
+.a-ring-core {
+  display: grid;
+  place-items: center;
+  inline-size: 72px;
+  block-size: 72px;
+  border-radius: 50%;
+  background: var(--a-dark);
+  font-size: 19px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+.a-six {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 4px;
+  text-align: center;
+}
+.a-six-cell {
+  display: grid;
+  gap: 2px;
+  padding: 8px 0;
+  border-radius: var(--a-r-sm);
+  color: var(--a-on-dark);
+}
+.a-six-cell[data-past] {
+  color: rgba(247, 243, 232, 0.6);
+}
+.a-six-cell[data-next] {
+  background: var(--gold);
+  color: #073b29;
+}
+.a-six-name {
+  font-size: 11.5px;
+  opacity: 0.9;
+}
+.a-six-time {
+  font-size: 14px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.a-quick {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.a-quick-tile {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--head);
+  text-align: center;
+  text-decoration: none;
+}
+.a-quick-box {
+  display: grid;
+  place-items: center;
+  inline-size: 100%;
+  aspect-ratio: 1;
+  border-radius: var(--a-r-lg);
+  background: var(--a-card);
+  box-shadow: var(--a-shadow-card);
+  color: var(--green);
+}
+
+.a-continue {
+  padding: 14px 16px;
+  color: var(--ink);
+}
+.a-progress {
+  display: block;
+  block-size: 4px;
+  margin-block-start: 6px;
+  border-radius: var(--r-pill);
+  background: var(--a-chip2);
+}
+.a-progress > span {
+  display: block;
+  block-size: 100%;
+  border-radius: var(--r-pill);
+  background: var(--green);
+}
+.a-play {
+  display: grid;
+  place-items: center;
+  flex: none;
+  inline-size: 44px;
+  block-size: 44px;
+  border-radius: 50%;
+  background: var(--btnBg);
+  color: var(--btnFg);
+}
+.a-continue-dark {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px;
+  border-radius: var(--a-r-lg);
+}
+
+.a-carousel {
+  display: flex;
+  gap: 10px;
+  margin: 0 -16px;
+  padding: 2px 16px 12px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-padding-inline: 16px;
+  scrollbar-width: none;
+  list-style: none;
+}
+.a-carousel::-webkit-scrollbar {
+  display: none;
+}
+.a-carousel > li {
+  flex: none;
+  inline-size: 236px;
+  scroll-snap-align: start;
+}
+.a-event-card {
+  display: grid;
+  overflow: hidden;
+  block-size: 100%;
+}
+
+/* Event covers: the lattice in three grounds, an icon in a halo. */
+.a-cover {
+  position: relative;
+  display: grid;
+  place-items: center;
+  block-size: 112px;
+  overflow: hidden;
+}
+.a-cover[data-tone='dark'] {
+  background-color: var(--a-dark);
+  background-image: var(--a-lattice-dark);
+  color: var(--gold);
+}
+.a-cover[data-tone='light'] {
+  background-color: var(--a-chip);
+  background-image: var(--a-lattice-light);
+  color: var(--green);
+}
+.a-cover[data-tone='sand'] {
+  background-color: var(--a-sand);
+  background-image: var(--a-lattice-sand);
+  color: var(--goldInk);
+}
+.a-cover-img {
+  position: absolute;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
+}
+.a-cover-medal {
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--a-card);
+  box-shadow: 0 0 0 6px rgba(11, 93, 59, 0.08);
+}
+.a-cover[data-tone='dark'] .a-cover-medal {
+  background: rgba(200, 164, 93, 0.18);
+  box-shadow: 0 0 0 6px rgba(247, 243, 232, 0.06);
+}
+.a-date-chip {
+  position: absolute;
+  inset-block-start: 10px;
+  inset-inline-start: 10px;
+  display: grid;
+  justify-items: center;
+  inline-size: 46px;
+  padding: 4px 0;
+  border-radius: var(--a-r-sm);
+  background: var(--a-card);
+  line-height: 1.2;
+}
+.a-date-chip > span:first-child {
+  font-size: 17px;
+  font-weight: 800;
+  color: var(--head);
+}
+.a-date-chip > span:last-child {
+  font-size: 11px;
+  color: var(--ink2);
+}
+
+/* ══ Prayer times ══════════════════════════════════════════════════════════ */
+.a-dayswitch {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  padding: 6px;
+  border-radius: var(--r-pill);
+  background: var(--a-card);
+}
+.a-dayswitch-mid {
+  display: grid;
+  justify-items: center;
+  flex: 1;
+  min-inline-size: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  line-height: 1.4;
+  text-align: center;
+  color: inherit;
+  cursor: pointer;
+}
+.a-dayswitch-day {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--head);
+}
+.a-placerow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13.5px;
+  color: var(--ink2);
+}
+.a-placerow .a-tag {
+  margin-inline-start: auto;
+  font-weight: 600;
+}
+.a-placerow-where {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-block-size: 44px;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+.a-placerow-where svg {
+  color: var(--green);
+}
+.a-placepick {
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+}
+.a-ptimes {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.a-prow {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-block-size: 68px;
+  padding: 0 8px 0 16px;
+  border-radius: 22px;
+  background: var(--a-card);
+  color: var(--head);
+}
+:root[dir='rtl'] .a-prow {
+  padding: 0 16px 0 8px;
+}
+.a-prow-name {
+  font-size: 16.5px;
+  font-weight: 700;
+}
+.a-prow-left {
+  font-size: 12.5px;
+  color: var(--gold);
+}
+.a-prow-time {
+  font-size: 22px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+.a-prow[data-past] {
+  color: var(--ink2);
+}
+.a-prow[data-next] {
+  background: var(--a-dark);
+  background-image: var(--a-lattice-dark);
+  color: var(--a-on-dark);
+}
+.a-prow[data-next] .a-ico {
+  background: rgba(200, 164, 93, 0.22);
+  color: var(--gold);
+}
+.a-prow-bell {
+  display: grid;
+  place-items: center;
+  flex: none;
+  inline-size: 44px;
+  block-size: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  color: var(--a-muted);
+  cursor: pointer;
+}
+.a-prow-bell[aria-pressed='true'] {
+  color: var(--green);
+}
+.a-prow[data-next] .a-prow-bell[aria-pressed='true'] {
+  color: var(--gold);
+}
+.a-link {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--green);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+/* ══ Quran index ═══════════════════════════════════════════════════════════ */
+.a-search {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  block-size: 52px;
+  padding-inline: 18px;
+  border-radius: var(--r-pill);
+  background: var(--a-card);
+  color: var(--green);
+}
+.a-search input {
+  flex: 1;
+  min-inline-size: 0;
+  block-size: 100%;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 15.5px;
+  color: var(--ink);
+  outline: none;
+}
+.a-search input::placeholder {
+  color: var(--ink2);
+}
+.a-search:focus-within {
+  box-shadow: 0 0 0 2px var(--green);
+}
+.a-surahs {
+  display: grid;
+  gap: 4px;
+  margin: 0 -4px;
+  padding: 0;
+  list-style: none;
+}
+.a-surah {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-block-size: 64px;
+  padding: 0 12px;
+  border-radius: var(--a-r-md);
+  color: inherit;
+  text-decoration: none;
+}
+.a-surah:active,
+.a-surah:hover {
+  background: var(--a-chip);
+}
+.a-surah-ar {
+  font-family: 'Scheherazade New', var(--font-naskh);
+  font-size: 22px;
+  color: var(--head);
+}
+.a-juz {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.a-juz-tile {
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 2px;
+  block-size: 64px;
+  border-radius: 18px;
+  background: var(--a-card);
+  box-shadow: var(--a-shadow-card);
+  text-decoration: none;
+}
+.a-juz-n {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--head);
 }

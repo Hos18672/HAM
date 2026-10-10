@@ -68,6 +68,9 @@ export function HomecomingHero({
   useEffect(() => {
     const host = hostRef.current;
     if (!host) return undefined;
+    // Under 1024px the hero is hidden behind the app's home screen: Three.js
+    // is not even fetched there.
+    if (window.matchMedia('(max-width: 1023.98px)').matches) return undefined;
 
     let disposed = false;
 

@@ -964,6 +964,25 @@
     "language": "زبان",
     "darkMode": "حالت تیره",
     "shareApp": "اشتراک‌گذاری اپ",
-    "linkCopied": "پیوند کپی شد"
+    "linkCopied": "پیوند کپی شد",
+    "short": {
+      "fajr": "صبح",
+      "sunrise": "طلوع",
+      "dhuhr": "ظهر",
+      "asr": "عصر",
+      "maghrib": "مغرب",
+      "isha": "عشا"
+    },
+    "duasShort": "ادعیه",
+    "all": "همه",
+    "surahAyah": "{surah} · آیهٔ {n}",
+    "startReading": "از سورهٔ فاتحه",
+    "continueShort": "ادامه",
+    "previousDay": "روز قبل",
+    "nextDay": "روز بعد",
+    "methodChip": "روش: جعفری",
+    "adhanOn": "روشن کردن اذان {prayer}",
+    "adhanOff": "خاموش کردن اذان {prayer}",
+    "monthCalendar": "تقویم ماهانه"
   }
 }

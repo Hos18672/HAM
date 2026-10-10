@@ -30,6 +30,20 @@ const PERSIAN_DIGITS = '۰۱۲۳۴۵۶۷۸۹';
 const latinDigits = (text: string) =>
   text.replace(/[۰-۹]/g, (d) => String(PERSIAN_DIGITS.indexOf(d)));
 
+/** The surahs a search matches: a number (in either script), or a name in either script. */
+export function filterSurahs<T extends Pick<SurahInfo, 'number' | 'name' | 'transliteration'>>(
+  surahs: T[],
+  query: string,
+): T[] {
+  const q = latinDigits(query.trim());
+  if (!q) return surahs;
+  if (/^\d+$/.test(q)) return surahs.filter((s) => String(s.number).startsWith(q));
+  const needle = bare(q);
+  return surahs.filter(
+    (s) => bare(s.transliteration).includes(needle) || bare(s.name).includes(needle),
+  );
+}
+
 /**
  * The 114 surahs as the site's card grid, with a search that takes a number
  * (in either script), the transliterated name, or the Arabic one.
@@ -47,15 +61,7 @@ export function SurahIndex({
   const t = useTranslations('quran');
   const [query, setQuery] = useState('');
 
-  const shown = useMemo(() => {
-    const q = latinDigits(query.trim());
-    if (!q) return surahs;
-    if (/^\d+$/.test(q)) return surahs.filter((s) => String(s.number).startsWith(q));
-    const needle = bare(q);
-    return surahs.filter(
-      (s) => bare(s.transliteration).includes(needle) || bare(s.name).includes(needle),
-    );
-  }, [query, surahs]);
+  const shown = useMemo(() => filterSurahs(surahs, query), [query, surahs]);
 
   return (
     <div style={{ display: 'grid', gap: 'var(--space-5)' }}>

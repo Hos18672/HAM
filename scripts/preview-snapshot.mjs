@@ -234,11 +234,26 @@ async function main() {
   }
 
   let pages = 0;
+  // Each event has a page of its own, linked from the events and home
+  // screens; which events exist is read from those links as they come.
+  const events = new Set();
   for (const locale of locales) {
     for (const route of routes) {
       const path = `/${locale}${route}`;
       const { status, body } = await fetchPage(path);
       if (status !== 200) throw new Error(`${path} returned ${status}`);
+      for (const [, slug] of body.matchAll(/href="[^"]*?\/(?:fa|de)\/events\/([a-z0-9-]+)"/g)) {
+        events.add(slug);
+      }
+      await writeFileAt(join(OUT, locale, route, 'index.html'), transform(body));
+      pages += 1;
+    }
+  }
+  for (const locale of locales) {
+    for (const slug of events) {
+      const route = `/events/${slug}`;
+      const { status, body } = await fetchPage(`/${locale}${route}`);
+      if (status !== 200) throw new Error(`/${locale}${route} returned ${status}`);
       await writeFileAt(join(OUT, locale, route, 'index.html'), transform(body));
       pages += 1;
     }

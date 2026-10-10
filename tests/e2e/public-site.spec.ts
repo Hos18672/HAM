@@ -283,7 +283,7 @@ test.describe('phone width', () => {
     await expect(page).toHaveURL(/\/de\/calendar$/);
     // October 2026 is reached from any month: the Day of Hafez (Iran) and
     // Austria's National Day, a day off, are both in it.
-    const title = page.locator('.a-month [role="grid"]');
+    const title = page.locator('.a-month [role="group"]');
     const target = 'Oktober 2026';
     const [y, m] = new Intl.DateTimeFormat('en-CA', {
       timeZone: 'Europe/Vienna',

@@ -203,13 +203,13 @@ export function CalendarMobile({
             </button>
           </div>
         )}
-        <div className="a-month-grid" role="grid" aria-label={title}>
+        <div className="a-month-grid" role="group" aria-label={title}>
           {weekdays.map((w, i) => (
             <span
               key={w}
               className="a-month-wd"
               data-friday={i === 4 || undefined}
-              role="columnheader"
+              aria-hidden="true"
             >
               {w}
             </span>

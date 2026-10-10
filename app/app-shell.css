@@ -1399,3 +1399,240 @@ a.a-hero {
     margin-inline: 20px;
   }
 }
+
+/* ══ Du'as ═════════════════════════════════════════════════════════════════ */
+.a-duaday {
+  display: grid;
+  gap: 10px;
+  padding: 18px;
+  border-radius: 26px;
+}
+.a-rows {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.a-dua-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-block-size: 72px;
+  padding-inline: 14px 6px;
+  border-radius: 22px;
+}
+.a-dua-link {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 14px;
+  min-inline-size: 0;
+  padding-block: 12px;
+  color: inherit;
+  text-decoration: none;
+}
+.clamp-1 {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+}
+
+/* ══ Every other page's head ═══════════════════════════════════════════════
+   The green band with the title belongs to wide screens. On a phone the top
+   bar already names the page, so the band becomes its lead on the paper:
+   the title stays in the document for assistive technology and search. */
+@media (max-width: 1023.98px) {
+  .page-head-band {
+    margin-block-start: 0;
+    padding: 4px 0 0;
+    background: none;
+    color: var(--ink2);
+  }
+  .page-head-band > :not(.page),
+  .page-head-band .crumbs {
+    display: none;
+  }
+  .page-head-band h1 {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .page-head-band p {
+    margin-block-start: 0 !important;
+    font-size: 15px !important;
+    line-height: 2 !important;
+    color: var(--ink2) !important;
+  }
+  .page-head-band + .section,
+  .page-head-band + section {
+    padding-block-start: 18px;
+  }
+}
+
+/* ══ Contact and support: the app's cards over the existing layouts ═════════ */
+@media (max-width: 1023.98px) {
+  :root .contact-head-band {
+    margin-block-start: 0;
+    padding: 4px 0 0;
+    background: none;
+    color: var(--ink2);
+  }
+  :root .contact-head-band > :not(.page),
+  :root .contact-head-band .contact-kicker {
+    display: none;
+  }
+  :root .contact-head-band .contact-title {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  :root .contact-head-band .contact-lead {
+    margin: 0 0 12px;
+    font-size: 15px;
+    color: var(--ink2);
+  }
+  :root .contact-head-band .contact-status-chip,
+  :root .contact-head-band .contact-status[data-state='programme'] .contact-status-chip {
+    background: var(--a-chip2);
+    color: var(--head);
+    box-shadow: none;
+  }
+  :root .contact-head-band .contact-status-link {
+    color: var(--green);
+  }
+  :root .contact-page > section {
+    margin-block-start: 18px;
+  }
+  :root .contact-quick .btn {
+    border-radius: var(--r-pill);
+    min-block-size: 52px;
+  }
+  :root .contact-hours,
+  :root .contact-tile,
+  :root .contact-form-card,
+  :root .contact-trans,
+  :root .form-card,
+  :root .bank-card,
+  :root .choice-card {
+    border-radius: var(--a-r-lg) !important;
+  }
+  :root .contact-hours {
+    padding: 6px 16px;
+    background: var(--a-card);
+    box-shadow: var(--a-shadow-card);
+  }
+  :root .contact-map,
+  :root .contact-map-frame {
+    overflow: hidden;
+    border-radius: 26px;
+  }
+  :root .contact-tile,
+  :root .choice-card {
+    background: var(--a-card);
+    box-shadow: var(--a-shadow-card);
+    border: 0;
+  }
+  :root .contact-page .input,
+  :root .support-panel .input,
+  :root .contact-page textarea,
+  :root .support-panel textarea {
+    border-radius: 16px;
+    background: var(--a-card);
+  }
+  :root .contact-page .btn,
+  :root .support-panel .btn,
+  :root .support-tablist,
+  :root .support-tablist > * {
+    border-radius: var(--r-pill);
+  }
+}
+
+.a-select {
+  max-inline-size: 50%;
+  min-block-size: 40px;
+  padding-inline: 12px;
+  border: 0;
+  border-radius: var(--r-pill);
+  background: var(--a-chip);
+  color: var(--head);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* ══ Qibla: the light dial of the app design (the dark stage stays at night) */
+@media (max-width: 1023.98px) {
+  :root:not([data-theme='dark']) .qibla-stage {
+    --stage: #ffffff;
+    --stage-ink: #073b29;
+    background: var(--a-card);
+    box-shadow: var(--a-shadow-card);
+    border-radius: var(--a-r-xl);
+  }
+  :root:not([data-theme='dark']) .qibla-tabs {
+    background: var(--a-chip);
+  }
+  :root:not([data-theme='dark']) .qibla-tab[aria-selected='true'] {
+    background: var(--a-card);
+    color: var(--head);
+    box-shadow: 0 1px 4px rgba(7, 59, 41, 0.12);
+  }
+  :root:not([data-theme='dark']) .qibla-face {
+    fill: #fbf8f1;
+    stroke: rgba(200, 164, 93, 0.6);
+    stroke-width: 2;
+  }
+  :root:not([data-theme='dark']) .qibla-hub {
+    fill: var(--paper);
+    stroke: rgba(11, 93, 59, 0.14);
+  }
+  :root:not([data-theme='dark']) .qibla-tick {
+    stroke: rgba(11, 93, 59, 0.32);
+  }
+  :root:not([data-theme='dark']) .qibla-tick-major {
+    stroke: #073b29;
+  }
+  :root:not([data-theme='dark']) .qibla-rose-letter {
+    fill: var(--ink2);
+  }
+  :root:not([data-theme='dark']) .qibla-rose-north {
+    fill: #073b29;
+  }
+  :root:not([data-theme='dark']) .qibla-needle-wash {
+    fill: var(--green);
+    opacity: 0.13;
+  }
+  :root:not([data-theme='dark']) .qibla-needle-line,
+  :root:not([data-theme='dark']) .qibla-kaaba-band {
+    stroke: var(--green);
+  }
+  :root:not([data-theme='dark']) .qibla-needle-head {
+    fill: var(--green);
+  }
+  :root:not([data-theme='dark']) .qibla-kaaba {
+    fill: #073b29;
+    stroke: var(--gold);
+  }
+  :root:not([data-theme='dark']) .qibla-you {
+    fill: var(--gold);
+  }
+  :root:not([data-theme='dark']) .qibla-dial-card {
+    color: var(--ink2);
+  }
+  .qibla-card {
+    border-radius: var(--a-r-lg);
+    background: var(--a-card);
+    box-shadow: var(--a-shadow-card);
+  }
+  .qibla-go {
+    border-radius: var(--r-pill);
+  }
+}

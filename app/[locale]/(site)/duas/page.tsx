@@ -5,6 +5,8 @@ import { requireLocale } from '@/lib/i18n/locale-param';
 import { getPageHeader, getDuas } from '@/lib/db/queries/content';
 import { PageHead } from '@/components/site/page-head';
 import { DuaCard } from '@/components/site/dua-card';
+import { DuasMobile } from '@/components/app/duas-mobile';
+import { duaText } from '@/lib/dua-texts';
 import { FilterableList } from '@/components/site/filterable-list';
 import { EditableEntry, EditableAdd } from '@/components/editable/editable-list';
 import { pageMetadata } from '@/lib/page-meta';
@@ -46,32 +48,46 @@ export default async function DuasPage({ params }: { params: Promise<{ locale: s
 
   return (
     <>
-      <PageHead header={header} locale={typed} />
-      <section className="section" data-rise>
-        <div className="page">
-          <FilterableList
-            items={items}
-            label={t('filterByCategory')}
-            labelNamespace="duas"
-            emptyMessage={t('none')}
-            className="columns-feature"
-          />
-          <div style={{ marginBlockStart: 'var(--space-5)' }}>
-            <EditableAdd entity="dua" />
+      <div className="m-view">
+        <DuasMobile
+          duas={duas.map(({ slug, category, title, summary, whenToRead }) => ({
+            slug,
+            category,
+            title,
+            summary,
+            whenToRead,
+            hasText: duaText(slug) !== null,
+          }))}
+        />
+      </div>
+      <div className="d-view">
+        <PageHead header={header} locale={typed} />
+        <section className="section" data-rise>
+          <div className="page">
+            <FilterableList
+              items={items}
+              label={t('filterByCategory')}
+              labelNamespace="duas"
+              emptyMessage={t('none')}
+              className="columns-feature"
+            />
+            <div style={{ marginBlockStart: 'var(--space-5)' }}>
+              <EditableAdd entity="dua" />
+            </div>
+            {/* The design closes the page on where the full texts actually are. */}
+            <p
+              className="text-sm"
+              style={{
+                marginBlockStart: 'clamp(26px, 3vw, 40px)',
+                color: 'var(--color-ink-muted)',
+                maxInlineSize: '68ch',
+              }}
+            >
+              {t('note')}
+            </p>
           </div>
-          {/* The design closes the page on where the full texts actually are. */}
-          <p
-            className="text-sm"
-            style={{
-              marginBlockStart: 'clamp(26px, 3vw, 40px)',
-              color: 'var(--color-ink-muted)',
-              maxInlineSize: '68ch',
-            }}
-          >
-            {t('note')}
-          </p>
-        </div>
-      </section>
+        </section>
+      </div>
     </>
   );
 }

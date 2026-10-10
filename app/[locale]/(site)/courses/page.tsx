@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 import { requireLocale } from '@/lib/i18n/locale-param';
 import { getPageHeader, getCourses } from '@/lib/db/queries/content';
+import { ActivityTabs } from '@/components/app/activity-tabs';
 import { PageHead } from '@/components/site/page-head';
 import { CourseCard } from '@/components/site/course-card';
 import { FilterableList } from '@/components/site/filterable-list';
@@ -52,6 +53,7 @@ export default async function CoursesPage({ params }: { params: Promise<{ locale
         <JsonLd key={course.id} data={courseJsonLd(course, typed)} />
       ))}
 
+      <ActivityTabs current="/courses" locale={typed} />
       <PageHead header={header} locale={typed} />
 
       {/* The design gives this page the ruled white ground throughout. */}

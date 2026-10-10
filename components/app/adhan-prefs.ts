@@ -46,6 +46,30 @@ function read(): AdhanPrefs {
   return value;
 }
 
+const APP_KEY = 'ham:in-app';
+const PACKAGE = 'at.hausallermenschen.app';
+
+/**
+ * Whether the page is running inside the Android app. Chrome opens the app's
+ * first page with the app as its referrer; that is remembered for the rest
+ * of the visit, since later pages have the site itself as referrer.
+ */
+export function inApp(): boolean {
+  if (typeof window === 'undefined') return false;
+  try {
+    if (document.referrer.startsWith(`android-app://${PACKAGE}`)) {
+      window.sessionStorage.setItem(APP_KEY, '1');
+      return true;
+    }
+    return window.sessionStorage.getItem(APP_KEY) === '1';
+  } catch {
+    return document.referrer.startsWith(`android-app://${PACKAGE}`);
+  }
+}
+
+/** The app's own adhan screen, or one choice handed to it. */
+export const ADHAN_APP_URL = 'hamapp://adhan';
+
 export function setAdhan(key: AdhanKey, on: boolean) {
   const next = { ...read(), [key]: on };
   try {
@@ -55,6 +79,8 @@ export function setAdhan(key: AdhanKey, on: boolean) {
     cache = { raw: cache.raw, value: next };
   }
   for (const listener of listeners) listener();
+  // In the app the alarms are the phone's: the choice is handed to them too.
+  if (inApp()) window.location.href = `${ADHAN_APP_URL}?prayer=${key}&on=${on ? 1 : 0}`;
 }
 
 function subscribe(listener: () => void) {

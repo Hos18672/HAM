@@ -995,6 +995,27 @@
     "goingAsk": "Ich komme?",
     "dayEmpty": "An diesem Tag ist nichts geplant.",
     "directions": "Route",
-    "share": "Teilen"
+    "share": "Teilen",
+    "duasTitle": "Bittgebete und Ziyarat",
+    "duaToday": "Vorschlag für heute",
+    "duaReason": {
+      "friNight": "Nacht zum Freitag",
+      "friday": "Freitagmorgen",
+      "wedNight": "Nacht zum Mittwoch",
+      "morning": "Jeden Morgen"
+    },
+    "read": "Lesen",
+    "searchDuas": "Bittgebet oder Ziyara suchen",
+    "favourites": "Favoriten",
+    "favouritesEmpty": "Noch keine Favoriten. Tippe auf das Herz neben einem Bittgebet.",
+    "favourite": "{title} merken",
+    "unfavourite": "{title} nicht mehr merken",
+    "tabOverview": "Übersicht",
+    "setAdhan": "Adhan und Gebet",
+    "method": "Berechnungsmethode",
+    "adhanNote": "Den Adhan spielt die Android-App des Hauses, nach Wiener Zeit. Im Browser werden diese Einstellungen nur auf diesem Gerät gespeichert.",
+    "setDisplay": "Anzeige",
+    "adhanNoteApp": "Der Adhan erklingt nach Wiener Zeit. Für Benachrichtigungen und den Alarm auf die Minute öffne die Adhan-Einstellungen der App.",
+    "adhanInApp": "Adhan-Einstellungen der App"
   }
 }

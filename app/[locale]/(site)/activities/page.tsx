@@ -10,6 +10,7 @@ import {
   getCourses,
   getSports,
 } from '@/lib/db/queries/content';
+import { ActivityTabs } from '@/components/app/activity-tabs';
 import { PageHead, SectionHead } from '@/components/site/page-head';
 import { EditableText } from '@/components/editable/editable-text';
 import { EditableEntry, EditableAdd } from '@/components/editable/editable-list';
@@ -52,6 +53,7 @@ export default async function ActivitiesPage({ params }: { params: Promise<{ loc
 
   return (
     <>
+      <ActivityTabs current="/activities" locale={typed} />
       <PageHead header={header} locale={typed} />
 
       {/* The areas of work, as a list of ways in rather than a second copy of

@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 import { requireLocale } from '@/lib/i18n/locale-param';
 import { getPageHeader, getSports } from '@/lib/db/queries/content';
+import { ActivityTabs } from '@/components/app/activity-tabs';
 import { PageHead } from '@/components/site/page-head';
 import { EditableText } from '@/components/editable/editable-text';
 import { EditableEntry, EditableAdd } from '@/components/editable/editable-list';
@@ -98,6 +99,7 @@ export default async function SportPage({ params }: { params: Promise<{ locale: 
 
   return (
     <>
+      <ActivityTabs current="/sport" locale={typed} />
       <PageHead header={header} locale={typed} />
 
       {/* One compact row per sport — what, for whom, when — filtered by group,

@@ -12,6 +12,7 @@ import { ArrowRight } from '@phosphor-icons/react/dist/ssr';
 import { Link } from '@/lib/i18n/navigation';
 import { EventRow } from '@/components/site/event-row';
 import { PatternPlate } from '@/components/site/ornaments';
+import { ActivityTabs } from '@/components/app/activity-tabs';
 import { PageHead, SectionHead } from '@/components/site/page-head';
 import { EditableText } from '@/components/editable/editable-text';
 import { EditableEntry, EditableAdd } from '@/components/editable/editable-list';
@@ -55,6 +56,7 @@ export default async function CulturePage({ params }: { params: Promise<{ locale
 
   return (
     <>
+      <ActivityTabs current="/culture" locale={typed} />
       <PageHead header={header} locale={typed} />
 
       {/* What happens here, as a list — and the themes it draws on as plain

@@ -12,6 +12,7 @@ import { LangCircle, LangSwitch } from '../ui/lang-switch';
 import { PillLink } from '../ui/pill-button';
 import { NextPrayerInline } from '../ui/next-prayer';
 import { TabBar } from './tab-bar';
+import { inApp } from '../app/adhan-prefs';
 import { formatDate } from '@/lib/i18n/format';
 import { localPrayerDay } from '@/lib/prayer-local';
 import { VIENNA } from '@/lib/prayer-times';
@@ -49,6 +50,11 @@ export function Header({ locale }: { locale: Locale }) {
   const searchButtonRef = useRef<HTMLButtonElement | null>(null);
   const navRef = useRef<HTMLElement>(null);
   const hoverTimer = useRef<number | undefined>(undefined);
+
+  // Notes, on the first page of a visit, whether the Android app opened it.
+  useEffect(() => {
+    inApp();
+  }, []);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);

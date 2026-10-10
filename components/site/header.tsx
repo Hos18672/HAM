@@ -8,7 +8,7 @@ import { FOCUS_PAGES, NAV_GROUPS, TABS, type NavGroup } from './nav.config';
 import { Mark } from './ornaments';
 import { SearchPopup } from './search-popup';
 import { IconCircle } from '../ui/icon-circle';
-import { LangCircle, LangSwitch } from '../ui/lang-switch';
+import { LangSwitch } from '../ui/lang-switch';
 import { PillLink } from '../ui/pill-button';
 import { NextPrayerInline } from '../ui/next-prayer';
 import { TabBar } from './tab-bar';
@@ -226,7 +226,6 @@ export function Header({ locale }: { locale: Locale }) {
           </nav>
 
           <div className="site-header-tools">
-            <LangCircle className="header-lang-m" />
             <IconCircle
               className="header-search"
               aria-label={tActions('openSearch')}

@@ -44,7 +44,8 @@
     "greeting": "Salām ʿalaikum",
     "back": "Zurück",
     "tabQuran": "Quran",
-    "settings": "Einstellungen"
+    "settings": "Einstellungen",
+    "calendar": "Kalender"
   },
   "actions": {
     "readMore": "Mehr erfahren",
@@ -1016,6 +1017,20 @@
     "adhanNote": "Den Adhan spielt die Android-App des Hauses, nach Wiener Zeit. Im Browser werden diese Einstellungen nur auf diesem Gerät gespeichert.",
     "setDisplay": "Anzeige",
     "adhanNoteApp": "Der Adhan erklingt nach Wiener Zeit. Für Benachrichtigungen und den Alarm auf die Minute öffne die Adhan-Einstellungen der App.",
-    "adhanInApp": "Adhan-Einstellungen der App"
+    "adhanInApp": "Adhan-Einstellungen der App",
+    "calendarTitle": "Kalender",
+    "calendarLead": "Islamische Gedenktage, iranische und österreichische Feiertage und unsere Termine — in einem Monat.",
+    "calAll": "Alle",
+    "calIslamic": "Islamisch",
+    "calIran": "Iran",
+    "calEurope": "Österreich",
+    "calEvents": "Unsere Termine",
+    "calThisMonth": "In diesem Monat",
+    "calNothingMonth": "In diesem Monat ist dafür nichts eingetragen.",
+    "calToday": "Heute",
+    "calDayOff": "arbeitsfrei",
+    "calOpenCalendar": "Kalender öffnen",
+    "calSmallNumber": "Kleine Zahl: Tag im Hidschri-Monat",
+    "calOffLegend": "Rot: arbeitsfrei in Österreich oder im Iran"
   }
 }

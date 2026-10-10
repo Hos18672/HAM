@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import {
+  CalendarDots,
   CaretRight,
   Compass,
   GearSix,
@@ -41,12 +42,14 @@ export async function generateMetadata({
 }
 
 const TILES = [
+  { href: '/calendar', key: 'calendar', icon: CalendarDots },
   { href: '/duas', key: 'duas', icon: HandsPraying },
   { href: '/qibla', key: 'qibla', icon: Compass },
   { href: '/activities', key: 'activities', icon: UsersThree },
   { href: '/gallery', key: 'gallery', icon: Images },
   { href: '/community', key: 'community', icon: Handshake },
   { href: '/support', key: 'support', icon: HandHeart },
+  { href: '/contact', key: 'contact', icon: MapPin },
 ] as const;
 
 const GROUPS = [
@@ -57,7 +60,6 @@ const GROUPS = [
       { href: '/courses', key: 'courses', icon: ChalkboardTeacher },
       { href: '/culture', key: 'culture', icon: MaskHappy },
       { href: '/sport', key: 'sport', icon: SoccerBall },
-      { href: '/contact', key: 'contact', icon: MapPin },
     ],
   },
   {
@@ -71,7 +73,7 @@ const GROUPS = [
 
 /**
  * "More", the bottom navigation's last tab: every page that is not a tab, as
- * six tiles for the ones used most and grouped lists for the rest, with the
+ * eight tiles for the ones used most and grouped lists for the rest, with the
  * app's own settings between them.
  */
 export default async function MorePage({ params }: { params: Promise<{ locale: string }> }) {
@@ -117,7 +119,7 @@ export default async function MorePage({ params }: { params: Promise<{ locale: s
                 <span className="a-ico">
                   <Icon size={24} weight="duotone" aria-hidden="true" />
                 </span>
-                {t(tile.key)}
+                <span>{t(tile.key)}</span>
               </Link>
             </li>
           );

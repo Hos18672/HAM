@@ -19,7 +19,6 @@ import { JsonLd, eventJsonLd } from '@/lib/seo';
 import { pageMetadata } from '@/lib/page-meta';
 import { locales } from '@/lib/i18n/config';
 import { FACTS } from '@/lib/site-facts';
-import { getOccasions } from '@/lib/db/queries/content';
 import { viennaIso } from '@/lib/prayer-page';
 import { EventsMobile } from '@/components/app/events-mobile';
 
@@ -36,15 +35,8 @@ export async function generateMetadata({
   return pageMetadata('events', locale, '/events');
 }
 
-export default async function EventsPage({
-  params,
-  searchParams,
-}: {
-  params: Promise<{ locale: string }>;
-  searchParams: Promise<{ view?: string }>;
-}) {
+export default async function EventsPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
-  const { view } = await searchParams;
   const typed = requireLocale(locale);
 
   const [header, upcoming, past, featured, settings] = await Promise.all([
@@ -56,7 +48,6 @@ export default async function EventsPage({
     getSettings(),
   ]);
   if (!header) notFound();
-  const occasions = await getOccasions(typed);
 
   const t = await getTranslations({ locale, namespace: 'events' });
   const showFeatured = settings.showOpeningEvent && featured;
@@ -78,14 +69,12 @@ export default async function EventsPage({
         <JsonLd key={event.id} data={eventJsonLd(event, typed, settings)} />
       ))}
 
-      {/* Phones and the app: the design's events screen, list or month. */}
+      {/* Phones and the app: the design's events screen. */}
       <div className="m-view">
         <EventsMobile
           events={upcoming}
           featured={showFeatured ? featured : null}
-          occasions={occasions}
           todayIso={viennaIso(new Date())}
-          initialView={view === 'calendar' ? 'calendar' : 'list'}
           locale={typed}
         />
       </div>

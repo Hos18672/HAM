@@ -15,6 +15,7 @@ export const NAV: NavEntry[] = [
   { href: '/activities', key: 'activities' },
   { href: '/courses', key: 'courses' },
   { href: '/events', key: 'events' },
+  { href: '/calendar', key: 'calendar' },
   { href: '/prayer', key: 'prayer' },
   { href: '/culture', key: 'culture' },
   { href: '/sport', key: 'sport' },

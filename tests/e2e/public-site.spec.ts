@@ -276,4 +276,41 @@ test.describe('phone width', () => {
     await page.getByRole('button', { name: 'Zurück' }).click();
     await expect(page).toHaveURL(/\/de\/more$/);
   });
+
+  test('the calendar has a page of its own, with Iran and Austria in it', async ({ page }) => {
+    await page.goto('/de/more');
+    await page.getByRole('link', { name: 'Kalender' }).click();
+    await expect(page).toHaveURL(/\/de\/calendar$/);
+    // October 2026 is reached from any month: the Day of Hafez (Iran) and
+    // Austria's National Day, a day off, are both in it.
+    const title = page.locator('.a-month [role="grid"]');
+    const target = 'Oktober 2026';
+    const [y, m] = new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'Europe/Vienna',
+      year: 'numeric',
+      month: '2-digit',
+    })
+      .format(new Date())
+      .split('-')
+      .map(Number) as [number, number];
+    const steps = (2026 - y) * 12 + (10 - m);
+    const button = page.getByRole('button', {
+      name: steps > 0 ? 'Nächster Monat' : 'Vorheriger Monat',
+    });
+    for (let i = 0; i < Math.abs(steps); i += 1) await button.click();
+    await expect(title).toHaveAttribute('aria-label', target);
+    const month = page.locator('.cal-m-list');
+    await expect(month.getByText('Tag des Hafis')).toBeVisible();
+    await expect(month.getByText('Nationalfeiertag')).toBeVisible();
+
+    // The chip narrows the month to one kind.
+    await page.getByRole('button', { name: 'Iran' }).click();
+    await expect(month.getByText('Nationalfeiertag')).toBeHidden();
+    await expect(month.getByText('Tag des Hafis')).toBeVisible();
+  });
+
+  test('the prayer page on a phone keeps to prayer', async ({ page }) => {
+    await page.goto('/de/prayer');
+    await expect(page.locator('.prayer-cal')).toBeHidden();
+  });
 });

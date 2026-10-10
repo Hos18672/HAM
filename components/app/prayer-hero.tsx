@@ -71,9 +71,10 @@ export function PrayerHero({ day: initial, locale }: { day: PrayerDay; locale: L
           <span className="a-dark-dim" style={{ fontSize: 14 }}>
             {t('nextPrayer')}
           </span>
-          <span className="a-hero-name">
-            {next ? `${tApp(`short.${next.key}`)} · ${formatClock(next.minutes, locale)}` : '—'}
-          </span>
+          {/* Name and time as two lines on purpose: as one, a narrow phone
+              broke it anywhere, and the middot was left hanging. */}
+          <span className="a-hero-name">{next ? tApp(`short.${next.key}`) : '—'}</span>
+          {next ? <span className="a-hero-time">{formatClock(next.minutes, locale)}</span> : null}
           <span className="a-gold-text" style={{ fontSize: 13.5 }}>
             {next?.tomorrow ? `${t('tomorrow')} · ` : ''}
             {left}

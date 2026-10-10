@@ -17,6 +17,10 @@
   --a-on-dark: #f7f3e8;
   --a-on-dark-dim: rgba(247, 243, 232, 0.82);
   --a-dark: #073b29;
+  /* The floating bars: a lighter sheet than the paper under them, edged in
+     gold, so they read as a layer of their own. */
+  --a-bar: rgba(255, 253, 247, 0.94);
+  --a-bar-edge: rgba(176, 140, 72, 0.32);
   --a-r-sm: 14px;
   --a-r-md: 20px;
   --a-r-lg: 24px;
@@ -28,22 +32,36 @@
   --a-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
   --a-ease-spring: cubic-bezier(0.34, 1.4, 0.64, 1);
   --a-ease-sheet: cubic-bezier(0.32, 0.72, 0, 1);
-  /* The brand lattice: gold diagonals at 24px over faint squares at 17px. */
+  /* The brand lattice: gold diagonals at 28px, kept faint and soft-edged
+     (each line fades over 1.5px rather than stopping) so it is a texture
+     under the text, not a grid over it. A soft glow of the card's own colour
+     sits on top of it where the text is. */
   --a-lattice-dark:
-    repeating-linear-gradient(45deg, rgba(200, 164, 93, 0.16) 0 1px, transparent 1px 24px),
-    repeating-linear-gradient(-45deg, rgba(200, 164, 93, 0.16) 0 1px, transparent 1px 24px),
-    repeating-linear-gradient(0deg, rgba(247, 243, 232, 0.05) 0 1px, transparent 1px 17px),
-    repeating-linear-gradient(90deg, rgba(247, 243, 232, 0.05) 0 1px, transparent 1px 17px);
+    radial-gradient(ellipse 80% 70% at 35% 40%, rgba(7, 59, 41, 0.7), rgba(7, 59, 41, 0) 75%),
+    repeating-linear-gradient(
+      45deg,
+      rgba(200, 164, 93, 0.07) 0 0.5px,
+      rgba(200, 164, 93, 0) 2px 28px
+    ),
+    repeating-linear-gradient(
+      -45deg,
+      rgba(200, 164, 93, 0.07) 0 0.5px,
+      rgba(200, 164, 93, 0) 2px 28px
+    );
   --a-lattice-light:
-    repeating-linear-gradient(45deg, rgba(11, 93, 59, 0.07) 0 1px, transparent 1px 24px),
-    repeating-linear-gradient(-45deg, rgba(11, 93, 59, 0.07) 0 1px, transparent 1px 24px),
-    repeating-linear-gradient(0deg, rgba(11, 93, 59, 0.035) 0 1px, transparent 1px 17px),
-    repeating-linear-gradient(90deg, rgba(11, 93, 59, 0.035) 0 1px, transparent 1px 17px);
+    repeating-linear-gradient(45deg, rgba(11, 93, 59, 0.035) 0 0.5px, rgba(11, 93, 59, 0) 2px 28px),
+    repeating-linear-gradient(-45deg, rgba(11, 93, 59, 0.035) 0 0.5px, rgba(11, 93, 59, 0) 2px 28px);
   --a-lattice-sand:
-    repeating-linear-gradient(45deg, rgba(134, 105, 44, 0.14) 0 1px, transparent 1px 24px),
-    repeating-linear-gradient(-45deg, rgba(134, 105, 44, 0.14) 0 1px, transparent 1px 24px),
-    repeating-linear-gradient(0deg, rgba(134, 105, 44, 0.06) 0 1px, transparent 1px 17px),
-    repeating-linear-gradient(90deg, rgba(134, 105, 44, 0.06) 0 1px, transparent 1px 17px);
+    repeating-linear-gradient(
+      45deg,
+      rgba(134, 105, 44, 0.06) 0 0.5px,
+      rgba(134, 105, 44, 0) 2px 28px
+    ),
+    repeating-linear-gradient(
+      -45deg,
+      rgba(134, 105, 44, 0.06) 0 0.5px,
+      rgba(134, 105, 44, 0) 2px 28px
+    );
 }
 :root[data-theme='dark'] {
   --a-chip: rgba(220, 187, 123, 0.12);
@@ -53,13 +71,35 @@
   --a-track: #2c4a3e;
   --a-muted: #9fb6a8;
   --a-dark: #04180f;
+  --a-bar: rgba(18, 64, 48, 0.94);
+  --a-bar-edge: rgba(220, 187, 123, 0.24);
   --a-shadow-card: 0 2px 12px rgba(0, 0, 0, 0.28);
   --a-shadow-float: 0 10px 30px rgba(0, 0, 0, 0.45);
   --a-shadow-btn: 0 8px 20px rgba(0, 0, 0, 0.4);
   --a-shadow-bar: 0 6px 20px rgba(0, 0, 0, 0.35);
+  --a-lattice-dark:
+    radial-gradient(ellipse 80% 70% at 35% 40%, rgba(4, 24, 15, 0.7), rgba(4, 24, 15, 0) 75%),
+    repeating-linear-gradient(
+      45deg,
+      rgba(200, 164, 93, 0.06) 0 0.5px,
+      rgba(200, 164, 93, 0) 2px 28px
+    ),
+    repeating-linear-gradient(
+      -45deg,
+      rgba(200, 164, 93, 0.06) 0 0.5px,
+      rgba(200, 164, 93, 0) 2px 28px
+    );
   --a-lattice-light:
-    repeating-linear-gradient(45deg, rgba(220, 187, 123, 0.08) 0 1px, transparent 1px 24px),
-    repeating-linear-gradient(-45deg, rgba(220, 187, 123, 0.08) 0 1px, transparent 1px 24px);
+    repeating-linear-gradient(
+      45deg,
+      rgba(220, 187, 123, 0.04) 0 0.5px,
+      rgba(220, 187, 123, 0) 2px 28px
+    ),
+    repeating-linear-gradient(
+      -45deg,
+      rgba(220, 187, 123, 0.04) 0 0.5px,
+      rgba(220, 187, 123, 0) 2px 28px
+    );
   --a-lattice-sand: var(--a-lattice-light);
 }
 
@@ -140,10 +180,12 @@
   }
   :root .site-header-bar {
     block-size: 60px;
-    background: var(--glass);
+    background: var(--a-bar);
     -webkit-backdrop-filter: blur(14px);
     backdrop-filter: blur(14px);
-    box-shadow: var(--a-shadow-bar);
+    box-shadow:
+      inset 0 0 0 1px var(--a-bar-edge),
+      var(--a-shadow-bar);
   }
   :root .site-header .icon-circle {
     inline-size: 44px;
@@ -151,7 +193,10 @@
     background: var(--a-chip);
   }
   :root .tab-bar {
-    background: var(--glass);
+    background: var(--a-bar);
+    box-shadow:
+      inset 0 0 0 1px var(--a-bar-edge),
+      var(--a-shadow-bar);
     -webkit-backdrop-filter: blur(14px);
     backdrop-filter: blur(14px);
   }
@@ -666,25 +711,43 @@ a.a-dark {
 /* ══ More ══════════════════════════════════════════════════════════════════ */
 .more-tiles {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
   margin: 0;
   padding: 0;
   list-style: none;
 }
-.more-tile {
+.more-tiles > li {
   display: grid;
-  justify-items: center;
+}
+/* Icon and label side by side, two to a row: a long German word such as
+   "Gemeinschaft" has the room it needs, and a larger system font wraps the
+   label inside its tile instead of running out of it. */
+.more-tile {
+  display: flex;
+  align-items: center;
   gap: 8px;
-  padding: 16px 8px 12px;
-  border-radius: 22px;
+  min-block-size: 64px;
+  padding: 10px;
+  border-radius: 20px;
   background: var(--a-card);
   box-shadow: var(--a-shadow-card);
   color: var(--head);
-  font-size: 13.5px;
-  font-weight: 600;
-  text-align: center;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.25;
   text-decoration: none;
+  overflow-wrap: break-word;
+  hyphens: auto;
+}
+.more-tile .a-ico {
+  flex: none;
+  inline-size: 38px;
+  block-size: 38px;
+  border-radius: 13px;
+}
+.more-tile > span:last-child {
+  min-inline-size: 0;
 }
 .more-page {
   max-inline-size: 640px;
@@ -729,9 +792,16 @@ a.a-hero {
   gap: 16px;
 }
 .a-hero-name {
+  font-size: 26px;
+  font-weight: 800;
+  line-height: 1.25;
+}
+.a-hero-time {
   font-size: 30px;
   font-weight: 800;
-  line-height: 1.3;
+  line-height: 1.15;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 .a-ring {
   display: grid;
@@ -754,17 +824,21 @@ a.a-hero {
   font-weight: 800;
   font-variant-numeric: tabular-nums;
 }
+/* The day's six times: three to a row, name above time, each in its own
+   cell. Six in one row left about 50px a time, and with Persian digits or a
+   phone's larger font setting the times ran into one another. */
 .a-six {
   display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
-  gap: 4px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
   text-align: center;
 }
 .a-six-cell {
   display: grid;
-  gap: 2px;
-  padding: 8px 0;
+  gap: 3px;
+  padding: 8px 4px;
   border-radius: var(--a-r-sm);
+  background: rgba(247, 243, 232, 0.07);
   color: var(--a-on-dark);
 }
 .a-six-cell[data-past] {
@@ -775,13 +849,17 @@ a.a-hero {
   color: #073b29;
 }
 .a-six-name {
-  font-size: 11.5px;
+  font-size: 12.5px;
+  line-height: 1.3;
   opacity: 0.9;
 }
 .a-six-time {
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 700;
+  line-height: 1.2;
   font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
 }
 
 .a-quick {
@@ -1335,6 +1413,185 @@ a.a-hero {
 }
 .a-day[data-today][aria-pressed='true'] {
   box-shadow: 0 0 0 2px var(--gold);
+}
+
+/* ── The calendar page ───────────────────────────────────────────────── */
+.cal-page {
+  max-inline-size: 640px;
+  margin-inline: auto;
+  padding-block: 8px 24px;
+}
+/* The top bar names the page on a phone; a wide screen has no top bar
+   title, so there the heading shows. */
+.cal-m-title {
+  margin: 0;
+  padding-inline: 4px;
+  font-size: 34px;
+  font-weight: 800;
+  color: var(--head);
+}
+@media (min-width: 1024px) {
+  .cal-page {
+    padding-block: 40px 64px;
+  }
+}
+@media (max-width: 1023.98px) {
+  .cal-m-title {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+}
+/* What a day holds, by kind: a dot on the grid, in the chips and the lists. */
+.cal-m-dot {
+  display: inline-block;
+  flex: none;
+  inline-size: 8px;
+  block-size: 8px;
+  border-radius: 50%;
+  background: var(--gold);
+}
+.cal-m-dot[data-kind='ir'] {
+  background: #2f8f5b;
+}
+.cal-m-dot[data-kind='at'] {
+  background: #c8463c;
+}
+.cal-m-dot[data-kind='events'] {
+  background: #3d6fb4;
+}
+.a-chip .cal-m-dot {
+  margin-inline-end: 6px;
+}
+.a-day-dots > .cal-m-dot {
+  inline-size: 5px;
+  block-size: 5px;
+}
+/* A day off in Austria or Iran: its number in the holiday red. */
+.a-day[data-off] .a-day-n {
+  color: var(--holiday);
+  font-weight: 800;
+}
+.cal-m-legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 4px 12px;
+  margin: 0;
+  padding: 2px 6px 0;
+  font-size: 11.5px;
+  color: var(--a-muted);
+}
+.cal-m-legend-off {
+  color: var(--holiday);
+}
+.cal-m-day {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 16px;
+}
+.cal-m-alt {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--goldInk);
+}
+.cal-m-day-list {
+  display: grid;
+  gap: 6px;
+  margin: 6px 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--ink);
+}
+.cal-m-day-list > li {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+.cal-m-day-list strong {
+  color: var(--head);
+}
+.cal-m-day-list .cal-tag {
+  display: inline-block;
+  margin-inline-start: 6px;
+  padding: 0 7px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 600;
+  white-space: nowrap;
+  color: var(--ink2);
+}
+.cal-m-day-list .cal-tag[data-off='true'] {
+  border-color: currentColor;
+  color: var(--holiday);
+}
+.cal-m-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.cal-m-row {
+  inline-size: 100%;
+  align-items: flex-start;
+  border: 0;
+  background: none;
+  font: inherit;
+  text-align: start;
+  color: var(--ink);
+  cursor: pointer;
+}
+.cal-m-row[aria-pressed='true'] {
+  background: var(--a-chip);
+}
+.cal-m-date {
+  display: grid;
+  flex: none;
+  justify-items: center;
+  inline-size: 44px;
+  line-height: 1.15;
+}
+.cal-m-date > span:first-child {
+  font-size: 19px;
+  font-weight: 800;
+  color: var(--head);
+}
+.cal-m-date > span:last-child {
+  font-size: 11.5px;
+  color: var(--a-muted);
+}
+.cal-m-date[data-off] > span:first-child {
+  color: var(--holiday);
+}
+.cal-m-entry {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 14.5px;
+  line-height: 1.4;
+}
+.cal-m-off {
+  font-size: 12.5px;
+  color: var(--holiday);
+}
+.ev-cal-link {
+  gap: 12px;
+  padding: 10px 14px 10px 10px;
+  color: var(--head);
+  text-decoration: none;
+}
+/* The prayer page on a phone keeps to prayer: the month's calendar has its
+   own page now, and only the month's timetable stays. */
+@media (max-width: 1023.98px) {
+  .prayer-cal {
+    display: none;
+  }
 }
 
 /* The event page. */

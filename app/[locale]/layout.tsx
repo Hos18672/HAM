@@ -112,13 +112,25 @@ export default async function LocaleLayout({
           hosts. In production it agrees with what the server already wrote
           and changes nothing; on the preview it is the only thing that
           knows. `<html>` carries suppressHydrationWarning for this.
+
+          With no choice made yet, a phone or the app follows the phone's own
+          light or dark setting, and keeps following it while it changes —
+          until the reader picks one in Settings or on "More". A wide screen
+          keeps the site's default, as it always has.
         */}
         <script
           dangerouslySetInnerHTML={{
             __html:
               '(function(){try{' +
               `var m=document.cookie.match(/(?:^|; )${THEME_COOKIE}=(dark|light)/);` +
-              'if(m)document.documentElement.dataset.theme=m[1];' +
+              'var r=document.documentElement;' +
+              'if(m){r.dataset.theme=m[1];}' +
+              'else if(matchMedia("(max-width: 1023.98px)").matches){' +
+              'var q=matchMedia("(prefers-color-scheme: dark)");' +
+              'var f=function(){if(!/(?:^|; )' +
+              THEME_COOKIE +
+              '=/.test(document.cookie))r.dataset.theme=q.matches?"dark":"light";};' +
+              'f();q.addEventListener("change",f);}' +
               '}catch(e){}})()',
           }}
         />

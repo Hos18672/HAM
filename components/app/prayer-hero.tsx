@@ -49,11 +49,11 @@ export function PrayerHero({ day: initial, locale }: { day: PrayerDay; locale: L
   return (
     <Link href="/prayer" className="a-dark a-hero a-rise" aria-live="off">
       <span className="a-hero-top">
-        <span>
+        <span className="a-hero-date">
           {formatDay(locale, date, 'weekday')} · {formatHijri(date, locale, day.place.timeZone)}
         </span>
         <span className="a-hero-where">
-          <MapPin size={15} weight="duotone" aria-hidden="true" />
+          <MapPin size={14} weight="duotone" aria-hidden="true" />
           {where}
         </span>
       </span>
@@ -67,15 +67,15 @@ export function PrayerHero({ day: initial, locale }: { day: PrayerDay; locale: L
             {remaining === null ? '' : shortLeft(remaining, locale)}
           </span>
         </span>
-        <span className="a-stack">
-          <span className="a-dark-dim" style={{ fontSize: 14 }}>
-            {t('nextPrayer')}
+        <span className="a-stack a-hero-next">
+          <span className="a-hero-label">{t('nextPrayer')}</span>
+          {/* Name and time on one line that may wrap between them, never
+              inside either. */}
+          <span className="a-hero-line">
+            <span className="a-hero-name">{next ? tApp(`short.${next.key}`) : '—'}</span>
+            {next ? <span className="a-hero-time">{formatClock(next.minutes, locale)}</span> : null}
           </span>
-          {/* Name and time as two lines on purpose: as one, a narrow phone
-              broke it anywhere, and the middot was left hanging. */}
-          <span className="a-hero-name">{next ? tApp(`short.${next.key}`) : '—'}</span>
-          {next ? <span className="a-hero-time">{formatClock(next.minutes, locale)}</span> : null}
-          <span className="a-gold-text" style={{ fontSize: 13.5 }}>
+          <span className="a-hero-left">
             {next?.tomorrow ? `${t('tomorrow')} · ` : ''}
             {left}
           </span>

@@ -6,6 +6,7 @@ import { requireLocale } from '@/lib/i18n/locale-param';
 import { locales, localeDirection } from '@/lib/i18n/config';
 import { readTheme } from '@/lib/preferences';
 import { THEME_COOKIE } from '@/components/site/theme';
+import { ThemeKeeper } from '@/components/site/theme-keeper';
 import { getSettings } from '@/lib/db/queries/content';
 import { PrintPlates } from '@/components/site/print-plates';
 import { PatternDefs } from '@/components/site/ornaments';
@@ -194,6 +195,7 @@ export default async function LocaleLayout({
       </head>
       <body>
         <NextIntlClientProvider>
+          <ThemeKeeper />
           <PrintPlates />
           <PatternDefs />
           {children}

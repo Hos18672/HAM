@@ -983,6 +983,18 @@
     "methodChip": "روش: جعفری",
     "adhanOn": "روشن کردن اذان {prayer}",
     "adhanOff": "خاموش کردن اذان {prayer}",
-    "monthCalendar": "تقویم ماهانه"
+    "monthCalendar": "تقویم ماهانه",
+    "viewAs": "نمایش",
+    "viewList": "فهرست",
+    "viewCalendar": "تقویم",
+    "featured": "ویژه",
+    "today": "امروز",
+    "tomorrow": "فردا",
+    "inDays": "{n} روز دیگر",
+    "going": "شرکت می‌کنم",
+    "goingAsk": "شرکت می‌کنم؟",
+    "dayEmpty": "برای این روز برنامه‌ای نیست.",
+    "directions": "مسیریابی",
+    "share": "اشتراک‌گذاری"
   }
 }

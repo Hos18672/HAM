@@ -19,6 +19,9 @@ import { JsonLd, eventJsonLd } from '@/lib/seo';
 import { pageMetadata } from '@/lib/page-meta';
 import { locales } from '@/lib/i18n/config';
 import { FACTS } from '@/lib/site-facts';
+import { getOccasions } from '@/lib/db/queries/content';
+import { viennaIso } from '@/lib/prayer-page';
+import { EventsMobile } from '@/components/app/events-mobile';
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -33,8 +36,15 @@ export async function generateMetadata({
   return pageMetadata('events', locale, '/events');
 }
 
-export default async function EventsPage({ params }: { params: Promise<{ locale: string }> }) {
+export default async function EventsPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ locale: string }>;
+  searchParams: Promise<{ view?: string }>;
+}) {
   const { locale } = await params;
+  const { view } = await searchParams;
   const typed = requireLocale(locale);
 
   const [header, upcoming, past, featured, settings] = await Promise.all([
@@ -46,6 +56,7 @@ export default async function EventsPage({ params }: { params: Promise<{ locale:
     getSettings(),
   ]);
   if (!header) notFound();
+  const occasions = await getOccasions(typed);
 
   const t = await getTranslations({ locale, namespace: 'events' });
   const showFeatured = settings.showOpeningEvent && featured;
@@ -67,56 +78,70 @@ export default async function EventsPage({ params }: { params: Promise<{ locale:
         <JsonLd key={event.id} data={eventJsonLd(event, typed, settings)} />
       ))}
 
-      <PageHead header={header} locale={typed} />
+      {/* Phones and the app: the design's events screen, list or month. */}
+      <div className="m-view">
+        <EventsMobile
+          events={upcoming}
+          featured={showFeatured ? featured : null}
+          occasions={occasions}
+          todayIso={viennaIso(new Date())}
+          initialView={view === 'calendar' ? 'calendar' : 'list'}
+          locale={typed}
+        />
+      </div>
 
-      {/* The design leads this page with the opening, not with the list. */}
-      {showFeatured ? (
-        <section className="section" data-rise>
+      <div className="d-view">
+        <PageHead header={header} locale={typed} />
+
+        {/* The design leads this page with the opening, not with the list. */}
+        {showFeatured ? (
+          <section className="section" data-rise>
+            <div className="page">
+              <FeaturedEvent
+                event={featured}
+                locale={typed}
+                address={settings.address || FACTS.street}
+              />
+            </div>
+          </section>
+        ) : null}
+
+        <section className="section">
           <div className="page">
-            <FeaturedEvent
-              event={featured}
-              locale={typed}
-              address={settings.address || FACTS.street}
-            />
+            <SectionHead title={t('upcoming')} />
+            {list.length === 0 ? (
+              <p style={{ color: 'var(--color-ink-muted)' }}>{t('none')}</p>
+            ) : (
+              <FilterableList
+                items={rows}
+                label={t('filterByCategory')}
+                labelNamespace="events"
+                emptyMessage={t('none')}
+                className="event-list"
+              />
+            )}
+            <div style={{ marginBlockStart: 'var(--space-5)' }}>
+              <EditableAdd entity="event" />
+            </div>
+
+            {/* The archive, folded away: it is there to be found, not read. */}
+            {past.length > 0 ? (
+              <details className="event-archive">
+                <summary>{t('pastCount', { count: digits(past.length, typed) })}</summary>
+                <ul className="event-list">
+                  {past.map((event) => (
+                    <li key={event.id}>
+                      <EditableEntry entity="event" id={event.id} isLast={false}>
+                        <EventRow event={event} locale={typed} past />
+                      </EditableEntry>
+                    </li>
+                  ))}
+                </ul>
+              </details>
+            ) : null}
           </div>
         </section>
-      ) : null}
-
-      <section className="section">
-        <div className="page">
-          <SectionHead title={t('upcoming')} />
-          {list.length === 0 ? (
-            <p style={{ color: 'var(--color-ink-muted)' }}>{t('none')}</p>
-          ) : (
-            <FilterableList
-              items={rows}
-              label={t('filterByCategory')}
-              labelNamespace="events"
-              emptyMessage={t('none')}
-              className="event-list"
-            />
-          )}
-          <div style={{ marginBlockStart: 'var(--space-5)' }}>
-            <EditableAdd entity="event" />
-          </div>
-
-          {/* The archive, folded away: it is there to be found, not read. */}
-          {past.length > 0 ? (
-            <details className="event-archive">
-              <summary>{t('pastCount', { count: digits(past.length, typed) })}</summary>
-              <ul className="event-list">
-                {past.map((event) => (
-                  <li key={event.id}>
-                    <EditableEntry entity="event" id={event.id} isLast={false}>
-                      <EventRow event={event} locale={typed} past />
-                    </EditableEntry>
-                  </li>
-                ))}
-              </ul>
-            </details>
-          ) : null}
-        </div>
-      </section>
+      </div>
     </>
   );
 }

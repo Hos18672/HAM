@@ -983,6 +983,18 @@
     "methodChip": "Methode: Dschaʿfari",
     "adhanOn": "Adhan für {prayer} einschalten",
     "adhanOff": "Adhan für {prayer} ausschalten",
-    "monthCalendar": "Monatskalender"
+    "monthCalendar": "Monatskalender",
+    "viewAs": "Ansicht",
+    "viewList": "Liste",
+    "viewCalendar": "Kalender",
+    "featured": "Hervorgehoben",
+    "today": "Heute",
+    "tomorrow": "Morgen",
+    "inDays": "in {n} Tagen",
+    "going": "Ich komme",
+    "goingAsk": "Ich komme?",
+    "dayEmpty": "An diesem Tag ist nichts geplant.",
+    "directions": "Route",
+    "share": "Teilen"
   }
 }

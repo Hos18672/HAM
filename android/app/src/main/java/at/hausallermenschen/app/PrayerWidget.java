@@ -30,6 +30,8 @@ public class PrayerWidget extends AppWidgetProvider {
 
     @Override
     public void onUpdate(Context context, AppWidgetManager manager, int[] ids) {
+        // The widget's own refresh is also the moment to make sure the adhan's alarm is set.
+        Adhan.schedule(context);
         render(context, manager, ids);
     }
 

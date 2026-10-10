@@ -43,4 +43,13 @@
         <item>شنبه</item>
         <item>یک</item>
     </string-array>
+    <string name="adhan_channel">اذان</string>
+    <string name="adhan_channel_desc">اعلان وقت نماز، با صدای هشدار</string>
+    <string name="adhan_title">اذان %1$s · %2$s</string>
+    <string name="adhan_text">وقت نماز %1$s در وین فرا رسید</string>
+    <string name="adhan_stop">قطع اذان</string>
+    <string name="adhan_settings">اذان</string>
+    <string name="adhan_note">اذان به وقت وین و با روش جعفری، همان اوقات صفحهٔ اوقات شرعی. صدای آن صدای هشدار گوشی است.</string>
+    <string name="adhan_exact">اجازهٔ زنگ در دقیقهٔ دقیق</string>
+    <string name="adhan_allow">اجازهٔ اعلان‌ها</string>
 </resources>

@@ -43,4 +43,13 @@
         <item>Sa</item>
         <item>So</item>
     </string-array>
+    <string name="adhan_channel">Adhan</string>
+    <string name="adhan_channel_desc">Erinnerung zur Gebetszeit, mit Weckton</string>
+    <string name="adhan_title">Adhan %1$s · %2$s</string>
+    <string name="adhan_text">Es ist Zeit für %1$s in Wien</string>
+    <string name="adhan_stop">Stopp</string>
+    <string name="adhan_settings">Adhan</string>
+    <string name="adhan_note">Der Adhan nach Wiener Zeit und der dschaʿfaritischen Methode, wie auf der Gebetsseite. Er klingt mit dem Weckton des Telefons.</string>
+    <string name="adhan_exact">Auf die Minute genau erlauben</string>
+    <string name="adhan_allow">Benachrichtigungen erlauben</string>
 </resources>

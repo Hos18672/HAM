@@ -11,4 +11,11 @@
     <color name="widget_on_accent">#F7F3E8</color>
     <color name="bar">#F3F2F2</color>
     <color name="ic_launcher_background">#F7F3E8</color>
+    <!-- The adhan settings screen. -->
+    <color name="app_paper">#F7F3E8</color>
+    <color name="app_card">#FFFFFF</color>
+    <color name="app_ink">#14261D</color>
+    <color name="app_head">#0B5D3B</color>
+    <color name="app_on_head">#F7F3E8</color>
+    <color name="app_muted">#5C5548</color>
 </resources>

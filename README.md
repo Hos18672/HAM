@@ -266,6 +266,14 @@ The site installs as an app (web manifest + `public/sw.js`). Installed, it offer
   fits; from the feed, kept for offline). In the phone's dark mode the widgets
   take the site's deep green and gold. A fa/de pill on each widget switches all of
   them between Persian and German; without it they follow the phone.
+  **The adhan** is the app's own too: an alarm for the next chosen prayer (Vienna's
+  times, the same calculation), a notification with "stop" and "qibla", re-armed
+  after a reboot or a clock change. Its settings screen (`AdhanActivity`) opens from
+  the site's /settings and the bells on the prayer page through `hamapp://adhan`;
+  it asks for notifications and, on Android 12+, for alarms at the exact minute.
+  On a phone the site itself is laid out as the app design: a top bar, five tabs
+  and a "More" page under 1024px, desktop unchanged (`app/app-shell.css`,
+  `components/app/`).
   The **Android app** workflow builds it on every push and attaches the APK to
   the run. With the four `ANDROID_KEY*` secrets it also builds a signed release
   and an `.aab` for Google Play, and prints the key's SHA-256: put that in

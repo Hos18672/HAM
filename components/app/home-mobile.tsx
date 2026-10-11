@@ -70,7 +70,7 @@ export async function HomeMobile({
           <Link href="/events">{tApp('all')}</Link>
         </h2>
         {events.length === 0 ? (
-          <p className="a-sub" style={{ fontSize: 14 }}>
+          <p className="a-sub" style={{ fontSize: 'calc(14px * var(--a-fs))' }}>
             {tEvents('none')}
           </p>
         ) : (
@@ -91,10 +91,10 @@ export async function HomeMobile({
                       </span>
                     </EventCover>
                     <span className="a-stack" style={{ padding: '12px 14px 14px' }}>
-                      <span className="a-title" style={{ fontSize: 15.5 }}>
+                      <span className="a-title" style={{ fontSize: 'calc(15.5px * var(--a-fs))' }}>
                         {event.title}
                       </span>
-                      <span className="a-sub" style={{ fontSize: 13 }}>
+                      <span className="a-sub" style={{ fontSize: 'calc(13px * var(--a-fs))' }}>
                         {formatDay(locale, event.startsAt, 'weekday').split(/[ ,]/)[0]} ·{' '}
                         {formatTime(event.startsAt, locale)}
                       </span>

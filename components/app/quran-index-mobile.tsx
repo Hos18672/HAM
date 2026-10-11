@@ -100,7 +100,7 @@ export function QuranIndexMobile({
                     <span>{digits(surah.number, locale)}</span>
                   </span>
                   <span className="a-stack a-grow">
-                    <span className="a-title" style={{ fontSize: 16.5 }}>
+                    <span className="a-title" style={{ fontSize: 'calc(16.5px * var(--a-fs))' }}>
                       {name(surah.number)}
                     </span>
                     <span className="a-sub">
@@ -140,7 +140,10 @@ export function QuranIndexMobile({
 
       {tab === 'bookmarks' ? (
         bookmarks.length === 0 ? (
-          <p className="a-card a-sub" style={{ padding: 16, fontSize: 14, lineHeight: 1.8 }}>
+          <p
+            className="a-card a-sub"
+            style={{ padding: 16, fontSize: 'calc(14px * var(--a-fs))', lineHeight: 1.8 }}
+          >
             {t('bookmarksEmpty')}
           </p>
         ) : (

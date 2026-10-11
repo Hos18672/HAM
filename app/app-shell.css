@@ -8,6 +8,9 @@
    ═══════════════════════════════════════════════════════════════════════════ */
 
 :root {
+  /* Text scale of the phone views; 1 on a wide screen, so pages that share
+     these blocks with the desktop keep their sizes there. */
+  --a-fs: 1;
   --a-chip: #edf5f0;
   --a-chip2: #d9ebe1;
   --a-sand: #f1ead8;
@@ -166,7 +169,7 @@
   min-inline-size: 0;
   padding-inline-start: 10px;
   overflow: hidden;
-  font-size: 19px;
+  font-size: calc(19px * var(--a-fs));
   font-weight: 800;
   white-space: nowrap;
   text-overflow: ellipsis;
@@ -181,12 +184,12 @@
   display: grid;
   min-inline-size: 0;
   line-height: 1.35;
-  font-size: 13px;
+  font-size: calc(13px * var(--a-fs));
   color: var(--ink2);
 }
 .topbar-name {
   overflow: hidden;
-  font-size: 17px;
+  font-size: calc(17px * var(--a-fs));
   font-weight: 800;
   white-space: nowrap;
   text-overflow: ellipsis;
@@ -253,6 +256,25 @@
 .a-gold-text {
   color: var(--gold);
 }
+/* Phones: all text a step smaller, the app's own sizes through --a-fs and
+   the site's type scale (rem steps, spacing untouched) by the same factor. */
+@media (max-width: 1023.98px) {
+  :root {
+    --a-fs: 0.92;
+    --text-kicker: calc(0.75rem * 0.92);
+    --text-xs: calc(0.8125rem * 0.92);
+    --text-sm: calc(0.9375rem * 0.92);
+    --text-base: calc(clamp(1rem, 0.96rem + 0.2vw, 1.0625rem) * 0.92);
+    --text-lg: calc(clamp(1.0625rem, 1rem + 0.25vw, 1.1875rem) * 0.92);
+    --text-xl: calc(clamp(1.1875rem, 1.1rem + 0.35vw, 1.375rem) * 0.92);
+    --text-2xl: calc(clamp(1.3125rem, 1.15rem + 0.65vw, 1.625rem) * 0.92);
+    --text-3xl: calc(clamp(1.5625rem, 1.3rem + 1vw, 2rem) * 0.92);
+    --text-4xl: calc(clamp(1.875rem, 1.45rem + 1.7vw, 2.625rem) * 0.92);
+    --text-5xl: calc(clamp(2.125rem, 1.5rem + 2.6vw, 3.25rem) * 0.92);
+    --text-6xl: calc(clamp(2.5rem, 1.6rem + 3.6vw, 4.25rem) * 0.92);
+    --text-7xl: calc(clamp(2.875rem, 1.6rem + 5.2vw, 5.5rem) * 0.92);
+  }
+}
 .a-sand {
   border-radius: var(--a-r-lg);
   background-color: var(--a-sand);
@@ -268,12 +290,12 @@
   justify-content: space-between;
   gap: 12px;
   margin: 0;
-  font-size: 18px;
+  font-size: calc(18px * var(--a-fs));
   font-weight: 800;
   color: var(--head);
 }
 .a-head a {
-  font-size: 14px;
+  font-size: calc(14px * var(--a-fs));
   font-weight: 600;
   color: var(--green);
   text-decoration: none;
@@ -281,7 +303,7 @@
 .a-label {
   margin: 0;
   padding-inline: 6px;
-  font-size: 13.5px;
+  font-size: calc(13.5px * var(--a-fs));
   font-weight: 700;
   color: var(--goldInk);
 }
@@ -307,7 +329,7 @@
   line-height: 1.45;
 }
 .a-title {
-  font-size: 16px;
+  font-size: calc(16px * var(--a-fs));
   font-weight: 700;
   color: var(--head);
   /* German compounds ("Nachbarschaftsfrühstück") would otherwise set the
@@ -316,7 +338,7 @@
   hyphens: auto;
 }
 .a-sub {
-  font-size: 12.5px;
+  font-size: calc(12.5px * var(--a-fs));
   color: var(--ink2);
 }
 a.a-card,
@@ -404,7 +426,7 @@ a.a-dark {
   color: var(--btnFg);
   box-shadow: var(--a-shadow-btn);
   font: inherit;
-  font-size: 15px;
+  font-size: calc(15px * var(--a-fs));
   font-weight: 700;
   white-space: nowrap;
   text-decoration: none;
@@ -417,11 +439,11 @@ a.a-dark {
 .a-btn[data-size='40'] {
   block-size: 40px;
   padding-inline: 16px;
-  font-size: 14px;
+  font-size: calc(14px * var(--a-fs));
 }
 .a-btn[data-size='56'] {
   block-size: 56px;
-  font-size: 16.5px;
+  font-size: calc(16.5px * var(--a-fs));
 }
 .a-btn[data-variant='soft'] {
   background: var(--a-chip);
@@ -468,7 +490,7 @@ a.a-dark {
   background: transparent;
   color: var(--head);
   font: inherit;
-  font-size: 15px;
+  font-size: calc(15px * var(--a-fs));
   text-decoration: none;
   white-space: nowrap;
   cursor: pointer;
@@ -518,7 +540,7 @@ a.a-dark {
   color: var(--head);
   box-shadow: 0 2px 10px rgba(7, 59, 41, 0.06);
   font: inherit;
-  font-size: 14px;
+  font-size: calc(14px * var(--a-fs));
   font-weight: 500;
   text-decoration: none;
   white-space: nowrap;
@@ -542,7 +564,7 @@ a.a-dark {
   border-radius: var(--r-pill);
   background: var(--a-chip);
   color: var(--head);
-  font-size: 12.5px;
+  font-size: calc(12.5px * var(--a-fs));
   white-space: nowrap;
 }
 .a-tag[data-size='s'] {
@@ -579,7 +601,7 @@ a.a-dark {
   box-shadow: inset 0 -1px 0 var(--line2);
   color: var(--ink);
   font: inherit;
-  font-size: 15.5px;
+  font-size: calc(15.5px * var(--a-fs));
   text-align: start;
   text-decoration: none;
   cursor: pointer;
@@ -592,7 +614,7 @@ a.a-dark {
   color: var(--green);
 }
 .a-list-row .a-val {
-  font-size: 13.5px;
+  font-size: calc(13.5px * var(--a-fs));
   font-weight: 600;
   color: var(--green);
 }
@@ -639,7 +661,7 @@ a.a-dark {
   flex: none;
   inline-size: 40px;
   block-size: 40px;
-  font-size: 13px;
+  font-size: calc(13px * var(--a-fs));
   font-weight: 700;
   color: var(--head);
   font-variant-numeric: tabular-nums;
@@ -768,7 +790,7 @@ a.a-dark {
   background: var(--a-card);
   box-shadow: var(--a-shadow-card);
   color: var(--head);
-  font-size: 14px;
+  font-size: calc(14px * var(--a-fs));
   font-weight: 700;
   line-height: 1.25;
   text-decoration: none;
@@ -813,7 +835,7 @@ a.a-hero {
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  font-size: 12.5px;
+  font-size: calc(12.5px * var(--a-fs));
   color: var(--a-on-dark-dim);
 }
 /* The date gives way to the place, never the other way round: on a narrow
@@ -842,7 +864,7 @@ a.a-hero {
 }
 .a-hero-label,
 .a-hero-left {
-  font-size: 12.5px;
+  font-size: calc(12.5px * var(--a-fs));
   line-height: 1.35;
   color: var(--a-on-dark-dim);
 }
@@ -857,12 +879,12 @@ a.a-hero {
   line-height: 1.2;
 }
 .a-hero-name {
-  font-size: 21px;
+  font-size: calc(21px * var(--a-fs));
   font-weight: 800;
   white-space: nowrap;
 }
 .a-hero-time {
-  font-size: 21px;
+  font-size: calc(21px * var(--a-fs));
   font-weight: 800;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
@@ -885,7 +907,7 @@ a.a-hero {
   block-size: 52px;
   border-radius: 50%;
   background: var(--a-dark);
-  font-size: 14.5px;
+  font-size: calc(14.5px * var(--a-fs));
   font-weight: 800;
   font-variant-numeric: tabular-nums;
 }
@@ -942,7 +964,7 @@ a.a-hero {
   display: grid;
   justify-items: center;
   gap: 8px;
-  font-size: 13.5px;
+  font-size: calc(13.5px * var(--a-fs));
   font-weight: 600;
   color: var(--head);
   text-align: center;
@@ -964,28 +986,18 @@ a.a-hero {
   color: var(--ink);
 }
 /* Light mode: pale mint washed out on the cream paper, so the card is a
-   white sheet warming into mint, with the faint lattice and a hairline
-   edge. The icon tile turns mint to stand off it. */
+   plain white sheet like the quick tiles above it, and its icon tile turns
+   mint to stand off it. */
 :root:not([data-theme='dark']) .a-continue {
-  border: 1px solid rgba(11, 93, 59, 0.1);
-  background-color: #ffffff;
-  background-image:
-    var(--a-lattice-light), linear-gradient(to left, #ffffff 0%, #f3f9f5 55%, #e3f1e8 100%);
+  background: var(--a-card);
   box-shadow: var(--a-shadow-card);
-}
-:root:not([data-theme='dark'])[dir='ltr'] .a-continue {
-  background-image:
-    var(--a-lattice-light), linear-gradient(to right, #ffffff 0%, #f3f9f5 55%, #e3f1e8 100%);
 }
 :root:not([data-theme='dark']) .a-continue .a-ico[data-on='white'] {
   background: var(--a-chip);
-  box-shadow: inset 0 0 0 1px rgba(11, 93, 59, 0.08);
+  box-shadow: none;
 }
 :root:not([data-theme='dark']) .a-continue .a-progress {
-  background: #e4ece6;
-}
-:root:not([data-theme='dark']) .a-continue .a-play {
-  box-shadow: var(--a-shadow-btn);
+  background: var(--a-chip2);
 }
 .a-progress {
   display: block;
@@ -1097,7 +1109,7 @@ a.a-hero {
   line-height: 1.2;
 }
 .a-date-chip > span:first-child {
-  font-size: 17px;
+  font-size: calc(17px * var(--a-fs));
   font-weight: 800;
   color: var(--head);
 }
@@ -1131,7 +1143,7 @@ a.a-hero {
   cursor: pointer;
 }
 .a-dayswitch-day {
-  font-size: 16px;
+  font-size: calc(16px * var(--a-fs));
   font-weight: 800;
   color: var(--head);
   /* Two even lines on a narrow phone, never a month left on its own. */
@@ -1141,7 +1153,7 @@ a.a-hero {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 13.5px;
+  font-size: calc(13.5px * var(--a-fs));
   color: var(--ink2);
 }
 .a-placerow .a-tag {
@@ -1189,15 +1201,15 @@ a.a-hero {
   padding: 0 16px 0 8px;
 }
 .a-prow-name {
-  font-size: 16.5px;
+  font-size: calc(16.5px * var(--a-fs));
   font-weight: 700;
 }
 .a-prow-left {
-  font-size: 12.5px;
+  font-size: calc(12.5px * var(--a-fs));
   color: var(--gold);
 }
 .a-prow-time {
-  font-size: 22px;
+  font-size: calc(22px * var(--a-fs));
   font-weight: 800;
   font-variant-numeric: tabular-nums;
 }
@@ -1233,7 +1245,7 @@ a.a-hero {
   color: var(--gold);
 }
 .a-link {
-  font-size: 14px;
+  font-size: calc(14px * var(--a-fs));
   font-weight: 700;
   color: var(--green);
   text-decoration: none;
@@ -1258,7 +1270,7 @@ a.a-hero {
   border: 0;
   background: none;
   font: inherit;
-  font-size: 15.5px;
+  font-size: calc(15.5px * var(--a-fs));
   color: var(--ink);
   outline: none;
 }
@@ -1291,7 +1303,7 @@ a.a-hero {
 }
 .a-surah-ar {
   font-family: 'Scheherazade New', var(--font-naskh);
-  font-size: 22px;
+  font-size: calc(22px * var(--a-fs));
   color: var(--head);
 }
 .a-juz {
@@ -1314,7 +1326,7 @@ a.a-hero {
   text-decoration: none;
 }
 .a-juz-n {
-  font-size: 18px;
+  font-size: calc(18px * var(--a-fs));
   font-weight: 800;
   color: var(--head);
 }
@@ -1349,15 +1361,15 @@ a.a-hero {
   line-height: 1.25;
 }
 .a-featured-date > span:first-child {
-  font-size: 26px;
+  font-size: calc(26px * var(--a-fs));
   font-weight: 800;
 }
 .a-featured-date > span:last-child {
-  font-size: 12px;
+  font-size: calc(12px * var(--a-fs));
   color: var(--a-on-dark-dim);
 }
 .a-featured-title {
-  font-size: 20px;
+  font-size: calc(20px * var(--a-fs));
   font-weight: 800;
   line-height: 1.45;
 }
@@ -1395,7 +1407,7 @@ a.a-hero {
   font-variant-numeric: tabular-nums;
 }
 .a-agenda-time > span:first-child {
-  font-size: 15.5px;
+  font-size: calc(15.5px * var(--a-fs));
   font-weight: 800;
   color: var(--head);
 }
@@ -1414,7 +1426,7 @@ a.a-hero {
   flex-wrap: wrap;
   align-items: center;
   gap: 4px 8px;
-  font-size: 12.5px;
+  font-size: calc(12.5px * var(--a-fs));
   color: var(--ink2);
 }
 
@@ -1432,7 +1444,7 @@ a.a-hero {
 }
 .a-month-wd {
   padding: 4px 0;
-  font-size: 12px;
+  font-size: calc(12px * var(--a-fs));
   font-weight: 700;
   text-align: center;
   color: var(--ink2);
@@ -1456,7 +1468,7 @@ a.a-hero {
   cursor: pointer;
 }
 .a-day-n {
-  font-size: 15px;
+  font-size: calc(15px * var(--a-fs));
   font-weight: 500;
   font-variant-numeric: tabular-nums;
 }
@@ -1520,7 +1532,7 @@ a.a-hero {
 .cal-m-title {
   margin: 0;
   padding-inline: 4px;
-  font-size: 34px;
+  font-size: calc(34px * var(--a-fs));
   font-weight: 800;
   color: var(--head);
 }
@@ -1589,7 +1601,7 @@ a.a-hero {
   padding: 14px 16px;
 }
 .cal-m-alt {
-  font-size: 12.5px;
+  font-size: calc(12.5px * var(--a-fs));
   font-weight: 700;
   color: var(--goldInk);
 }
@@ -1599,7 +1611,7 @@ a.a-hero {
   margin: 6px 0 0;
   padding: 0;
   list-style: none;
-  font-size: 14px;
+  font-size: calc(14px * var(--a-fs));
   line-height: 1.45;
   color: var(--ink);
 }
@@ -1652,7 +1664,7 @@ a.a-hero {
   line-height: 1.15;
 }
 .cal-m-date > span:first-child {
-  font-size: 19px;
+  font-size: calc(19px * var(--a-fs));
   font-weight: 800;
   color: var(--head);
 }
@@ -1667,11 +1679,11 @@ a.a-hero {
   display: flex;
   align-items: baseline;
   gap: 8px;
-  font-size: 14.5px;
+  font-size: calc(14.5px * var(--a-fs));
   line-height: 1.4;
 }
 .cal-m-off {
-  font-size: 12.5px;
+  font-size: calc(12.5px * var(--a-fs));
   color: var(--holiday);
 }
 .ev-cal-link {
@@ -1719,7 +1731,7 @@ a.a-hero {
 }
 .a-detail-title {
   margin: 0;
-  font-size: 26px;
+  font-size: calc(26px * var(--a-fs));
   font-weight: 800;
   line-height: 1.4;
   color: var(--head);
@@ -1732,7 +1744,7 @@ a.a-hero {
 .a-detail-body {
   margin: 0;
   max-inline-size: none;
-  font-size: 15.5px;
+  font-size: calc(15.5px * var(--a-fs));
   line-height: 2;
   white-space: pre-line;
 }
@@ -1815,7 +1827,7 @@ a.a-hero {
   }
   .page-head-band p {
     margin-block-start: 0 !important;
-    font-size: 15px !important;
+    font-size: calc(15px * var(--a-fs)) !important;
     line-height: 2 !important;
     color: var(--ink2) !important;
   }
@@ -1847,7 +1859,7 @@ a.a-hero {
   }
   :root .contact-head-band .contact-lead {
     margin: 0 0 12px;
-    font-size: 15px;
+    font-size: calc(15px * var(--a-fs));
     color: var(--ink2);
   }
   :root .contact-head-band .contact-status-chip,
@@ -1915,7 +1927,7 @@ a.a-hero {
   background: var(--a-chip);
   color: var(--head);
   font: inherit;
-  font-size: 14px;
+  font-size: calc(14px * var(--a-fs));
   font-weight: 600;
 }
 
@@ -2004,13 +2016,13 @@ a.a-hero {
   }
   .error-view .error-view-title {
     font-family: inherit;
-    font-size: 24px;
+    font-size: calc(24px * var(--a-fs));
     font-weight: 800;
     line-height: 1.3;
     color: var(--head);
   }
   .error-view .lead {
-    font-size: 15px;
+    font-size: calc(15px * var(--a-fs));
     color: var(--ink2);
   }
 }
@@ -2081,7 +2093,7 @@ a.a-hero {
     background: var(--a-card);
     color: var(--head);
     box-shadow: 0 2px 10px rgba(7, 59, 41, 0.06);
-    font-size: 14px;
+    font-size: calc(14px * var(--a-fs));
     font-weight: 500;
     letter-spacing: 0;
     text-transform: none;
@@ -2108,14 +2120,14 @@ a.a-hero {
     border: 0;
     background: var(--a-chip);
     color: var(--head);
-    font-size: 12.5px;
+    font-size: calc(12.5px * var(--a-fs));
     letter-spacing: 0;
     text-transform: none;
   }
   .app-list .card-title,
   .app-list .sport-row-title {
     font-family: inherit;
-    font-size: 17px;
+    font-size: calc(17px * var(--a-fs));
     font-weight: 800;
     line-height: 1.35;
     color: var(--head);
@@ -2124,11 +2136,11 @@ a.a-hero {
   .app-list .meta-grid {
     grid-template-columns: minmax(0, 1fr);
     gap: 0;
-    font-size: 14px;
+    font-size: calc(14px * var(--a-fs));
   }
   .app-list .meta-grid dt {
     margin-block-start: 6px;
-    font-size: 12px;
+    font-size: calc(12px * var(--a-fs));
   }
   .app-list .meta-grid dt:first-child,
   .app-list .meta-grid > div:first-child dt {

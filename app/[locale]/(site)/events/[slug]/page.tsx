@@ -90,7 +90,7 @@ export default async function EventPage({
       />
       <div className="a-detail-sheet">
         <div className="a-stack" style={{ gap: 6 }}>
-          <p className="a-label" style={{ padding: 0, fontSize: 13 }}>
+          <p className="a-label" style={{ padding: 0, fontSize: 'calc(13px * var(--a-fs))' }}>
             {category}
           </p>
           <h1 className="a-detail-title">{event.title}</h1>
@@ -101,10 +101,10 @@ export default async function EventPage({
               <CalendarBlank size={21} weight="duotone" aria-hidden="true" />
             </span>
             <span className="a-stack">
-              <span className="a-title" style={{ fontSize: 15 }}>
+              <span className="a-title" style={{ fontSize: 'calc(15px * var(--a-fs))' }}>
                 {formatDay(typed, event.startsAt, 'weekday')}
               </span>
-              <span className="a-sub" style={{ fontSize: 13 }}>
+              <span className="a-sub" style={{ fontSize: 'calc(13px * var(--a-fs))' }}>
                 {time}
                 {typed === 'fa'
                   ? ` · ${formatDay(typed, event.startsAt, 'dayMonth', { calendar: 'gregory' })}`
@@ -117,10 +117,10 @@ export default async function EventPage({
               <MapPin size={21} weight="duotone" aria-hidden="true" />
             </span>
             <span className="a-stack a-grow">
-              <span className="a-title" style={{ fontSize: 15 }}>
+              <span className="a-title" style={{ fontSize: 'calc(15px * var(--a-fs))' }}>
                 {event.location || FACTS.street}
               </span>
-              <span className="a-sub ltr-island" style={{ fontSize: 13 }}>
+              <span className="a-sub ltr-island" style={{ fontSize: 'calc(13px * var(--a-fs))' }}>
                 {settings.address || FACTS.street}
               </span>
             </span>
@@ -137,7 +137,7 @@ export default async function EventPage({
         {event.body ? <p className="a-detail-body">{event.body}</p> : null}
         {event.programme.length > 0 ? (
           <section className="a-stack" style={{ gap: 8 }}>
-            <h2 className="a-head" style={{ fontSize: 17 }}>
+            <h2 className="a-head" style={{ fontSize: 'calc(17px * var(--a-fs))' }}>
               {t('programme')}
             </h2>
             <ol className="a-list" style={{ margin: 0, padding: 0, listStyle: 'none' }}>

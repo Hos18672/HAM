@@ -155,7 +155,7 @@ function FeaturedCard({
         <span className="a-tag a-tag-gold">
           {tApp('featured')} · {label(event.category)}
         </span>
-        <span className="a-dark-dim" style={{ fontSize: 12.5 }}>
+        <span className="a-dark-dim" style={{ fontSize: 'calc(12.5px * var(--a-fs))' }}>
           {days <= 0
             ? tApp('today')
             : days === 1
@@ -170,7 +170,7 @@ function FeaturedCard({
         </span>
         <span className="a-stack">
           <span className="a-featured-title">{event.title}</span>
-          <span className="a-dark-dim" style={{ fontSize: 13 }}>
+          <span className="a-dark-dim" style={{ fontSize: 'calc(13px * var(--a-fs))' }}>
             {formatDay(locale, event.startsAt, 'weekday').split(/[ ,]/)[0]}{' '}
             {formatTime(event.startsAt, locale)}
             {event.location ? ` · ${event.location}` : ''}
@@ -220,7 +220,7 @@ export function Agenda({
 
   if (events.length === 0)
     return (
-      <p className="a-sub" style={{ fontSize: 14 }}>
+      <p className="a-sub" style={{ fontSize: 'calc(14px * var(--a-fs))' }}>
         {t('none')}
       </p>
     );
@@ -230,7 +230,10 @@ export function Agenda({
       {groups.map(([iso, list]) => (
         <section key={iso} className="a-stack" style={{ gap: 8 }}>
           {heading ? (
-            <h2 className="a-label" style={{ fontSize: 14, fontWeight: 800 }}>
+            <h2
+              className="a-label"
+              style={{ fontSize: 'calc(14px * var(--a-fs))', fontWeight: 800 }}
+            >
               {iso === todayIso ? `${tApp('today')} · ` : ''}
               {formatDay(locale, list[0]!.startsAt, 'weekday')}
             </h2>
@@ -248,7 +251,7 @@ export function Agenda({
                   aria-hidden="true"
                 />
                 <span className="a-stack a-grow">
-                  <span className="a-title" style={{ fontSize: 15.5 }}>
+                  <span className="a-title" style={{ fontSize: 'calc(15.5px * var(--a-fs))' }}>
                     {event.title}
                   </span>
                   <span className="a-agenda-meta">

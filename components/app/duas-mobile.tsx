@@ -107,11 +107,19 @@ export function DuasMobile({ duas }: { duas: DuaItem[] }) {
       <h1 className="visually-hidden">{tApp('duasTitle')}</h1>
       {featured && today ? (
         <article className="a-dark a-duaday a-rise">
-          <span className="a-gold-text" style={{ fontSize: 13, fontWeight: 700 }}>
+          <span
+            className="a-gold-text"
+            style={{ fontSize: 'calc(13px * var(--a-fs))', fontWeight: 700 }}
+          >
             {tApp('duaToday')} · {tApp(`duaReason.${today.reason}`)}
           </span>
-          <span style={{ fontSize: 22, fontWeight: 800 }}>{featured.title}</span>
-          <span className="a-dark-dim clamp-2" style={{ fontSize: 13.5, lineHeight: 1.8 }}>
+          <span style={{ fontSize: 'calc(22px * var(--a-fs))', fontWeight: 800 }}>
+            {featured.title}
+          </span>
+          <span
+            className="a-dark-dim clamp-2"
+            style={{ fontSize: 'calc(13.5px * var(--a-fs))', lineHeight: 1.8 }}
+          >
             {featured.summary}
           </span>
           <div className="a-row" style={{ gap: 8 }}>
@@ -158,7 +166,7 @@ export function DuasMobile({ duas }: { duas: DuaItem[] }) {
       </div>
 
       {shown.length === 0 ? (
-        <p className="a-sub" style={{ fontSize: 14 }}>
+        <p className="a-sub" style={{ fontSize: 'calc(14px * var(--a-fs))' }}>
           {filter === 'fav' ? tApp('favouritesEmpty') : t('none')}
         </p>
       ) : (
@@ -201,7 +209,7 @@ export function DuasMobile({ duas }: { duas: DuaItem[] }) {
           })}
         </ul>
       )}
-      <p className="a-sub" style={{ fontSize: 12.5, lineHeight: 1.8 }}>
+      <p className="a-sub" style={{ fontSize: 'calc(12.5px * var(--a-fs))', lineHeight: 1.8 }}>
         {t('note')}
       </p>
     </div>

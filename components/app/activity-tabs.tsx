@@ -25,7 +25,7 @@ export async function ActivityTabs({ current, locale }: { current: string; local
               key={tab.href}
               href={tab.href}
               aria-current={tab.href === current ? 'page' : undefined}
-              style={{ fontSize: 14.5 }}
+              style={{ fontSize: 'calc(14.5px * var(--a-fs))' }}
             >
               {tab.key === 'tabOverview' ? tApp('tabOverview') : t(tab.key)}
             </Link>

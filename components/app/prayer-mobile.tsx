@@ -217,7 +217,7 @@ export function PrayerMobile({ day: vienna, locale }: { day: PrayerDay; locale: 
           aria-hidden="true"
           style={{ color: 'var(--goldInk)' }}
         />
-        <span className="a-grow" style={{ fontSize: 14.5 }}>
+        <span className="a-grow" style={{ fontSize: 'calc(14.5px * var(--a-fs))' }}>
           {t('names.midnight')}:{' '}
           <strong style={{ color: 'var(--head)' }}>
             {formatClock(day.times.midnight, locale)}

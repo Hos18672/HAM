@@ -1049,7 +1049,7 @@
      than as a rule in the margin: same italic, boxed. */
   .pull-quote {
     font-style: italic;
-    font-size: 19.5px;
+    font-size: calc(19.5px * var(--a-fs, 1));
     line-height: 1.75;
     color: var(--head);
     padding: 22px 26px;
@@ -2015,7 +2015,7 @@
     position: relative;
     z-index: 1;
     padding: 8px 15px;
-    font-size: 12.5px;
+    font-size: calc(12.5px * var(--a-fs, 1));
     font-weight: var(--weight-bold);
     white-space: nowrap;
     text-align: center;
@@ -2319,7 +2319,7 @@
     gap: 16px;
     justify-content: space-between;
     align-items: center;
-    font-size: 13px;
+    font-size: calc(13px * var(--a-fs, 1));
   }
   /* The segmented switch, on the band. */
   .seg-dark {
@@ -3375,7 +3375,7 @@
     align-items: center;
     justify-content: center;
     gap: 7px;
-    font-size: 14px;
+    font-size: calc(14px * var(--a-fs, 1));
     font-weight: var(--weight-bold);
     white-space: nowrap;
     background: transparent;
@@ -3459,7 +3459,7 @@
   }
   .qibla-rose-letter {
     fill: #b9c4bd;
-    font-size: 19px;
+    font-size: calc(19px * var(--a-fs, 1));
     font-weight: var(--weight-bold);
     text-anchor: middle;
     dominant-baseline: central;
@@ -3538,7 +3538,7 @@
     max-inline-size: 100%;
     line-height: 1.5;
     flex-shrink: 0;
-    font-size: 14px;
+    font-size: calc(14px * var(--a-fs, 1));
     font-weight: var(--weight-semibold);
     text-align: center;
     background: rgba(247, 243, 232, 0.08);
@@ -3725,7 +3725,7 @@
     display: flex;
     align-items: center;
     gap: 5px;
-    font-size: 12px;
+    font-size: calc(12px * var(--a-fs, 1));
     font-weight: var(--weight-bold);
     white-space: nowrap;
     background: transparent;
@@ -3785,7 +3785,7 @@
     gap: 8px;
   }
   .qibla-field-name {
-    font-size: 12.5px;
+    font-size: calc(12.5px * var(--a-fs, 1));
     font-weight: var(--weight-bold);
     color: var(--color-ink-muted);
   }
@@ -3807,7 +3807,7 @@
     justify-content: center;
     gap: 6px;
     padding-inline: 10px;
-    font-size: 13.5px;
+    font-size: calc(13.5px * var(--a-fs, 1));
     font-weight: var(--weight-semibold);
     white-space: nowrap;
     min-inline-size: 0;
@@ -3831,7 +3831,7 @@
   }
   .qibla-geo-note {
     margin: 0;
-    font-size: 13px;
+    font-size: calc(13px * var(--a-fs, 1));
     line-height: 1.6;
     color: var(--color-ink-muted);
   }
@@ -3847,7 +3847,7 @@
     min-inline-size: 0;
   }
   .qibla-figure-name {
-    font-size: 12.5px;
+    font-size: calc(12.5px * var(--a-fs, 1));
     font-weight: var(--weight-bold);
     color: var(--goldInk);
   }
@@ -3857,7 +3857,7 @@
     font-weight: var(--weight-bold);
   }
   .qibla-figure-unit {
-    font-size: 14px;
+    font-size: calc(14px * var(--a-fs, 1));
     color: var(--color-ink-muted);
   }
   /* On the stage, under the dial: gold on the dark green, as the dial's own
@@ -3874,7 +3874,7 @@
     align-items: center;
     justify-content: center;
     gap: 10px;
-    font-size: 15.5px;
+    font-size: calc(15.5px * var(--a-fs, 1));
     font-weight: var(--weight-bold);
     white-space: nowrap;
     background: var(--gold);
@@ -3890,7 +3890,7 @@
   }
   .qibla-hint {
     margin: 0;
-    font-size: 13px;
+    font-size: calc(13px * var(--a-fs, 1));
     line-height: 1.7;
     color: var(--color-ink-muted);
     text-wrap: pretty;
@@ -3903,7 +3903,7 @@
     padding: 14px 18px;
     border-radius: 18px;
     background: color-mix(in srgb, var(--ink) 8%, transparent);
-    font-size: 13px;
+    font-size: calc(13px * var(--a-fs, 1));
     line-height: 1.6;
     color: var(--color-ink-muted);
   }
@@ -3914,7 +3914,7 @@
   .qibla-privacy {
     grid-column: 1 / -1;
     margin: 0;
-    font-size: 12px;
+    font-size: calc(12px * var(--a-fs, 1));
     line-height: 1.7;
     color: var(--color-ink-muted);
     max-inline-size: 80ch;
@@ -3952,7 +3952,7 @@
     margin: 0;
     flex: 0 1 44ch;
     max-inline-size: 44ch;
-    font-size: 14.5px;
+    font-size: calc(14.5px * var(--a-fs, 1));
     line-height: 1.7;
     color: var(--color-ink-muted);
     text-wrap: pretty;
@@ -3974,7 +3974,7 @@
       font-size: clamp(20px, 2.6vw, 28px);
     }
     .qibla-head-lede {
-      font-size: 13.5px;
+      font-size: calc(13.5px * var(--a-fs, 1));
       flex-basis: 34ch;
       max-inline-size: 34ch;
     }
@@ -3998,25 +3998,25 @@
       font-size: clamp(20px, 5.4vw, 26px);
     }
     .qibla-head-lede {
-      font-size: 13.5px;
+      font-size: calc(13.5px * var(--a-fs, 1));
     }
     .qibla-tab {
-      font-size: 13px;
+      font-size: calc(13px * var(--a-fs, 1));
       gap: 6px;
     }
     .qibla-figure-value {
-      font-size: 24px;
+      font-size: calc(24px * var(--a-fs, 1));
     }
     .qibla-figure-name,
     .qibla-field-name {
-      font-size: 12px;
+      font-size: calc(12px * var(--a-fs, 1));
     }
     .qibla-hint,
     .qibla-geo-note {
-      font-size: 12.5px;
+      font-size: calc(12.5px * var(--a-fs, 1));
     }
     .qibla-go {
-      font-size: 15px;
+      font-size: calc(15px * var(--a-fs, 1));
     }
     /* Measured, not guessed: the site's header, this page's padding and its
        title row take 314px of a phone's first screen, so the stage takes
@@ -4108,7 +4108,7 @@
     inset-inline-end: 10px;
     margin: 0;
     padding: 3px 10px;
-    font-size: 12px;
+    font-size: calc(12px * var(--a-fs, 1));
     font-weight: var(--weight-semibold);
     color: var(--goldInk);
     background: var(--glass);
@@ -4389,7 +4389,7 @@
     gap: 12px;
     padding: 15px 16px;
     border-radius: 12px;
-    font-size: 17px;
+    font-size: calc(17px * var(--a-fs, 1));
     font-weight: var(--weight-semibold);
     color: var(--ink2);
     text-decoration: none;
@@ -4593,7 +4593,7 @@
   .chip-word {
     display: inline-flex;
     align-items: center;
-    font-size: 13.5px;
+    font-size: calc(13.5px * var(--a-fs, 1));
     font-weight: var(--weight-semibold, 600);
     padding: 9px 17px;
     border: var(--rule-hair) solid var(--line);
@@ -5244,7 +5244,7 @@
   -webkit-box-orient: vertical;
   overflow: hidden;
   color: var(--ink2);
-  font-size: 15px;
+  font-size: calc(15px * var(--a-fs, 1));
   line-height: 1.6;
   margin-block-start: 2px;
 }
@@ -5288,7 +5288,7 @@ a.link-row:hover .link-row-go {
   margin: 0 0 8px;
 }
 .week-today {
-  font-size: 12px;
+  font-size: calc(12px * var(--a-fs, 1));
   font-weight: var(--weight-bold);
   color: var(--stage);
   background: var(--gold);
@@ -5297,7 +5297,7 @@ a.link-row:hover .link-row-go {
 }
 .week-empty {
   color: var(--ink2);
-  font-size: 14px;
+  font-size: calc(14px * var(--a-fs, 1));
   margin: 0;
 }
 .week-items {
@@ -5328,7 +5328,7 @@ a.week-link:hover {
   background: color-mix(in srgb, var(--gold) 13%, var(--card));
 }
 .week-time {
-  font-size: 13px;
+  font-size: calc(13px * var(--a-fs, 1));
   font-weight: var(--weight-bold);
   color: var(--green);
 }
@@ -5342,7 +5342,7 @@ a.week-link:hover {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
-  font-size: 12.5px;
+  font-size: calc(12.5px * var(--a-fs, 1));
   color: var(--ink2);
 }
 .week-meta:empty {
@@ -5368,7 +5368,7 @@ a.week-link:hover {
     padding: 8px 10px;
   }
   .week-title {
-    font-size: 14.5px;
+    font-size: calc(14.5px * var(--a-fs, 1));
   }
 }
 
@@ -5408,7 +5408,7 @@ a.week-link:hover {
   gap: 10px;
 }
 .prayer-next-tomorrow {
-  font-size: 14px;
+  font-size: calc(14px * var(--a-fs, 1));
   font-weight: var(--weight-bold);
   color: var(--stage);
   background: var(--gold);
@@ -5514,12 +5514,12 @@ a.week-link:hover {
   flex-wrap: wrap;
 }
 .ptimes-mark {
-  font-size: 12px;
+  font-size: calc(12px * var(--a-fs, 1));
   font-weight: var(--weight-bold);
   color: var(--goldInk);
 }
 .ptimes-time {
-  font-size: 22px;
+  font-size: calc(22px * var(--a-fs, 1));
   font-weight: var(--weight-bold);
   color: var(--head);
 }
@@ -5616,7 +5616,7 @@ a.week-link:hover {
   font-weight: var(--weight-bold);
 }
 .city-box-group {
-  font-size: 12.5px;
+  font-size: calc(12.5px * var(--a-fs, 1));
   color: var(--ink2);
 }
 .city-box-list [data-recent] .city-box-group {
@@ -5799,7 +5799,7 @@ a.week-link:hover {
   outline-offset: 2px;
 }
 .chip-count {
-  font-size: 12px;
+  font-size: calc(12px * var(--a-fs, 1));
   font-weight: var(--weight-bold);
   opacity: 0.9;
   margin-inline-start: 2px;
@@ -5830,7 +5830,7 @@ a.week-link:hover {
   grid-template-columns: max-content minmax(0, 1fr);
   gap: 6px 14px;
   margin: var(--space-2) 0 var(--space-4);
-  font-size: 14.5px;
+  font-size: calc(14.5px * var(--a-fs, 1));
 }
 .meta-grid > div {
   display: contents;
@@ -5933,7 +5933,7 @@ a.week-link:hover {
 }
 .house-map-caption {
   margin-block-start: 4px;
-  font-size: 12.5px;
+  font-size: calc(12.5px * var(--a-fs, 1));
   color: var(--ink2);
 }
 .house-map .contact-map-actions {
@@ -5998,7 +5998,7 @@ a.week-link:hover {
 .map-load-note {
   margin: 0;
   flex-basis: 100%;
-  font-size: 12.5px;
+  font-size: calc(12.5px * var(--a-fs, 1));
   color: var(--ink2);
 }
 /* ─── The contact page ───────────────────────────────────────────────────────
@@ -6100,7 +6100,7 @@ body:has(.contact-page) .footer-contact {
 .contact-kicker {
   font-family: var(--font-display);
   font-style: italic;
-  font-size: 15px;
+  font-size: calc(15px * var(--a-fs, 1));
   color: var(--goldInk);
 }
 :root[lang='fa'] .contact-kicker {
@@ -6120,7 +6120,7 @@ body:has(.contact-page) .footer-contact {
   line-height: 1.35;
 }
 .contact-lead {
-  font-size: 18px;
+  font-size: calc(18px * var(--a-fs, 1));
   line-height: 1.6;
   color: var(--ink2);
   max-inline-size: 48ch;
@@ -6141,7 +6141,7 @@ body:has(.contact-page) .footer-contact {
   min-block-size: 36px;
   padding-inline: 14px;
   border-radius: var(--radius-pill);
-  font-size: 15px;
+  font-size: calc(15px * var(--a-fs, 1));
   font-weight: 600;
   background: var(--card2);
   color: var(--ink2);
@@ -6229,7 +6229,7 @@ body:has(.contact-page) .footer-contact {
   display: grid;
   font-style: normal;
   font-family: var(--font-display);
-  font-size: 20px;
+  font-size: calc(20px * var(--a-fs, 1));
   font-weight: 600;
   line-height: 1.4;
   color: var(--head);
@@ -6256,7 +6256,7 @@ body:has(.contact-page) .footer-contact {
   inset-block-start: calc(100% + 2px);
   padding: 4px 10px;
   border-radius: var(--radius-pill);
-  font-size: 13px;
+  font-size: calc(13px * var(--a-fs, 1));
   font-weight: 600;
   background: var(--head);
   color: var(--paper);
@@ -6274,7 +6274,7 @@ body:has(.contact-page) .footer-contact {
 .contact-label {
   margin-block-end: 8px;
   font-family: var(--font-body);
-  font-size: 15px;
+  font-size: calc(15px * var(--a-fs, 1));
   font-weight: 700;
   letter-spacing: 0;
   color: var(--head);
@@ -6452,7 +6452,7 @@ body:has(.contact-page) .footer-contact {
   cursor: pointer;
 }
 .contact-map-credit {
-  font-size: 13px;
+  font-size: calc(13px * var(--a-fs, 1));
   color: var(--ink2);
 }
 
@@ -6490,7 +6490,7 @@ body:has(.contact-page) .footer-contact {
   align-items: center;
   gap: 6px;
   font-family: var(--font-display);
-  font-size: 18px;
+  font-size: calc(18px * var(--a-fs, 1));
   font-weight: 600;
   color: var(--head);
 }
@@ -6499,7 +6499,7 @@ body:has(.contact-page) .footer-contact {
   font-weight: 700;
 }
 .contact-tile-detail {
-  font-size: 15px;
+  font-size: calc(15px * var(--a-fs, 1));
   color: var(--ink2);
   overflow-wrap: anywhere;
 }
@@ -6550,7 +6550,7 @@ body:has(.contact-page) .footer-contact {
   color: var(--head);
 }
 .contact-write-intro p {
-  font-size: 17px;
+  font-size: calc(17px * var(--a-fs, 1));
   line-height: 1.6;
   color: var(--ink2);
 }
@@ -6600,7 +6600,7 @@ body:has(.contact-page) .footer-contact {
   gap: 6px;
 }
 .form-stack .field-label {
-  font-size: 15px;
+  font-size: calc(15px * var(--a-fs, 1));
   font-weight: 600;
   color: var(--ink);
 }
@@ -6629,7 +6629,7 @@ body:has(.contact-page) .footer-contact {
 .contact-message .field-hint {
   max-inline-size: none;
   text-align: end;
-  font-size: 13px;
+  font-size: calc(13px * var(--a-fs, 1));
   color: var(--ink2);
 }
 
@@ -6649,7 +6649,7 @@ body:has(.contact-page) .footer-contact {
   background: var(--card2);
   box-shadow: inset 0 0 0 1px var(--line);
   color: var(--ink);
-  font-size: 15px;
+  font-size: calc(15px * var(--a-fs, 1));
   font-weight: 600;
   cursor: pointer;
   transition:
@@ -6689,7 +6689,7 @@ body:has(.contact-page) .footer-contact {
 }
 
 .contact-consent {
-  font-size: 14px;
+  font-size: calc(14px * var(--a-fs, 1));
   color: var(--ink2);
 }
 .contact-consent a {
@@ -6749,7 +6749,7 @@ body:has(.contact-page) .footer-contact {
   color: var(--green);
 }
 .contact-sent p {
-  font-size: 18px;
+  font-size: calc(18px * var(--a-fs, 1));
   font-weight: 600;
   color: var(--head);
 }
@@ -6801,18 +6801,18 @@ body:has(.contact-page) .footer-contact {
   text-align: center;
 }
 .date-badge-wd {
-  font-size: 12.5px;
+  font-size: calc(12.5px * var(--a-fs, 1));
   font-weight: var(--weight-bold);
   color: var(--goldInk);
 }
 .date-badge-day {
-  font-size: 30px;
+  font-size: calc(30px * var(--a-fs, 1));
   line-height: 1.05;
   font-weight: var(--weight-bold);
   color: var(--head);
 }
 .date-badge-mon {
-  font-size: 13px;
+  font-size: calc(13px * var(--a-fs, 1));
   font-weight: var(--weight-semibold);
 }
 .date-badge-greg {
@@ -6833,7 +6833,7 @@ body:has(.contact-page) .footer-contact {
 }
 .event-line-cat {
   margin: 0;
-  font-size: 12.5px;
+  font-size: calc(12.5px * var(--a-fs, 1));
   font-weight: var(--weight-bold);
   color: var(--goldInk);
 }
@@ -6847,7 +6847,7 @@ body:has(.contact-page) .footer-contact {
   display: flex;
   flex-wrap: wrap;
   gap: 4px 16px;
-  font-size: 14.5px;
+  font-size: calc(14.5px * var(--a-fs, 1));
   color: var(--ink2);
 }
 .event-line-meta > span {
@@ -6870,7 +6870,7 @@ body:has(.contact-page) .footer-contact {
   align-items: center;
   gap: 6px;
   min-block-size: 44px;
-  font-size: 14.5px;
+  font-size: calc(14.5px * var(--a-fs, 1));
   font-weight: var(--weight-semibold);
   color: var(--green);
 }
@@ -6949,7 +6949,7 @@ body:has(.contact-page) .footer-contact {
 }
 .brand-sub {
   display: none;
-  font-size: 12px;
+  font-size: calc(12px * var(--a-fs, 1));
   font-style: italic;
   font-weight: var(--weight-semibold);
   color: var(--goldInk);
@@ -7036,7 +7036,7 @@ body:has(.contact-page) .footer-contact {
     padding-inline: 18px 4px;
     border-radius: var(--r-pill);
     background: var(--chip);
-    font-size: 14px;
+    font-size: calc(14px * var(--a-fs, 1));
   }
 }
 .dateline-where {
@@ -7081,7 +7081,7 @@ body:has(.contact-page) .footer-contact {
   border-radius: var(--r-pill);
   background: none;
   font: inherit;
-  font-size: 15px;
+  font-size: calc(15px * var(--a-fs, 1));
   font-weight: 600;
   color: var(--ink);
   text-decoration: none;
@@ -7231,7 +7231,7 @@ html[data-hc='boot'] .tab-bar {
   border: 0;
   background: none;
   font: inherit;
-  font-size: 12px;
+  font-size: calc(12px * var(--a-fs, 1));
   font-weight: 500;
   line-height: 1.2;
   text-align: center;
@@ -7306,14 +7306,14 @@ body:has(.edit-bar) .tab-bar,
 }
 .footer-name {
   font-family: var(--font-display);
-  font-size: 19px;
+  font-size: calc(19px * var(--a-fs, 1));
   font-weight: var(--weight-bold);
   color: var(--bandHead);
   margin: 0;
 }
 .footer-tagline {
   margin: 10px 0 0;
-  font-size: 15px;
+  font-size: calc(15px * var(--a-fs, 1));
   line-height: 1.8;
   max-inline-size: 34ch;
 }
@@ -7346,7 +7346,7 @@ body:has(.edit-bar) .tab-bar,
   display: inline-flex;
   align-items: center;
   min-block-size: 40px;
-  font-size: 15px;
+  font-size: calc(15px * var(--a-fs, 1));
 }
 .footer-head {
   margin: 0;
@@ -7364,7 +7364,7 @@ body:has(.edit-bar) .tab-bar,
   align-items: center;
   gap: 10px;
   min-block-size: 36px;
-  font-size: 15px;
+  font-size: calc(15px * var(--a-fs, 1));
 }
 .footer-contact li svg {
   color: var(--gold);
@@ -7372,12 +7372,12 @@ body:has(.edit-bar) .tab-bar,
 }
 .footer-subhead {
   margin: 18px 0 8px;
-  font-size: 13px;
+  font-size: calc(13px * var(--a-fs, 1));
   font-weight: var(--weight-bold);
   color: var(--gold);
 }
 .footer-contact .hours {
-  font-size: 14px;
+  font-size: calc(14px * var(--a-fs, 1));
 }
 .footer-contact .hours dt {
   color: inherit;
@@ -7436,7 +7436,7 @@ body:has(.edit-bar) .tab-bar,
   gap: 6px;
   font-weight: var(--weight-bold);
   color: var(--green);
-  font-size: 14.5px;
+  font-size: calc(14.5px * var(--a-fs, 1));
 }
 .card-linked:hover .card-go svg {
   transform: translateX(3px);
@@ -7587,7 +7587,7 @@ body:has(.edit-bar) .tab-bar,
   padding: 0;
   display: grid;
   gap: 4px;
-  font-size: 14px;
+  font-size: calc(14px * var(--a-fs, 1));
   color: var(--ink2);
 }
 .choice-benefits li {
@@ -7799,7 +7799,7 @@ body:has(.edit-bar) .tab-bar,
 .tile-caption-below {
   display: block;
   padding: 8px 2px 0;
-  font-size: 14px;
+  font-size: calc(14px * var(--a-fs, 1));
   color: var(--ink2);
   text-align: start;
   line-height: 1.5;
@@ -7962,7 +7962,7 @@ body:has(.edit-bar) .tab-bar,
   border: 0;
   border-radius: var(--r-pill);
   font: inherit;
-  font-size: 15px;
+  font-size: calc(15px * var(--a-fs, 1));
   font-weight: 700;
   line-height: 1.2;
   text-align: center;
@@ -7984,7 +7984,7 @@ body:has(.edit-bar) .tab-bar,
 .pill-52 {
   min-block-size: 52px;
   padding-inline: 26px;
-  font-size: 16px;
+  font-size: calc(16px * var(--a-fs, 1));
 }
 .pill-primary,
 .pill-primary:visited {
@@ -8051,7 +8051,7 @@ body:has(.edit-bar) .tab-bar,
   transform: scale(1.06);
 }
 .icon-circle-text {
-  font-size: 14px;
+  font-size: calc(14px * var(--a-fs, 1));
   font-weight: 700;
 }
 
@@ -8069,7 +8069,7 @@ body:has(.edit-bar) .tab-bar,
   min-block-size: 38px;
   padding-inline: 12px;
   border-radius: var(--r-pill);
-  font-size: 14px;
+  font-size: calc(14px * var(--a-fs, 1));
   font-weight: 700;
   color: var(--ink2);
   text-decoration: none;
@@ -8151,7 +8151,7 @@ body:has(.edit-bar) .tab-bar,
 }
 .npc-label,
 .npc-where {
-  font-size: 13px;
+  font-size: calc(13px * var(--a-fs, 1));
   color: var(--ink2);
 }
 .npc-label {
@@ -8165,7 +8165,7 @@ body:has(.edit-bar) .tab-bar,
 }
 .npc-name {
   font-family: var(--font-display);
-  font-size: 22px;
+  font-size: calc(22px * var(--a-fs, 1));
   font-weight: 600;
   color: var(--head);
 }
@@ -8174,7 +8174,7 @@ body:has(.edit-bar) .tab-bar,
   font-weight: 700;
 }
 .npc-time {
-  font-size: 20px;
+  font-size: calc(20px * var(--a-fs, 1));
   font-weight: 700;
   color: var(--head);
 }
@@ -8208,7 +8208,7 @@ body:has(.edit-bar) .tab-bar,
   gap: 4px 16px;
 }
 .pstrip-title {
-  font-size: 18px;
+  font-size: calc(18px * var(--a-fs, 1));
   color: var(--head);
 }
 .pstrip-all {
@@ -8249,17 +8249,17 @@ body:has(.edit-bar) .tab-bar,
   box-shadow: inset 0 0 0 1.5px var(--green);
 }
 .pstrip-name {
-  font-size: 14px;
+  font-size: calc(14px * var(--a-fs, 1));
   font-weight: 600;
   color: var(--ink2);
 }
 .pstrip-time {
-  font-size: 24px;
+  font-size: calc(24px * var(--a-fs, 1));
   font-weight: 700;
   color: var(--head);
 }
 .pstrip-note {
-  font-size: 13px;
+  font-size: calc(13px * var(--a-fs, 1));
   font-style: italic;
   color: var(--green);
 }

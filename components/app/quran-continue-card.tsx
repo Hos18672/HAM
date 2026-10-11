@@ -58,11 +58,11 @@ export function QuranContinueCard({
     return (
       <Link href={href} className="a-dark a-continue-dark a-press">
         <span className="a-stack a-grow">
-          <span className="a-dark-dim" style={{ fontSize: 13 }}>
+          <span className="a-dark-dim" style={{ fontSize: 'calc(13px * var(--a-fs))' }}>
             {last ? t('continue') : t('readAsBook')}
           </span>
-          <span style={{ fontSize: 18, fontWeight: 800 }}>{where}</span>
-          <span className="a-gold-text" style={{ fontSize: 13 }}>
+          <span style={{ fontSize: 'calc(18px * var(--a-fs))', fontWeight: 800 }}>{where}</span>
+          <span className="a-gold-text" style={{ fontSize: 'calc(13px * var(--a-fs))' }}>
             {t('pageShort', { n: digits(page, locale) })}
           </span>
         </span>
@@ -80,7 +80,7 @@ export function QuranContinueCard({
         <BookOpenText size={24} weight="duotone" aria-hidden="true" />
       </span>
       <span className="a-stack a-grow">
-        <span className="a-sub" style={{ fontSize: 13 }}>
+        <span className="a-sub" style={{ fontSize: 'calc(13px * var(--a-fs))' }}>
           {last ? t('continue') : t('readAsBook')}
         </span>
         <span className="a-title">{where}</span>

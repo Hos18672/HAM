@@ -139,7 +139,7 @@ export function CalendarMobile({
   return (
     <div className="a-screen cal-m" style={{ gap: 14 }}>
       <h1 className="cal-m-title">{tApp('calendarTitle')}</h1>
-      <p className="a-sub" style={{ fontSize: 14, paddingInline: 4 }}>
+      <p className="a-sub" style={{ fontSize: 'calc(14px * var(--a-fs))', paddingInline: 4 }}>
         {tApp('calendarLead')}
       </p>
 
@@ -178,7 +178,15 @@ export function CalendarMobile({
             <CaretLeft size={18} weight="bold" aria-hidden="true" className="mirror" />
           </button>
           <span className="a-stack a-grow" style={{ justifyItems: 'center', textAlign: 'center' }}>
-            <span style={{ fontSize: 19, fontWeight: 800, color: 'var(--head)' }}>{title}</span>
+            <span
+              style={{
+                fontSize: 'calc(19px * var(--a-fs))',
+                fontWeight: 800,
+                color: 'var(--head)',
+              }}
+            >
+              {title}
+            </span>
             <span className="a-sub" style={{ fontSize: 11.5 }}>
               {hijri.join(' – ')} {hijriYear}
             </span>
@@ -266,7 +274,7 @@ export function CalendarMobile({
           {tApp('calThisMonth')}
         </h2>
         {listed.length === 0 ? (
-          <p className="a-sub" style={{ fontSize: 14 }}>
+          <p className="a-sub" style={{ fontSize: 'calc(14px * var(--a-fs))' }}>
             {tApp('calNothingMonth')}
           </p>
         ) : (
@@ -342,7 +350,9 @@ function DayCard({
         <StarFour size={22} weight="duotone" aria-hidden="true" />
       </span>
       <span className="a-stack" style={{ gap: 2, minInlineSize: 0 }}>
-        <span style={{ fontSize: 15.5, fontWeight: 800, color: 'var(--head)' }}>
+        <span
+          style={{ fontSize: 'calc(15.5px * var(--a-fs))', fontWeight: 800, color: 'var(--head)' }}
+        >
           {cell.isToday ? `${tApp('calToday')} · ` : ''}
           {formatDay(locale, date, 'full')}
         </span>
@@ -370,7 +380,7 @@ function DayCard({
             ))}
           </ul>
         ) : (
-          <span className="a-sub" style={{ fontSize: 13.5 }}>
+          <span className="a-sub" style={{ fontSize: 'calc(13.5px * var(--a-fs))' }}>
             {t('dayNothing')}
           </span>
         )}

@@ -871,6 +871,15 @@
 }
 
 @layer components {
+  /* The error boundaries' page (components/site/error-view.tsx). */
+  .error-view-title {
+    font-size: var(--text-4xl);
+  }
+  .error-view-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
   /* ═══════════════════════════════════════════════════════════════════════════
      LAYOUT PRIMITIVES
      Sections are separated by whitespace, never by rules, borders or cards.

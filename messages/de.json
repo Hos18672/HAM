@@ -768,6 +768,7 @@
     "next": "Nächste Sure",
     "allSurahs": "Alle Suren",
     "unavailable": "Der Quran kann gerade nicht geladen werden. Bitte versuchen Sie es in einigen Minuten noch einmal.",
+    "unavailableTitle": "Der Quran ist gerade nicht erreichbar",
     "ayahLabel": "Vers {n}",
     "pageOf": "Seite {n} von 604",
     "surahSelect": "Sure",

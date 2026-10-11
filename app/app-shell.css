@@ -963,6 +963,30 @@ a.a-hero {
   padding: 14px 16px;
   color: var(--ink);
 }
+/* Light mode: pale mint washed out on the cream paper, so the card is a
+   white sheet warming into mint, with the faint lattice and a hairline
+   edge. The icon tile turns mint to stand off it. */
+:root:not([data-theme='dark']) .a-continue {
+  border: 1px solid rgba(11, 93, 59, 0.1);
+  background-color: #ffffff;
+  background-image:
+    var(--a-lattice-light), linear-gradient(to left, #ffffff 0%, #f3f9f5 55%, #e3f1e8 100%);
+  box-shadow: var(--a-shadow-card);
+}
+:root:not([data-theme='dark'])[dir='ltr'] .a-continue {
+  background-image:
+    var(--a-lattice-light), linear-gradient(to right, #ffffff 0%, #f3f9f5 55%, #e3f1e8 100%);
+}
+:root:not([data-theme='dark']) .a-continue .a-ico[data-on='white'] {
+  background: var(--a-chip);
+  box-shadow: inset 0 0 0 1px rgba(11, 93, 59, 0.08);
+}
+:root:not([data-theme='dark']) .a-continue .a-progress {
+  background: #e4ece6;
+}
+:root:not([data-theme='dark']) .a-continue .a-play {
+  box-shadow: var(--a-shadow-btn);
+}
 .a-progress {
   display: block;
   block-size: 4px;

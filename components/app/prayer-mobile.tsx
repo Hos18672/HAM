@@ -100,8 +100,12 @@ export function PrayerMobile({ day: vienna, locale }: { day: PrayerDay; locale: 
         >
           <span className="a-dayswitch-day">{dayLabel}</span>
           <span className="a-sub">
-            {formatHijri(date, locale, at.timeZone)} ·{' '}
-            {formatDay(locale, date, 'dayMonth', { calendar: 'gregory' })}
+            {formatHijri(date, locale, at.timeZone)}
+            {/* The German line above is already the Gregorian date; the
+                Persian one is the solar date, so the Gregorian follows here. */}
+            {locale === 'de'
+              ? null
+              : ` · ${formatDay(locale, date, 'dayMonth', { calendar: 'gregory' })}`}
           </span>
         </button>
         <button

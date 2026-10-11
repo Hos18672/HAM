@@ -262,7 +262,7 @@ export function CalendarMobile({
       ) : null}
 
       <section className="a-stack" style={{ gap: 8 }} aria-labelledby="cal-m-month">
-        <h2 id="cal-m-month" className="a-label">
+        <h2 id="cal-m-month" className="a-head">
           {tApp('calThisMonth')}
         </h2>
         {listed.length === 0 ? (

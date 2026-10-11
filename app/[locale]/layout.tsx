@@ -7,7 +7,7 @@ import { locales, localeDirection } from '@/lib/i18n/config';
 import { readTheme } from '@/lib/preferences';
 import { THEME_COOKIE } from '@/components/site/theme';
 import { ThemeKeeper } from '@/components/site/theme-keeper';
-import { PhoneSplash } from '@/components/app/phone-splash';
+import { PhoneLoader } from '@/components/app/phone-loader';
 import { getSettings } from '@/lib/db/queries/content';
 import { PrintPlates } from '@/components/site/print-plates';
 import { PatternDefs } from '@/components/site/ornaments';
@@ -94,6 +94,7 @@ export default async function LocaleLayout({
   // subtree opts into dynamic rendering the moment anything reads it.
   const typed = requireLocale(locale);
 
+  const tBrand = await getTranslations({ locale: typed, namespace: 'brand' });
   const settings = await getSettings();
   const theme = await readTheme(settings.defaultTheme);
 
@@ -188,7 +189,7 @@ export default async function LocaleLayout({
           }}
         />
         {/*
-          The phone loader (`PhoneSplash`), armed the same way: before the
+          The phone loader (`PhoneLoader`), armed the same way: before the
           first paint, below 1024px, once per browsing session, on whichever
           page the app or the site was opened at.
         */}
@@ -197,6 +198,12 @@ export default async function LocaleLayout({
             __html:
               '(function(){try{' +
               "if(!matchMedia('(max-width: 1023.98px)').matches)return;" +
+              // Its fade-out is an animation, and reduced motion turns every
+              // animation off: it would never leave. So it never comes.
+              "if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;" +
+              // Not for automated browsers: the end-to-end tests drive the
+              // pages themselves, on software WebGL where it runs for ages.
+              'if(navigator.webdriver)return;' +
               "try{if(sessionStorage.getItem('ham:splash')==='1')return;" +
               "sessionStorage.setItem('ham:splash','1')}catch(e){}" +
               "document.documentElement.dataset.splash='1';" +
@@ -218,7 +225,7 @@ export default async function LocaleLayout({
       </head>
       <body>
         <NextIntlClientProvider>
-          <PhoneSplash />
+          <PhoneLoader captionTitle={tBrand('name')} captionSub={`${tBrand('sub')} · Wien`} />
           <ThemeKeeper />
           <PrintPlates />
           <PatternDefs />

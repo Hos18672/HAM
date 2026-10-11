@@ -95,7 +95,15 @@ export function HoursTable({ rows, byProgramme }: { rows: HoursRow[]; byProgramm
           <div key={row.days.join()} className="contact-dl-row" data-today={isToday || undefined}>
             <dt>
               {row.label}
-              {isToday ? <span className="visually-hidden"> ({t('today')})</span> : null}
+              {isToday ? (
+                <>
+                  <span className="visually-hidden"> ({t('today')})</span>
+                  {/* The phone card says it out loud; the desktop marks the row. */}
+                  <span className="contact-today-badge" aria-hidden="true">
+                    {t('today')}
+                  </span>
+                </>
+              ) : null}
             </dt>
             <dd className="tabular">
               {row.time ?? (

@@ -5,6 +5,7 @@ import { notFound } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 import {
   ArrowSquareOut,
+  Clock,
   EnvelopeSimple,
   InstagramLogo,
   MapPin,
@@ -168,7 +169,13 @@ export default async function ContactPage({ params }: { params: Promise<{ locale
         </div>
 
         <div className="contact-hours-block">
-          <h2 className="contact-label">{tHouse('hours')}</h2>
+          <h2 className="contact-label">
+            {/* Shown only in the phone card. */}
+            <span className="contact-hours-ico" aria-hidden="true">
+              <Clock size={22} weight="duotone" />
+            </span>
+            {tHouse('hours')}
+          </h2>
           <HoursTable rows={hours} byProgramme={tHouse('byProgramme')} />
         </div>
 

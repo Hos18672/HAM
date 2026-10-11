@@ -6285,6 +6285,11 @@ body:has(.contact-page) .footer-contact {
 .contact-hours-block {
   grid-area: hours;
 }
+/* Parts of the phone's hours card (app-shell.css); not on a wide screen. */
+.contact-hours-ico,
+.contact-today-badge {
+  display: none;
+}
 .contact-trans {
   grid-area: trans;
 }

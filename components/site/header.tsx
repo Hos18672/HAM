@@ -307,30 +307,58 @@ export function Brand() {
 const TAB_PATHS = TABS.map((tab) => tab.href);
 
 /**
- * How many of our own pages lie behind this one in the tab's history: one
- * more for each page opened, one fewer for each step back (a popstate). Kept
- * at module level, so it survives the page transition remounting the bar.
+ * How many of our own pages lie behind this one in the tab's history. Each
+ * history entry carries its position (`hamIdx` in `history.state`): a page
+ * opened gets one more than the page it was opened from, and a back or
+ * forward step reads the position of the entry it lands on. Counting every
+ * popstate as a step back went wrong as soon as someone used the browser's
+ * Forward, which fires the same event. Kept at module level, so it survives
+ * the page transition remounting the bar.
+ *
  * The back button steps back through the history while there is something
  * of ours behind, and goes to the page's parent otherwise — rather than
  * leaving the site, or closing the app.
  */
 let depth = 0;
 let lastPath: string | null = null;
-let popped = false;
+let poppedAt: string | null = null;
+let poppedTo: number | null = null;
 let listening = false;
+
+function indexIn(state: unknown): number | null {
+  const value = (state as { hamIdx?: unknown } | null)?.hamIdx;
+  return typeof value === 'number' ? value : null;
+}
+
+function stamp(index: number) {
+  window.history.replaceState({ ...(window.history.state ?? {}), hamIdx: index }, '');
+}
 
 function useHistoryDepth(pathname: string) {
   useEffect(() => {
     if (!listening) {
       listening = true;
-      window.addEventListener('popstate', () => {
-        popped = true;
+      window.addEventListener('popstate', (event) => {
+        poppedAt = window.location.href;
+        poppedTo = indexIn(event.state);
       });
     }
-    if (lastPath !== null && lastPath !== pathname) {
-      depth = popped ? Math.max(0, depth - 1) : depth + 1;
+    const stamped = indexIn(window.history.state);
+    // A step that only changed the query never reaches here, so a pop counts
+    // only while the address is still the one it landed on.
+    const popped = poppedAt === window.location.href;
+    if (lastPath === null) {
+      depth = stamped ?? 0;
+    } else if (popped) {
+      // The entry's own position when it has one; the router may have
+      // replaced its state since, and then a step back is the best guess.
+      depth = poppedTo ?? stamped ?? Math.max(0, depth - 1);
+    } else if (lastPath !== pathname) {
+      depth = stamped ?? depth + 1;
     }
-    popped = false;
+    if (stamped !== depth) stamp(depth);
+    poppedAt = null;
+    poppedTo = null;
     lastPath = pathname;
   }, [pathname]);
 }

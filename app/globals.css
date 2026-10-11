@@ -8284,3 +8284,8 @@ body:has(.edit-bar) .tab-bar,
   grid-template-columns: auto minmax(0, 1fr);
   gap: var(--space-2);
 }
+
+/* Persian has no italic: the browser would slant the letters instead. */
+:root[dir='rtl'] :is(.pull-quote, .poem, .contact-kicker, .brand-sub, .pstrip-note) {
+  font-style: normal;
+}

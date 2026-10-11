@@ -884,7 +884,7 @@ a.a-hero {
   min-inline-size: 0;
   gap: 1px;
   padding: 4px 1px;
-  border-radius: 6px;
+  border-radius: 9px;
   background: rgba(247, 243, 232, 0.07);
   color: var(--a-on-dark);
 }

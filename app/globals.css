@@ -3279,7 +3279,7 @@
      movement at all brings it back (see `use-reader`). */
   .reader-present-btn[aria-pressed='true'] {
     background: var(--gold);
-    color: var(--paper);
+    color: var(--color-on-gold);
   }
   .reader-present-btn[aria-pressed='true'] > svg {
     color: inherit;

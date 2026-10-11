@@ -1949,4 +1949,10 @@ a.a-hero {
   .qibla-go {
     border-radius: var(--r-pill);
   }
+  /* The light stage turns --stage white, and white on gold is 2.35:1. */
+  .qibla-go,
+  .qibla-status[data-facing='yes'],
+  .qibla-span-btn[aria-pressed='true'] {
+    color: #073b29;
+  }
 }

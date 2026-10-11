@@ -110,7 +110,7 @@ export async function Footer({ locale, theme }: { locale: Locale; theme: ThemeVa
 
         <div className="footer-rule">
           <p className="ltr-island" style={{ opacity: 0.8 }}>
-            © {digits(new Date().getFullYear(), locale)} {tBrand('name')} · Wien
+            © {digits(new Date().getFullYear(), locale)} {tBrand('name')} · {t('city')}
           </p>
           <div className="footer-prefs">
             <LocaleSwitch className="seg-dark" />

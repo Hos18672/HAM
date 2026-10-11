@@ -713,7 +713,8 @@
     "tagline": "Ein Haus für Bildung, Kultur, Glauben und Begegnung in Wien-Hernals — offen für alle.",
     "updated": "Stand: {date}",
     "visit": "Besuchen",
-    "today": "Heute"
+    "today": "Heute",
+    "city": "Wien"
   },
   "error": {
     "notFoundTitle": "Diese Seite gibt es nicht",

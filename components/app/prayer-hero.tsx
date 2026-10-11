@@ -50,7 +50,9 @@ export function PrayerHero({ day: initial, locale }: { day: PrayerDay; locale: L
     <Link href="/prayer" className="a-dark a-hero a-rise" aria-live="off">
       <span className="a-hero-top">
         <span className="a-hero-date">
-          {formatDay(locale, date, 'weekday')} · {formatHijri(date, locale, day.place.timeZone)}
+          <span>{formatDay(locale, date, 'weekday')}</span>
+          {' · '}
+          <span>{formatHijri(date, locale, day.place.timeZone)}</span>
         </span>
         <span className="a-hero-where">
           <MapPin size={14} weight="duotone" aria-hidden="true" />

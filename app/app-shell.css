@@ -496,6 +496,15 @@ a.a-dark {
 .a-chips::-webkit-scrollbar {
   display: none;
 }
+/* A soft edge where the row runs on, so a cut-off chip reads as "scroll". */
+.a-chips {
+  --a-chips-fade: linear-gradient(to right, #000 calc(100% - 40px), transparent);
+  -webkit-mask-image: var(--a-chips-fade);
+  mask-image: var(--a-chips-fade);
+}
+:root[dir='rtl'] .a-chips {
+  --a-chips-fade: linear-gradient(to left, #000 calc(100% - 40px), transparent);
+}
 .a-chip {
   flex: none;
   display: inline-flex;

@@ -14,6 +14,7 @@ import { contactHref } from '@/lib/topics';
 import { Icon } from '@/components/site/icon';
 import { pageMetadata } from '@/lib/page-meta';
 import { locales } from '@/lib/i18n/config';
+import { Timing } from '@/components/site/timing';
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -78,7 +79,9 @@ export default async function SportPage({ params }: { params: Promise<{ locale: 
                 {when ? (
                   <div>
                     <dt>{t('schedule')}</dt>
-                    <dd>{when}</dd>
+                    <dd>
+                      <Timing text={when} />
+                    </dd>
                   </div>
                 ) : null}
               </dl>
@@ -104,7 +107,7 @@ export default async function SportPage({ params }: { params: Promise<{ locale: 
 
       {/* One compact row per sport — what, for whom, when — filtered by group,
           each with its own way to sign up. */}
-      <section className="section section-alt">
+      <section className="section section-alt app-list">
         <div className="page">
           <FilterableList
             items={rows}

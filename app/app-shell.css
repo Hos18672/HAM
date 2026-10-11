@@ -2030,3 +2030,84 @@ a.a-hero {
     inset-inline: -10px;
   }
 }
+
+/* ══ Courses and sport on a phone: the app's list look, not the site's ══════
+   (cards on the paper ground, app chips, sans titles). */
+@media (max-width: 1023.98px) {
+  .app-list.section-alt {
+    background: transparent;
+    border-block: 0;
+    padding-block: 4px 28px;
+  }
+  .app-list .chips {
+    gap: 8px;
+    padding-block: 2px 8px;
+    -webkit-mask-image: var(--a-chips-fade);
+    mask-image: var(--a-chips-fade);
+    --a-chips-fade: linear-gradient(to right, #000 calc(100% - 40px), transparent);
+  }
+  :root[dir='rtl'] .app-list .chips {
+    --a-chips-fade: linear-gradient(to left, #000 calc(100% - 40px), transparent);
+  }
+  .app-list .chips > .tag {
+    block-size: 38px;
+    padding: 0 16px;
+    border: 0;
+    border-radius: var(--r-pill);
+    background: var(--a-card);
+    color: var(--head);
+    box-shadow: 0 2px 10px rgba(7, 59, 41, 0.06);
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0;
+    text-transform: none;
+    white-space: nowrap;
+  }
+  .app-list .chips > .tag:hover {
+    transform: none;
+  }
+  .app-list .chips > .tag[aria-pressed='true'] {
+    background: var(--btnBg);
+    color: var(--btnFg);
+    font-weight: 700;
+    box-shadow: 0 6px 14px rgba(7, 59, 41, 0.22);
+  }
+  .app-list .course-card,
+  .app-list .sport-row {
+    border: 0;
+    border-radius: var(--a-r-lg);
+    background: var(--a-card);
+    box-shadow: var(--a-shadow-card);
+  }
+  .app-list .course-card .tag {
+    padding: 4px 10px;
+    border: 0;
+    background: var(--a-chip);
+    color: var(--head);
+    font-size: 12.5px;
+    letter-spacing: 0;
+    text-transform: none;
+  }
+  .app-list .card-title,
+  .app-list .sport-row-title {
+    font-family: inherit;
+    font-size: 17px;
+    font-weight: 800;
+    line-height: 1.35;
+    color: var(--head);
+  }
+  /* Label over value: two narrow columns broke every value over 2-3 lines. */
+  .app-list .meta-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+    font-size: 14px;
+  }
+  .app-list .meta-grid dt {
+    margin-block-start: 6px;
+    font-size: 12px;
+  }
+  .app-list .meta-grid dt:first-child,
+  .app-list .meta-grid > div:first-child dt {
+    margin-block-start: 0;
+  }
+}

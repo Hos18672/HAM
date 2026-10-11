@@ -9,6 +9,7 @@ import type { Locale } from '@/lib/i18n/config';
 import type { Course } from '@/lib/db/queries/content';
 import { formatTiming } from '@/lib/schedule';
 import { contactHref } from '@/lib/topics';
+import { Timing } from '@/components/site/timing';
 
 /**
  * The badge inside a course card's star.
@@ -101,7 +102,9 @@ export async function CourseCard({ course, locale }: { course: Course; locale: L
         {when ? (
           <div>
             <dt>{t('schedule')}</dt>
-            <dd>{when}</dd>
+            <dd>
+              <Timing text={when} />
+            </dd>
           </div>
         ) : null}
         {course.languages ? (

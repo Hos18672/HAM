@@ -57,7 +57,7 @@ export default async function CoursesPage({ params }: { params: Promise<{ locale
       <PageHead header={header} locale={typed} />
 
       {/* The design gives this page the ruled white ground throughout. */}
-      <section className="section section-alt" data-rise>
+      <section className="section section-alt app-list" data-rise>
         <div className="page">
           <FilterableList
             items={items}

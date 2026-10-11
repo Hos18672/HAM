@@ -109,7 +109,7 @@ export default async function MorePage({ params }: { params: Promise<{ locale: s
 
   return (
     <div className="a-screen more-page">
-      <h1 className="visually-hidden">{t('more')}</h1>
+      <h1 className="visually-hidden app-page-title">{t('more')}</h1>
       <ul className="more-tiles">
         {TILES.map((tile) => {
           const Icon = tile.icon;

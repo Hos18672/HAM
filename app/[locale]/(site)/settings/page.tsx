@@ -28,7 +28,7 @@ export default async function SettingsPage({ params }: { params: Promise<{ local
   const theme = await readTheme((await getSettings()).defaultTheme);
   return (
     <>
-      <h1 className="visually-hidden">{t('settings')}</h1>
+      <h1 className="visually-hidden app-page-title">{t('settings')}</h1>
       <SettingsScreen theme={theme} />
     </>
   );

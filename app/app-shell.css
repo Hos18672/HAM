@@ -2111,3 +2111,25 @@ a.a-hero {
     margin-block-start: 0;
   }
 }
+
+/* ══ More and Settings on a wide screen: the title the phone bar carries ═══ */
+@media (min-width: 1024px) {
+  .visually-hidden.app-page-title {
+    position: static;
+    box-sizing: border-box;
+    inline-size: auto;
+    block-size: auto;
+    max-inline-size: 640px;
+    margin: 32px auto 4px;
+    padding-inline: 16px;
+    overflow: visible;
+    clip-path: none;
+    white-space: normal;
+    font-size: var(--text-3xl);
+    color: var(--head);
+  }
+  .more-page > .app-page-title {
+    margin: 0 0 4px;
+    padding-inline: 0;
+  }
+}

@@ -319,6 +319,48 @@ async function main() {
     );
   }
 
+  // The admin needs the server and the database, so it cannot be in the
+  // snapshot. Rather than a bare "page not found" where people look for it,
+  // say why, and where it does run.
+  for (const route of ['admin', 'login']) {
+    await writeFileAt(
+      join(OUT, route, 'index.html'),
+      `<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>Verwaltung · Haus aller Menschen</title>
+    <style>
+      :root { color-scheme: light dark; --bg: #f6f1e6; --card: #fff; --ink: #1d1a14; --dim: #5d574a; --green: #0b5d3b; }
+      @media (prefers-color-scheme: dark) { :root { --bg: #04180f; --card: #0b3125; --ink: #f7f3e8; --dim: #c9c2b0; --green: #dcbb7b; } }
+      body { margin: 0; min-height: 100vh; display: grid; place-items: center; padding: 16px; box-sizing: border-box;
+        background: var(--bg); color: var(--ink); font: 16px/1.6 system-ui, sans-serif; }
+      main { max-width: 480px; padding: 28px 24px; border-radius: 24px; background: var(--card); box-shadow: 0 2px 12px rgba(7, 59, 41, 0.08); }
+      h1 { margin: 0 0 8px; font-size: 22px; color: var(--green); }
+      p { margin: 0 0 12px; color: var(--dim); }
+      [dir='rtl'] { margin-block-start: 20px; padding-block-start: 16px; border-top: 1px solid rgba(127, 127, 127, 0.25); }
+      a { color: var(--green); font-weight: 700; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Verwaltung</h1>
+      <p>Dies ist nur eine Vorschau der öffentlichen Seiten. Die Verwaltung braucht einen Server und die Datenbank und läuft deshalb nur auf der echten Website (Netlify), unter <b>/admin</b>.</p>
+      <p><a href="../${defaultLocale}/">Zur Vorschau</a></p>
+      <div dir="rtl" lang="fa">
+        <h1>مدیریت</h1>
+        <p>این فقط پیش‌نمایش صفحه‌های عمومی است. بخش مدیریت به سرور و پایگاه داده نیاز دارد و فقط روی سایت اصلی (Netlify) در نشانی <b>/admin</b> کار می‌کند.</p>
+        <p><a href="../fa/">رفتن به پیش‌نمایش</a></p>
+      </div>
+    </main>
+  </body>
+</html>
+`,
+    );
+  }
+
   await writeFileAt(join(OUT, 'robots.txt'), 'User-agent: *\nDisallow: /\n');
   // Pages would otherwise run the artefact through Jekyll, which drops
   // directories beginning with an underscore — _next among them.

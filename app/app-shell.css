@@ -297,6 +297,10 @@
   flex: 1;
   min-inline-size: 0;
 }
+/* A growing text column may shrink below its longest word. */
+.a-stack.a-grow {
+  grid-template-columns: minmax(0, 1fr);
+}
 .a-stack {
   display: grid;
   gap: 2px;
@@ -306,6 +310,10 @@
   font-size: 16px;
   font-weight: 700;
   color: var(--head);
+  /* German compounds ("Nachbarschaftsfrühstück") would otherwise set the
+     row's minimum width and push the trailing button off a 340px screen. */
+  overflow-wrap: anywhere;
+  hyphens: auto;
 }
 .a-sub {
   font-size: 12.5px;

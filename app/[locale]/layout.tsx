@@ -97,7 +97,13 @@ export default async function LocaleLayout({
   const theme = await readTheme(settings.defaultTheme);
 
   return (
-    <html lang={typed} dir={localeDirection[typed]} data-theme={theme} suppressHydrationWarning>
+    <html
+      lang={typed}
+      dir={localeDirection[typed]}
+      data-theme={theme}
+      data-scroll-behavior="smooth"
+      suppressHydrationWarning
+    >
       <head>
         {/*
           The reader's theme, before the first paint.

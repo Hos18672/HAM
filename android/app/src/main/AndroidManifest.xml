@@ -42,15 +42,15 @@
                 android:name="android.support.customtabs.trusted.NAVIGATION_BAR_COLOR"
                 android:resource="@color/bar" />
             <!--
-              The launch screen while Chrome opens the site: the mark on the
-              paper colour, fading into the page's own bird loader.
+              The launch screen while Chrome opens the site: plain loader green,
+              no mark, so the page's birds are the first thing that builds it.
             -->
             <meta-data
                 android:name="android.support.customtabs.trusted.SPLASH_IMAGE_DRAWABLE"
                 android:resource="@drawable/splash" />
             <meta-data
                 android:name="android.support.customtabs.trusted.SPLASH_SCREEN_BACKGROUND_COLOR"
-                android:resource="@color/app_paper" />
+                android:resource="@color/app_band" />
             <meta-data
                 android:name="android.support.customtabs.trusted.SPLASH_SCREEN_FADE_OUT_DURATION"
                 android:value="300" />

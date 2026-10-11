@@ -173,7 +173,7 @@ export function DuasMobile({ duas }: { duas: DuaItem[] }) {
                 </span>
                 <span className="a-stack a-grow">
                   <span className="a-title">{dua.title}</span>
-                  <span className="a-sub clamp-1">{dua.whenToRead}</span>
+                  <span className="a-sub clamp-2">{dua.whenToRead}</span>
                 </span>
               </>
             );

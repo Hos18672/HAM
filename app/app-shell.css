@@ -2169,3 +2169,116 @@ a.a-hero {
     padding-inline: 0;
   }
 }
+
+/* ── The phone loader ──────────────────────────────────────────────────────
+   See components/app/phone-splash.tsx. Hidden unless the head script armed
+   it; then birds fly in over a faint ghost of the mark, the mark is revealed
+   under them right to left, it settles, and the screen fades onto the page.
+   About 2.7s from first paint to gone, and it never waits for a script. */
+.a-splash {
+  display: none;
+}
+@media (max-width: 1023.98px) {
+  :root[data-splash] .a-splash {
+    position: fixed;
+    inset: 0;
+    z-index: 2147483000;
+    display: grid;
+    place-items: center;
+    background: var(--paper, #f7f3e8);
+    animation: a-splash-out 0.4s ease 2.35s forwards;
+  }
+}
+.a-splash-mark {
+  position: relative;
+  inline-size: min(200px, 56vw);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: var(--mark-ground);
+  animation: a-splash-settle 0.5s var(--a-ease-out) 1.95s both;
+}
+.a-splash-ghost,
+.a-splash-logo {
+  position: absolute;
+  inset: 0;
+  background: var(--splash-logo) center / contain no-repeat;
+}
+.a-splash-ghost {
+  opacity: 0.1;
+}
+.a-splash-logo {
+  animation: a-splash-build 1.45s cubic-bezier(0.45, 0, 0.4, 1) 0.6s both;
+}
+.a-splash-bird {
+  position: absolute;
+  inline-size: 32px;
+  block-size: 13px;
+  /* Centred on its landing spot; `left` is physical, so is this. */
+  margin: -6.5px 0 0 -16px;
+  color: #a9823f;
+  animation: a-splash-fly 1s cubic-bezier(0.25, 0.6, 0.3, 1) var(--d) both;
+}
+.a-splash-bird svg {
+  display: block;
+  inline-size: 100%;
+  block-size: 100%;
+  fill: currentColor;
+  animation: a-splash-flap 0.2s ease-in-out infinite alternate;
+}
+:root[data-theme='dark'] .a-splash-bird {
+  color: #ede1be;
+}
+@keyframes a-splash-fly {
+  0% {
+    transform: translate(var(--dx), var(--dy)) scale(1.5);
+    opacity: 0;
+  }
+  12% {
+    opacity: 1;
+  }
+  82% {
+    transform: none;
+    opacity: 1;
+  }
+  100% {
+    transform: scale(0.2);
+    opacity: 0;
+  }
+}
+@keyframes a-splash-flap {
+  to {
+    transform: scaleY(-0.45);
+  }
+}
+@keyframes a-splash-build {
+  from {
+    clip-path: inset(0 0 0 100%);
+  }
+  to {
+    clip-path: inset(0);
+  }
+}
+@keyframes a-splash-settle {
+  50% {
+    transform: scale(1.04);
+  }
+}
+@keyframes a-splash-out {
+  to {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .a-splash-bird {
+    display: none;
+  }
+  .a-splash-mark,
+  .a-splash-logo {
+    animation: none;
+  }
+  :root[data-splash] .a-splash {
+    animation-delay: 0.6s;
+  }
+}

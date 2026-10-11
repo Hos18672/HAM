@@ -7,6 +7,7 @@ import { locales, localeDirection } from '@/lib/i18n/config';
 import { readTheme } from '@/lib/preferences';
 import { THEME_COOKIE } from '@/components/site/theme';
 import { ThemeKeeper } from '@/components/site/theme-keeper';
+import { PhoneSplash } from '@/components/app/phone-splash';
 import { getSettings } from '@/lib/db/queries/content';
 import { PrintPlates } from '@/components/site/print-plates';
 import { PatternDefs } from '@/components/site/ornaments';
@@ -187,6 +188,22 @@ export default async function LocaleLayout({
           }}
         />
         {/*
+          The phone loader (`PhoneSplash`), armed the same way: before the
+          first paint, below 1024px, once per browsing session, on whichever
+          page the app or the site was opened at.
+        */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              '(function(){try{' +
+              "if(!matchMedia('(max-width: 1023.98px)').matches)return;" +
+              "try{if(sessionStorage.getItem('ham:splash')==='1')return;" +
+              "sessionStorage.setItem('ham:splash','1')}catch(e){}" +
+              "document.documentElement.dataset.splash='1';" +
+              '}catch(e){}})()',
+          }}
+        />
+        {/*
           No font preload link here, on purpose.
 
           The faces are imported by the stylesheet and webpack emits them
@@ -201,6 +218,7 @@ export default async function LocaleLayout({
       </head>
       <body>
         <NextIntlClientProvider>
+          <PhoneSplash />
           <ThemeKeeper />
           <PrintPlates />
           <PatternDefs />

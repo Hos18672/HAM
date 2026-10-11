@@ -1990,3 +1990,26 @@ a.a-hero {
     color: var(--ink2);
   }
 }
+
+/* ══ Qibla place toggle: on a narrow phone a label wraps rather than being cut */
+@media (max-width: 1023.98px) {
+  .qibla-seg {
+    border-radius: 24px;
+  }
+  .qibla-seg-btn {
+    block-size: auto;
+    min-block-size: 40px;
+    padding-block: 4px;
+    border-radius: 20px;
+    white-space: normal;
+    line-height: 1.25;
+    text-align: center;
+  }
+  .qibla-seg-btn > span {
+    overflow: visible;
+    text-overflow: clip;
+  }
+  .qibla-seg-btn > svg {
+    flex: none;
+  }
+}

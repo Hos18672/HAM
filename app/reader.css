@@ -2123,10 +2123,15 @@ button.rd-medal:active {
   color: var(--rd-ink2);
 }
 .rd-pagenav-word {
+  /* Up to two lines, so "Vorheriges Bittgebet" is read whole on a phone. */
+  display: -webkit-box;
   max-inline-size: 30vw;
   overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  line-height: 1.25;
+  text-align: center;
+  overflow-wrap: break-word;
 }
 .rd-dua .rd-surah-row-ar {
   max-inline-size: 7.5em;

@@ -2013,3 +2013,20 @@ a.a-hero {
     flex: none;
   }
 }
+
+/* ══ Small text links: a 44px hit area around them, the layout untouched ═══ */
+@media (max-width: 1023.98px) {
+  .a-head a,
+  .a-link,
+  .contact-inline-link {
+    position: relative;
+  }
+  .a-head a::after,
+  .a-link::after,
+  .contact-inline-link::after {
+    content: '';
+    position: absolute;
+    inset-block: min(0px, calc((100% - 44px) / 2));
+    inset-inline: -10px;
+  }
+}

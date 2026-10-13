@@ -4,5 +4,4 @@ local.properties
 *.keystore
 *.jks
 # Written by scripts/export-content.ts before every build.
-app/src/main/assets/duas.json
-app/src/main/assets/verses.json
+app/src/main/assets/*.json

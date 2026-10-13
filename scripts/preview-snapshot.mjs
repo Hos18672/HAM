@@ -268,6 +268,13 @@ async function main() {
   if (feed.status !== 200) throw new Error(`widget-data/calendar.json returned ${feed.status}`);
   await writeFileAt(join(OUT, 'widget-data', 'calendar.json'), await feed.text());
 
+  // The Android app's content feed, at the same paths the live site serves it.
+  for (const locale of locales) {
+    const app = await fetch(`${ORIGIN}${BASE_PATH}/app-data/${locale}.json`);
+    if (app.status !== 200) throw new Error(`app-data/${locale}.json returned ${app.status}`);
+    await writeFileAt(join(OUT, 'app-data', `${locale}.json`), await app.text());
+  }
+
   // The icons, which are routes built from `app/icon.*` rather than files in
   // public/. Fetched as bytes, not text: one of them is a PNG, and reading a
   // PNG as UTF-8 turns it into something that is no longer a PNG.

@@ -8,8 +8,9 @@ import android.net.Uri;
 import android.view.View;
 import android.widget.RemoteViews;
 import java.util.Locale;
+import com.google.androidbrowserhelper.trusted.LauncherActivity;
 
-/** Links into the app: the site's addresses, which the app opens on the matching native screen. */
+/** Links into the site, opened in the app itself (the Trusted Web Activity). */
 final class Site {
     private Site() {}
 
@@ -54,8 +55,8 @@ final class Site {
     static PendingIntent open(Context context, String path) {
         String url = url(context, path);
         Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url))
-            .setClass(context, MainActivity.class)
-            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            .setClass(context, LauncherActivity.class)
+            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         return PendingIntent.getActivity(
             context, url.hashCode(), intent, PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT);
     }

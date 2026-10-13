@@ -12,26 +12,11 @@
  *                       (SITE_URL, `/widget-data/calendar.json`), for a widget
  *                       placed before the phone has been online. Best effort:
  *                       the widget fetches the feed itself anyway.
- *   assets/dua-texts.json every du'a's full text (Arabic, Persian, German), for
- *                       the app's reader, offline
- *   assets/quran-ar.json, quran-fa.json, quran-de.json
- *                       the whole Quran for the app's mushaf: the Uthmani text
- *                       with each verse's surah, number, page, juz, quarter
- *                       hizb and prostration, and the two translations in the
- *                       same order
- *   assets/cities.json  the prayer page's cities
- *   assets/app-data-fa.json, app-data-de.json
- *                       the app's content feed (`/app-data/{locale}.json`) as
- *                       the site serves it now. Best effort: the app fetches
- *                       it itself anyway.
  */
 import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { DUAS } from '../../lib/db/seed-data';
-import { DUA_TEXT_SLUGS, duaText } from '../../lib/dua-texts';
-import { CITIES } from '../../lib/cities';
-import { BASMALA } from '../../lib/quran-constants';
 
 const OUT = join(dirname(fileURLToPath(import.meta.url)), '..', 'app', 'src', 'main', 'assets');
 
@@ -115,123 +100,7 @@ async function main() {
   } catch (error) {
     console.warn(`no calendar feed from ${site} (${String(error)}); the widget will fetch it`);
   }
-  const texts = Object.fromEntries(
-    DUA_TEXT_SLUGS.map((slug) => {
-      const text = duaText(slug)!;
-      return [slug, { origin: text.origin, lines: text.lines }];
-    }),
-  );
-  await writeFile(join(OUT, 'dua-texts.json'), JSON.stringify(texts));
-
-  await writeQuran();
-
-  await writeFile(
-    join(OUT, 'cities.json'),
-    JSON.stringify(
-      CITIES.map((c) => ({
-        id: c.id,
-        lat: c.latitude,
-        lng: c.longitude,
-        tz: c.timeZone,
-        group: c.group,
-        de: c.de,
-        fa: c.fa,
-      })),
-    ),
-  );
-
-  for (const locale of ['fa', 'de']) {
-    try {
-      const feed = await fetchJson(`${site}/app-data/${locale}.json`);
-      await writeFile(join(OUT, `app-data-${locale}.json`), JSON.stringify(feed));
-    } catch (error) {
-      console.warn(
-        `no app feed (${locale}) from ${site} (${String(error)}); the app will fetch it`,
-      );
-    }
-  }
-
   console.log(`wrote ${Object.keys(duas).length} du'as and ${verses.length} verses to ${OUT}`);
-}
-
-type FullAyah = {
-  number: number;
-  numberInSurah: number;
-  text: string;
-  juz: number;
-  page: number;
-  hizbQuarter: number;
-  sajda: unknown;
-};
-type FullSurah = {
-  number: number;
-  name: string;
-  englishName: string;
-  revelationType: string;
-  ayahs: FullAyah[];
-};
-
-/** The marks a Basmala's spelling varies in between surahs; compared without them. */
-const bare = (word: string) =>
-  word.replace(/[\u0610-\u061A\u064B-\u065F\u0670\u06D6-\u06ED]/g, '').replace(/\u0671/g, '\u0627');
-const BASMALA_BARE = BASMALA.split(' ').map(bare).join(' ');
-
-/** The Basmala folded into verse one of a surah, taken off as the site's reader does. */
-function withoutBasmala(text: string): string {
-  const words = text
-    .replace(/^\uFEFF/, '')
-    .trim()
-    .split(/\s+/);
-  return words.slice(0, 4).map(bare).join(' ') === BASMALA_BARE
-    ? words.slice(4).join(' ')
-    : words.join(' ');
-}
-
-async function writeQuran() {
-  const edition = async (name: string) =>
-    (
-      (await fetchJson(`https://api.alquran.cloud/v1/quran/${name}`)) as {
-        data: { surahs: FullSurah[] };
-      }
-    ).data.surahs;
-  const [ar, fa, de] = [
-    await edition('quran-uthmani'),
-    await edition(TRANSLATION.fa),
-    await edition(TRANSLATION.de),
-  ];
-  if (ar.length !== 114 || fa.length !== 114 || de.length !== 114) {
-    throw new Error('the Quran editions do not have 114 surahs');
-  }
-  const surahs = ar.map((s) => [
-    s.name,
-    s.englishName,
-    s.revelationType === 'Medinan' ? 1 : 0,
-    s.ayahs.length,
-  ]);
-  // One row per verse: [surah, verse, page, juz, quarter hizb, prostration, text].
-  const ayahs = ar.flatMap((s) =>
-    s.ayahs.map((a, i) => [
-      s.number,
-      a.numberInSurah,
-      a.page,
-      a.juz,
-      a.hizbQuarter,
-      a.sajda ? 1 : 0,
-      i === 0 && s.number !== 1 && s.number !== 9
-        ? withoutBasmala(a.text)
-        : a.text.replace(/^\uFEFF/, ''),
-    ]),
-  );
-  if (ayahs.length !== 6236) throw new Error(`the Quran has ${ayahs.length} verses, not 6236`);
-  await writeFile(join(OUT, 'quran-ar.json'), JSON.stringify({ basmala: BASMALA, surahs, ayahs }));
-  for (const [name, surahsOf] of [
-    ['fa', fa],
-    ['de', de],
-  ] as const) {
-    const lines = surahsOf.flatMap((s) => s.ayahs.map((a) => a.text));
-    if (lines.length !== 6236) throw new Error(`${name}: ${lines.length} verses`);
-    await writeFile(join(OUT, `quran-${name}.json`), JSON.stringify(lines));
-  }
 }
 
 main().catch((error) => {

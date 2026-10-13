@@ -283,58 +283,52 @@ The site installs as an app (web manifest + `public/sw.js`). Installed, it offer
   coming events, the occasions and Austrian public holidays of the next year,
   and each day's Hijri and Persian date from the first of last month, in both languages. The preview snapshot
   saves it at the same path, so the widgets ask one URL wherever the site lives.
-- **An Android app** in `android/` — a native app in Kotlin and Jetpack Compose,
-  not a web view. One activity, edge to edge, with a bottom bar on phones and a
-  navigation rail on tablets, unfolded foldables, landscape and Chromebooks; every
-  orientation and window size. Persian (right to left) and German, light and dark,
-  switchable inside the app. Its screens: home (next prayer and countdown, today's
-  times, the three calendars, verse of the day, coming events), prayer times
-  (computed on the phone for Vienna, a listed city or the phone's own position,
-  with the month table), a qibla compass (rotation sensor, corrected to true
-  north), the whole Quran offline (surah/juz/bookmark index, a right-to-left
-  mushaf pager, verse by verse with the translation, recitation from the Islamic
-  Network CDN that follows the verse and turns the page), the du'as with their
-  full texts offline, the calendar, events (add to the phone's calendar, share),
-  courses, culture, sport, community, gallery, about, membership and IBAN,
-  contact, settings and search. Links to the site open the matching native screen.
-  The content comes from the site's `/app-data/{fa,de}.json` (`lib/app-data.ts`,
-  saved by the preview snapshot too), kept on the phone; the build ships the
-  Quran, the du'a texts, the cities and the latest feed, so the app opens offline.
-  Besides, four home-screen widgets: prayer times (a Java port of the calculation
-  tested against the TypeScript), a verse of the day, the du'a of the day with
-  buttons into the app, and the calendar (the month with the Hijri day under each
-  date, occasions and events dotted, holidays in red, then the next events). A
-  fa/de pill on each widget switches the widgets and the app between Persian and
-  German. **The adhan**: an alarm for each chosen prayer (Vienna's times), a
-  notification with "stop" and "qibla", re-armed after a reboot or a clock change;
-  switched in the app's settings.
+- **An Android app** in `android/` — the site in a Trusted Web Activity, plus four
+  home-screen widgets: prayer times (computed on the phone, a Java port tested
+  against the TypeScript), a verse of the day (Arabic with Makarem Shirazi's or
+  Bubenheim & Elyas' translation), the du'a of the day with buttons into the app,
+  and the calendar (the month as on the prayer page — Hijri day under each date,
+  today ringed, occasions and events dotted, holidays in red, arrows through the
+  months — then the next events and occasions, as many as the widget's height
+  fits; from the feed, kept for offline). In the phone's dark mode the widgets
+  take the site's deep green and gold. A fa/de pill on each widget switches all of
+  them between Persian and German; without it they follow the phone.
+  **The adhan** is the app's own too: an alarm for the next chosen prayer (Vienna's
+  times, the same calculation), a notification with "stop" and "qibla", re-armed
+  after a reboot or a clock change. Its settings screen (`AdhanActivity`) opens from
+  the site's /settings and the bells on the prayer page through `hamapp://adhan`;
+  it asks for notifications and, on Android 12+, for alarms at the exact minute.
   On a phone the site itself is laid out as the app design: a top bar, five tabs
   and a "More" page under 1024px, desktop unchanged (`app/app-shell.css`,
   `components/app/`).
   The **Android app** workflow builds it on every push and attaches the APK to
   the run. With the four `ANDROID_KEY*` secrets it also builds a signed release
-  APK and the `.aab` for Google Play. The repository variable `ANDROID_SITE_URL`
-  sets the site it reads (the preview until then).
-
-  **Publishing on Google Play:**
-  1. Create an upload key once on your own computer
-     (`keytool -genkeypair -v -keystore upload.jks -keyalg RSA -keysize 2048 -validity 10000 -alias upload`)
-     and add it as the repository secrets `ANDROID_KEYSTORE_BASE64` (`base64 -w0 upload.jks`),
-     `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS` and `ANDROID_KEY_PASSWORD`. Keep the file safe.
-  2. Set `ANDROID_SITE_URL` to the real domain once the site is live there, and run the workflow.
-  3. In the Play Console create the app (package `at.hausallermenschen.app`), enrol in Play App
-     Signing, and upload the `.aab` from the run's artifact to internal testing, then production.
-  4. Store listing: the app's name in both languages, a short and a full description, the 512×512
-     icon, a 1024×500 feature graphic and phone and tablet screenshots. Privacy policy:
-     the site's `/de/privacy`. Data safety: no data collected or shared (the position is
-     used on the phone only, nothing is sent; no accounts, no analytics). Content rating:
-     reference app, everyone. Target audience: adults (not designed for children).
-  5. Permissions to declare: exact alarms are used for the adhan at the minute (a
-     prayer-time alarm is an accepted use); location is optional, foreground only.
-     The app targets Android 16 (API 36), the level Play requires of new apps and updates.
+  and an `.aab` for Google Play, and prints the key's SHA-256: put that in
+  `ANDROID_CERT_SHA256` on the site and the app opens without Chrome's address bar.
+  The repository variable `ANDROID_SITE_URL` sets the site it opens (the preview
+  until then). GitHub Pages cannot serve asset links for a sub-path, so against
+  the preview the app shows the address bar.
 
   Building locally needs the Android SDK: `npx tsx android/scripts/export-content.ts`,
   then `cd android && ./gradlew assembleDebug`.
+
+  **Publishing on Google Play** (the app targets Android 16, API 36, as Play requires):
+  1. Create an upload key once on your own computer
+     (`keytool -genkeypair -v -keystore upload.jks -keyalg RSA -keysize 2048 -validity 10000 -alias upload`)
+     and add the repository secrets `ANDROID_KEYSTORE_BASE64` (`base64 -w0 upload.jks`),
+     `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS` and `ANDROID_KEY_PASSWORD`. Keep the file safe.
+  2. Put the site on its own domain (Netlify) and set the repository variable `ANDROID_SITE_URL`
+     to it, then run the **Android app** workflow; its `.aab` is in the run's artifact.
+  3. In the Play Console create the app (package `at.hausallermenschen.app`), keep Play App
+     Signing on, and upload the `.aab` to internal testing.
+  4. Copy the **app signing key's** SHA-256 from Play Console → Test and release → App
+     integrity, and add it (with the upload key's, printed in the run's summary) to
+     `ANDROID_CERT_SHA256` on Netlify, comma-separated. Then `/.well-known/assetlinks.json`
+     vouches for the app and it opens full screen, without Chrome's address bar.
+  5. Store listing: name and descriptions in both languages, the 512×512 icon, a 1024×500
+     feature graphic, phone and tablet screenshots; privacy policy `/de/privacy`; data
+     safety: nothing collected or shared; content rating: reference, everyone. Exact alarms
+     are used for the adhan at the prayer's minute.
 
 ## Architecture notes
 

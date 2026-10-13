@@ -260,6 +260,21 @@ body:has(.rd-app) .footer-city {
    title gives way instead. With two buttons at the end (bookmark and theme)
    the fixed halves left the end column too narrow, and the bookmark sat on
    top of a long title. The title stays centred while there is room. */
+/* On a phone the choices take the app's one tab design: the thumb is the
+   solid brand pill, the chosen word on it in the paper colour. */
+@media (max-width: 1023.98px) {
+  .rd-seg {
+    background: var(--rd-card);
+  }
+  .rd-seg-thumb {
+    background: var(--rd-green);
+    box-shadow: 0 4px 12px rgba(7, 59, 41, 0.24);
+  }
+  .rd-seg button[aria-pressed='true'] {
+    color: var(--rd-on-green) !important;
+    font-weight: 700 !important;
+  }
+}
 @media (max-width: 1023.98px) {
   .rd-bar-row {
     grid-template-columns: minmax(max-content, 1fr) minmax(0, max-content) minmax(max-content, 1fr);

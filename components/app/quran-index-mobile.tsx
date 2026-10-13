@@ -79,9 +79,9 @@ export function QuranIndexMobile({
             onClick={() => setTab(key)}
           >
             {t(key === 'surahs' ? 'tabSurahs' : key === 'juz' ? 'tabJuz' : 'tabBookmarks')}
-            {key === 'bookmarks' && bookmarks.length
-              ? ` · ${digits(bookmarks.length, locale)}`
-              : ''}
+            {key === 'bookmarks' && bookmarks.length ? (
+              <span className="a-seg-count">{digits(bookmarks.length, locale)}</span>
+            ) : null}
           </button>
         ))}
       </div>

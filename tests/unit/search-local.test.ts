@@ -1,5 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { normalise, searchLocal, type IndexEntry } from '@/lib/search-local';
+import { staticEntries } from '@/lib/search-static';
+import { SURAHS } from '@/lib/surah-names';
 
 const INDEX: IndexEntry[] = [
   {
@@ -50,5 +52,37 @@ describe('local search', () => {
 
   it('ignores a query shorter than two letters', () => {
     expect(searchLocal(INDEX, 'k')).toEqual([]);
+  });
+});
+
+describe('built-in search entries', () => {
+  const top = (locale: 'de' | 'fa', query: string) =>
+    searchLocal(staticEntries(locale), query, 1)[0]?.href;
+
+  it('knows all 114 surahs', () => {
+    expect(SURAHS).toHaveLength(114);
+  });
+
+  it('finds a surah by any of its names or its number', () => {
+    expect(top('fa', 'بقره')).toBe('/fa/quran/page/2#surah-2');
+    expect(top('fa', 'یاسین')).toBe('/fa/quran/page/440#surah-36');
+    expect(top('fa', 'سوره ۲')).toBe('/fa/quran/page/2#surah-2');
+    expect(top('de', 'Baqarah')).toBe('/de/quran/page/2#surah-2');
+    expect(top('de', 'Die Höhle')).toBe('/de/quran/page/293#surah-18');
+    expect(top('de', 'Sure 2')).toBe('/de/quran/page/2#surah-2');
+  });
+
+  it('finds a juz', () => {
+    expect(top('de', 'Juz 5')).toBe('/de/quran/page/82');
+    expect(top('fa', 'جزء ۳۰')).toBe('/fa/quran/page/582');
+  });
+
+  it('finds the pages and tools by what people call them', () => {
+    expect(top('de', 'Kompass')).toBe('/de/qibla');
+    expect(top('de', 'Maghrib')).toBe('/de/prayer');
+    expect(top('de', 'Öffnungszeiten')).toBe('/de/contact');
+    expect(top('fa', 'قبله نما')).toBe('/fa/qibla');
+    expect(top('fa', 'تقویم')).toBe('/fa/calendar');
+    expect(top('fa', 'تنظیمات')).toBe('/fa/settings');
   });
 });

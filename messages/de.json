@@ -105,7 +105,9 @@
       "sport": "Sport",
       "culture": "Kultur",
       "community": "Gemeinschaft",
-      "prayer": "Gebetszeiten"
+      "prayer": "Gebetszeiten",
+      "surah": "Sure",
+      "juz": "Juz"
     }
   },
   "home": {

@@ -1,6 +1,9 @@
 import 'server-only';
 import { sql } from './db';
 import type { Locale } from './i18n/config';
+import { DUA_TEXT_SLUGS } from './dua-texts';
+import { searchLocal, type IndexEntry } from './search-local';
+import { staticEntries } from './search-static';
 
 /**
  * Site-wide search.
@@ -85,6 +88,8 @@ function hrefFor(kind: string, locale: Locale, slug: string | null): string {
     case 'event':
       return `${base}/events${slug ? `#event-${slug}` : ''}`;
     case 'dua':
+      // Straight to the text where the site has it, to the card where not.
+      if (slug && DUA_TEXT_SLUGS.includes(slug)) return `${base}/duas/${slug}`;
       return `${base}/duas${slug ? `#dua-${slug}` : ''}`;
     case 'offer':
       return `${base}/activities`;
@@ -159,7 +164,11 @@ function corpus(locale: Locale) {
  * The whole corpus as a list, for the browser to search where there is no
  * server to ask — the static preview, whose snapshot saves it as a file.
  */
-export async function searchIndex(locale: Locale): Promise<Omit<SearchHit, 'rank'>[]> {
+export async function searchIndex(locale: Locale): Promise<IndexEntry[]> {
+  return [...staticEntries(locale), ...(await databaseIndex(locale))];
+}
+
+async function databaseIndex(locale: Locale): Promise<IndexEntry[]> {
   try {
     const rows = await sql<Omit<RawHit, 'rank'>[]>`
       WITH corpus AS (
@@ -180,10 +189,32 @@ export async function searchIndex(locale: Locale): Promise<Omit<SearchHit, 'rank
   }
 }
 
+/**
+ * The database's hits and the built-in ones (pages, surahs, juz) together,
+ * best first, one hit per address. The built-in ranks are on a larger scale
+ * than Postgres's, so they are brought down to it before the two are sorted.
+ */
 export async function search(query: string, locale: Locale, limit = 12): Promise<SearchHit[]> {
   const trimmed = query.trim();
   if (trimmed.length < 2) return [];
+  const [found, builtIn] = await Promise.all([
+    searchDatabase(trimmed, locale, limit),
+    Promise.resolve(searchLocal(staticEntries(locale), trimmed, limit)),
+  ]);
+  const merged = [...found, ...builtIn.map((hit) => ({ ...hit, rank: hit.rank / 4 }))].sort(
+    (a, b) => b.rank - a.rank,
+  );
+  const seen = new Set<string>();
+  return merged
+    .filter((hit) => (seen.has(hit.href) ? false : (seen.add(hit.href), true)))
+    .slice(0, limit);
+}
 
+async function searchDatabase(
+  trimmed: string,
+  locale: Locale,
+  limit: number,
+): Promise<SearchHit[]> {
   await ensureSearchExtensions();
 
   const config = tsConfig(locale);

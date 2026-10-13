@@ -39,6 +39,19 @@ test.describe('site search', () => {
     await expect(page.getByRole('link').filter({ hasText: 'دعای' }).first()).toBeVisible();
   });
 
+  test('finds a surah of the Quran and a page by its keywords', async ({ page }) => {
+    await page.goto('/fa');
+    await page.getByRole('button', { name: 'باز کردن جست‌وجو' }).click();
+    const input = page.getByRole('searchbox', { name: 'جست‌وجو در سایت' });
+    await input.fill('بقره');
+    await expect(page.locator('a.search-hit').first()).toHaveAttribute(
+      'href',
+      /\/fa\/quran\/page\/2#surah-2$/,
+    );
+    await input.fill('قبله نما');
+    await expect(page.locator('a.search-hit').first()).toHaveAttribute('href', /\/fa\/qibla$/);
+  });
+
   test('closes on Escape and returns focus to the button', async ({ page }) => {
     await page.goto('/de');
     const trigger = page.getByRole('button', { name: 'Suche öffnen' });

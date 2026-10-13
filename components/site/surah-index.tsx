@@ -6,6 +6,7 @@ import { MagnifyingGlass } from '@phosphor-icons/react/dist/ssr';
 import { Link } from '@/lib/i18n/navigation';
 import { digits } from '@/lib/i18n/format';
 import type { SurahInfo } from '@/lib/quran';
+import { surahKeywords } from '@/lib/surah-names';
 import type { Locale } from '@/lib/i18n/config';
 import { Card } from '../ui/card';
 
@@ -30,7 +31,7 @@ const PERSIAN_DIGITS = '۰۱۲۳۴۵۶۷۸۹';
 const latinDigits = (text: string) =>
   text.replace(/[۰-۹]/g, (d) => String(PERSIAN_DIGITS.indexOf(d)));
 
-/** The surahs a search matches: a number (in either script), or a name in either script. */
+/** The surahs a search matches: a number (in either script), or a name in any spelling. */
 export function filterSurahs<T extends Pick<SurahInfo, 'number' | 'name' | 'transliteration'>>(
   surahs: T[],
   query: string,
@@ -40,7 +41,11 @@ export function filterSurahs<T extends Pick<SurahInfo, 'number' | 'name' | 'tran
   if (/^\d+$/.test(q)) return surahs.filter((s) => String(s.number).startsWith(q));
   const needle = bare(q);
   return surahs.filter(
-    (s) => bare(s.transliteration).includes(needle) || bare(s.name).includes(needle),
+    (s) =>
+      bare(s.transliteration).includes(needle) ||
+      bare(s.name).includes(needle) ||
+      // The German, Persian and other spellings the API does not give.
+      bare(surahKeywords(s.number)).includes(needle),
   );
 }
 

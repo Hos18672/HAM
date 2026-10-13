@@ -256,6 +256,27 @@ body:has(.rd-app) .footer-city {
   transition: inline-size 450ms var(--rd-ease);
 }
 
+/* Phones: the side columns are never narrower than their buttons, and the
+   title gives way instead. With two buttons at the end (bookmark and theme)
+   the fixed halves left the end column too narrow, and the bookmark sat on
+   top of a long title. The title stays centred while there is room. */
+@media (max-width: 1023.98px) {
+  .rd-bar-row {
+    grid-template-columns: minmax(max-content, 1fr) minmax(0, max-content) minmax(max-content, 1fr);
+  }
+  .rd-title {
+    justify-self: center;
+    padding-inline: 8px;
+  }
+  .rd-title-text,
+  .rd-title-name {
+    max-inline-size: 100%;
+  }
+  .rd-title-clip {
+    min-inline-size: 0;
+  }
+}
+
 @media (min-width: 1024px) {
   .rd-bar-row {
     block-size: 68px;
@@ -2054,7 +2075,7 @@ button.rd-medal:active {
 
 /* ── The du'a reader's own ─────────────────────────────────────────────── */
 .rd-title-clip {
-  max-inline-size: 52vw;
+  max-inline-size: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
 }

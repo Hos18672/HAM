@@ -124,6 +124,40 @@ test.describe('the Quran reader', () => {
     await expect(page.locator('article.rd-verse').first().locator('.rd-flag')).toBeVisible();
   });
 
+  test('bookmarks the printed page from the bar', async ({ page }) => {
+    // Verse by verse, every verse has its own mark; the bar has none.
+    await expect(
+      page
+        .locator('.rd-bar')
+        .getByRole('button', { name: /Seite.*Lesezeichen|Lesezeichen.*Seite/ }),
+    ).toHaveCount(0);
+
+    await openDisplay(page);
+    await page.locator('.rd-pop').getByRole('button', { name: 'Mushaf' }).click();
+    await page.keyboard.press('Escape');
+    const mark = page
+      .locator('.rd-bar')
+      .getByRole('button', { name: 'Seite als Lesezeichen setzen' });
+    await mark.click();
+    await expect(page.locator('.rd-toast')).toHaveText('Lesezeichen gesetzt');
+
+    await page.reload();
+    await hydrated(page);
+    const unmark = page
+      .locator('.rd-bar')
+      .getByRole('button', { name: 'Lesezeichen dieser Seite entfernen' });
+    await expect(unmark).toHaveAttribute('aria-pressed', 'true');
+    await page
+      .locator('.rd-side')
+      .getByRole('button', { name: /Lesezeichen/ })
+      .click();
+    await expect(page.locator('.rd-side .rd-list li')).toHaveCount(1);
+
+    await unmark.click();
+    await expect(page.locator('.rd-toast')).toHaveText('Lesezeichen entfernt');
+    await expect(page.locator('.rd-side .rd-list li')).toHaveCount(0);
+  });
+
   test('lights the verse a deep link names', async ({ page }) => {
     const id = await page.locator('article.rd-verse').nth(2).getAttribute('id');
     const [, s, n] = /v-(\d+)-(\d+)/.exec(id!)!;

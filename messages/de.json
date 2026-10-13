@@ -833,7 +833,9 @@
     "translationBy": "Übersetzung: {translator}",
     "continue": "Weiterlesen",
     "continueAt": "{surah} {ref} · Seite {page}",
-    "bookmarksEmpty": "Noch keine Lesezeichen. Tippen Sie bei einem Vers auf das Lesezeichen oder auf ⋯, um ihn hier zu sammeln."
+    "bookmarksEmpty": "Noch keine Lesezeichen. Tippen Sie bei einem Vers auf das Lesezeichen oder auf ⋯, um ihn hier zu sammeln.",
+    "bookmarkPage": "Seite als Lesezeichen setzen",
+    "unbookmarkPage": "Lesezeichen dieser Seite entfernen"
   },
   "reader": {
     "textSize": "Schriftgröße",

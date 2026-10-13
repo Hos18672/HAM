@@ -347,6 +347,19 @@ export function QuranReader({
     const added = store.toggleBookmark(globalOf(ayah), { s: ayah.surah, n: ayah.number, page: n });
     toast(added ? tr('bookmarked') : tr('unbookmarked'));
   };
+  // The mushaf has no verse rows to mark, so the bar marks the page: the verse
+  // being heard or shown, else the page's first. Unmarking takes away every
+  // mark on the page, so the button never stays lit after a press.
+  const pageMarked = Object.values(store.bookmarks).some((mark) => mark.page === n);
+  const togglePageMark = () => {
+    if (pageMarked) {
+      store.clearPage(n);
+      toast(tr('unbookmarked'));
+      return;
+    }
+    const ayah = page.ayahs[active ?? 0] ?? page.ayahs[0];
+    if (ayah) toggleMark(ayah);
+  };
   const reference = (ayah: PageAyah) => `${nameOf(ayah.surah)} ${d(ayah.surah)}:${d(ayah.number)}`;
   const copyVerse = async (ayah: PageAyah) => {
     const text = [plain(ayah), ayah.translation, `— ${reference(ayah)}`]
@@ -616,7 +629,9 @@ export function QuranReader({
             </span>
             <span className="rd-title-text">
               <span className="rd-title-name">
-                {rtl ? firstSurah?.name : firstSurah?.transliteration}
+                <span className="rd-title-clip">
+                  {rtl ? firstSurah?.name : firstSurah?.transliteration}
+                </span>
                 <CaretDown size={13} weight="bold" aria-hidden="true" className="rd-mob" />
               </span>
               <span className="rd-title-meta tabular">{barMeta}</span>
@@ -624,6 +639,23 @@ export function QuranReader({
           </button>
 
           <div className="rd-bar-end">
+            {mushaf ? (
+              <button
+                type="button"
+                className="rd-round"
+                aria-pressed={pageMarked}
+                onClick={togglePageMark}
+                aria-label={pageMarked ? t('unbookmarkPage') : t('bookmarkPage')}
+                title={pageMarked ? t('unbookmarkPage') : t('bookmarkPage')}
+              >
+                <BookmarkSimple
+                  size={20}
+                  weight={pageMarked ? 'fill' : 'duotone'}
+                  aria-hidden="true"
+                  className={pageMarked ? 'rd-flag' : undefined}
+                />
+              </button>
+            ) : null}
             <button
               type="button"
               className="rd-round"

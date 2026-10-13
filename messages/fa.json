@@ -833,7 +833,9 @@
     "translationBy": "ترجمه: {translator}",
     "continue": "ادامهٔ خواندن",
     "continueAt": "{surah} {ref} · صفحهٔ {page}",
-    "bookmarksEmpty": "هنوز نشانکی ندارید. روی نشانک یا ⋯ کنار هر آیه بزنید تا اینجا جمع شود."
+    "bookmarksEmpty": "هنوز نشانکی ندارید. روی نشانک یا ⋯ کنار هر آیه بزنید تا اینجا جمع شود.",
+    "bookmarkPage": "افزودن این صفحه به نشانک‌ها",
+    "unbookmarkPage": "برداشتن نشانک این صفحه"
   },
   "reader": {
     "textSize": "اندازهٔ متن",

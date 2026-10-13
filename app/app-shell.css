@@ -87,7 +87,9 @@
   --a-card: #0b3125;
   --a-track: #2c4a3e;
   --a-muted: #9fb6a8;
-  --a-dark: #04180f;
+  /* A lifted emerald, not near-black: on the dark paper (#06211a) a darker
+     card read as a hole in the page rather than the screen's first card. */
+  --a-dark: #0d4030;
   --a-bar: rgba(18, 64, 48, 0.94);
   --a-bar-edge: rgba(220, 187, 123, 0.24);
   --a-shadow-card: 0 2px 12px rgba(0, 0, 0, 0.28);
@@ -95,7 +97,7 @@
   --a-shadow-btn: 0 8px 20px rgba(0, 0, 0, 0.4);
   --a-shadow-bar: 0 6px 20px rgba(0, 0, 0, 0.35);
   --a-lattice-dark:
-    radial-gradient(ellipse 80% 70% at 35% 40%, rgba(4, 24, 15, 0.7), rgba(4, 24, 15, 0) 75%),
+    radial-gradient(ellipse 80% 70% at 35% 40%, rgba(13, 64, 48, 0.7), rgba(13, 64, 48, 0) 75%),
     repeating-linear-gradient(
       45deg,
       rgba(200, 164, 93, 0) 0 21px,
@@ -195,6 +197,19 @@
   text-overflow: ellipsis;
   color: var(--head);
 }
+/* Phones: a clear strip of paper under the floating bar. With 6px the bar's
+   shadow fell across the first card and the two read as one block. The
+   pages that run up behind the bar pull up by --header-h, so it grows by the
+   same amount and nothing behind the bar moves. (This file is imported at
+   the top of globals.css, hence the doubled selectors.) */
+@media (max-width: 1023.98px) {
+  html:root {
+    --header-h: calc(var(--header-h-m) + 18px);
+  }
+  :root .site-header {
+    margin-block-end: 8px;
+  }
+}
 @media (max-width: 1099.98px) {
   :root .site-header .brand {
     display: none;
@@ -252,6 +267,24 @@
 }
 .a-dark-dim {
   color: var(--a-on-dark-dim);
+}
+/* Dark theme: the dark cards take a gold hairline and a warm light from the
+   top corner, so they stand off the paper instead of sinking into it. */
+:root[data-theme='dark'] .a-dark {
+  background-image:
+    radial-gradient(120% 90% at 100% 0%, rgba(220, 187, 123, 0.11), rgba(220, 187, 123, 0) 55%),
+    var(--a-lattice-dark);
+  box-shadow:
+    inset 0 0 0 1px rgba(220, 187, 123, 0.2),
+    0 10px 26px rgba(0, 0, 0, 0.32);
+}
+:root[data-theme='dark'] .a-six-cell {
+  background: rgba(247, 243, 232, 0.08);
+  box-shadow: inset 0 0 0 1px rgba(247, 243, 232, 0.06);
+}
+:root[data-theme='dark'] .a-six-cell[data-next] {
+  background: var(--gold);
+  box-shadow: none;
 }
 .a-gold-text {
   color: var(--gold);
@@ -510,8 +543,11 @@ a.a-dark {
 .a-chips {
   display: flex;
   gap: 8px;
-  margin-inline: -16px;
-  padding: 2px 16px 8px;
+  /* A scrolling row clips whatever leaves its box, the pressed chip's shadow
+     included: the padding gives that shadow room, the margin hands the space
+     back to the layout. */
+  margin: -6px -16px -10px;
+  padding: 8px 16px 18px;
   overflow-x: auto;
   scrollbar-width: none;
 }
@@ -551,7 +587,7 @@ a.a-dark {
   background: var(--btnBg);
   color: var(--btnFg);
   font-weight: 700;
-  box-shadow: 0 6px 14px rgba(7, 59, 41, 0.22);
+  box-shadow: 0 4px 12px rgba(7, 59, 41, 0.2);
 }
 
 /* Small pill tags. */
@@ -2180,7 +2216,8 @@ a.a-hero {
   }
   .app-list .chips {
     gap: 8px;
-    padding-block: 2px 8px;
+    margin-block: -6px -10px;
+    padding-block: 8px 18px;
     -webkit-mask-image: var(--a-chips-fade);
     mask-image: var(--a-chips-fade);
     --a-chips-fade: linear-gradient(to right, #000 calc(100% - 40px), transparent);
@@ -2209,7 +2246,7 @@ a.a-hero {
     background: var(--btnBg);
     color: var(--btnFg);
     font-weight: 700;
-    box-shadow: 0 6px 14px rgba(7, 59, 41, 0.22);
+    box-shadow: 0 4px 12px rgba(7, 59, 41, 0.2);
   }
   .app-list .course-card,
   .app-list .sport-row {

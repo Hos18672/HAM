@@ -115,6 +115,17 @@ export function useQuranStore() {
     },
     [bookmarks],
   );
+  /** Takes away every bookmark on a page of the mushaf. */
+  const clearPage = useCallback(
+    (page: number) => {
+      const next = Object.fromEntries(
+        Object.entries(bookmarks).filter(([, mark]) => mark.page !== page),
+      ) as Record<number, Bookmark>;
+      writeJson(BM_KEY, next);
+      setBookmarks(next);
+    },
+    [bookmarks],
+  );
 
   const { night, setScheme } = useScheme();
 
@@ -130,6 +141,7 @@ export function useQuranStore() {
     cycleSpeed,
     bookmarks,
     toggleBookmark,
+    clearPage,
     night,
     setScheme,
   };

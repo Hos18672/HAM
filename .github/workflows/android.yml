@@ -92,3 +92,35 @@ jobs:
             android/app/build/outputs/apk/**/*.apk
             android/app/build/outputs/bundle/**/*.aab
           if-no-files-found: error
+
+  # The app on a real Android system: an emulator opens every screen, the
+  # run's log carries a small screenshot of each, and a crash fails the run.
+  smoke:
+    name: Open every screen on an emulator
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    env:
+      SITE_URL: ${{ vars.ANDROID_SITE_URL || 'https://hos18672.github.io/HAM' }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/download-artifact@v5
+        with:
+          name: haus-aller-menschen-android
+          path: apk
+
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          disable-animations: true
+          script: bash android/scripts/smoke.sh

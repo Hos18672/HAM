@@ -40,11 +40,22 @@ adb shell cmd uimode night yes
 open fa/prayer 6
 open fa/quran/page/50 6
 
-if command -v montage > /dev/null; then
-  montage shots/*.png -resize 150x333 -tile 8x -geometry +3+3 -background '#888' sheet.jpg
-  convert sheet.jpg -quality 50 sheet.jpg
-  echo "SHEET $(base64 -w0 sheet.jpg)"
-fi
+python3 -m pip install --quiet --user pillow > /dev/null 2>&1 || true
+python3 - <<'PY' || true
+import base64, glob, io
+from PIL import Image
+files = sorted(glob.glob("shots/*.png"))
+w, h, cols = 150, 333, 8
+rows = (len(files) + cols - 1) // cols
+sheet = Image.new("RGB", (cols * (w + 4), rows * (h + 4)), (136, 136, 136))
+for i, f in enumerate(files):
+    im = Image.open(f).convert("RGB")
+    im.thumbnail((w, h))
+    sheet.paste(im, ((i % cols) * (w + 4) + 2, (i // cols) * (h + 4) + 2))
+out = io.BytesIO()
+sheet.save(out, "JPEG", quality=50)
+print("SHEET " + base64.b64encode(out.getvalue()).decode())
+PY
 
 if adb logcat -d | grep -E "FATAL EXCEPTION|ANR in at.hausallermenschen" -A 30; then
   echo "The app crashed."

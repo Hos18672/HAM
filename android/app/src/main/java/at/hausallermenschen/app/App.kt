@@ -145,7 +145,12 @@ fun HamApp(state: AppState, link: Pair<String, Long>) {
         Repo.refresh(context, state.lang)
     }
     LaunchedEffect(link) {
-        if (start.isNotEmpty() && nav.current != start) nav.go(start)
+        when {
+            link.second == 0L -> Unit
+            // A link to the home page: back to the start, not left where the reader was.
+            start.isEmpty() -> nav.tab("")
+            nav.current != start -> nav.go(start)
+        }
     }
 
     HamTheme(state) {

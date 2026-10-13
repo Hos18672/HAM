@@ -187,6 +187,7 @@ object Repo {
         if (quran == null) quran = readQuran(context)
         if (translations[lang] == null) readTranslation(context, lang)?.let { translations[lang] = it }
         if (duaTexts.isEmpty()) duaTexts = readDuaTexts(context)
+        Unit
     }
 
     /** The newest content and calendar from the site; quietly keeps the saved copy when offline. */
@@ -208,10 +209,12 @@ object Repo {
             calendar = feed
         } catch (_: Exception) {
         }
+        Unit
     }
 
     suspend fun ensureTranslation(context: Context, lang: String) = withContext(Dispatchers.IO) {
         if (translations[lang] == null) readTranslation(context, lang)?.let { translations[lang] = it }
+        Unit
     }
 
     fun duas(lang: String): List<DuaInfo> {

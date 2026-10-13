@@ -585,7 +585,10 @@ fun SearchScreen() {
     val nav = LocalNav.current
     var query by rememberSaveable { mutableStateOf("") }
     val focus = remember { FocusRequester() }
-    val all = remember(lang, Repo.quran, Repo.content[lang], Repo.duaTexts) { index(lang).map { it to bare(it.words + " " + it.title) } }
+    val language = lang
+    val all = remember(language, Repo.quran, Repo.content[language], Repo.duaTexts) {
+        index(language).map { it to bare(it.words + " " + it.title) }
+    }
     val q = bare(query)
     val terms = q.split(' ').filter { it.isNotEmpty() }
     val hits = if (terms.isEmpty()) emptyList() else all

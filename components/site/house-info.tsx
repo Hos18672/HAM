@@ -3,7 +3,8 @@ import { existsSync } from 'node:fs';
 import path from 'node:path';
 import { ArrowSquareOut } from '@phosphor-icons/react/dist/ssr';
 import { ContactMap } from './contact-visit';
-import { OPENING_HOURS, DIRECTIONS } from '@/lib/site-facts';
+import { DIRECTIONS } from '@/lib/site-facts';
+import { getSettings } from '@/lib/db/queries/content';
 import { timeRange } from '@/lib/i18n/format';
 import { weekdayName } from '@/lib/schedule';
 import type { Locale } from '@/lib/i18n/config';
@@ -15,18 +16,21 @@ export function dayRange(days: readonly number[], locale: Locale) {
   return `${first} ${locale === 'fa' ? 'تا' : '–'} ${weekdayName(days[days.length - 1]!, locale)}`;
 }
 
-/** The opening hours, from the one structured list in `lib/site-facts`. */
+/** The opening hours, as set under Einstellungen in the admin. */
 export async function OpeningHours({ locale }: { locale: Locale }) {
   const t = await getTranslations({ locale, namespace: 'house' });
+  const { openingHours } = await getSettings();
   return (
     <dl className="hours">
-      {OPENING_HOURS.map((window) => (
+      {openingHours.map((window) => (
         <div key={window.days.join()}>
           <dt>{dayRange(window.days, locale)}</dt>
           <dd className="tabular">
-            {window.open && window.close
-              ? timeRange(window.open, window.close, locale)
-              : t('byProgramme')}
+            {window.closed
+              ? t('closedDay')
+              : window.open && window.close
+                ? timeRange(window.open, window.close, locale)
+                : t('byProgramme')}
           </dd>
         </div>
       ))}

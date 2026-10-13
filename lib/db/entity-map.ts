@@ -1,5 +1,6 @@
 import * as s from './schema';
 import type { EntityKind } from '../validation/content';
+import { viennaTomorrowAt } from '../vienna-time';
 
 /**
  * The map from an `entity` name in a request to the real tables behind it.
@@ -130,12 +131,10 @@ export const ENTITIES: Record<EntityKind, EntityDefinition> = {
     // A new date starts tomorrow at 18:00 rather than at the epoch, so it
     // lands in the upcoming list where the editor is looking for it.
     required: () => {
-      const start = new Date();
-      start.setDate(start.getDate() + 1);
-      start.setHours(18, 0, 0, 0);
+      // Vienna's 18:00, not the server's: Netlify runs in UTC.
       // An ISO string, not a Date: postgres.js's column-object helper does not
       // serialise a Date in this position and throws on it.
-      return { slug: `neuer-termin-${suffix()}`, starts_at: start.toISOString() };
+      return { slug: `neuer-termin-${suffix()}`, starts_at: viennaTomorrowAt(18) };
     },
     tag: 'events',
   },

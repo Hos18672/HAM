@@ -4,7 +4,8 @@ import { unstable_cache } from 'next/cache';
 import { db } from '../index';
 import type { Locale } from '../../i18n/config';
 import * as s from '../schema';
-import { known } from '../../site-facts';
+import { known, OPENING_HOURS, type OpeningWindow } from '../../site-facts';
+import { openingHoursSchema } from '../../validation/content';
 
 /**
  * Public read queries.
@@ -64,6 +65,7 @@ export interface SiteSettings {
   address: string;
   iban: string;
   mapUrl: string;
+  openingHours: OpeningWindow[];
 }
 
 export const FALLBACK_SETTINGS: SiteSettings = {
@@ -75,6 +77,7 @@ export const FALLBACK_SETTINGS: SiteSettings = {
   address: 'Sautergasse 34–38, 1170 Wien',
   iban: '',
   mapUrl: '',
+  openingHours: [...OPENING_HOURS],
 };
 
 export const getSettings = cached(
@@ -94,6 +97,10 @@ export const getSettings = cached(
         address: row.address,
         iban: known(row.iban),
         mapUrl: row.mapUrl,
+        // Read defensively: a hand-edited row must not take the site down.
+        openingHours: openingHoursSchema.safeParse(row.openingHours).success
+          ? (row.openingHours as OpeningWindow[])
+          : [...OPENING_HOURS],
       };
     } catch {
       // The site must render before the database exists — the first `next build`

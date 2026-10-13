@@ -28,3 +28,16 @@ export const userUpdateSchema = z.object({
 });
 
 export const userDeleteSchema = z.object({ id: z.string().uuid() });
+
+/** A signed-in user changing their own account. The current password is
+ *  asked for again, so a session left open on a shared machine cannot be
+ *  used to lock its owner out. */
+export const accountUpdateSchema = z
+  .object({
+    name: z.string().trim().min(1, 'Bitte einen Namen angeben.').max(160),
+    currentPassword: z.string().max(200).optional(),
+    newPassword: passwordSchema.optional(),
+  })
+  .refine((value) => !value.newPassword || Boolean(value.currentPassword), {
+    message: 'Bitte das bisherige Passwort angeben.',
+  });

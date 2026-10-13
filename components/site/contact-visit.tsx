@@ -1,10 +1,16 @@
 'use client';
 
-import { useEffect, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useState, type ReactNode } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { ArrowRight, Check, Copy } from '@phosphor-icons/react/dist/ssr';
 import { Link } from '@/lib/i18n/navigation';
-import { houseStatus, viennaNow, FACTS, type HouseStatus } from '@/lib/site-facts';
+import {
+  houseStatus,
+  viennaNow,
+  FACTS,
+  type HouseStatus,
+  type OpeningWindow,
+} from '@/lib/site-facts';
 
 /**
  * The contact page's live parts. The page is built once and served for hours,
@@ -13,7 +19,8 @@ import { houseStatus, viennaNow, FACTS, type HouseStatus } from '@/lib/site-fact
  */
 
 /** The current minute's answer, or null before the browser has given one.
- *  `read` must be a module-level function, or this re-subscribes each render. */
+ *  `read` must be stable (module-level or memoised), or this re-subscribes
+ *  each render. */
 function useNow<T>(read: (now: Date) => T): T | null {
   const [value, setValue] = useState<T | null>(null);
   useEffect(() => {
@@ -35,14 +42,22 @@ function useNow<T>(read: (now: Date) => T): T | null {
 export function OpenStatus({
   dayNames,
   clocks,
+  hours,
 }: {
+  /** The hours set in the admin; the built-in ones when absent. */
+  hours?: readonly OpeningWindow[];
   /** Monday first, in the page's language. */
   dayNames: readonly string[];
   /** "16:00" → the same time in the page's digits. */
   clocks: Record<string, string>;
 }) {
   const t = useTranslations('contact.status');
-  const status = useNow<HouseStatus>(houseStatus);
+  const key = JSON.stringify(hours ?? null);
+  const read = useCallback(
+    (now: Date) => houseStatus(now, (JSON.parse(key) as OpeningWindow[] | null) ?? undefined),
+    [key],
+  );
+  const status = useNow<HouseStatus>(read);
   const state = status?.state ?? 'default';
 
   let text = t('default');
@@ -77,14 +92,23 @@ export function OpenStatus({
 export interface HoursRow {
   days: readonly number[];
   label: string;
-  /** Null when the day runs by programme. */
+  /** Null when the day runs by programme or the house is shut. */
   time: string | null;
+  closed?: boolean;
 }
 
 const today = (now: Date) => viennaNow(now).day;
 
 /** The opening hours as a small table, today's row marked. */
-export function HoursTable({ rows, byProgramme }: { rows: HoursRow[]; byProgramme: string }) {
+export function HoursTable({
+  rows,
+  byProgramme,
+  closedLabel,
+}: {
+  rows: HoursRow[];
+  byProgramme: string;
+  closedLabel: string;
+}) {
   const t = useTranslations('contact');
   const day = useNow(today);
   return (
@@ -106,15 +130,18 @@ export function HoursTable({ rows, byProgramme }: { rows: HoursRow[]; byProgramm
               ) : null}
             </dt>
             <dd className="tabular">
-              {row.time ?? (
-                <span className="contact-dd-split">
-                  <span>{byProgramme}</span>
-                  <Link href="/events" className="contact-inline-link">
-                    {t('byProgrammeLink')}
-                    <ArrowRight size={14} weight="bold" aria-hidden="true" className="mirror" />
-                  </Link>
-                </span>
-              )}
+              {row.time ??
+                (row.closed ? (
+                  closedLabel
+                ) : (
+                  <span className="contact-dd-split">
+                    <span>{byProgramme}</span>
+                    <Link href="/events" className="contact-inline-link">
+                      {t('byProgrammeLink')}
+                      <ArrowRight size={14} weight="bold" aria-hidden="true" className="mirror" />
+                    </Link>
+                  </span>
+                ))}
             </dd>
           </div>
         );

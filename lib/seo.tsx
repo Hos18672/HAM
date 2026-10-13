@@ -1,7 +1,7 @@
 import type { Locale } from './i18n/config';
 import type { EventEntry, SiteSettings, Course } from './db/queries/content';
 import { ASSOCIATION } from './db/seed-data';
-import { FACTS, OPENING_HOURS } from './site-facts';
+import { FACTS, OPENING_HOURS, type OpeningWindow } from './site-facts';
 
 /**
  * JSON-LD builders.
@@ -48,13 +48,15 @@ export function placeJsonLd(settings: SiteSettings) {
 const WEEKDAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
 /** The opening hours as schema.org has them. Days by programme have no hours. */
-export function openingHoursJsonLd() {
-  return OPENING_HOURS.filter((w) => w.open && w.close).map((w) => ({
-    '@type': 'OpeningHoursSpecification',
-    dayOfWeek: w.days.map((d) => `https://schema.org/${WEEKDAYS[d - 1]}`),
-    opens: w.open,
-    closes: w.close,
-  }));
+export function openingHoursJsonLd(hours: readonly OpeningWindow[] = OPENING_HOURS) {
+  return hours
+    .filter((w) => w.open && w.close && !w.closed)
+    .map((w) => ({
+      '@type': 'OpeningHoursSpecification',
+      dayOfWeek: w.days.map((d) => `https://schema.org/${WEEKDAYS[d - 1]}`),
+      opens: w.open,
+      closes: w.close,
+    }));
 }
 
 /**
@@ -74,7 +76,10 @@ export function contactJsonLd(
         ...organizationJsonLd(locale, settings),
         '@context': undefined,
         sameAs: [`https://www.instagram.com/${FACTS.instagram}/`],
-        location: { ...placeJsonLd(settings), openingHoursSpecification: openingHoursJsonLd() },
+        location: {
+          ...placeJsonLd(settings),
+          openingHoursSpecification: openingHoursJsonLd(settings.openingHours),
+        },
       },
       {
         '@type': 'BreadcrumbList',

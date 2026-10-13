@@ -72,6 +72,32 @@ export const listOpSchema = z.object({
 });
 export type ListOp = z.infer<typeof listOpSchema>;
 
+const clock = z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, 'Uhrzeit bitte als HH:MM.');
+
+/** One run of days with the same hours. Days are ISO weekdays, 1 = Monday. */
+export const openingWindowSchema = z
+  .object({
+    days: z.array(z.number().int().min(1).max(7)).min(1).max(7),
+    open: clock.nullable(),
+    close: clock.nullable(),
+    closed: z.boolean().optional(),
+  })
+  .refine((w) => (w.open === null) === (w.close === null), {
+    message: 'Bitte Beginn und Ende angeben — oder beide leer lassen.',
+  })
+  .refine((w) => !w.open || !w.close || w.open < w.close, {
+    message: 'Das Ende der Öffnungszeit muss nach dem Beginn liegen.',
+  });
+
+export const openingHoursSchema = z
+  .array(openingWindowSchema)
+  .min(1)
+  .max(7)
+  .refine((windows) => {
+    const days = windows.flatMap((w) => w.days);
+    return new Set(days).size === days.length;
+  }, 'Jeder Wochentag darf nur einmal vorkommen.');
+
 export const settingsSchema = z.object({
   defaultLocale: localeField,
   defaultTheme: z.enum(['light', 'dark']),
@@ -86,6 +112,8 @@ export const settingsSchema = z.object({
     // Loose IBAN shape — the bank validates properly, we only guard the field.
     .regex(/^$|^[A-Z]{2}[0-9A-Z\s]{8,40}$/i, 'Diese IBAN sieht nicht richtig aus.'),
   mapUrl: z.string().trim().max(1000).url().or(z.literal('')),
+  // Optional: leaving it out keeps the hours already stored.
+  openingHours: openingHoursSchema.optional(),
 });
 export type SettingsInput = z.infer<typeof settingsSchema>;
 

@@ -15,6 +15,13 @@
       "when": 1791065660094,
       "tag": "0001_structured_schedule",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1791910950216,
+      "tag": "0002_opening_hours",
+      "breakpoints": true
     }
   ]
 }

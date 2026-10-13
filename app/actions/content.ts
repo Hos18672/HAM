@@ -187,6 +187,11 @@ export async function listOperation(input: unknown): Promise<ActionResult> {
   const { entity, op, id, parentId } = parsed.data;
   const definition = ENTITIES[entity as EntityKind];
   if (!definition) return fail('unknown-entity');
+  // A nested entry only exists inside its parent: adding one or reordering
+  // it without saying which event it belongs to would reach across events.
+  if (definition.parentColumn && !parentId && op !== 'delete' && op !== 'duplicate') {
+    return fail('missing-parent');
+  }
 
   try {
     switch (op) {
@@ -273,13 +278,14 @@ export async function listOperation(input: unknown): Promise<ActionResult> {
       case 'delete': {
         if (!id) return fail('missing-id');
 
-        // Never leave a list empty: the page would have nothing to render and
-        // no handle to add a new entry from.
-        const [countRow] =
-          definition.parentColumn && parentId
-            ? await sql`SELECT COUNT(*)::int AS count FROM ${sql(definition.base)} WHERE ${sql(definition.parentColumn)} = ${parentId}`
-            : await sql`SELECT COUNT(*)::int AS count FROM ${sql(definition.base)}`;
-        if ((countRow?.count ?? 0) <= 1) return fail('last-entry');
+        // Never leave a top-level list empty: the page would have nothing to
+        // render and no handle to add a new entry from. A nested list — an
+        // event's programme — may be emptied: an event without a programme
+        // simply shows none, and its editor keeps the add button.
+        if (!definition.parentColumn) {
+          const [countRow] = await sql`SELECT COUNT(*)::int AS count FROM ${sql(definition.base)}`;
+          if ((countRow?.count ?? 0) <= 1) return fail('last-entry');
+        }
 
         // The translations go with it: every FK is ON DELETE CASCADE.
         await sql`DELETE FROM ${sql(definition.base)} WHERE id = ${id}`;

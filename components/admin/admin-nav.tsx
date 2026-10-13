@@ -48,9 +48,15 @@ export function AdminNav({ role, userName }: { role: string; userName: string })
       </nav>
 
       <div className="ms-auto flex items-center gap-2">
-        <span className="text-xs" style={{ color: 'var(--color-ink-faint)' }}>
+        <Link
+          href="/admin/account"
+          className="text-xs"
+          title="Mein Konto: Name und Passwort"
+          aria-current={pathname.startsWith('/admin/account') ? 'page' : undefined}
+          style={{ color: 'var(--color-ink-muted)' }}
+        >
           {userName}
-        </span>
+        </Link>
         <Button variant="ghost" size="sm" onClick={() => signOut({ callbackUrl: '/login' })}>
           Abmelden
         </Button>

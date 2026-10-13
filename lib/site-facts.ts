@@ -48,9 +48,11 @@ export function houseMapUrl(stored: string | null | undefined) {
 /** One opening window. Days are ISO weekdays: 1 = Monday … 7 = Sunday. */
 export interface OpeningWindow {
   days: readonly number[];
-  /** "HH:MM", Vienna time; both null for "by programme". */
+  /** "HH:MM", Vienna time; both null for "by programme" (or closed). */
   open: string | null;
   close: string | null;
+  /** The house stays shut on these days. */
+  closed?: boolean;
 }
 
 export const OPENING_HOURS: readonly OpeningWindow[] = [
@@ -115,7 +117,7 @@ export function viennaNow(now: Date): { day: number; minutes: number } {
 export function isOpenAt(now: Date, hours: readonly OpeningWindow[] = OPENING_HOURS) {
   const { day, minutes } = viennaNow(now);
   const today = hours.find((w) => w.days.includes(day));
-  if (!today) return false;
+  if (!today || today.closed) return false;
   if (!today.open || !today.close) return null;
   return minutes >= minutesOf(today.open) && minutes < minutesOf(today.close);
 }
@@ -137,7 +139,7 @@ export function houseStatus(
 ): HouseStatus {
   const { day, minutes } = viennaNow(now);
   const today = hours.find((w) => w.days.includes(day));
-  if (today && (!today.open || !today.close)) return { state: 'programme', day };
+  if (today && !today.closed && (!today.open || !today.close)) return { state: 'programme', day };
   if (today?.open && today.close) {
     if (minutes >= minutesOf(today.open) && minutes < minutesOf(today.close)) {
       return { state: 'open', day, close: today.close };
@@ -146,7 +148,7 @@ export function houseStatus(
   for (let inDays = 0; inDays < 8; inDays += 1) {
     const next = ((day - 1 + inDays) % 7) + 1;
     const window = hours.find((w) => w.days.includes(next));
-    if (!window?.open) continue;
+    if (!window?.open || window.closed) continue;
     if (inDays === 0 && minutes >= minutesOf(window.open)) continue;
     return { state: 'closed', day, opensDay: next, opensAt: window.open, inDays };
   }
@@ -193,3 +195,41 @@ export const BOARD: readonly { name: string; fa: string; de: string }[] = [];
 
 /** When the privacy policy and the imprint were last revised. */
 export const LEGAL_UPDATED = '2026-10-04';
+
+/**
+ * Group per-day settings into windows: consecutive days with the same hours
+ * become one row ("Montag – Donnerstag"), which is how the site prints them.
+ */
+export function groupOpeningDays(
+  days: readonly { open: string | null; close: string | null; closed?: boolean }[],
+): OpeningWindow[] {
+  const out: OpeningWindow[] = [];
+  days.forEach((entry, index) => {
+    const day = index + 1;
+    const closed = Boolean(entry.closed);
+    const open = closed ? null : entry.open;
+    const close = closed ? null : entry.close;
+    const last = out[out.length - 1];
+    if (
+      last &&
+      last.days[last.days.length - 1] === day - 1 &&
+      last.open === open &&
+      last.close === close &&
+      Boolean(last.closed) === closed
+    ) {
+      out[out.length - 1] = { ...last, days: [...last.days, day] };
+    } else {
+      out.push({ days: [day], open, close, ...(closed ? { closed: true } : {}) });
+    }
+  });
+  return out;
+}
+
+/** The windows spread back out to Monday … Sunday, for the settings form. */
+export function expandOpeningDays(hours: readonly OpeningWindow[]) {
+  return [1, 2, 3, 4, 5, 6, 7].map((day) => {
+    const window = hours.find((w) => w.days.includes(day));
+    if (!window || window.closed) return { open: null, close: null, closed: true };
+    return { open: window.open, close: window.close, closed: false };
+  });
+}

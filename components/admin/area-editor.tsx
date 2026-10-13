@@ -4,7 +4,7 @@ import { useCallback, useMemo, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { CaretDown, Plus, Copy, Trash, ArrowUp, ArrowDown } from '@phosphor-icons/react/dist/ssr';
 import { updateField, updateBaseField, listOperation } from '@/app/actions/content';
-import type { AreaSpec } from '@/lib/admin-areas';
+import type { AreaSpec, NestedSpec } from '@/lib/admin-areas';
 import type { EditableRow } from '@/lib/db/queries/admin';
 import { ICON_CHOICES } from '../site/icon';
 import { BilingualField, LanguageToggle, type LanguageView } from './bilingual-field';
@@ -12,6 +12,7 @@ import { SaveBar } from './save-bar';
 import { Button } from '../ui/button';
 import { Field, Input, Select } from '../ui/field';
 import { useToast } from './toast';
+import { toViennaInput, fromViennaInput } from '@/lib/vienna-time';
 
 /** One pending edit, keyed so repeated typing in a field collapses to one write. */
 type DraftKey = string;
@@ -32,7 +33,27 @@ interface Draft {
  * thirty database writes and thirty audit rows, and should be able to change
  * their mind with Discard.
  */
-export function AreaEditor({ area, rows }: { area: AreaSpec; rows: EditableRow[] }) {
+export interface MediaChoice {
+  id: string;
+  url: string;
+  label: string;
+}
+
+type ListOp = 'add' | 'duplicate' | 'delete' | 'moveUp' | 'moveDown';
+
+export function AreaEditor({
+  area,
+  rows,
+  nested = {},
+  media = [],
+}: {
+  area: AreaSpec;
+  rows: EditableRow[];
+  /** Nested entries (an event's programme), by parent id. */
+  nested?: Record<string, EditableRow[]>;
+  /** Images an image field can choose from. */
+  media?: MediaChoice[];
+}) {
   const router = useRouter();
   const toast = useToast();
   const [pending, startTransition] = useTransition();
@@ -44,6 +65,11 @@ export function AreaEditor({ area, rows }: { area: AreaSpec; rows: EditableRow[]
   const [confirmingDelete, setConfirmingDelete] = useState<string | null>(null);
 
   const dirty = Object.keys(drafts).length > 0;
+
+  const datetimeFields = useMemo(
+    () => new Set(area.baseFields.filter((f) => f.type === 'datetime').map((f) => f.name)),
+    [area.baseFields],
+  );
 
   /** The value to render: the draft if there is one, else what the server sent. */
   const fieldValue = useCallback(
@@ -65,13 +91,22 @@ export function AreaEditor({ area, rows }: { area: AreaSpec; rows: EditableRow[]
       // snake_case; the spec names them in camelCase.
       const column = field.replace(/[A-Z]/g, (c) => `_${c.toLowerCase()}`);
       const raw = row.base[column] ?? row.base[field] ?? null;
-      if (raw instanceof Date) return raw.toISOString().slice(0, 16);
+      // Dates are shown as Vienna wall time, whatever zone the browser is in.
+      if (raw instanceof Date || datetimeFields.has(field)) {
+        return toViennaInput(raw as Date | string | null);
+      }
       return raw as string | number | boolean | null;
     },
-    [drafts],
+    [drafts, datetimeFields],
   );
 
-  function setFieldDraft(row: EditableRow, field: string, locale: 'de' | 'fa', value: string) {
+  function setFieldDraft(
+    row: EditableRow,
+    field: string,
+    locale: 'de' | 'fa',
+    value: string,
+    entity: string = area.entity,
+  ) {
     const key = `f:${row.id}:${field}:${locale}`;
     const original = row.fields[field]?.[locale] ?? '';
     setDrafts((current) => {
@@ -79,7 +114,7 @@ export function AreaEditor({ area, rows }: { area: AreaSpec; rows: EditableRow[]
       // Typing back to the original value clears the draft, so the save bar
       // disappears rather than offering to save a no-op.
       if (value === original) delete next[key];
-      else next[key] = { kind: 'field', entity: area.entity, id: row.id, field, locale, value };
+      else next[key] = { kind: 'field', entity, id: row.id, field, locale, value };
       return next;
     });
   }
@@ -111,7 +146,12 @@ export function AreaEditor({ area, rows }: { area: AreaSpec; rows: EditableRow[]
               entity: draft.entity,
               id: draft.id,
               field: draft.field,
-              value: draft.value,
+              // The input holds Vienna wall time; the database wants an
+              // instant. An emptied date is no date, not an invalid one.
+              value:
+                draft.entity === area.entity && datetimeFields.has(draft.field)
+                  ? fromViennaInput(String(draft.value ?? ''))
+                  : draft.value,
             });
       if (!result.ok) failures += 1;
     }
@@ -135,9 +175,14 @@ export function AreaEditor({ area, rows }: { area: AreaSpec; rows: EditableRow[]
     }
   }
 
-  function runListOp(op: 'add' | 'duplicate' | 'delete' | 'moveUp' | 'moveDown', id?: string) {
+  function runListOp(op: ListOp, id?: string, scope?: { entity: string; parentId: string }) {
     startTransition(async () => {
-      const result = await listOperation({ entity: area.entity, op, id });
+      const result = await listOperation({
+        entity: scope?.entity ?? area.entity,
+        op,
+        id,
+        parentId: scope?.parentId,
+      });
       if (result.ok) {
         toast.show(
           op === 'add'
@@ -342,6 +387,46 @@ export function AreaEditor({ area, rows }: { area: AreaSpec; rows: EditableRow[]
                             );
                           }
 
+                          if (spec.type === 'media') {
+                            const chosen = media.find((item) => item.id === value);
+                            return (
+                              <Field key={spec.name} label={spec.label} hint={spec.hint}>
+                                {(props) => (
+                                  <div style={{ display: 'grid', gap: 'var(--space-2)' }}>
+                                    <Select
+                                      {...props}
+                                      value={String(value ?? '')}
+                                      onChange={(event) =>
+                                        setBaseDraft(row, spec.name, event.target.value || null)
+                                      }
+                                    >
+                                      <option value="">— kein Bild —</option>
+                                      {media.map((item) => (
+                                        <option key={item.id} value={item.id}>
+                                          {item.label}
+                                        </option>
+                                      ))}
+                                    </Select>
+                                    {chosen ? (
+                                      // eslint-disable-next-line @next/next/no-img-element
+                                      <img
+                                        src={chosen.url}
+                                        alt=""
+                                        style={{
+                                          inlineSize: '100%',
+                                          maxInlineSize: '16rem',
+                                          aspectRatio: '16 / 9',
+                                          objectFit: 'cover',
+                                          borderRadius: 'var(--radius-baseline)',
+                                        }}
+                                      />
+                                    ) : null}
+                                  </div>
+                                )}
+                              </Field>
+                            );
+                          }
+
                           if (spec.type === 'select' || spec.type === 'icon') {
                             const options =
                               spec.type === 'icon'
@@ -399,6 +484,23 @@ export function AreaEditor({ area, rows }: { area: AreaSpec; rows: EditableRow[]
                         })}
                       </div>
                     ) : null}
+
+                    {area.nested ? (
+                      <NestedList
+                        spec={area.nested}
+                        parentId={row.id}
+                        rows={nested[row.id] ?? []}
+                        view={view}
+                        pending={pending}
+                        fieldValue={fieldValue}
+                        onField={(child, field, locale, value) =>
+                          setFieldDraft(child, field, locale, value, area.nested!.entity)
+                        }
+                        onOp={(op, id) =>
+                          runListOp(op, id, { entity: area.nested!.entity, parentId: row.id })
+                        }
+                      />
+                    ) : null}
                   </div>
                 ) : null}
               </div>
@@ -415,5 +517,140 @@ export function AreaEditor({ area, rows }: { area: AreaSpec; rows: EditableRow[]
         onDiscard={() => setDrafts({})}
       />
     </div>
+  );
+}
+
+/**
+ * A list inside one entry — an event's programme. Its text edits join the
+ * same drafts as the entry's own fields, so one Save writes both; adding,
+ * removing and reordering act at once, like the entry's own row controls.
+ */
+function NestedList({
+  spec,
+  parentId,
+  rows,
+  view,
+  pending,
+  fieldValue,
+  onField,
+  onOp,
+}: {
+  spec: NestedSpec;
+  parentId: string;
+  rows: EditableRow[];
+  view: LanguageView;
+  pending: boolean;
+  fieldValue: (row: EditableRow, field: string, locale: 'de' | 'fa') => string;
+  onField: (row: EditableRow, field: string, locale: 'de' | 'fa', value: string) => void;
+  onOp: (op: ListOp, id?: string) => void;
+}) {
+  return (
+    <section
+      aria-labelledby={`nested-${parentId}`}
+      style={{
+        display: 'grid',
+        gap: 'var(--space-3)',
+        paddingBlockStart: 'var(--space-3)',
+        borderBlockStart: 'var(--rule-hair) solid var(--color-rule)',
+      }}
+    >
+      <div className="flex flex-wrap items-center gap-2">
+        <h3 id={`nested-${parentId}`} className="field-label" style={{ margin: 0 }}>
+          {spec.label}
+        </h3>
+        <span className="text-xs" style={{ color: 'var(--color-ink-faint)' }}>
+          {rows.length} {rows.length === 1 ? 'Punkt' : 'Punkte'}
+        </span>
+        <Button
+          variant="secondary"
+          size="sm"
+          className="ms-auto"
+          disabled={pending}
+          onClick={() => onOp('add')}
+        >
+          <Plus size={14} weight="bold" aria-hidden="true" />
+          {spec.itemLabel} hinzufügen
+        </Button>
+      </div>
+      {spec.hint ? <p className="field-hint">{spec.hint}</p> : null}
+
+      {rows.length > 0 ? (
+        <ol
+          style={{
+            listStyle: 'none',
+            margin: 0,
+            padding: 0,
+            display: 'grid',
+            gap: 'var(--space-3)',
+          }}
+        >
+          {rows.map((child, index) => (
+            <li
+              key={child.id}
+              aria-label={`${spec.itemLabel} ${index + 1}`}
+              style={{
+                display: 'grid',
+                gap: 'var(--space-2)',
+                padding: 'var(--space-3)',
+                borderRadius: 'var(--radius-baseline)',
+                background: 'var(--color-bg)',
+                border: 'var(--rule-hair) solid var(--color-rule)',
+              }}
+            >
+              <div className="flex items-center gap-1">
+                <span className="tabular text-xs" style={{ color: 'var(--color-ink-faint)' }}>
+                  {index + 1}.
+                </span>
+                <div className="ms-auto flex gap-1">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    iconOnly
+                    aria-label={`${spec.itemLabel} nach oben`}
+                    disabled={pending || index === 0}
+                    onClick={() => onOp('moveUp', child.id)}
+                  >
+                    <ArrowUp size={14} weight="bold" aria-hidden="true" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    iconOnly
+                    aria-label={`${spec.itemLabel} nach unten`}
+                    disabled={pending || index === rows.length - 1}
+                    onClick={() => onOp('moveDown', child.id)}
+                  >
+                    <ArrowDown size={14} weight="bold" aria-hidden="true" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    iconOnly
+                    aria-label={`${spec.itemLabel} entfernen`}
+                    disabled={pending}
+                    onClick={() => onOp('delete', child.id)}
+                  >
+                    <Trash size={14} weight="bold" aria-hidden="true" />
+                  </Button>
+                </div>
+              </div>
+              {spec.fields.map((field) => (
+                <BilingualField
+                  key={field.name}
+                  label={field.label}
+                  hint={field.hint}
+                  view={view}
+                  values={{
+                    de: fieldValue(child, field.name, 'de'),
+                    fa: fieldValue(child, field.name, 'fa'),
+                  }}
+                  onChange={(locale, value) => onField(child, field.name, locale, value)}
+                />
+              ))}
+            </li>
+          ))}
+        </ol>
+      ) : null}
+    </section>
   );
 }

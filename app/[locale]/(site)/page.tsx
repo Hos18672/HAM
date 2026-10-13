@@ -427,7 +427,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
                   </p>
                   <div className="contact-hours-head">
                     <h3 className="contact-h">{tHouse('hours')}</h3>
-                    <OpenNow />
+                    <OpenNow hours={settings.openingHours} />
                   </div>
                   <OpeningHours locale={typed} />
                   <h3 className="contact-h" style={{ marginBlockStart: 'var(--space-3)' }}>

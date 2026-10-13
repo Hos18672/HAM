@@ -1,12 +1,22 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { saveSettings } from '@/app/actions/admin';
 import type { SiteSettings } from '@/lib/db/queries/content';
 import { Field, Input, Select } from '../ui/field';
 import { SaveBar } from './save-bar';
 import { useToast } from './toast';
+import { expandOpeningDays, groupOpeningDays } from '@/lib/site-facts';
+
+const WEEKDAYS = ['Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag', 'Sonntag'];
+
+type DayMode = 'open' | 'programme' | 'closed';
+interface DayHours {
+  mode: DayMode;
+  open: string;
+  close: string;
+}
 
 export function SettingsForm({ settings }: { settings: SiteSettings }) {
   const router = useRouter();
@@ -15,9 +25,25 @@ export function SettingsForm({ settings }: { settings: SiteSettings }) {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const dirty = (Object.keys(values) as (keyof SiteSettings)[]).some(
-    (key) => values[key] !== settings[key],
+  const initialDays = useMemo<DayHours[]>(
+    () =>
+      expandOpeningDays(settings.openingHours).map((day) => ({
+        mode: day.closed ? 'closed' : day.open && day.close ? 'open' : 'programme',
+        open: day.open ?? '',
+        close: day.close ?? '',
+      })),
+    [settings.openingHours],
   );
+  const [days, setDays] = useState<DayHours[]>(initialDays);
+
+  const dirty =
+    (Object.keys(values) as (keyof SiteSettings)[]).some(
+      (key) => key !== 'openingHours' && values[key] !== settings[key],
+    ) || JSON.stringify(days) !== JSON.stringify(initialDays);
+
+  function setDay(index: number, patch: Partial<DayHours>) {
+    setDays((current) => current.map((day, i) => (i === index ? { ...day, ...patch } : day)));
+  }
 
   function set<K extends keyof SiteSettings>(key: K, value: SiteSettings[K]) {
     setValues((current) => ({ ...current, [key]: value }));
@@ -26,7 +52,16 @@ export function SettingsForm({ settings }: { settings: SiteSettings }) {
   async function save() {
     setSaving(true);
     setError(null);
-    const result = await saveSettings(values);
+    const result = await saveSettings({
+      ...values,
+      openingHours: groupOpeningDays(
+        days.map((day) => ({
+          open: day.mode === 'open' ? day.open : null,
+          close: day.mode === 'open' ? day.close : null,
+          closed: day.mode === 'closed',
+        })),
+      ),
+    });
     setSaving(false);
 
     if (result.ok) {
@@ -135,7 +170,7 @@ export function SettingsForm({ settings }: { settings: SiteSettings }) {
 
       <Field
         label="Link zur Karte"
-        hint="Eine vollständige Adresse, zum Beispiel zu OpenStreetMap."
+        hint="Eine vollständige Adresse zu Google Maps. Leer lassen für die Standardkarte."
       >
         {(props) => (
           <Input
@@ -148,13 +183,91 @@ export function SettingsForm({ settings }: { settings: SiteSettings }) {
         )}
       </Field>
 
+      <fieldset
+        style={{
+          display: 'grid',
+          gap: 'var(--space-3)',
+          border: 0,
+          margin: 0,
+          padding: 0,
+          paddingBlockStart: 'var(--space-3)',
+          borderBlockStart: 'var(--rule-hair) solid var(--color-rule)',
+        }}
+      >
+        <legend className="field-label" style={{ paddingBlockEnd: 'var(--space-2)' }}>
+          Öffnungszeiten
+        </legend>
+        <p className="field-hint" style={{ margin: 0 }}>
+          Erscheinen auf der Kontaktseite, im Seitenfuß und als „Jetzt geöffnet“. Tage mit gleichen
+          Zeiten werden auf der Website zusammengefasst („Montag – Donnerstag“).
+        </p>
+        <table className="table">
+          <thead>
+            <tr>
+              <th scope="col">Tag</th>
+              <th scope="col">Status</th>
+              <th scope="col">Von</th>
+              <th scope="col">Bis</th>
+            </tr>
+          </thead>
+          <tbody>
+            {days.map((day, index) => (
+              <tr key={WEEKDAYS[index]}>
+                <th scope="row">{WEEKDAYS[index]}</th>
+                <td>
+                  <Select
+                    aria-label={`${WEEKDAYS[index]}: Status`}
+                    value={day.mode}
+                    onChange={(event) => {
+                      const mode = event.target.value as DayMode;
+                      // Opening a day that had no hours starts from sensible ones.
+                      setDay(
+                        index,
+                        mode === 'open' && !day.open
+                          ? { mode, open: '16:00', close: '20:00' }
+                          : { mode },
+                      );
+                    }}
+                  >
+                    <option value="open">Geöffnet</option>
+                    <option value="programme">Nach Programm</option>
+                    <option value="closed">Geschlossen</option>
+                  </Select>
+                </td>
+                <td>
+                  <Input
+                    type="time"
+                    aria-label={`${WEEKDAYS[index]}: geöffnet ab`}
+                    value={day.open}
+                    disabled={day.mode !== 'open'}
+                    onChange={(event) => setDay(index, { open: event.target.value })}
+                  />
+                </td>
+                <td>
+                  <Input
+                    type="time"
+                    aria-label={`${WEEKDAYS[index]}: geöffnet bis`}
+                    value={day.close}
+                    disabled={day.mode !== 'open'}
+                    onChange={(event) => setDay(index, { close: event.target.value })}
+                  />
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </fieldset>
+
       <div aria-live="polite">{error ? <p className="field-error">{error}</p> : null}</div>
 
       <SaveBar
         dirty={dirty}
         saving={saving}
         onSave={() => void save()}
-        onDiscard={() => setValues(settings)}
+        onDiscard={() => {
+          setValues(settings);
+          setDays(initialDays);
+        }}
       />
     </div>
   );

@@ -4,7 +4,7 @@ import { notFound } from 'next/navigation';
 import { requireUser } from '@/lib/auth';
 import { AREAS, AREA_KEYS } from '@/lib/admin-areas';
 import { ENTITIES } from '@/lib/db/entity-map';
-import { getEditableRows } from '@/lib/db/queries/admin';
+import { getEditableRows, getMediaLibrary, type EditableRow } from '@/lib/db/queries/admin';
 import { AreaEditor } from '@/components/admin/area-editor';
 
 export const dynamic = 'force-dynamic';
@@ -41,6 +41,35 @@ export default async function ContentAreaPage({ params }: { params: Promise<{ ar
     definition.order,
   );
 
+  // An event's programme, grouped by event, for the nested editor.
+  const nested: Record<string, EditableRow[]> = {};
+  if (area.nested) {
+    const child = ENTITIES[area.nested.entity];
+    const childRows = await getEditableRows(
+      child.base,
+      child.translations,
+      child.fk,
+      Object.fromEntries(
+        area.nested.fields.map((field) => [field.name, child.fields[field.name] ?? field.name]),
+      ),
+      child.sortable,
+      child.order,
+    );
+    for (const row of childRows) {
+      const parent = String(row.base[area.nested.parentColumn] ?? '');
+      (nested[parent] ??= []).push(row);
+    }
+  }
+
+  // The images an image field can point at.
+  const media = area.baseFields.some((field) => field.type === 'media')
+    ? (await getMediaLibrary()).map((item) => ({
+        id: item.id,
+        url: item.url,
+        label: item.alt.de || item.alt.fa || item.key.split('/').pop() || item.id,
+      }))
+    : [];
+
   return (
     <div style={{ display: 'grid', gap: 'var(--space-5)' }}>
       <div className="head-rule" style={{ paddingBlockStart: 'var(--space-2)' }}>
@@ -66,7 +95,7 @@ export default async function ContentAreaPage({ params }: { params: Promise<{ ar
         ))}
       </nav>
 
-      <AreaEditor area={area} rows={rows} />
+      <AreaEditor area={area} rows={rows} nested={nested} media={media} />
     </div>
   );
 }

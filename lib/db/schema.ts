@@ -10,6 +10,7 @@
  * at once.
  */
 import { relations, sql } from 'drizzle-orm';
+import type { OpeningWindow } from '../site-facts';
 import {
   boolean,
   index,
@@ -95,6 +96,8 @@ export const siteSettings = pgTable('site_settings', {
   address: text('address').notNull().default(''),
   iban: varchar('iban', { length: 64 }).notNull().default(''),
   mapUrl: text('map_url').notNull().default(''),
+  /** Null means the hours in lib/site-facts.ts. */
+  openingHours: jsonb('opening_hours').$type<OpeningWindow[]>(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   updatedBy: uuid('updated_by').references(() => users.id, { onDelete: 'set null' }),
 });

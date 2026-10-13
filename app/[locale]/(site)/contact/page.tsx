@@ -28,7 +28,7 @@ import {
   OpenStatus,
   RouteLink,
 } from '@/components/site/contact-visit';
-import { DIRECTIONS, FACTS, OPENING_HOURS, houseMapUrl } from '@/lib/site-facts';
+import { DIRECTIONS, FACTS, houseMapUrl } from '@/lib/site-facts';
 import { digits, timeRange } from '@/lib/i18n/format';
 import { weekdayName } from '@/lib/schedule';
 import { EditableText } from '@/components/editable/editable-text';
@@ -88,14 +88,20 @@ export default async function ContactPage({ params }: { params: Promise<{ locale
   const [street = address, ...rest] = address.split(',').map((part) => part.trim());
   const cityLine = rest.join(', ');
 
-  const hours = OPENING_HOURS.map((window) => ({
+  const openingHours = settings.openingHours;
+  const hours = openingHours.map((window) => ({
     days: window.days,
     label: dayRange(window.days, typed),
-    time: window.open && window.close ? timeRange(window.open, window.close, typed) : null,
+    time:
+      !window.closed && window.open && window.close
+        ? timeRange(window.open, window.close, typed)
+        : null,
+    closed: Boolean(window.closed),
   }));
   const dayNames = [1, 2, 3, 4, 5, 6, 7].map((day) => weekdayName(day, typed));
   const clocks = Object.fromEntries(
-    OPENING_HOURS.flatMap((w) => [w.open, w.close])
+    openingHours
+      .flatMap((w) => [w.open, w.close])
       .filter((clock): clock is string => Boolean(clock))
       .map((clock) => [clock, digits(clock, typed)]),
   );
@@ -140,7 +146,7 @@ export default async function ContactPage({ params }: { params: Promise<{ locale
               multiline
             />
           </div>
-          <OpenStatus dayNames={dayNames} clocks={clocks} />
+          <OpenStatus dayNames={dayNames} clocks={clocks} hours={openingHours} />
         </div>
       </header>
 
@@ -176,7 +182,11 @@ export default async function ContactPage({ params }: { params: Promise<{ locale
             </span>
             {tHouse('hours')}
           </h2>
-          <HoursTable rows={hours} byProgramme={tHouse('byProgramme')} />
+          <HoursTable
+            rows={hours}
+            byProgramme={tHouse('byProgramme')}
+            closedLabel={tHouse('closedDay')}
+          />
         </div>
 
         <figure className="contact-map" id="map">

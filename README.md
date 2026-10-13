@@ -136,6 +136,30 @@ Listen — Kurse, Termine, Bittgebete, Angebote — haben oben rechts einen Knop
 Löschen fragt immer nach. Der **letzte** Eintrag einer Liste lässt sich nicht
 löschen — sonst hätte die Seite nichts mehr anzuzeigen.
 
+### Termine: Uhrzeit, Bild und Programm
+
+Beginn und Ende eines Termins tragen Sie immer in **Wiener Zeit** ein — egal,
+wo Ihr Computer gerade steht. Unter **Bild** wählen Sie ein Foto aus der
+Mediathek (neue Bilder zuerst unter **Medien** hochladen).
+
+Jeder Termin hat außerdem ein **Programm**: den Ablauf, der auf der Seite des
+Termins erscheint („18:00 — Begrüßung“). Mit **„Programmpunkt hinzufügen“**
+legen Sie einen Punkt an, mit den Pfeilen ändern Sie die Reihenfolge. Ein
+Termin ohne Programmpunkte zeigt einfach keinen Ablauf.
+
+### Öffnungszeiten
+
+Unter **Einstellungen → Öffnungszeiten** stellen Sie für jeden Wochentag ein:
+_Geöffnet_ (mit Uhrzeit), _Nach Programm_ oder _Geschlossen_. Die Website fasst
+Tage mit gleichen Zeiten zusammen („Montag – Donnerstag“) und zeigt danach an,
+ob das Haus gerade geöffnet ist.
+
+### Mein Konto
+
+Ein Klick auf Ihren Namen oben rechts öffnet **Mein Konto**. Dort ändern Sie
+Ihren Namen und Ihr Passwort — dafür brauchen Sie keinen Administrator. Zum
+Ändern des Passworts geben Sie das bisherige zur Sicherheit noch einmal ein.
+
 ### Bilder
 
 Unter **Medien** ziehen Sie Bilder einfach in das gestrichelte Feld. Tragen Sie
@@ -167,7 +191,8 @@ Benutzerkonten, Nachrichten und das Protokoll sind **nicht** Teil der Sicherung.
 
 ### Wer darf was
 
-- **Redakteur** — alle Inhalte, Medien, Nachrichten, Einstellungen.
+- **Redakteur** — alle Inhalte, Medien, Nachrichten, Einstellungen, das eigene
+  Konto.
 - **Administrator** — zusätzlich Benutzer verwalten und Sicherungen einspielen.
 
 Unter **Protokoll** steht, wer wann was geändert hat.
@@ -203,7 +228,9 @@ which is enough to test with.
    seeds the database **only if it is empty** (and creates the admin account
    from `ADMIN_EMAIL` / `ADMIN_PASSWORD` if it does not exist yet), then builds.
    Later deploys leave the content alone, so edits made on the site survive.
-4. Log in at `/de/admin` and **change the seeded password immediately**.
+4. Log in at `/admin` (not `/de/admin` — the admin sits outside the language
+   tree) and **change the seeded password immediately** under **Mein Konto**
+   (click your name at the top right).
 
 ### 4. Domain
 
@@ -743,8 +770,10 @@ Recorded here rather than left implicit:
       the week table only holds what is neither (Duʿa Kumail, the Friday
       prayer, the children's Saturday afternoon). Calligraphy is fortnightly,
       as its course says — the old schedule's "every Friday" is gone.
-    - **Opening hours are structured** in `lib/site-facts.ts`, so the site can
-      say "open now". They are no longer edited in the admin area.
+    - **Opening hours are structured**, so the site can say "open now". The
+      defaults live in `lib/site-facts.ts`; **Einstellungen → Öffnungszeiten**
+      overrides them (`site_settings.opening_hours`, migration
+      `0002_opening_hours`).
     - **Seeded event times** were set in the build machine's timezone (UTC),
       which put the opening at 18:00 against a 16:00 programme. The seed now
       sets Vienna wall-clock times, and the migration moves already-seeded

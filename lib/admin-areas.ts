@@ -19,10 +19,23 @@ export interface FieldSpec {
 export interface BaseFieldSpec {
   name: string;
   label: string;
-  type: 'text' | 'select' | 'boolean' | 'datetime' | 'number' | 'icon';
+  type: 'text' | 'select' | 'boolean' | 'datetime' | 'number' | 'icon' | 'media';
   options?: { value: string; label: string }[];
   min?: number;
   max?: number;
+  hint?: string;
+}
+
+/** A list that belongs to each entry — an event's programme. */
+export interface NestedSpec {
+  entity: EntityKind;
+  /** Heading above the list inside the entry. */
+  label: string;
+  /** Singular, for the add button: "Programmpunkt hinzufügen". */
+  itemLabel: string;
+  /** Base column on the nested table that points at the parent. */
+  parentColumn: string;
+  fields: FieldSpec[];
   hint?: string;
 }
 
@@ -38,6 +51,7 @@ export interface AreaSpec {
   /** Whether "+ Neuer Eintrag" and the row controls are offered. */
   addable: boolean;
   sortable: boolean;
+  nested?: NestedSpec;
 }
 
 const GROUP: BaseFieldSpec = {
@@ -220,6 +234,12 @@ export const AREAS: Record<string, AreaSpec> = {
       { name: 'category', label: 'Art', type: 'text' },
       { name: 'slug', label: 'Kurzname (URL)', type: 'text' },
       {
+        name: 'imageId',
+        label: 'Bild',
+        type: 'media',
+        hint: 'Aus der Medienbibliothek. Neue Bilder unter „Medien“ hochladen.',
+      },
+      {
         name: 'featured',
         label: 'Als Eröffnungstermin hervorheben',
         type: 'boolean',
@@ -229,6 +249,17 @@ export const AREAS: Record<string, AreaSpec> = {
     ],
     addable: true,
     sortable: false,
+    nested: {
+      entity: 'programme',
+      label: 'Programm',
+      itemLabel: 'Programmpunkt',
+      parentColumn: 'event_id',
+      hint: 'Der Ablauf auf der Seite des Termins. Ohne Programmpunkte wird kein Ablauf gezeigt.',
+      fields: [
+        { name: 'timeLabel', label: 'Uhrzeit', hint: 'Zum Beispiel „18:00“ oder „ab 19 Uhr“.' },
+        { name: 'title', label: 'Programmpunkt' },
+      ],
+    },
   },
   sports: {
     key: 'sports',

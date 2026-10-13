@@ -2,7 +2,10 @@ import type { ReactNode } from 'react';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
+import { eq } from 'drizzle-orm';
 import { auth } from '@/lib/auth';
+import { db } from '@/lib/db';
+import { users } from '@/lib/db/schema';
 import { readTheme } from '@/lib/preferences';
 import { AdminNav } from '@/components/admin/admin-nav';
 import { ToastProvider } from '@/components/admin/toast';
@@ -28,6 +31,13 @@ export default async function AdminLayout({ children }: { children: ReactNode })
   if (!session?.user?.id) redirect('/login?from=/admin');
 
   const theme = await readTheme('light');
+  // The name from the database rather than the session token, so a name
+  // changed under "Mein Konto" shows at once rather than at the next sign-in.
+  const [current] = await db
+    .select({ name: users.name })
+    .from(users)
+    .where(eq(users.id, session.user.id))
+    .limit(1);
 
   return (
     <html lang="de" dir="ltr" data-theme={theme} suppressHydrationWarning>
@@ -63,7 +73,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
 
               <AdminNav
                 role={session.user.role}
-                userName={session.user.name ?? session.user.email ?? ''}
+                userName={current?.name || session.user.name || session.user.email || ''}
               />
             </div>
           </header>

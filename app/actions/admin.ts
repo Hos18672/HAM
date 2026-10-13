@@ -12,7 +12,13 @@ import {
   uploadMetaSchema,
   backupSchema,
 } from '@/lib/validation/content';
-import { userCreateSchema, userUpdateSchema, userDeleteSchema } from '@/lib/validation/auth';
+import {
+  userCreateSchema,
+  userUpdateSchema,
+  userDeleteSchema,
+  accountUpdateSchema,
+} from '@/lib/validation/auth';
+import { verifyPassword } from '@/lib/password';
 import { locales } from '@/lib/i18n/config';
 import { CACHE_TAGS } from '@/lib/db/queries/content';
 import { z } from 'zod';
@@ -337,6 +343,38 @@ export async function deleteUser(input: unknown): Promise<AdminResult> {
 
   await db.delete(s.users).where(eq(s.users.id, parsed.data.id));
   await audit(user.id, 'delete', 'user', parsed.data.id, {});
+  return { ok: true };
+}
+
+/* ─── Own account (every signed-in user) ─────────────────────────────────── */
+
+export async function updateOwnAccount(input: unknown): Promise<AdminResult> {
+  const user = await guard();
+  if (!user) return fail('unauthenticated');
+
+  const parsed = accountUpdateSchema.safeParse(input);
+  if (!parsed.success) return fail(parsed.error.issues[0]?.message ?? 'invalid');
+  const { name, currentPassword, newPassword } = parsed.data;
+
+  const patch: Record<string, unknown> = { name };
+  if (newPassword) {
+    const [row] = await db
+      .select({ passwordHash: s.users.passwordHash })
+      .from(s.users)
+      .where(eq(s.users.id, user.id))
+      .limit(1);
+    if (!row || !(await verifyPassword(currentPassword ?? '', row.passwordHash))) {
+      return fail('Das bisherige Passwort stimmt nicht.');
+    }
+    patch.passwordHash = await hashPassword(newPassword);
+  }
+
+  await db.update(s.users).set(patch).where(eq(s.users.id, user.id));
+  // As with user management, the password itself never reaches the log.
+  await audit(user.id, 'update', 'account', user.id, {
+    name,
+    passwordChanged: Boolean(newPassword),
+  });
   return { ok: true };
 }
 

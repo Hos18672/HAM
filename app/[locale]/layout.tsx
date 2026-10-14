@@ -133,6 +133,26 @@ export default async function LocaleLayout({
     >
       <head>
         {/*
+          Comments in the head that the host put there, and the line breaks
+          around them, removed before React takes over the page. Netlify
+          writes a "This site is hosted on Netlify" comment straight after
+          the charset, on its own line; React cannot match either to anything
+          it rendered, so hydration fails, the whole document is
+          rendered again on the client, and that throws away everything the
+          scripts below set on <html> before the first paint — the theme on a
+          first visit, and the marks that start the loaders. React itself
+          puts no comments and no text in the head, so every one found here
+          is foreign.
+        */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              '(function(){try{var h=document.head,n=h.firstChild,x;' +
+              'while(n){x=n.nextSibling;if(n.nodeType===8||n.nodeType===3)h.removeChild(n);n=x;}' +
+              '}catch(e){}})()',
+          }}
+        />
+        {/*
           The reader's theme, before the first paint.
 
           The toggle writes a cookie and the server reads it on the next

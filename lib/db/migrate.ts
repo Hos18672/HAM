@@ -30,6 +30,8 @@ function hint(error: unknown): string {
   const text = `${e.code ?? ''} ${e.message ?? ''}`;
   if (/28P01|password authentication failed/i.test(text))
     return 'The database password in the address is wrong. Use the password of the Supabase project (Project Settings → Database → Reset database password if unsure).';
+  if (/42710|42P07|already exists/i.test(text))
+    return 'The database already holds tables from an earlier attempt that were not recorded as migrations. On a new, empty project, reset it in Supabase → SQL Editor (see README → Deploying), then deploy again.';
   if (/Tenant or user not found/i.test(text))
     return 'The user name or region does not match. Copy the pooler address again from Supabase → Connect; its user looks like postgres.<project-ref>.';
   if (/ENOTFOUND|EAI_AGAIN/i.test(text))

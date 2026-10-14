@@ -232,6 +232,19 @@ which is enough to test with.
    tree) and **change the seeded password immediately** under **Mein Konto**
    (click your name at the top right).
 
+If the deploy stops with `type "…" already exists` or `relation "…" already
+exists`, the database holds tables from an earlier attempt that were not
+recorded as migrations. On a new project with nothing in it yet, clear it in
+**Supabase → SQL Editor** and deploy again (this deletes every table):
+
+```sql
+drop schema if exists drizzle cascade;
+drop schema public cascade;
+create schema public;
+grant usage on schema public to postgres, anon, authenticated, service_role;
+grant all on schema public to postgres, service_role;
+```
+
 ### 4. Domain
 
 Point the domain at Netlify and set it as the project's primary domain. This is

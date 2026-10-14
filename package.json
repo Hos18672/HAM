@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "deploy-build": "drizzle-kit migrate && tsx lib/db/seed.ts --if-empty && next build",
+    "deploy-build": "tsx lib/db/migrate.ts && tsx lib/db/seed.ts --if-empty && next build",
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
@@ -15,7 +15,7 @@
     "format:check": "prettier --check .",
     "db:generate": "drizzle-kit generate",
     "db:push": "drizzle-kit push",
-    "db:migrate": "drizzle-kit migrate",
+    "db:migrate": "tsx lib/db/migrate.ts",
     "db:studio": "drizzle-kit studio",
     "db:seed": "tsx lib/db/seed.ts",
     "test": "vitest run",

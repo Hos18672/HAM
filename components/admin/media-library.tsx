@@ -5,7 +5,8 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { UploadSimple, Trash, WarningCircle } from '@phosphor-icons/react/dist/ssr';
 import { saveMediaMeta, deleteMedia, addToGallery } from '@/app/actions/admin';
-import { ALLOWED_UPLOAD_MIME, MAX_UPLOAD_BYTES } from '@/lib/validation/content';
+import { ALLOWED_UPLOAD_MIME } from '@/lib/validation/content';
+import { precheck, sendImage } from '@/lib/upload-client';
 import type { MediaRow } from '@/lib/db/queries/admin';
 import { Button } from '../ui/button';
 import { Field, Input, Select } from '../ui/field';
@@ -37,15 +38,9 @@ export function MediaLibrary({
 
   async function upload(files: FileList | File[]) {
     const list = Array.from(files).filter((file) => {
-      if (!(ALLOWED_UPLOAD_MIME as readonly string[]).includes(file.type)) {
-        toast.show(`${file.name}: Dieses Dateiformat wird nicht unterstützt.`, 'error');
-        return false;
-      }
-      if (file.size > MAX_UPLOAD_BYTES) {
-        toast.show(`${file.name}: Die Datei ist größer als 8 MB.`, 'error');
-        return false;
-      }
-      return true;
+      const blocked = precheck(file);
+      if (blocked) toast.show(`${file.name}: ${blocked}`, 'error');
+      return !blocked;
     });
     if (list.length === 0) return;
 
@@ -53,17 +48,17 @@ export function MediaLibrary({
     let failed = 0;
 
     for (const file of list) {
-      const form = new FormData();
-      form.set('file', file);
-      form.set('gallery', 'true');
-      const response = await fetch('/api/upload', { method: 'POST', body: form });
-      if (!response.ok) failed += 1;
+      const sent = await sendImage(file, { gallery: 'true' });
+      if (!sent.ok) {
+        failed += 1;
+        toast.show(`${file.name}: ${sent.reason}`, 'error');
+      }
       setUploading((current) => current - 1);
     }
 
     if (failed === 0) {
       toast.show(`${list.length} ${list.length === 1 ? 'Bild' : 'Bilder'} hochgeladen.`, 'success');
-    } else {
+    } else if (list.length > 1) {
       toast.show(`${failed} von ${list.length} Uploads sind fehlgeschlagen.`, 'error');
     }
     router.refresh();

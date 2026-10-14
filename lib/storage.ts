@@ -28,6 +28,22 @@ export function isStorageConfigured(): boolean {
   return Boolean(process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY);
 }
 
+/** For the health check: can the bucket be reached, and is it public? */
+export async function storageStatus(): Promise<string> {
+  if (!isStorageConfigured()) return 'not configured (SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY)';
+  try {
+    const { data, error } = await storage().storage.getBucket(bucket());
+    if (error) {
+      return /not found/i.test(error.message)
+        ? `bucket "${bucket()}" missing (made on the first upload)`
+        : `error: ${error.message.slice(0, 160)}`;
+    }
+    return data.public ? 'ok' : `bucket "${bucket()}" is not public — images will not show`;
+  } catch (error) {
+    return `error: ${(error as Error).message?.slice(0, 160)}`;
+  }
+}
+
 export interface UploadResult {
   url: string;
   key: string;
@@ -36,7 +52,9 @@ export interface UploadResult {
 }
 
 export interface UploadError {
-  error: 'too-large' | 'bad-type' | 'not-configured' | 'failed';
+  error: 'too-large' | 'bad-type' | 'not-configured' | 'bad-key' | 'failed';
+  /** The storage service's own words, for the log and the admin's toast. */
+  detail?: string;
 }
 
 const bucket = () => process.env.SUPABASE_STORAGE_BUCKET ?? 'media';
@@ -71,20 +89,41 @@ export async function uploadImage(file: File): Promise<UploadResult | UploadErro
 
   try {
     const bytes = await file.arrayBuffer();
-    const { error } = await storage()
-      .storage.from(bucket())
-      .upload(key, bytes, { contentType: file.type, upsert: false, cacheControl: '31536000' });
+    const put = () =>
+      storage()
+        .storage.from(bucket())
+        .upload(key, bytes, { contentType: file.type, upsert: false, cacheControl: '31536000' });
+
+    let { error } = await put();
+    // A new Supabase project has no bucket yet. Rather than fail every upload
+    // until someone finds the right screen, make it — public, so the site
+    // can show the images — and try once more.
+    if (error && /bucket not found/i.test(error.message)) {
+      const made = await storage().storage.createBucket(bucket(), {
+        public: true,
+        fileSizeLimit: MAX_UPLOAD_BYTES,
+        allowedMimeTypes: [...ALLOWED_UPLOAD_MIME],
+      });
+      if (made.error && !/already exists/i.test(made.error.message)) {
+        console.error('[storage] could not create the bucket', made.error);
+      }
+      ({ error } = await put());
+    }
 
     if (error) {
       console.error('[storage] upload failed', error);
-      return { error: 'failed' };
+      // An anon key in place of the service-role key, or a mistyped one.
+      const badKey = /signature|jwt|invalid.*key|unauthori[sz]ed|row-level security/i.test(
+        error.message,
+      );
+      return { error: badKey ? 'bad-key' : 'failed', detail: error.message.slice(0, 200) };
     }
 
     const { data } = storage().storage.from(bucket()).getPublicUrl(key);
     return { url: data.publicUrl, key, mime: file.type, size: file.size };
   } catch (error) {
     console.error('[storage] upload threw', error);
-    return { error: 'failed' };
+    return { error: 'failed', detail: (error as Error).message?.slice(0, 200) };
   }
 }
 

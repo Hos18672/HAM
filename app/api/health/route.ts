@@ -37,9 +37,13 @@ export async function GET(request: Request) {
     database = `error ${error.code ?? ''}: ${(error.message ?? String(error)).slice(0, 160)}`;
   }
 
+  const { storageStatus } = await import('@/lib/storage');
+  const storage = await storageStatus();
+
   return NextResponse.json(
     {
       database,
+      storage,
       adminAccounts,
       authSecret: Boolean(process.env.AUTH_SECRET),
       authUrl: authUrl

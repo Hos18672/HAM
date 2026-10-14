@@ -48,8 +48,13 @@ export async function POST(request: Request) {
 
   const uploaded = await uploadImage(file);
   if ('error' in uploaded) {
-    const status = uploaded.error === 'not-configured' ? 503 : 400;
-    return NextResponse.json({ error: uploaded.error }, { status });
+    const status =
+      uploaded.error === 'not-configured' || uploaded.error === 'bad-key'
+        ? 503
+        : uploaded.error === 'failed'
+          ? 502
+          : 400;
+    return NextResponse.json({ error: uploaded.error, detail: uploaded.detail }, { status });
   }
 
   const [row] = await db

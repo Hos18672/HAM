@@ -4,7 +4,8 @@ import { useRef, useState, type ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { updateBaseField } from '@/app/actions/content';
-import { ALLOWED_UPLOAD_MIME, MAX_UPLOAD_BYTES } from '@/lib/validation/content';
+import { ALLOWED_UPLOAD_MIME } from '@/lib/validation/content';
+import { sendImage } from '@/lib/upload-client';
 import { useEditStatus } from './edit-status';
 
 export function EditableImageClient({
@@ -27,26 +28,15 @@ export function EditableImageClient({
   const [over, setOver] = useState(false);
 
   async function upload(file: File) {
-    if (
-      file.size > MAX_UPLOAD_BYTES ||
-      !(ALLOWED_UPLOAD_MIME as readonly string[]).includes(file.type)
-    ) {
-      status.setFailed('bad-file');
-      return;
-    }
-
     status.setSaving();
-    const form = new FormData();
-    form.set('file', file);
-    if (category) form.set('category', category);
-
-    const response = await fetch('/api/upload', { method: 'POST', body: form });
-    if (!response.ok) {
+    const sent = await sendImage(file, category ? { category } : {});
+    if (!sent.ok) {
       status.setFailed('upload-failed');
+      // The bar only says "not saved"; the editor needs to know why.
+      window.alert(sent.reason);
       return;
     }
-
-    const { id: mediaId } = (await response.json()) as { id: string };
+    const mediaId = sent.id;
 
     // Point the entity at the freshly uploaded media row.
     const result = await updateBaseField({ entity, id, field, value: mediaId });

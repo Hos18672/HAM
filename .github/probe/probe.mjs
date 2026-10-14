@@ -1,24 +1,27 @@
 import { chromium } from 'playwright';
 const SITE = 'https://ansar-ham.netlify.app';
-const b = await chromium.launch({ args: ['--disable-blink-features=AutomationControlled', '--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
-for (const [w, attr] of [[1400, 'hc'], [390, 'splash']]) {
-  console.log(`\n===== width ${w} =====`);
-  const ctx = await b.newContext({ viewport: { width: w, height: 860 } });
-  const p = await ctx.newPage();
-  p.on('console', (m) => console.log('console', m.type(), m.text().slice(0, 400)));
-  p.on('pageerror', (e) => console.log('pageerror', e.message.slice(0, 400)));
-  p.on('requestfailed', (r) => console.log('requestfailed', r.url(), r.failure()?.errorText));
-  p.on('response', (r) => { if (r.status() >= 400 || /\.js($|\?)/.test(r.url()) && r.url().includes('chunks')) console.log('resp', r.status(), r.headers()['content-type'], r.url()); });
-  const t0 = Date.now();
-  const res = await p.goto(SITE + '/de', { waitUntil: 'commit' });
-  console.log('status', res.status(), 'ttfb ms', Date.now() - t0);
-  console.log('headers', JSON.stringify(res.headers(), null, 1));
-  for (let i = 0; i < 28; i++) {
-    await p.waitForTimeout(500);
-    const s = await p.evaluate((a) => ({ v: document.documentElement.dataset[a] ?? '(none)', canvas: document.querySelectorAll('canvas').length, ready: document.readyState, gl2: !!document.createElement('canvas').getContext('webgl2') }), attr).catch((e) => e.message);
-    console.log(`${(i + 1) * 500}ms`, JSON.stringify(s));
-  }
-  await p.screenshot({ path: `shot-${w}.png` });
-  await ctx.close();
+const b = await chromium.launch();
+// Every element's own text and attributes, in document order, as lines.
+const dump = () => {
+  const out = [];
+  const walk = (el, path) => {
+    const own = [...el.childNodes].filter((n) => n.nodeType === 3).map((n) => n.textContent.trim()).join(' ').replace(/\s+/g, ' ');
+    const attrs = [...el.attributes].filter((a) => !/^(style|data-rise|data-in)$/.test(a.name)).map((a) => `${a.name}=${a.value.slice(0, 80)}`).join(' ');
+    out.push(`${path} [${attrs}] ${own.slice(0, 120)}`);
+    [...el.children].forEach((c, i) => { if (!/^(SCRIPT|svg|STYLE|LINK|META|NOSCRIPT|TEMPLATE)$/i.test(c.tagName)) walk(c, `${path}>${c.tagName.toLowerCase()}`); });
+  };
+  walk(document.documentElement, 'html');
+  return out;
+};
+for (const path of ['/de', '/fa']) {
+  const raw = await (await b.newContext({ javaScriptEnabled: false, viewport: { width: 1400, height: 900 } })).newPage();
+  await raw.goto(SITE + path); const A = await raw.evaluate(dump);
+  const live = await (await b.newContext({ viewport: { width: 1400, height: 900 } })).newPage();
+  live.on('pageerror', (e) => console.log('pageerror', e.message.slice(0, 200)));
+  await live.goto(SITE + path); await live.waitForTimeout(6000); const B = await live.evaluate(dump);
+  console.log(`\n===== ${path}: server ${A.length} lines, client ${B.length} lines =====`);
+  const setB = new Set(B), setA = new Set(A);
+  A.filter((l) => !setB.has(l)).slice(0, 60).forEach((l) => console.log('- ' + l));
+  B.filter((l) => !setA.has(l)).slice(0, 60).forEach((l) => console.log('+ ' + l));
 }
 await b.close();

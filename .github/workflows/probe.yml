@@ -17,6 +17,7 @@ jobs:
       - run: cd .github/probe && npm init -y >/dev/null && npm i playwright@1.55.0 && npx playwright install --with-deps chromium
       - run: curl -sS https://ansar-ham.netlify.app/de | head -c 6000 | sed 's/></>\n</g' | grep -i "script" | head -40
       - run: cd .github/probe && node probe.mjs
-      - uses: actions/upload-artifact@v4
+      - if: false
+        uses: actions/upload-artifact@v4
         if: always()
         with: { name: shots, path: .github/probe/shot-*.png }

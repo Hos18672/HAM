@@ -15,8 +15,45 @@ const SHRINK_ABOVE = 1.5 * 1024 * 1024;
 /** What the host will take in one request, with room for the form around it. */
 const SEND_LIMIT = 5.5 * 1024 * 1024;
 
+/**
+ * Whether this browser hands back what was drawn. Brave, Firefox with
+ * fingerprinting resistance and canvas-blocking extensions add noise to
+ * every read of a canvas — a defence against tracking that turns a redrawn
+ * photo into coloured static. A known pattern drawn and read back must come
+ * out exactly; if it does not, photos are sent as they are.
+ */
+let canvasTrusted: boolean | null = null;
+function canvasIsTrustworthy(): boolean {
+  if (canvasTrusted !== null) return canvasTrusted;
+  try {
+    const canvas = document.createElement('canvas');
+    canvas.width = 16;
+    canvas.height = 16;
+    const context = canvas.getContext('2d', { willReadFrequently: true });
+    if (!context) return (canvasTrusted = false);
+    context.fillStyle = 'rgb(10, 120, 200)';
+    context.fillRect(0, 0, 16, 16);
+    context.fillStyle = 'rgb(250, 240, 20)';
+    context.fillRect(8, 0, 8, 16);
+    const { data } = context.getImageData(0, 0, 16, 16);
+    canvasTrusted = true;
+    for (let i = 0; i < data.length; i += 4) {
+      const right = (i / 4) % 16 >= 8;
+      const [r, g, b] = right ? [250, 240, 20] : [10, 120, 200];
+      if (data[i] !== r || data[i + 1] !== g || data[i + 2] !== b || data[i + 3] !== 255) {
+        canvasTrusted = false;
+        break;
+      }
+    }
+  } catch {
+    canvasTrusted = false;
+  }
+  return canvasTrusted;
+}
+
 export async function shrinkImage(file: File): Promise<File> {
   if (!/^image\/(jpeg|png|webp)$/.test(file.type)) return file;
+  if (!canvasIsTrustworthy()) return file;
   let bitmap: ImageBitmap;
   try {
     bitmap = await createImageBitmap(file);
@@ -71,7 +108,13 @@ export async function sendImage(
 
   const small = await shrinkImage(file);
   if (small.size > Math.min(SEND_LIMIT, MAX_UPLOAD_BYTES)) {
-    return { ok: false, reason: 'Die Datei ist auch verkleinert noch größer als 5 MB.' };
+    return {
+      ok: false,
+      reason:
+        small === file
+          ? 'Die Datei ist größer als 5 MB, und dieser Browser lässt sie nicht verkleinern (Datenschutz-Einstellung). Bitte ein kleineres Bild wählen oder einen anderen Browser verwenden.'
+          : 'Die Datei ist auch verkleinert noch größer als 5 MB.',
+    };
   }
 
   const form = new FormData();

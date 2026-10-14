@@ -197,6 +197,7 @@
     }
   },
   "gallery": {
+    "close": "Schließen",
     "filterByCategory": "Nach Kategorie filtern",
     "none": "In dieser Kategorie sind noch keine Bilder vorhanden.",
     "open": "Bild vergrößern",

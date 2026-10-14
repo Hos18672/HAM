@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Image from 'next/image';
+import { createPortal } from 'react-dom';
 import { useTranslations } from 'next-intl';
 import {
   X,
@@ -177,7 +178,7 @@ export function GalleryGrid({ items }: { items: GalleryEntry[] }) {
                 aria-label={`${t('open')}: ${item.alt || item.caption}`}
                 className="tile"
               >
-                <span className="cmyk-wrap tile-media" style={{ position: 'relative' }}>
+                <span className="tile-media">
                   <Image
                     src={item.url}
                     alt={item.alt}
@@ -188,8 +189,7 @@ export function GalleryGrid({ items }: { items: GalleryEntry[] }) {
                     priority={index === 0}
                     placeholder={item.blurDataUrl ? 'blur' : 'empty'}
                     blurDataURL={item.blurDataUrl ?? undefined}
-                    className="cmyk"
-                    style={{ inlineSize: '100%', blockSize: 'auto', objectFit: 'cover' }}
+                    className="tile-img"
                   />
                 </span>
                 {/* Under the picture, not laid over it: a caption on a scrim
@@ -201,91 +201,82 @@ export function GalleryGrid({ items }: { items: GalleryEntry[] }) {
         </ul>
       )}
 
-      {current ? (
-        <div
-          ref={dialogRef}
-          role="dialog"
-          aria-modal="true"
-          aria-label={t('lightbox')}
-          className="fixed inset-0"
-          style={{
-            zIndex: 'var(--z-dialog)',
-            background: 'var(--color-scrim)',
-            display: 'grid',
-            placeItems: 'center',
-            padding: 'var(--space-4)',
-          }}
-          onClick={(event) => {
-            if (event.target === event.currentTarget) close();
-          }}
-          onTouchStart={onTouchStart}
-          onTouchEnd={onTouchEnd}
-        >
-          <div
-            style={{ display: 'grid', gap: 'var(--space-3)', maxInlineSize: 'min(64rem, 100%)' }}
-          >
-            <div className="flex items-center gap-2">
-              <span
-                className="kicker"
-                style={{ color: 'var(--color-on-scrim)' }}
-                aria-live="polite"
-              >
-                {t('counter', { index: openIndex! + 1, total: visible.length })}
-              </span>
-              <div className="ms-auto flex gap-1">
-                <Button
-                  variant="on-scrim"
-                  size="sm"
-                  iconOnly
-                  aria-label={t('previous')}
-                  onClick={() => step(-1)}
-                >
-                  <CaretLeft size={20} weight="bold" aria-hidden="true" className="mirror" />
-                </Button>
-                <Button
-                  variant="on-scrim"
-                  size="sm"
-                  iconOnly
-                  aria-label={t('next')}
-                  onClick={() => step(1)}
-                >
-                  <CaretRight size={20} weight="bold" aria-hidden="true" className="mirror" />
-                </Button>
-                <Button
-                  variant="on-scrim"
-                  size="sm"
-                  iconOnly
-                  aria-label={t('close')}
-                  onClick={close}
-                >
-                  <X size={20} weight="bold" aria-hidden="true" />
-                </Button>
-              </div>
-            </div>
-
-            <Image
-              src={current.url}
-              alt={current.alt}
-              width={current.width || 1600}
-              height={current.height || 1200}
-              sizes="100vw"
-              style={{
-                inlineSize: '100%',
-                blockSize: 'auto',
-                maxBlockSize: '75vh',
-                objectFit: 'contain',
-                borderRadius: 'var(--radius-soft)',
+      {current
+        ? createPortal(
+            <div
+              ref={dialogRef}
+              role="dialog"
+              aria-modal="true"
+              aria-label={t('lightbox')}
+              className="lightbox"
+              onClick={(event) => {
+                if (event.target === event.currentTarget) close();
               }}
-            />
+              onTouchStart={onTouchStart}
+              onTouchEnd={onTouchEnd}
+            >
+              <div className="lightbox-body">
+                <div className="flex items-center gap-2">
+                  <span
+                    className="kicker"
+                    style={{ color: 'var(--color-on-scrim)' }}
+                    aria-live="polite"
+                  >
+                    {t('counter', { index: openIndex! + 1, total: visible.length })}
+                  </span>
+                  <div className="ms-auto flex gap-1">
+                    <Button
+                      variant="on-scrim"
+                      size="sm"
+                      iconOnly
+                      aria-label={t('previous')}
+                      onClick={() => step(-1)}
+                    >
+                      <CaretLeft size={20} weight="bold" aria-hidden="true" className="mirror" />
+                    </Button>
+                    <Button
+                      variant="on-scrim"
+                      size="sm"
+                      iconOnly
+                      aria-label={t('next')}
+                      onClick={() => step(1)}
+                    >
+                      <CaretRight size={20} weight="bold" aria-hidden="true" className="mirror" />
+                    </Button>
+                    <Button
+                      variant="on-scrim"
+                      size="sm"
+                      iconOnly
+                      aria-label={t('close')}
+                      onClick={close}
+                    >
+                      <X size={20} weight="bold" aria-hidden="true" />
+                    </Button>
+                  </div>
+                </div>
 
-            {current.caption ? (
-              <p style={{ color: 'var(--color-on-scrim)', fontSize: 'var(--text-sm)' }}>
-                {current.caption}
-              </p>
-            ) : null}
-          </div>
-        </div>
-      ) : null}
+                <Image
+                  src={current.url}
+                  alt={current.alt}
+                  width={current.width || 1600}
+                  height={current.height || 1200}
+                  sizes="100vw"
+                  className="lightbox-img"
+                />
+
+                {current.caption ? (
+                  <p style={{ color: 'var(--color-on-scrim)', fontSize: 'var(--text-sm)' }}>
+                    {current.caption}
+                  </p>
+                ) : null}
+              </div>
+            </div>,
+            // On <body>, not inside the page: an animated ancestor (anything
+            // with a transform) makes `position: fixed` relative to itself,
+            // which left the header and footer uncovered.
+            document.body,
+          )
+        : null}
     </div>
   );
 }

@@ -18,10 +18,11 @@ const FADE_MS = 500;
  * opened and the scene is disposed.
  *
  * Armed by a script in the head (`data-splash` on <html>): only below 1024px,
- * once per browsing session, never with reduced motion. Unarmed, the overlay
- * is `display: none` and Three.js is never fetched. The markup is in the
- * server HTML so the band is there from the first paint, with no flash of the
- * page underneath while the scene downloads.
+ * on a fresh visit (not a link from another of the site's pages), never with
+ * reduced motion. Unarmed, the overlay is `display: none` and Three.js is
+ * never fetched. The markup is in the server HTML so the band is there from
+ * the first paint, with no flash of the page underneath while the scene
+ * downloads.
  */
 export function PhoneLoader({
   captionTitle,

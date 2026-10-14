@@ -30,9 +30,10 @@ import type { ThemeValue } from './theme';
  * Within one page load, the loader plays at most once — a client-side
  * navigation away and back finds the hero already built.
  *
- * Across page loads it is the head script in the layout that decides, and it
- * allows one per browsing session: it arms `data-hc="boot"` only when this
- * session has not seen the loader yet. `booted` below is that decision.
+ * Across page loads it is the head script in the layout that decides: it
+ * arms `data-hc="boot"` on a fresh visit — opened from outside, reloaded,
+ * or reached from the admin — and not on a link from another of the site's
+ * pages. `booted` below is that decision.
  */
 let loaderPlayed = false;
 

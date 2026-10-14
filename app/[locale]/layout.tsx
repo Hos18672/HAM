@@ -31,6 +31,31 @@ export function generateStaticParams() {
  */
 export const dynamicParams = false;
 
+/**
+ * For the head scripts below: `b`, the prefix the app is served under —
+ * empty in production, /HAM on the preview. Without it a route test never
+ * matched there and the loader simply never armed.
+ */
+const BASE_PATH_SCRIPT = `var b=${JSON.stringify(process.env.NEXT_PUBLIC_BASE_PATH ?? '')};`;
+
+/**
+ * For the head scripts below: returns early unless this load is a fresh
+ * visit — anything but a link followed from another of the site's own pages.
+ * A reload is fresh, and so is a page reached from the admin or the login.
+ * Expects `b` (BASE_PATH_SCRIPT) in scope. Any error in here leaves the load
+ * counted as fresh: the loader plays, which is the safe side to fail on.
+ */
+const FRESH_VISIT =
+  'try{' +
+  "var n=performance.getEntriesByType('navigation')[0];" +
+  "if(!n||n.type!=='reload'){" +
+  'var u=new URL(document.referrer);' +
+  'if(u.origin===location.origin){' +
+  'var r=u.pathname;' +
+  'if(b&&r.indexOf(b)===0)r=r.slice(b.length);' +
+  'if(!/^\\/(admin|login)(\\/|$)/.test(r))return;' +
+  '}}}catch(e){}';
+
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
@@ -144,7 +169,7 @@ export default async function LocaleLayout({
           }}
         />
         {/*
-          The hero's loader, armed before the first paint — once per visit.
+          The hero's loader, armed before the first paint — on a fresh visit.
 
           `data-hc="boot"` is what keeps the header and the hero copy hidden
           until the birds have finished; the scene then moves it to "loading"
@@ -152,46 +177,42 @@ export default async function LocaleLayout({
           because by the time a script in the body runs the header has already
           had a chance to paint.
 
-          Only on the home page, only on screens 1024px wide or wider (a phone
-          opens on the app's home screen, which has no scene), and only the
-          first time this browsing session reaches it. Inside the app a client-side navigation never re-runs
-          this at all, so the flag matters most on the static preview, where
-          every internal link falls back to a full load: without it, coming
-          home from the logo in the bar played the whole four seconds again.
-          `sessionStorage` is the right shelf for it — the loader is worth
-          seeing once each time someone comes to the site, and not once ever.
+          Only on the home page, and only on screens 1024px wide or wider (a
+          phone opens on the app's home screen, which has no scene).
 
-          The mark is set the moment the loader is armed rather than when it
-          finishes: a reload halfway through is still a visit that has seen
-          it, and nothing later in the page has to be trusted to record it.
+          A fresh visit is a load that did not come from a link on another of
+          the site's own pages (`FRESH_VISIT`). Inside the app a client-side
+          navigation never re-runs this at all; the test matters on the static
+          preview, where every internal link is a full load — without it,
+          coming home from the logo in the bar played the whole four seconds
+          again. A reload counts as fresh, and so does arriving from the admin
+          or the login page: someone who has just saved a change and opens the
+          site expects to see it the way a visitor does.
 
-          Reading the shelf is its own try/catch. Where storage throws — a
-          locked-down private window — the loader simply plays, which is what
-          it did before any of this.
+          This used to be once per browsing session, kept in sessionStorage.
+          That outlived far more than a visit: on the real host, where one tab
+          stays open through a login, an hour of editing and every reload, the
+          loader was seen once and then never again.
         */}
         <script
           dangerouslySetInnerHTML={{
             __html:
               '(function(){try{' +
-              // The prefix the app is served under: empty in production, /HAM
-              // on the preview. Without it this test never matched there and
-              // the loader simply never armed.
-              `var b=${JSON.stringify(process.env.NEXT_PUBLIC_BASE_PATH ?? '')};` +
+              BASE_PATH_SCRIPT +
               "var p=location.pathname.replace(/\\/+$/,'');" +
               'if(b&&p.indexOf(b)===0)p=p.slice(b.length);' +
               'if(!/^(\\/(fa|de))?$/.test(p))return;' +
               // Phones open on the app's home screen, which has no scene to build.
               "if(matchMedia('(max-width: 1023.98px)').matches)return;" +
-              "try{if(sessionStorage.getItem('ham:hc')==='1')return;" +
-              "sessionStorage.setItem('ham:hc','1')}catch(e){}" +
+              FRESH_VISIT +
               "document.documentElement.dataset.hc='boot';" +
               '}catch(e){}})()',
           }}
         />
         {/*
           The phone loader (`PhoneLoader`), armed the same way: before the
-          first paint, below 1024px, once per browsing session, on whichever
-          page the app or the site was opened at.
+          first paint, below 1024px, on a fresh visit, on whichever page the
+          app or the site was opened at.
         */}
         <script
           dangerouslySetInnerHTML={{
@@ -204,8 +225,8 @@ export default async function LocaleLayout({
               // Not for automated browsers: the end-to-end tests drive the
               // pages themselves, on software WebGL where it runs for ages.
               'if(navigator.webdriver)return;' +
-              "try{if(sessionStorage.getItem('ham:splash')==='1')return;" +
-              "sessionStorage.setItem('ham:splash','1')}catch(e){}" +
+              BASE_PATH_SCRIPT +
+              FRESH_VISIT +
               "document.documentElement.dataset.splash='1';" +
               '}catch(e){}})()',
           }}

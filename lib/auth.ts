@@ -48,7 +48,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           .select()
           .from(users)
           .where(eq(raw`lower(${users.email})`, email.toLowerCase()))
-          .limit(1);
+          .limit(1)
+          .catch((error: unknown) => {
+            // Shows in the host's function log; the form says "server error".
+            console.error('[auth] the users table could not be read:', error);
+            throw error;
+          });
 
         // Compare against a dummy hash when the account does not exist, so a
         // missing address and a wrong password take the same time to answer.

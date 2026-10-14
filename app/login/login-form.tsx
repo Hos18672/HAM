@@ -11,11 +11,13 @@ import { Button } from '@/components/ui/button';
 /**
  * The credentials form.
  *
- * One error message for every kind of failure — wrong address, wrong password,
- * or too many attempts. Distinguishing them would tell someone probing the
+ * One error message for every kind of credential failure — wrong address,
+ * wrong password, or too many attempts. Distinguishing them would tell someone probing the
  * form which addresses are real accounts.
  */
 const GENERIC_ERROR = 'E-Mail-Adresse oder Passwort stimmen nicht. Bitte versuchen Sie es erneut.';
+const SERVER_ERROR = (code: string) =>
+  `Die Anmeldung ist gerade nicht möglich – ein Fehler auf dem Server (${code}). Details unter /api/health.`;
 
 export function LoginForm({
   redirectTo,
@@ -40,11 +42,22 @@ export function LoginForm({
       noValidate
       onSubmit={handleSubmit(async (values) => {
         setFormError(null);
-        const result = await signIn('credentials', {
-          ...values,
-          redirect: false,
-        });
+        let result: Awaited<ReturnType<typeof signIn>> | undefined;
+        try {
+          result = await signIn('credentials', { ...values, redirect: false });
+        } catch {
+          setFormError(SERVER_ERROR('network'));
+          return;
+        }
 
+        // A wrong address, a wrong password and a lockout all come back as
+        // CredentialsSignin and share one message. Anything else is the
+        // server failing (no database, no AUTH_SECRET), which says nothing
+        // about accounts and is worth telling apart.
+        if (result?.error && result.error !== 'CredentialsSignin') {
+          setFormError(SERVER_ERROR(result.error));
+          return;
+        }
         if (result?.error || !result?.ok) {
           setFormError(GENERIC_ERROR);
           return;

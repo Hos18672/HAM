@@ -4,6 +4,7 @@ import {
   useCallback,
   useEffect,
   useId,
+  useLayoutEffect,
   useRef,
   useState,
   type ReactNode,
@@ -321,12 +322,34 @@ export function Seg<T extends string>({
     0,
     options.findIndex((option) => option.value === value),
   );
+  // Each button is as wide as its label needs, so the thumb follows the
+  // chosen one's measured box rather than an equal share.
+  const box = useRef<HTMLDivElement>(null);
+  const [thumb, setThumb] = useState<{ x: number; w: number } | null>(null);
+  useLayoutEffect(() => {
+    const el = box.current;
+    if (!el) return;
+    const measure = () => {
+      const button = el.querySelectorAll<HTMLElement>('button')[at];
+      if (button) setThumb({ x: button.offsetLeft, w: button.offsetWidth });
+    };
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [at, options.length]);
   return (
     <div
+      ref={box}
       className="rd-seg"
       role="group"
       aria-label={label}
-      style={{ ['--n' as string]: options.length, ['--at' as string]: at }}
+      data-measured={thumb ? '' : undefined}
+      style={{
+        ['--n' as string]: options.length,
+        ['--at' as string]: at,
+        ...(thumb ? { ['--x' as string]: `${thumb.x}px`, ['--w' as string]: `${thumb.w}px` } : {}),
+      }}
     >
       <span className="rd-seg-thumb" aria-hidden="true" />
       {options.map((option) => (

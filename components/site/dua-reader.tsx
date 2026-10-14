@@ -1062,9 +1062,7 @@ function DuaPicker({
             label: (
               <>
                 {tr('bookmarks')}
-                {saved.length ? (
-                  <span className="rd-count tabular"> · {d(saved.length)}</span>
-                ) : null}
+                {saved.length ? <span className="rd-count tabular">{d(saved.length)}</span> : null}
               </>
             ),
           },

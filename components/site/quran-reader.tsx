@@ -1307,9 +1307,7 @@ function Picker({
             label: (
               <>
                 {t('tabBookmarks')}
-                {marks.length ? (
-                  <span className="rd-count tabular"> · {d(marks.length)}</span>
-                ) : null}
+                {marks.length ? <span className="rd-count tabular">{d(marks.length)}</span> : null}
               </>
             ),
           },

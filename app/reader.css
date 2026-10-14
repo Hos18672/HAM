@@ -347,7 +347,12 @@ body:has(.rd-app) .footer-city {
     block-size: 100%;
     overflow-y: auto;
     overscroll-behavior: contain;
-    padding: 16px 14px 120px;
+    /* The thin bar sits in the gutter beside the content, never over it. */
+    scrollbar-gutter: stable;
+    padding: 16px 8px 120px 14px;
+  }
+  :root[dir='rtl'] .rd-side-inner {
+    padding: 16px 14px 120px 8px;
   }
 }
 
@@ -1130,8 +1135,7 @@ button.rd-medal:active {
 }
 .rd-seg {
   position: relative;
-  display: grid;
-  grid-template-columns: repeat(var(--n), minmax(0, 1fr));
+  display: flex;
   padding: 4px;
   border-radius: 999px;
   background: var(--rd-paper);
@@ -1149,9 +1153,19 @@ button.rd-medal:active {
     0 2px 8px rgba(7, 59, 41, 0.1);
   transition: inset-inline-start 250ms var(--rd-ease);
 }
+/* Once measured, the thumb sits exactly under the chosen button. */
+.rd-seg[data-measured] .rd-seg-thumb {
+  inset-inline-start: auto;
+  left: var(--x);
+  inline-size: var(--w);
+  transition:
+    left 250ms var(--rd-ease),
+    inline-size 250ms var(--rd-ease);
+}
 .rd-seg button {
   position: relative;
   z-index: 1;
+  flex: 1 1 0;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2191,9 +2205,28 @@ button.rd-medal:active {
     padding-block-end: 48px;
   }
 }
+/* The picker's labels differ in length ("Lesezeichen · 2"), so each tab
+   takes the room its label needs and shares out what is left. */
 .rd-picker .rd-seg button {
-  padding-inline: 4px;
+  flex: 1 1 auto;
+  padding-inline: 10px;
   font-size: 0.8125rem !important;
+}
+.rd-picker .rd-count {
+  display: inline-grid;
+  place-items: center;
+  min-inline-size: 18px;
+  block-size: 18px;
+  padding-inline: 5px;
+  border-radius: 999px;
+  background: var(--rd-line);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  line-height: 1;
+}
+.rd-picker .rd-seg button[aria-pressed='true'] .rd-count {
+  background: var(--rd-green);
+  color: var(--rd-card);
 }
 .rd-bism-tr {
   margin: 2px 0 0;

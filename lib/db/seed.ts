@@ -95,6 +95,17 @@ async function seedAdmin() {
     .limit(1);
 
   if (existing) {
+    // A changed password is never overwritten by a deploy — unless asked to,
+    // for the one case it is needed: nobody can log in any more.
+    if (process.env.ADMIN_RESET_PASSWORD === '1') {
+      await db
+        .update(s.users)
+        .set({ passwordHash: await hashPassword(password), role: 'admin' })
+        .where(eq(s.users.id, existing.id));
+      await db.delete(s.rateLimits).where(eq(s.rateLimits.key, `login:${email}`));
+      log(`admin password reset from ADMIN_PASSWORD (${email}) — remove ADMIN_RESET_PASSWORD now`);
+      return;
+    }
     log(`admin account already exists (${email}) — left unchanged`);
     return;
   }

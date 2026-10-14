@@ -232,6 +232,13 @@ which is enough to test with.
    tree) and **change the seeded password immediately** under **Mein Konto**
    (click your name at the top right).
 
+If you cannot log in: the admin account is created by the deploy only when
+`ADMIN_EMAIL` and `ADMIN_PASSWORD` are both set (the deploy log then says
+`admin account created`), and an existing account's password is never
+overwritten. To set it again, add `ADMIN_RESET_PASSWORD` = `1` next to the new
+`ADMIN_PASSWORD`, deploy, log in, then delete `ADMIN_RESET_PASSWORD`. After five
+wrong tries the account waits fifteen minutes (the reset also clears that).
+
 If the deploy stops with `type "…" already exists` or `relation "…" already
 exists`, the database holds tables from an earlier attempt that were not
 recorded as migrations. On a new project with nothing in it yet, clear it in

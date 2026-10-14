@@ -7,6 +7,7 @@ import { PageHead } from '@/components/site/page-head';
 import { SupportTabs } from '@/components/site/support-tabs';
 import { CopyButton } from '@/components/site/copy-button';
 import { FACTS } from '@/lib/site-facts';
+import { epcQrSvg } from '@/lib/epc-qr';
 import { SupportForm } from '@/components/site/support-form';
 import { EditableText } from '@/components/editable/editable-text';
 import { FactPair } from '@/components/ui/card';
@@ -39,6 +40,14 @@ export default async function SupportPage({ params }: { params: Promise<{ locale
   if (!header) notFound();
 
   const t = await getTranslations({ locale, namespace: 'support' });
+
+  // A banking app turns this into a filled-in transfer; it needs the name
+  // the account is held under, so there is no code without one.
+  const holder = settings.accountHolder || blocks.account_holder?.text || '';
+  const qr =
+    settings.iban && holder
+      ? await epcQrSvg({ name: holder, iban: settings.iban, bic: FACTS.bic, text: t('qrText') })
+      : null;
 
   const tierOptions = tiers.map((tier) => ({
     value: tier.tierKey,
@@ -82,7 +91,9 @@ export default async function SupportPage({ params }: { params: Promise<{ locale
             <p className="support-lead" style={{ margin: 0 }}>
               {t('bankLead')}
             </p>
-            {blocks.account_holder ? (
+            {settings.accountHolder ? (
+              <FactPair label={t('accountHolder')} value={settings.accountHolder} />
+            ) : blocks.account_holder ? (
               <FactPair
                 label={t('accountHolder')}
                 value={
@@ -107,6 +118,21 @@ export default async function SupportPage({ params }: { params: Promise<{ locale
               />
             ) : null}
             <CopyButton value={settings.iban.replace(/\s/g, '')} label={t('copyIban')} />
+            {qr ? (
+              <figure className="bank-qr">
+                <div
+                  className="bank-qr-code"
+                  role="img"
+                  aria-label={t('qrAlt', { name: holder })}
+                  // Our own SVG, drawn from the IBAN and name above.
+                  dangerouslySetInnerHTML={{ __html: qr }}
+                />
+                <figcaption>
+                  <strong>{t('qrTitle')}</strong>
+                  <span>{t('qrHint')}</span>
+                </figcaption>
+              </figure>
+            ) : null}
           </div>
         ) : (
           <p className="support-lead" style={{ margin: 0 }}>

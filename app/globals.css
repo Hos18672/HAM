@@ -7634,6 +7634,45 @@ body:has(.edit-bar) .tab-bar,
   justify-self: start;
   min-block-size: 44px;
 }
+/* The transfer code: always black on white with a quiet zone, whatever the
+   theme, so every banking app's scanner can read it. */
+.bank-qr {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  margin: var(--space-2) 0 0;
+  padding-block-start: var(--space-4);
+  border-block-start: var(--rule-hair) solid var(--line);
+}
+.bank-qr-code {
+  flex: none;
+  inline-size: 132px;
+  padding: 10px;
+  border-radius: 14px;
+  background: #ffffff;
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+.bank-qr-code svg {
+  display: block;
+  inline-size: 100%;
+  block-size: auto;
+}
+.bank-qr figcaption {
+  display: grid;
+  gap: 4px;
+  font-size: var(--text-sm);
+  color: var(--ink2);
+}
+.bank-qr figcaption strong {
+  color: var(--ink);
+  font-weight: var(--weight-bold);
+}
+@media (max-width: 380px) {
+  .bank-qr {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
 
 /* ─── The closing ask: a rounded panel of the band inside the page ───────── */
 .cta-panel {

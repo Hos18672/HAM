@@ -4,7 +4,7 @@ import { unstable_cache } from 'next/cache';
 import { db } from '../index';
 import type { Locale } from '../../i18n/config';
 import * as s from '../schema';
-import { known, OPENING_HOURS, type OpeningWindow } from '../../site-facts';
+import { FACTS, known, OPENING_HOURS, type OpeningWindow } from '../../site-facts';
 import { openingHoursSchema } from '../../validation/content';
 
 /**
@@ -63,6 +63,7 @@ export interface SiteSettings {
   contactEmail: string;
   phone: string;
   address: string;
+  accountHolder: string;
   iban: string;
   mapUrl: string;
   openingHours: OpeningWindow[];
@@ -75,7 +76,8 @@ export const FALLBACK_SETTINGS: SiteSettings = {
   contactEmail: '',
   phone: '',
   address: 'Sautergasse 34–38, 1170 Wien',
-  iban: '',
+  accountHolder: FACTS.accountHolder,
+  iban: FACTS.iban,
   mapUrl: '',
   openingHours: [...OPENING_HOURS],
 };
@@ -95,6 +97,7 @@ export const getSettings = cached(
         // Placeholder values seeded by earlier builds read as missing.
         phone: known(row.phone),
         address: row.address,
+        accountHolder: row.accountHolder,
         iban: known(row.iban),
         mapUrl: row.mapUrl,
         // Read defensively: a hand-edited row must not take the site down.

@@ -105,6 +105,8 @@ export const settingsSchema = z.object({
   contactEmail: z.string().trim().max(255).email().or(z.literal('')),
   phone: z.string().trim().max(64),
   address: z.string().trim().max(500),
+  // 70 is what a SEPA transfer (and its QR code) carries for the name.
+  accountHolder: z.string().trim().max(70),
   iban: z
     .string()
     .trim()

@@ -350,6 +350,7 @@ describe('settings', () => {
     contactEmail: 'info@example.at',
     phone: '+43 1 000 00 00',
     address: 'Sautergasse 34–38, 1170 Wien',
+    accountHolder: 'Haus aller Menschen',
     iban: 'AT00 0000 0000 0000 0000',
     mapUrl: 'https://www.openstreetmap.org/?mlat=48.2175',
   };
@@ -360,7 +361,13 @@ describe('settings', () => {
 
   it('allows the optional fields to be empty', () => {
     expect(
-      settingsSchema.safeParse({ ...valid, contactEmail: '', mapUrl: '', iban: '' }).success,
+      settingsSchema.safeParse({
+        ...valid,
+        contactEmail: '',
+        mapUrl: '',
+        accountHolder: '',
+        iban: '',
+      }).success,
     ).toBe(true);
   });
 

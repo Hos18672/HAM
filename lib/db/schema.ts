@@ -94,6 +94,8 @@ export const siteSettings = pgTable('site_settings', {
   contactEmail: varchar('contact_email', { length: 255 }).notNull().default(''),
   phone: varchar('phone', { length: 64 }).notNull().default(''),
   address: text('address').notNull().default(''),
+  /** As the bank holds it — the name a transfer is checked against. */
+  accountHolder: varchar('account_holder', { length: 70 }).notNull().default(''),
   iban: varchar('iban', { length: 64 }).notNull().default(''),
   mapUrl: text('map_url').notNull().default(''),
   /** Null means the hours in lib/site-facts.ts. */

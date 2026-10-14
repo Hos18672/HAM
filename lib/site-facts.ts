@@ -25,8 +25,10 @@ export const FACTS = {
   phone: '',
   // TODO(content): ZVR number from the Vereinsregister.
   zvr: '',
-  // TODO(content): the association's IBAN, BIC and account holder.
-  iban: '',
+  // As the bank holds them (Erste Bank). Both are editable in the admin
+  // settings; these are the values a fresh database starts with.
+  accountHolder: 'H.A.M. (Haus aller Menschen) - Vere',
+  iban: 'AT29 2011 1856 5232 9900',
   bic: '',
   instagram: 'ansarolmahdi_Wien',
   mapQuery: MAP_QUERY,

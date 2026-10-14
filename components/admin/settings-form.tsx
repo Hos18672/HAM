@@ -156,7 +156,25 @@ export function SettingsForm({ settings }: { settings: SiteSettings }) {
         )}
       </Field>
 
-      <Field label="IBAN" hint="Erscheint auf der Seite „Mitglied werden“.">
+      <Field
+        label="Kontoinhaber"
+        hint="Genau wie bei der Bank hinterlegt – Überweisungen werden mit diesem Namen abgeglichen."
+      >
+        {(props) => (
+          <Input
+            {...props}
+            type="text"
+            maxLength={70}
+            value={values.accountHolder}
+            onChange={(event) => set('accountHolder', event.target.value)}
+          />
+        )}
+      </Field>
+
+      <Field
+        label="IBAN"
+        hint="Erscheint mit dem Kontoinhaber und einem QR-Code zum Scannen auf der Seite „Unterstützen“."
+      >
         {(props) => (
           <Input
             {...props}

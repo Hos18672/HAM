@@ -130,6 +130,7 @@ async function seedSettings() {
       contactEmail: data.ASSOCIATION.email,
       phone: data.ASSOCIATION.phone,
       address: `${data.ASSOCIATION.street}, ${data.ASSOCIATION.postcode} ${data.ASSOCIATION.city}`,
+      accountHolder: data.ASSOCIATION.accountHolder,
       iban: data.ASSOCIATION.iban,
       mapUrl: data.ASSOCIATION.mapUrl,
     })
@@ -139,6 +140,7 @@ async function seedSettings() {
         contactEmail: data.ASSOCIATION.email,
         phone: data.ASSOCIATION.phone,
         address: `${data.ASSOCIATION.street}, ${data.ASSOCIATION.postcode} ${data.ASSOCIATION.city}`,
+        accountHolder: data.ASSOCIATION.accountHolder,
         iban: data.ASSOCIATION.iban,
         mapUrl: data.ASSOCIATION.mapUrl,
         updatedAt: new Date(),

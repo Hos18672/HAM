@@ -1,6 +1,12 @@
 #!/usr/bin/env bash
 # Temporary: how long the live site takes to answer, page by page.
 B=https://ansar-ham.netlify.app
+# Wait for the deploy that makes the pages cacheable.
+for i in $(seq 1 60); do
+  cc=$(curl -s -o /dev/null -D - "$B/de/about" | grep -i '^cache-control' | tr -d '\r')
+  echo "wait $i: $cc"
+  case "$cc" in *private*) sleep 15;; *) break;; esac
+done
 for round in 1 2 3; do
   echo "=== round $round"
   for p in /de /fa /de/about /de/prayer /de/offers /de/calendar /de/contact; do

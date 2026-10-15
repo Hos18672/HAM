@@ -7,6 +7,7 @@ for (let i = 0; i < 60; i++) {
   await new Promise((r) => setTimeout(r, 15000));
 }
 const b = await chromium.launch();
+// (run from the repo root; playwright resolves from .github/probe)
 const ctx = await b.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, locale: 'de-AT' });
 const p = await ctx.newPage();
 p.on('console', (m) => m.type() === 'error' && console.log('console:', m.text()));

@@ -17,6 +17,15 @@ import { JsonLd, eventJsonLd } from '@/lib/seo';
 import { EventCover } from '@/components/app/event-cover';
 import { EventDetailBar } from '@/components/app/event-detail-bar';
 
+/**
+ * None built ahead; each one is rendered on its first visit and then served
+ * from the host's cache like the rest of the site. Without this — even an
+ * empty list — the route counts as dynamic and renders on every request.
+ */
+export function generateStaticParams() {
+  return [];
+}
+
 /** Events are few; one is found among the lists the events page already caches. */
 async function findEvent(locale: Parameters<typeof getUpcomingEvents>[0], slug: string) {
   const [upcoming, past] = await Promise.all([

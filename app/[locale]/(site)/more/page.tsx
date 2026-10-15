@@ -22,7 +22,6 @@ import { requireLocale } from '@/lib/i18n/locale-param';
 import { Link } from '@/lib/i18n/navigation';
 import { locales } from '@/lib/i18n/config';
 import { getSettings } from '@/lib/db/queries/content';
-import { readTheme } from '@/lib/preferences';
 import { LangSwitch } from '@/components/ui/lang-switch';
 import { ThemeToggle } from '@/components/site/theme-toggle';
 import { ShareAppRow } from '@/components/app/share-app-row';
@@ -82,7 +81,8 @@ export default async function MorePage({ params }: { params: Promise<{ locale: s
   const t = await getTranslations({ locale, namespace: 'nav' });
   const tApp = await getTranslations({ locale, namespace: 'app' });
   const settings = await getSettings();
-  const theme = await readTheme(settings.defaultTheme);
+  // The default; the toggle reads the reader's own theme off <html>.
+  const theme = settings.defaultTheme;
 
   const group = (
     key: string,

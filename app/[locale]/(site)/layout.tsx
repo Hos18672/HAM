@@ -7,7 +7,7 @@ import { PageEnter } from '@/components/site/page-enter';
 import { WanderingBirds } from '@/components/site/wandering-birds';
 import { EditBar } from '@/components/editable/edit-bar';
 import { EditStatusProvider } from '@/components/editable/edit-status';
-import { readTheme, readEditSession } from '@/lib/preferences';
+import { isEditing } from '@/lib/preferences';
 import { getSettings } from '@/lib/db/queries/content';
 
 export default async function SiteLayout({
@@ -21,8 +21,12 @@ export default async function SiteLayout({
   const typed = requireLocale(locale);
 
   const settings = await getSettings();
-  const theme = await readTheme(settings.defaultTheme);
-  const editing = (await readEditSession()) !== null;
+  // The site's default, not the reader's cookie: reading a cookie here would
+  // render every page on every request. The head script in the root layout
+  // puts the reader's own theme on <html> before the first paint, and the
+  // toggle takes its state from there.
+  const theme = settings.defaultTheme;
+  const editing = await isEditing();
 
   const page = (
     <>

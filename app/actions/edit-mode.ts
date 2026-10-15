@@ -1,6 +1,6 @@
 'use server';
 
-import { cookies } from 'next/headers';
+import { cookies, draftMode } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { requireUser } from '@/lib/auth';
 import { EDIT_COOKIE, createEditToken } from '@/lib/preferences';
@@ -32,6 +32,10 @@ export async function startEditMode(formData: FormData) {
     // forgotten browser on a shared machine stops being one.
     maxAge: 60 * 60,
   });
+  // The pages are served from the cache; this makes the editor's own
+  // requests skip it, so they are rendered with the editing controls in
+  // place (`isEditing`).
+  (await draftMode()).enable();
 
   redirect(`/${locale}`);
 }
@@ -41,5 +45,6 @@ export async function endEditMode(formData: FormData) {
   const locale = isLocale(requested) ? requested : defaultLocale;
 
   (await cookies()).delete(EDIT_COOKIE);
+  (await draftMode()).disable();
   redirect(`/${locale}`);
 }

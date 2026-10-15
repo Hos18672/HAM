@@ -17,7 +17,6 @@ import { EventRow } from '@/components/site/event-row';
 import { NextPrayerCard, PrayerStrip } from '@/components/ui/next-prayer';
 import { Eye } from '@/components/site/ornaments';
 import { HomecomingHero } from '@/components/site/homecoming-hero';
-import { readTheme } from '@/lib/preferences';
 import { OpeningHours, Directions, HouseMap } from '@/components/site/house-info';
 import { OpenNow } from '@/components/site/open-now';
 import { getPrayerDay } from '@/lib/prayer-page';
@@ -83,9 +82,10 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
   const tHouse = await getTranslations({ locale, namespace: 'house' });
 
   const tBrand = await getTranslations({ locale, namespace: 'brand' });
-  // The scene starts in the theme the page is rendered in, rather than
-  // gliding into it after the first frame.
-  const theme = await readTheme(settings.defaultTheme);
+  // The site's default: the page is built ahead, so it cannot know the
+  // reader's cookie. The scene starts from what the head script has put on
+  // <html> instead (`HomecomingHero`).
+  const theme = settings.defaultTheme;
 
   return (
     <>

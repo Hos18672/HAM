@@ -18,6 +18,15 @@ export const revalidate = 2592000;
 // instead, and `pageNumber` refuses anything but 1–604.
 export const dynamicParams = true;
 
+/**
+ * None built ahead; each one is rendered on its first visit and then served
+ * from the host's cache like the rest of the site. Without this — even an
+ * empty list — the route counts as dynamic and renders on every request.
+ */
+export function generateStaticParams() {
+  return [];
+}
+
 function pageNumber(value: string): number | null {
   const n = Number(value);
   return Number.isInteger(n) && n >= 1 && n <= PAGE_COUNT && String(n) === value ? n : null;

@@ -47,6 +47,12 @@ const loadScene = () => (scenePending ??= import('@/lib/homecoming/src/mount.js'
 if (typeof window !== 'undefined' && document.documentElement.dataset.hc === 'boot')
   void loadScene();
 
+/** The theme the head script or the toggle has put on `<html>`, if any. */
+function appliedTheme(): ThemeValue | null {
+  const value = document.documentElement.dataset.theme;
+  return value === 'dark' || value === 'light' ? value : null;
+}
+
 export function HomecomingHero({
   theme,
   captionTitle,
@@ -94,7 +100,11 @@ export function HomecomingHero({
         anchor: slotRef.current,
         eventsEl: sectionRef.current,
         meterEl: meterRef.current,
-        theme,
+        // What is on <html> by now, not the prop: the page is built ahead
+        // with the site's default, and the head script has since put the
+        // reader's own theme on the element. Starting from the prop would
+        // open a dark reader's scene in daylight and glide it over.
+        theme: appliedTheme() ?? theme,
         skipLoader: loaderPlayed || !booted,
         // Without WebGL 2 the house's own mark is shown in the slot instead.
         // The prefix matters on the preview, which is served from a sub-path.

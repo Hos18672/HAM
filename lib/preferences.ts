@@ -1,5 +1,5 @@
 import 'server-only';
-import { cookies } from 'next/headers';
+import { cookies, draftMode } from 'next/headers';
 import { createHmac, timingSafeEqual } from 'node:crypto';
 
 /**
@@ -71,6 +71,21 @@ export async function readEditSession(): Promise<EditSession | null> {
   return verifyEditToken(token);
 }
 
+/**
+ * For rendering: true when this page is being rendered for an editor.
+ *
+ * The public pages are built ahead and served from the host's cache, so
+ * nothing in their render may read a cookie — one read and every page is
+ * rendered again on every visit and every click, which on Netlify took the
+ * better part of a second each. Draft mode is Next's own way out: the edit
+ * session switches it on (`startEditMode`), and only a request carrying it
+ * skips the cache and is rendered fresh, where reading the signed cookie is
+ * then allowed. For everyone else this is a constant `false` at build time.
+ *
+ * Actions and route handlers, which always run per request, read the session
+ * with `readEditSession` directly.
+ */
 export async function isEditing(): Promise<boolean> {
+  if (!(await draftMode()).isEnabled) return false;
   return (await readEditSession()) !== null;
 }

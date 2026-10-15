@@ -4,7 +4,6 @@ import { NextIntlClientProvider, hasLocale } from 'next-intl';
 import { getTranslations } from 'next-intl/server';
 import { requireLocale } from '@/lib/i18n/locale-param';
 import { locales, localeDirection } from '@/lib/i18n/config';
-import { readTheme } from '@/lib/preferences';
 import { THEME_COOKIE } from '@/components/site/theme';
 import { ThemeKeeper } from '@/components/site/theme-keeper';
 import { PhoneLoader } from '@/components/app/phone-loader';
@@ -121,7 +120,11 @@ export default async function LocaleLayout({
 
   const tBrand = await getTranslations({ locale: typed, namespace: 'brand' });
   const settings = await getSettings();
-  const theme = await readTheme(settings.defaultTheme);
+  // The site's default, never the reader's cookie: one cookie read anywhere
+  // in this render and no page can be served from the host's cache — every
+  // visit and every click is rendered again (most of a second on Netlify).
+  // The head script below puts the reader's theme on <html> before paint.
+  const theme = settings.defaultTheme;
 
   return (
     <html
@@ -155,17 +158,13 @@ export default async function LocaleLayout({
         {/*
           The reader's theme, before the first paint.
 
-          The toggle writes a cookie and the server reads it on the next
-          render, which is the whole story on a server-rendered host. On the
-          static preview there is no next render: every page is HTML that was
-          built once, carrying whatever the theme was at build time. So dark
-          mode survived exactly as long as you stayed on the page you set it
-          on, and the next click put the lights back on.
-
-          Reading the cookie here settles it before anything paints, on both
-          hosts. In production it agrees with what the server already wrote
-          and changes nothing; on the preview it is the only thing that
-          knows. `<html>` carries suppressHydrationWarning for this.
+          The toggle writes a cookie, and this is the only thing that reads
+          it. Every public page is built ahead and served from the host's
+          cache, on Netlify and on the preview alike, so each one carries the
+          site's default theme; reading the cookie here settles the reader's
+          own before anything paints. `<html>` carries
+          suppressHydrationWarning for this, and ThemeKeeper holds it there
+          across navigations.
 
           With no choice made yet, a phone or the app follows the phone's own
           light or dark setting, and keeps following it while it changes —

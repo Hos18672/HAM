@@ -14,8 +14,12 @@ import { PrayerMobile } from '@/components/app/prayer-mobile';
 /**
  * Prayer times change every day, so this page is revalidated hourly rather
  * than being built once. The times themselves come from the Aladhan API,
- * cached for a day, with the local calculation behind it (`lib/aladhan`). The calendar below it accepts ?y= and ?m=, which
- * makes the route dynamic on those requests only.
+ * cached for a day, with the local calculation behind it (`lib/aladhan`).
+ *
+ * The page always opens on the current month. A shared `?y=&m=` link is
+ * honoured by the calendar itself, in the browser: reading the query here
+ * would make the route render on every request instead of coming from the
+ * host's cache.
  */
 export const revalidate = 3600;
 
@@ -28,15 +32,8 @@ export async function generateMetadata({
   return pageMetadata('prayer', locale, '/prayer');
 }
 
-export default async function PrayerPage({
-  params,
-  searchParams,
-}: {
-  params: Promise<{ locale: string }>;
-  searchParams: Promise<{ y?: string; m?: string }>;
-}) {
+export default async function PrayerPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
-  const { y, m } = await searchParams;
   const typed = requireLocale(locale);
 
   const header = await getPageHeader('prayer', typed);
@@ -45,11 +42,10 @@ export default async function PrayerPage({
   const now = new Date();
   const day = await getPrayerDay(now);
 
-  // Fall back to the current month for anything that is not a sane year/month.
   // "Current" is read in Vienna, not in whatever timezone the server runs in:
   // otherwise, for the first hour or two of the 1st of a month, the calendar
   // opens on the previous month while the cell marked "today" is in this one.
-  const [viennaYear, viennaMonth] = new Intl.DateTimeFormat('en-CA', {
+  const [year, month] = new Intl.DateTimeFormat('en-CA', {
     timeZone: VIENNA.timeZone,
     year: 'numeric',
     month: '2-digit',
@@ -57,11 +53,6 @@ export default async function PrayerPage({
     .format(now)
     .split('-')
     .map(Number) as [number, number];
-
-  const year =
-    Number.isInteger(Number(y)) && Number(y) > 1900 && Number(y) < 2200 ? Number(y) : viennaYear;
-  const month =
-    Number.isInteger(Number(m)) && Number(m) >= 1 && Number(m) <= 12 ? Number(m) : viennaMonth;
 
   const [calendar, timetable] = await Promise.all([
     getCalendarMonth(year, month, typed, now),
@@ -93,7 +84,7 @@ export default async function PrayerPage({
           <HijriCalendar
             initialMonth={calendar}
             initialTimetable={timetable}
-            currentMonth={{ year: viennaYear, month: viennaMonth }}
+            currentMonth={{ year, month }}
             occasions={occasions}
             todayIso={viennaIso(now)}
             locale={typed}

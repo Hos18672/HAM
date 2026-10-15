@@ -78,6 +78,17 @@ export function HijriCalendar({
     month: initialMonth.month,
   });
 
+  // A shared `?y=&m=` link: the page is built ahead on the current month,
+  // so the month asked for is read from the address here, once.
+  useEffect(() => {
+    const query = new URLSearchParams(window.location.search);
+    const y = Number(query.get('y'));
+    const m = Number(query.get('m'));
+    if (Number.isInteger(y) && y > 1900 && y < 2200 && Number.isInteger(m) && m >= 1 && m <= 12) {
+      setShown({ year: y, month: m });
+    }
+  }, []);
+
   // The table is for the same place as the times above it: Vienna's months
   // come from the server, any other place's are worked out here.
   const { choice } = usePrayerPlace();

@@ -421,14 +421,26 @@ about).
 
 ### The qibla map is the street you are standing in
 
-The view that opens is a street map — CARTO's calm "Voyager" tiles of
-OpenStreetMap data, at twice the pixels for a phone — with your
+The view that opens is a street map — Google Maps' own tiles, at twice the
+pixels for a phone (CARTO's calm "Voyager" tiles of OpenStreetMap data where
+no Google key is set) — with your
 position in the middle and a gold arrow leaving it in the direction of
 prayer. That is the one thing a drawing from our own data cannot give: a
 bearing is only usable if you can see it **against the buildings in front of
 you**.
 
-CARTO only serves these tiles with a key (since September 2026). The key
+**Google Maps.** The tiles come from Google's Map Tiles API
+(`lib/google-tiles.ts`), which needs a browser key: in Google Cloud, enable
+the **Map Tiles API**, create an API key, and restrict it to the site's
+domains (`ansar-ham.netlify.app/*`, `hos18672.github.io/*`) and to that one
+API. It is read from `NEXT_PUBLIC_GOOGLE_MAPS_KEY` at build time — on
+Netlify under Site configuration → Environment variables, for the preview as
+the repository variable `GOOGLE_MAPS_KEY` — and never committed. The map
+creates one tile session per browser and language, kept about two weeks, and
+shows Google's logo and the copyright line Google gives for the view. If the
+key is missing or Google refuses, the map uses CARTO's tiles instead.
+
+CARTO only serves its tiles with a key (since September 2026). The key
 is a public browser key — it is part of every tile URL — so it is read from
 `NEXT_PUBLIC_CARTO_KEY` at build time and kept out of the repository. The
 preview build takes it from the repository variable `CARTO_KEY`
@@ -656,8 +668,8 @@ There is no analytics, no tracker, no font CDN and no social button anywhere
 in the codebase — fonts are self-hosted from `public/fonts`. That is why there
 is no cookie banner: the only cookies are the theme preference and the
 editorial session, and neither needs consent. The one third-party request a
-page makes on its own is CARTO's map tiles, fetched as plain images by the
-qibla map. The home and contact pages show a picture of the street around the
+page makes on its own is the qibla map's tiles — Google's, or CARTO's
+without a Google key — fetched as plain images. The home and contact pages show a picture of the street around the
 house from our own server; Google Maps replaces it only when the visitor taps
 "Google Maps laden" (a two-click embed — the tap is the consent, and the
 privacy page names Google). An e2e test asserts that no page makes any other

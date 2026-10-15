@@ -17,6 +17,13 @@ const withNextIntl = createNextIntlPlugin('./lib/i18n/request.ts');
  * back to a map drawn from our own data when the tiles cannot be had.
  */
 const TILE_ORIGIN = 'https://basemaps.cartocdn.com';
+/**
+ * Google's map tiles for the same map, where the build has a Google key
+ * (`lib/google-tiles`): the tiles and Google's logo are images, and the
+ * session and the copyright line for the view are two small JSON requests.
+ */
+const GOOGLE_TILES_ORIGIN = 'https://tile.googleapis.com';
+const GOOGLE_STATIC_ORIGIN = 'https://maps.gstatic.com';
 const GOOGLE_MAPS_ORIGIN = 'https://www.google.com';
 const supabaseOrigin = (() => {
   try {
@@ -34,12 +41,12 @@ const csp = [
   // 'unsafe-eval' there, the client bundle never hydrates and nothing responds.
   `script-src 'self' 'unsafe-inline'${process.env.NODE_ENV === 'development' ? " 'unsafe-eval'" : ''}`,
   "style-src 'self' 'unsafe-inline'",
-  `img-src 'self' data: blob: ${TILE_ORIGIN}${supabaseOrigin ? ' ' + supabaseOrigin : ''}`,
+  `img-src 'self' data: blob: ${TILE_ORIGIN} ${GOOGLE_TILES_ORIGIN} ${GOOGLE_STATIC_ORIGIN}${supabaseOrigin ? ' ' + supabaseOrigin : ''}`,
   "font-src 'self'",
   // Google Maps, embedded on the home and contact pages — and only after the
   // visitor taps "Google Maps laden"; until then no request goes to Google.
   `frame-src ${GOOGLE_MAPS_ORIGIN}`,
-  `connect-src 'self'${supabaseOrigin ? ' ' + supabaseOrigin : ''}`,
+  `connect-src 'self' ${GOOGLE_TILES_ORIGIN}${supabaseOrigin ? ' ' + supabaseOrigin : ''}`,
   // The Quran's recitation, one file per verse — fetched only when somebody
   // presses play in the reader.
   "media-src 'self' https://cdn.islamic.network",

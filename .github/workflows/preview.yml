@@ -108,6 +108,8 @@ jobs:
           NEXT_PUBLIC_SITE_URL: ${{ steps.pages.outputs.base_url }}
           # CARTO's browser key for the qibla map tiles (a repository variable).
           NEXT_PUBLIC_CARTO_KEY: ${{ vars.CARTO_KEY }}
+          # Google's browser key for the same map, which takes over from CARTO.
+          NEXT_PUBLIC_GOOGLE_MAPS_KEY: ${{ vars.GOOGLE_MAPS_KEY }}
         run: pnpm build
 
       - name: Render the snapshot

@@ -4142,6 +4142,27 @@
     background: var(--glass);
     border-start-start-radius: 8px;
   }
+  /* Google's tiles come with its logo and its copyright line, side by side. */
+  .qibla-attribution-google {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--color-ink-muted);
+    pointer-events: none;
+  }
+  .qibla-google-logo {
+    display: block;
+    inline-size: auto;
+    block-size: 16px;
+    /* The white wordmark, given the dark edge Google's own maps draw it with,
+       so it reads over light streets and over the glass alike. */
+    filter: drop-shadow(0 0 1px rgba(0, 0, 0, 0.6));
+  }
+  .qibla-google-word {
+    font-family: Arial, Helvetica, sans-serif;
+    font-weight: 700;
+    color: var(--color-ink);
+  }
   .qibla-attribution a {
     color: var(--color-ink-muted);
     text-decoration: none;

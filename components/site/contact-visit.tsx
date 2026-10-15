@@ -187,22 +187,16 @@ export function CopyAddress({ value }: { value: string }) {
 // By address, not by coordinates: the map app then routes to the building's
 // own entrance rather than to a point that may sit in the next street.
 const DESTINATION = encodeURIComponent(FACTS.mapQuery);
-const ROUTE_WEB = `https://www.google.com/maps/dir/?api=1&destination=${DESTINATION}`;
-const ROUTE_APPLE = `maps://?daddr=${DESTINATION}`;
+const ROUTE = `https://www.google.com/maps/dir/?api=1&destination=${DESTINATION}`;
 
 /**
- * Directions to the house: Google Maps on the web, Apple Maps on an iPhone or
- * iPad, where `maps://` opens the app the phone already has.
+ * Directions to the house, in Google Maps on every device. The link is
+ * Google's own universal one: on a phone with the Google Maps app it opens
+ * the app with the route ready, anywhere else Google Maps in the browser.
  */
 export function RouteLink({ className, children }: { className?: string; children: ReactNode }) {
-  const [href, setHref] = useState(ROUTE_WEB);
-  useEffect(() => {
-    const ua = navigator.userAgent;
-    const ipad = navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1;
-    if (/iPhone|iPad|iPod/.test(ua) || ipad) setHref(ROUTE_APPLE);
-  }, []);
   return (
-    <a href={href} className={className} target="_blank" rel="noopener noreferrer">
+    <a href={ROUTE} className={className} target="_blank" rel="noopener noreferrer">
       {children}
     </a>
   );

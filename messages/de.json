@@ -287,7 +287,7 @@
     "toMecca": "nach Mekka",
     "viewStreet": "Karte",
     "streetLabel": "Straßenkarte mit Ihrem Standort und der Gebetsrichtung",
-    "streetHint": "Der goldene Pfeil zeigt von Ihrem Standort aus in die Gebetsrichtung. Karte verschieben: ziehen. Kartendaten von OpenStreetMap — dabei wird Ihre IP-Adresse an deren Server übermittelt.",
+    "streetHint": "Der goldene Pfeil zeigt von Ihrem Standort aus in die Gebetsrichtung. Karte verschieben: ziehen. Die Karte kommt von Google Maps — dabei wird Ihre IP-Adresse an Googles Server übermittelt.",
     "streetKicker": "In Ihrer Straße",
     "streetTitle": "Die Richtung vor Ort",
     "mapOffline": "Die Straßenkarte konnte nicht geladen werden. Die Richtung stimmt trotzdem — hier ohne Kartenmaterial.",
@@ -307,7 +307,7 @@
     "noSensor": "Kein Kompass-Sensor — bitte die Karte verwenden.",
     "streetBtn": "Straße",
     "fitMecca": "Bis Mekka",
-    "privacy": "Kartendaten von OpenStreetMap; dabei wird Ihre IP-Adresse an deren Server übertragen. Ihr Standort wird nur auf Ihrem Gerät verwendet.",
+    "privacy": "Die Karte kommt von Google Maps; dabei wird Ihre IP-Adresse an Googles Server übertragen. Ihr Standort wird nur auf Ihrem Gerät verwendet.",
     "searching": "Wird gesucht …"
   },
   "prayer": {

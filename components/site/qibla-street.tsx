@@ -12,6 +12,13 @@ import {
 import { KAABA, greatCirclePath, type Coordinates } from '@/lib/qibla';
 import { MAX_ZOOM, MIN_ZOOM, TILE, panned, project, tilesFor, unproject } from '@/lib/slippy';
 import { formatBearing, formatNumber } from '@/lib/i18n/format';
+import {
+  GOOGLE_KEY,
+  dropGoogleSession,
+  googleCopyright,
+  googleSession,
+  googleTileUrl,
+} from '@/lib/google-tiles';
 import { QiblaHere } from './qibla-here';
 import { KaabaGlyph } from './qibla-glyphs';
 import type { Locale } from '@/lib/i18n/config';
@@ -19,9 +26,11 @@ import type { Locale } from '@/lib/i18n/config';
 /**
  * The qibla on the street you are standing in.
  *
- * The map underneath is CARTO's "Voyager" style of OpenStreetMap data —
- * calmer than OpenStreetMap's own layer, so the gold line reads over it, and
- * served at twice the pixels for a phone's screen. That is a request to
+ * The map underneath is Google's (`lib/google-tiles`), served at twice the
+ * pixels for a phone's screen — the map most readers already find their way
+ * with. Where the build has no Google key it is CARTO's "Voyager" style of
+ * OpenStreetMap data instead, calm enough for the gold line to read over.
+ * Either way that is a request to
  * somebody else's server, which this site otherwise never makes, and it is
  * the one place where it is worth it: a direction is only usable if you can
  * see which way it points *relative to the buildings around you*, and no
@@ -42,7 +51,7 @@ import type { Locale } from '@/lib/i18n/config';
  * direction depends on them.
  */
 
-/** CARTO Voyager over OpenStreetMap data. Both ask for attribution. */
+/** Without a Google key: CARTO Voyager over OpenStreetMap data. Both ask for attribution. */
 const TILES = 'https://basemaps.cartocdn.com/rastertiles/voyager';
 /**
  * CARTO serves its raster tiles only with a key (since September 2026);
@@ -52,6 +61,8 @@ const TILES = 'https://basemaps.cartocdn.com/rastertiles/voyager';
  */
 const TILE_KEY = process.env.NEXT_PUBLIC_CARTO_KEY ?? '';
 const TILE_QUERY = TILE_KEY ? `?key=${encodeURIComponent(TILE_KEY)}` : '';
+/** Google's own logo, which its tiles must be shown with. */
+const GOOGLE_LOGO = 'https://maps.gstatic.com/mapfiles/api-3/images/google_white5_hdpi.png';
 /** Close enough to see the street, far enough to see which way it runs. */
 const DEFAULT_ZOOM = 17;
 
@@ -90,6 +101,32 @@ export function QiblaStreet({
   const [span, setSpan] = useState<'street' | 'mecca'>('street');
   /** Whether a single tile has ever arrived. Until one does, we draw instead. */
   const [tilesWork, setTilesWork] = useState<boolean | null>(null);
+  /**
+   * Google's tile session: undefined while it is being asked for, null where
+   * there is none to be had (no key, or Google refused), and the map then
+   * draws CARTO's tiles. Nothing is drawn while it is undefined, so a reader
+   * never sees one map swapped for the other.
+   */
+  const [google, setGoogle] = useState<string | null | undefined>(GOOGLE_KEY ? undefined : null);
+  const [copyright, setCopyright] = useState<string | null>(null);
+  const [logoFailed, setLogoFailed] = useState(false);
+
+  useEffect(() => {
+    if (!GOOGLE_KEY) return;
+    let live = true;
+    void googleSession(locale).then((value) => {
+      if (live) setGoogle(value?.session ?? null);
+    });
+    return () => {
+      live = false;
+    };
+  }, [locale]);
+
+  /** A tile Google refuses: the session is stale or the key is wrong — CARTO it is. */
+  const googleFailed = useCallback(() => {
+    dropGoogleSession(locale);
+    setGoogle(null);
+  }, [locale]);
 
   // The reader's own place is where this opens, and where "recentre" returns.
   useEffect(() => {
@@ -112,6 +149,36 @@ export function QiblaStreet({
     () => (size.width > 0 ? tilesFor(centre, zoom, size.width, size.height) : []),
     [centre, zoom, size.width, size.height],
   );
+
+  // Google's copyright for what is in view, asked for once the map has
+  // stopped moving for a moment rather than on every step of a drag.
+  useEffect(() => {
+    if (!google || size.width === 0) return;
+    const controller = new AbortController();
+    const timer = window.setTimeout(() => {
+      const z = Math.round(zoom);
+      const middle = project(centre, z);
+      const nw = unproject({ x: middle.x - size.width / 2, y: middle.y - size.height / 2 }, z);
+      const se = unproject({ x: middle.x + size.width / 2, y: middle.y + size.height / 2 }, z);
+      void googleCopyright(
+        google,
+        z,
+        {
+          north: Math.min(85, nw.latitude),
+          south: Math.max(-85, se.latitude),
+          west: Math.max(-180, nw.longitude),
+          east: Math.min(180, se.longitude),
+        },
+        controller.signal,
+      ).then((line) => {
+        if (!controller.signal.aborted) setCopyright(line);
+      });
+    }, 400);
+    return () => {
+      window.clearTimeout(timer);
+      controller.abort();
+    };
+  }, [google, centre, zoom, size.width, size.height]);
 
   /** Where the reader stands, in the viewport's own pixels. */
   const me = useMemo(() => {
@@ -259,7 +326,7 @@ export function QiblaStreet({
     <div className="qibla-map">
       {/* The frame, so the attribution can sit over the corner of the map
           without living *inside* it: a `role="img"` must hold no focusable
-          content, and OpenStreetMap's credit is a link. */}
+          content, and the map's credit can be a link. */}
       <div className="qibla-street-frame">
         <div
           ref={frame}
@@ -271,11 +338,15 @@ export function QiblaStreet({
           onPointerUp={endDrag}
           onPointerCancel={endDrag}
         >
-          {tiles.map((tile) => (
+          {(google === undefined ? [] : tiles).map((tile) => (
             // eslint-disable-next-line @next/next/no-img-element
             <img
-              key={tile.key}
-              src={`${TILES}/${tile.z}/${tile.x}/${tile.y}@2x.png${TILE_QUERY}`}
+              key={`${google ? 'g' : 'c'}/${tile.key}`}
+              src={
+                google
+                  ? googleTileUrl(google, tile.z, tile.x, tile.y)
+                  : `${TILES}/${tile.z}/${tile.x}/${tile.y}@2x.png${TILE_QUERY}`
+              }
               alt=""
               width={TILE}
               height={TILE}
@@ -284,7 +355,10 @@ export function QiblaStreet({
               className="qibla-tile"
               style={{ transform: `translate(${tile.left}px, ${tile.top}px)` }}
               onLoad={() => setTilesWork(true)}
-              onError={() => setTilesWork((works) => works ?? false)}
+              onError={() => {
+                if (google) googleFailed();
+                else setTilesWork((works) => works ?? false);
+              }}
             />
           ))}
 
@@ -409,14 +483,33 @@ export function QiblaStreet({
           </button>
         </div>
 
-        <p className="qibla-attribution">
-          <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">
-            © OpenStreetMap
-          </a>{' '}
-          <a href="https://carto.com/attributions" target="_blank" rel="noreferrer">
-            © CARTO
-          </a>
-        </p>
+        {google ? (
+          <p className="qibla-attribution qibla-attribution-google">
+            {logoFailed ? (
+              <span className="qibla-google-word">Google</span>
+            ) : (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={GOOGLE_LOGO}
+                alt="Google"
+                width={59}
+                height={18}
+                className="qibla-google-logo"
+                onError={() => setLogoFailed(true)}
+              />
+            )}
+            <span>{copyright ?? `Map data ©${new Date().getFullYear()} Google`}</span>
+          </p>
+        ) : google === null ? (
+          <p className="qibla-attribution">
+            <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">
+              © OpenStreetMap
+            </a>{' '}
+            <a href="https://carto.com/attributions" target="_blank" rel="noreferrer">
+              © CARTO
+            </a>
+          </p>
+        ) : null}
 
         {/* Zoom and recentre as a slim column in the top corner, the way
             every phone map keeps them: out of the street, under the thumb. */}

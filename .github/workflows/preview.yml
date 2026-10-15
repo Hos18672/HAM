@@ -106,9 +106,8 @@ jobs:
         env:
           PREVIEW_BASE_PATH: ${{ steps.pages.outputs.base_path }}
           NEXT_PUBLIC_SITE_URL: ${{ steps.pages.outputs.base_url }}
-          # CARTO's browser key for the qibla map tiles (a repository variable).
-          NEXT_PUBLIC_CARTO_KEY: ${{ vars.CARTO_KEY }}
-          # Google's browser key for the same map, which takes over from CARTO.
+          # Google's browser key for the qibla map's tiles (a repository
+          # variable, optional: without it the map is Google's embed).
           NEXT_PUBLIC_GOOGLE_MAPS_KEY: ${{ vars.GOOGLE_MAPS_KEY }}
         run: pnpm build
 

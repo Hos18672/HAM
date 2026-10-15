@@ -287,7 +287,7 @@
     "toMecca": "nach Mekka",
     "viewStreet": "Karte",
     "streetLabel": "Straßenkarte mit Ihrem Standort und der Gebetsrichtung",
-    "streetHint": "Der goldene Pfeil zeigt von Ihrem Standort aus in die Gebetsrichtung. Karte verschieben: ziehen. Die Karte kommt von Google Maps — dabei wird Ihre IP-Adresse an Googles Server übermittelt.",
+    "streetHint": "Der goldene Pfeil zeigt von Ihrem Standort aus in die Gebetsrichtung. Die Karte kommt von Google Maps — dabei erhält Google Ihre IP-Adresse.",
     "streetKicker": "In Ihrer Straße",
     "streetTitle": "Die Richtung vor Ort",
     "mapOffline": "Die Straßenkarte konnte nicht geladen werden. Die Richtung stimmt trotzdem — hier ohne Kartenmaterial.",
@@ -655,7 +655,7 @@
     "openGoogle": "In Google Maps öffnen",
     "osmCredit": "Kartenbild: © OpenStreetMap-Mitwirkende",
     "loadMap": "Google Maps laden",
-    "loadMapNote": "Erst nach dem Tippen wird die Karte von Google geladen; dabei erhält Google Ihre IP-Adresse und kann Cookies setzen.",
+    "loadMapNote": "Erst nach dem Tippen wird die Karte von Google geladen; dabei erhält Google Ihre IP-Adresse und kann Cookies setzen. Ihre Wahl gilt auf diesem Gerät für alle Karten der Seite.",
     "channelsTitle": "Direkt erreichen",
     "channels": {
       "email": "E-Mail schreiben",
@@ -671,7 +671,8 @@
     "errorSummary": "Bitte prüfen Sie diese Angaben:",
     "send": "Nachricht senden",
     "another": "Weitere Nachricht",
-    "counter": "{count} / {max} Zeichen"
+    "counter": "{count} / {max} Zeichen",
+    "hideMap": "Google Maps wieder ausblenden"
   },
   "form": {
     "name": "Name",

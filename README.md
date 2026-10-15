@@ -421,32 +421,32 @@ about).
 
 ### The qibla map is the street you are standing in
 
-The view that opens is a street map — Google Maps' own tiles, at twice the
-pixels for a phone (CARTO's calm "Voyager" tiles of OpenStreetMap data where
-no Google key is set) — with your
+The view that opens is a Google street map with your
 position in the middle and a gold arrow leaving it in the direction of
 prayer. That is the one thing a drawing from our own data cannot give: a
 bearing is only usable if you can see it **against the buildings in front of
 you**.
 
-**Google Maps.** The tiles come from Google's Map Tiles API
-(`lib/google-tiles.ts`), which needs a browser key: in Google Cloud, enable
-the **Map Tiles API**, create an API key, and restrict it to the site's
-domains (`ansar-ham.netlify.app/*`, `hos18672.github.io/*`) and to that one
-API. It is read from `NEXT_PUBLIC_GOOGLE_MAPS_KEY` at build time — on
+**Google Maps, two ways.** Without any key the map is Google Maps' ordinary
+embed (`https://www.google.com/maps?ll=…&z=…&output=embed`), centred on the
+reader at a whole zoom; the arrow, the great circle and the Kaaba are drawn
+over it in the same Web Mercator, so they land where the map has them. The
+embed cannot follow a drag, so in this form the map is moved by its zoom,
+recentre and "to Mecca" buttons. Like every Google embed on the site it
+waits for the visitor to tap "Google Maps laden"; that agreement is kept in
+the browser (`lib/google-consent.ts`) for all the site's maps, and "Google
+Maps wieder ausblenden" under any map withdraws it.
+
+With a key, the map draws Google's own tiles instead (Map Tiles API,
+`lib/google-tiles.ts`) and can be dragged like any phone map. In Google
+Cloud, enable the **Map Tiles API**, create an API key, and restrict it to the
+site's domains (`ansar-ham.netlify.app/*`, `hos18672.github.io/*`) and to that
+one API. It is read from `NEXT_PUBLIC_GOOGLE_MAPS_KEY` at build time — on
 Netlify under Site configuration → Environment variables, for the preview as
 the repository variable `GOOGLE_MAPS_KEY` — and never committed. The map
 creates one tile session per browser and language, kept about two weeks, and
-shows Google's logo and the copyright line Google gives for the view. If the
-key is missing or Google refuses, the map uses CARTO's tiles instead.
-
-CARTO only serves its tiles with a key (since September 2026). The key
-is a public browser key — it is part of every tile URL — so it is read from
-`NEXT_PUBLIC_CARTO_KEY` at build time and kept out of the repository. The
-preview build takes it from the repository variable `CARTO_KEY`
-(Settings → Secrets and variables → Actions → Variables); the live host
-needs the same variable in its dashboard. Without it the map still works,
-but every tile carries CARTO's "API KEY REQUIRED" stamp.
+shows Google's logo and the copyright line Google gives for the view. If
+Google refuses the key, the map falls back to the embed.
 
 The arrow may be drawn as a straight line because Mercator is conformal — it
 preserves angles at a point — so the initial bearing of the great circle,
@@ -667,12 +667,14 @@ countdown and the toasts, and `lang`/`dir` set from the locale.
 There is no analytics, no tracker, no font CDN and no social button anywhere
 in the codebase — fonts are self-hosted from `public/fonts`. That is why there
 is no cookie banner: the only cookies are the theme preference and the
-editorial session, and neither needs consent. The one third-party request a
-page makes on its own is the qibla map's tiles — Google's, or CARTO's
-without a Google key — fetched as plain images. The home and contact pages show a picture of the street around the
-house from our own server; Google Maps replaces it only when the visitor taps
-"Google Maps laden" (a two-click embed — the tap is the consent, and the
-privacy page names Google). An e2e test asserts that no page makes any other
+editorial session, and neither needs consent. Every map is Google's, and no
+page asks Google for anything on its own (unless the build has a Google key,
+when the qibla map fetches Google's tiles as plain images). The home and
+contact pages show a picture of the street around the house from our own
+server, the qibla map its drawn direction; Google Maps appears only once the
+visitor taps "Google Maps laden" (a two-click embed — the tap is the consent,
+remembered in the browser until withdrawn, and the privacy page names
+Google). An e2e test asserts that no page makes any other
 third-party request, and another that Google is asked for nothing before the
 tap, so this stays true.
 
@@ -793,8 +795,7 @@ Recorded here rather than left implicit:
      page has the typography the reference asks for and still makes no
      request to a font host (see assumption 3 and the privacy page).
    - **No Leaflet.** The reference loads Leaflet and its stylesheet from
-     unpkg. CARTO's tile host is the only third-party request this
-     site makes, and the repository already carries its own slippy-tile map
+     unpkg. The repository already carries its own slippy-tile map
      (`lib/slippy.ts`, unit-tested) with panning, zoom, a drawn fallback for
      when the tiles cannot be had, and now the great-circle path
      (`greatCirclePath` in `lib/qibla.ts`) and the two spans the reference

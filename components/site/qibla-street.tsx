@@ -19,6 +19,7 @@ import {
   googleSession,
   googleTileUrl,
 } from '@/lib/google-tiles';
+import { hasGoogleConsent, onGoogleConsent, setGoogleConsent } from '@/lib/google-consent';
 import { QiblaHere } from './qibla-here';
 import { KaabaGlyph } from './qibla-glyphs';
 import type { Locale } from '@/lib/i18n/config';
@@ -26,10 +27,18 @@ import type { Locale } from '@/lib/i18n/config';
 /**
  * The qibla on the street you are standing in.
  *
- * The map underneath is Google's (`lib/google-tiles`), served at twice the
- * pixels for a phone's screen — the map most readers already find their way
- * with. Where the build has no Google key it is CARTO's "Voyager" style of
- * OpenStreetMap data instead, calm enough for the gold line to read over.
+ * The map underneath is Google's, the map most readers already find their
+ * way with, in one of two forms:
+ *
+ * - With a Google key in the build, Google's own tiles (`lib/google-tiles`),
+ *   drawn here like any slippy map: dragged by the finger, sharp on a phone.
+ * - Without one (or if Google refuses the key), Google Maps' ordinary
+ *   embedded map, which needs no key: centred on the same point at the same
+ *   zoom, so the arrow drawn over it leaves the reader's position at the
+ *   right angle. It cannot follow a drag, so in this form the map is moved
+ *   by its buttons only. An embedded Google map sets cookies, so it waits
+ *   for the reader to agree (`lib/google-consent`), once per browser.
+ *
  * Either way that is a request to
  * somebody else's server, which this site otherwise never makes, and it is
  * the one place where it is worth it: a direction is only usable if you can
@@ -51,16 +60,15 @@ import type { Locale } from '@/lib/i18n/config';
  * direction depends on them.
  */
 
-/** Without a Google key: CARTO Voyager over OpenStreetMap data. Both ask for attribution. */
-const TILES = 'https://basemaps.cartocdn.com/rastertiles/voyager';
 /**
- * CARTO serves its raster tiles only with a key (since September 2026);
- * without one every tile carries an "API KEY REQUIRED" stamp. The key is a
- * public browser key — it travels in every tile URL — and comes from the
- * build environment rather than the repository.
+ * Google Maps' keyless embed, centred on `centre` at a whole zoom — the same
+ * Web Mercator and the same 256-pixel world as `lib/slippy`, so what is drawn
+ * over it lands where the map has it.
  */
-const TILE_KEY = process.env.NEXT_PUBLIC_CARTO_KEY ?? '';
-const TILE_QUERY = TILE_KEY ? `?key=${encodeURIComponent(TILE_KEY)}` : '';
+function embedUrl(centre: Coordinates, zoom: number, locale: string) {
+  const ll = `${centre.latitude.toFixed(6)},${centre.longitude.toFixed(6)}`;
+  return `https://www.google.com/maps?ll=${ll}&z=${Math.round(zoom)}&t=m&hl=${locale}&output=embed`;
+}
 /** Google's own logo, which its tiles must be shown with. */
 const GOOGLE_LOGO = 'https://maps.gstatic.com/mapfiles/api-3/images/google_white5_hdpi.png';
 /** Close enough to see the street, far enough to see which way it runs. */
@@ -87,6 +95,7 @@ export function QiblaStreet({
   headingLive: boolean;
 }) {
   const t = useTranslations('qibla');
+  const tContact = useTranslations('contact');
   const frame = useRef<HTMLDivElement>(null);
   const [size, setSize] = useState({ width: 0, height: 0 });
   const [centre, setCentre] = useState<Coordinates>(origin);
@@ -99,17 +108,34 @@ export function QiblaStreet({
    * no amount of zooming lands on it by hand.
    */
   const [span, setSpan] = useState<'street' | 'mecca'>('street');
-  /** Whether a single tile has ever arrived. Until one does, we draw instead. */
-  const [tilesWork, setTilesWork] = useState<boolean | null>(null);
+  /** With no network there is no map of any kind: the drawn one stands in. */
+  const [offline, setOffline] = useState(false);
+  useEffect(() => {
+    const update = () => setOffline(!navigator.onLine);
+    update();
+    window.addEventListener('online', update);
+    window.addEventListener('offline', update);
+    return () => {
+      window.removeEventListener('online', update);
+      window.removeEventListener('offline', update);
+    };
+  }, []);
   /**
    * Google's tile session: undefined while it is being asked for, null where
-   * there is none to be had (no key, or Google refused), and the map then
-   * draws CARTO's tiles. Nothing is drawn while it is undefined, so a reader
+   * there is none to be had (no key, or Google refused), and the map is then
+   * Google's embed. Nothing is drawn while it is undefined, so a reader
    * never sees one map swapped for the other.
    */
   const [google, setGoogle] = useState<string | null | undefined>(GOOGLE_KEY ? undefined : null);
   const [copyright, setCopyright] = useState<string | null>(null);
   const [logoFailed, setLogoFailed] = useState(false);
+  /** For the embed: whether the reader has agreed to Google Maps. */
+  const [consent, setConsent] = useState(false);
+  useEffect(() => {
+    setConsent(hasGoogleConsent());
+    return onGoogleConsent(setConsent);
+  }, []);
+  const embedded = google === null;
 
   useEffect(() => {
     if (!GOOGLE_KEY) return;
@@ -122,7 +148,7 @@ export function QiblaStreet({
     };
   }, [locale]);
 
-  /** A tile Google refuses: the session is stale or the key is wrong — CARTO it is. */
+  /** A tile Google refuses: the session is stale or the key is wrong — the embed it is. */
   const googleFailed = useCallback(() => {
     dropGoogleSession(locale);
     setGoogle(null);
@@ -249,11 +275,16 @@ export function QiblaStreet({
 
   /* ── Dragging the map ─────────────────────────────────────────────────── */
   const drag = useRef<{ id: number; x: number; y: number } | null>(null);
-  const onPointerDown = useCallback((event: React.PointerEvent) => {
-    if ((event.target as HTMLElement).closest('button')) return;
-    drag.current = { id: event.pointerId, x: event.clientX, y: event.clientY };
-    (event.currentTarget as HTMLElement).setPointerCapture(event.pointerId);
-  }, []);
+  const onPointerDown = useCallback(
+    (event: React.PointerEvent) => {
+      // The embed cannot be moved under the drawing, so it is not dragged.
+      if (embedded) return;
+      if ((event.target as HTMLElement).closest('button')) return;
+      drag.current = { id: event.pointerId, x: event.clientX, y: event.clientY };
+      (event.currentTarget as HTMLElement).setPointerCapture(event.pointerId);
+    },
+    [embedded],
+  );
   const onPointerMove = useCallback(
     (event: React.PointerEvent) => {
       const d = drag.current;
@@ -302,7 +333,7 @@ export function QiblaStreet({
   const reach = Math.max(size.width, size.height);
   const theta = ((bearing - 90) * Math.PI) / 180;
 
-  if (tilesWork === false) {
+  if (offline) {
     return (
       <div className="qibla-fallback">
         <p className="text-sm" style={{ color: 'var(--color-accent-2-text)' }}>
@@ -331,6 +362,7 @@ export function QiblaStreet({
         <div
           ref={frame}
           className="qibla-street"
+          data-embedded={embedded || undefined}
           role="img"
           aria-label={`${t('streetLabel')}: ${formatBearing(bearing, locale)}°`}
           onPointerDown={onPointerDown}
@@ -338,15 +370,21 @@ export function QiblaStreet({
           onPointerUp={endDrag}
           onPointerCancel={endDrag}
         >
-          {(google === undefined ? [] : tiles).map((tile) => (
+          {embedded && consent && size.width > 0 ? (
+            <iframe
+              className="qibla-embed"
+              src={embedUrl(centre, zoom, locale)}
+              title={t('streetLabel')}
+              tabIndex={-1}
+              aria-hidden="true"
+              referrerPolicy="no-referrer-when-downgrade"
+            />
+          ) : null}
+          {(google ? tiles : []).map((tile) => (
             // eslint-disable-next-line @next/next/no-img-element
             <img
-              key={`${google ? 'g' : 'c'}/${tile.key}`}
-              src={
-                google
-                  ? googleTileUrl(google, tile.z, tile.x, tile.y)
-                  : `${TILES}/${tile.z}/${tile.x}/${tile.y}@2x.png${TILE_QUERY}`
-              }
+              key={tile.key}
+              src={googleTileUrl(google!, tile.z, tile.x, tile.y)}
               alt=""
               width={TILE}
               height={TILE}
@@ -354,11 +392,7 @@ export function QiblaStreet({
               loading="lazy"
               className="qibla-tile"
               style={{ transform: `translate(${tile.left}px, ${tile.top}px)` }}
-              onLoad={() => setTilesWork(true)}
-              onError={() => {
-                if (google) googleFailed();
-                else setTilesWork((works) => works ?? false);
-              }}
+              onError={googleFailed}
             />
           ))}
 
@@ -500,15 +534,18 @@ export function QiblaStreet({
             )}
             <span>{copyright ?? `Map data ©${new Date().getFullYear()} Google`}</span>
           </p>
-        ) : google === null ? (
-          <p className="qibla-attribution">
-            <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">
-              © OpenStreetMap
-            </a>{' '}
-            <a href="https://carto.com/attributions" target="_blank" rel="noreferrer">
-              © CARTO
-            </a>
-          </p>
+        ) : null}
+
+        {/* The embed waits for the reader's agreement, asked here once. */}
+        {embedded && !consent ? (
+          <button
+            type="button"
+            className="map-load qibla-load"
+            onClick={() => setGoogleConsent(true)}
+          >
+            <span className="map-load-pill">{tContact('loadMap')}</span>
+            <span className="visually-hidden"> — {tContact('loadMapNote')}</span>
+          </button>
         ) : null}
 
         {/* Zoom and recentre as a slim column in the top corner, the way
@@ -558,6 +595,15 @@ export function QiblaStreet({
       <p className="text-xs" style={{ color: 'var(--color-ink-muted)' }}>
         {t('streetHint')}
       </p>
+      {embedded ? (
+        consent ? (
+          <button type="button" className="map-load-hide" onClick={() => setGoogleConsent(false)}>
+            {tContact('hideMap')}
+          </button>
+        ) : (
+          <p className="map-load-note">{tContact('loadMapNote')}</p>
+        )
+      ) : null}
     </div>
   );
 }

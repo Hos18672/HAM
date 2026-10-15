@@ -256,17 +256,10 @@ test.describe('the qibla', () => {
       });
     });
 
-  /** One olive pixel, so the tile layer reports success without the network. */
+  /** An empty page for Google's embed, so the run never troubles Google. */
   const stubTiles = (page: import('@playwright/test').Page) =>
-    page.route('https://basemaps.cartocdn.com/**', (route) =>
-      route.fulfill({
-        status: 200,
-        contentType: 'image/png',
-        body: Buffer.from(
-          'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==',
-          'base64',
-        ),
-      }),
+    page.route('https://www.google.com/**', (route) =>
+      route.fulfill({ contentType: 'text/html', body: '<!doctype html><title>map</title>' }),
     );
 
   test('shows the computed direction from the association house', async ({ page }) => {
@@ -454,19 +447,38 @@ test.describe('the qibla', () => {
     await expect(page.getByRole('tab', { name: 'Karte' })).toHaveAttribute('aria-selected', 'true');
   });
 
-  test('asks the tile server for nothing until the map tab is opened', async ({ page }) => {
-    const tiles: string[] = [];
+  test('asks Google for nothing until the reader agrees to the map', async ({ page }) => {
+    const google: string[] = [];
     page.on('request', (request) => {
-      if (request.url().includes('basemaps.cartocdn.com')) tiles.push(request.url());
+      if (request.url().startsWith('https://www.google.com/')) google.push(request.url());
     });
     await stubTiles(page);
     await page.goto('/de/qibla');
     await expect(page.locator('.qibla-dial')).toBeVisible();
     await page.waitForTimeout(600);
-    expect(tiles, 'no tile is fetched while the compass is showing').toEqual([]);
+    expect(google, 'nothing is fetched while the compass is showing').toEqual([]);
 
+    // The map tab draws the direction at once, and asks before Google.
     await page.getByRole('tab', { name: 'Karte' }).click();
-    await expect.poll(() => tiles.length).toBeGreaterThan(0);
+    await expect(page.locator('.qibla-street')).toBeVisible();
+    await page.waitForTimeout(400);
+    expect(google, 'nothing is fetched before the tap').toEqual([]);
+
+    await page.getByRole('button', { name: /Google Maps laden/ }).click();
+    // Centred on the house, at the street's zoom.
+    await expect(page.locator('iframe.qibla-embed')).toHaveAttribute(
+      'src',
+      /google\.com\/maps\?ll=48\.\d+,16\.\d+&z=17&/,
+    );
+    await expect.poll(() => google.length).toBeGreaterThan(0);
+
+    // Remembered: the next visit loads it straight away, until hidden again.
+    await page.reload();
+    await page.getByRole('tab', { name: 'Karte' }).click();
+    await expect(page.locator('iframe.qibla-embed')).toBeVisible();
+    await page.getByRole('button', { name: 'Google Maps wieder ausblenden' }).click();
+    await expect(page.locator('iframe.qibla-embed')).toHaveCount(0);
+    await expect(page.getByRole('button', { name: /Google Maps laden/ })).toBeVisible();
   });
 
   test('draws the street, then the whole way to Mecca', async ({ page }) => {
@@ -581,9 +593,9 @@ test.describe('the qibla', () => {
     }
   });
 
-  test('says so and draws it itself when the tiles cannot be had', async ({ page }) => {
-    await page.route('https://basemaps.cartocdn.com/**', (route) => route.abort());
+  test('says so and draws it itself when there is no network for a map', async ({ page }) => {
     await page.goto('/de/qibla');
+    await page.context().setOffline(true);
     await page.getByRole('tab', { name: 'Karte' }).click();
     // The direction does not depend on anybody else's server.
     await expect(page.getByText('konnte nicht geladen werden')).toBeVisible();

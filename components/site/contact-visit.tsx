@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState, type ReactNode } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { ArrowRight, Check, Copy } from '@phosphor-icons/react/dist/ssr';
 import { Link } from '@/lib/i18n/navigation';
+import { hasGoogleConsent, onGoogleConsent, setGoogleConsent } from '@/lib/google-consent';
 import {
   houseStatus,
   viennaNow,
@@ -210,11 +211,12 @@ function googleEmbed(locale: string) {
 }
 
 /**
- * The street around the house: a picture rendered once from OpenStreetMap
- * and served from our own server, swapped for Google Maps only when the
- * visitor asks. Until that click the browser makes no request to Google —
+ * The street around the house: Google Maps, once the visitor has agreed to
+ * it (`lib/google-consent`) — remembered, so after the first tap it is simply
+ * there. Until then a picture rendered once from OpenStreetMap and served
+ * from our own server stands in, and the browser makes no request to Google:
  * an embedded Google map sets cookies and reports the visit, which is not
- * something to do to everyone who opens the page.
+ * something to do to everyone who opens the page without asking.
  */
 export function ContactMap({
   label,
@@ -232,6 +234,10 @@ export function ContactMap({
   const t = useTranslations('contact');
   const locale = useLocale();
   const [live, setLive] = useState(false);
+  useEffect(() => {
+    setLive(hasGoogleConsent());
+    return onGoogleConsent(setLive);
+  }, []);
   return (
     <>
       {/* No role="img" on the frame: the load button lives in it, and a
@@ -269,7 +275,7 @@ export function ContactMap({
               <circle cx="16" cy="16" r="5" />
             </svg>
             {/* The picture itself is the button too: a map invites a tap. */}
-            <button type="button" className="map-load" onClick={() => setLive(true)}>
+            <button type="button" className="map-load" onClick={() => setGoogleConsent(true)}>
               <span className="map-load-pill">{t('loadMap')}</span>
               <span className="visually-hidden"> — {t('loadMapNote')}</span>
             </button>
@@ -278,7 +284,13 @@ export function ContactMap({
       </div>
       <div className="contact-map-actions">
         {children}
-        {live ? null : <p className="map-load-note">{t('loadMapNote')}</p>}
+        {live ? (
+          <button type="button" className="map-load-hide" onClick={() => setGoogleConsent(false)}>
+            {t('hideMap')}
+          </button>
+        ) : (
+          <p className="map-load-note">{t('loadMapNote')}</p>
+        )}
       </div>
     </>
   );

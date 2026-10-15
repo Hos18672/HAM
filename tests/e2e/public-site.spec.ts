@@ -168,17 +168,7 @@ test.describe('public site', () => {
     expect(headers['x-content-type-options']).toBe('nosniff');
   });
 
-  test('asks nobody but the tile server, and only where a map is shown', async ({ page }) => {
-    // One transparent pixel, so the map behaves as if the tiles arrived and
-    // the run never actually troubles OpenStreetMap's servers.
-    const PIXEL = Buffer.from(
-      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
-      'base64',
-    );
-    await page.route('https://basemaps.cartocdn.com/**', (route) =>
-      route.fulfill({ contentType: 'image/png', body: PIXEL }),
-    );
-
+  test('asks no other server, anywhere', async ({ page }) => {
     const external: { path: string; url: string }[] = [];
     let where = '';
     page.on('request', (request) => {
@@ -194,18 +184,12 @@ test.describe('public site', () => {
       await page.waitForLoadState('networkidle');
     }
 
-    // No font CDN, no analytics, no embeds, anywhere. The single exception
-    // is OpenStreetMap's tiles, fetched as plain images by the qibla page's
-    // map — nothing else of theirs runs in the page, and the privacy policy
-    // says so. The home and contact pages show a picture of the street from
-    // our own server and ask Google for nothing until a visitor taps to load
-    // the map. If anything else ever appears here, the policy has stopped
-    // being true.
-    const MAP_PAGES = ['/qibla'];
-    const unexpected = external.filter(
-      (r) => !(MAP_PAGES.includes(r.path) && r.url.startsWith('https://basemaps.cartocdn.com/')),
-    );
-    expect(unexpected).toEqual([]);
+    // No font CDN, no analytics, no embeds, anywhere. Every map is Google's,
+    // and every one of them waits for the visitor to agree to it: the home
+    // and contact pages show a picture of the street from our own server
+    // until then, the qibla map the direction drawn on its own. If anything
+    // appears here, the privacy policy has stopped being true.
+    expect(external).toEqual([]);
   });
 
   test('loads Google Maps only when asked to', async ({ page }) => {
@@ -223,6 +207,11 @@ test.describe('public site', () => {
     const map = page.locator('iframe.map-embed');
     await expect(map).toHaveAttribute('src', /google\.com\/maps\?q=Sautergasse/);
     await expect.poll(() => google.length).toBeGreaterThan(0);
+    // The agreement is remembered, for every map of the site.
+    await page.goto('/de');
+    await expect(page.locator('iframe.map-embed')).toBeVisible();
+    await page.getByRole('button', { name: 'Google Maps wieder ausblenden' }).click();
+    await expect(page.locator('iframe.map-embed')).toHaveCount(0);
   });
 });
 

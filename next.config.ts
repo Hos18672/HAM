@@ -7,20 +7,13 @@ const withNextIntl = createNextIntlPlugin('./lib/i18n/request.ts');
  * Content Security Policy. Almost no third-party origins: fonts are
  * self-hosted, icons ship in the bundle, and there is no analytics anywhere.
  *
- * `img-src` allows two: the Supabase Storage origin, because uploaded media
- * is served from there, and CARTO's tile server (OpenStreetMap data), because the qibla
- * page draws the direction on the reader's own street and no amount of data
- * we carry ourselves can show which way that is against the buildings in
- * front of them. Images only — no script, no stylesheet, no frame — so the
- * tile server learns the reader's address and roughly where they are
- * looking, and nothing else. The privacy page says so, and the page falls
- * back to a map drawn from our own data when the tiles cannot be had.
- */
-const TILE_ORIGIN = 'https://basemaps.cartocdn.com';
-/**
- * Google's map tiles for the same map, where the build has a Google key
- * (`lib/google-tiles`): the tiles and Google's logo are images, and the
- * session and the copyright line for the view are two small JSON requests.
+ * `img-src` allows the Supabase Storage origin, because uploaded media is
+ * served from there, and Google's map tiles and logo for the qibla map where
+ * the build has a Google key (`lib/google-tiles`); the tile session and the
+ * copyright line for the view are two small JSON requests (`connect-src`).
+ * Without a key the qibla map is Google's embed, like the house's map on the
+ * home and contact pages (`frame-src`) — and every embed waits for the
+ * visitor to agree to it (`lib/google-consent`).
  */
 const GOOGLE_TILES_ORIGIN = 'https://tile.googleapis.com';
 const GOOGLE_STATIC_ORIGIN = 'https://maps.gstatic.com';
@@ -41,10 +34,10 @@ const csp = [
   // 'unsafe-eval' there, the client bundle never hydrates and nothing responds.
   `script-src 'self' 'unsafe-inline'${process.env.NODE_ENV === 'development' ? " 'unsafe-eval'" : ''}`,
   "style-src 'self' 'unsafe-inline'",
-  `img-src 'self' data: blob: ${TILE_ORIGIN} ${GOOGLE_TILES_ORIGIN} ${GOOGLE_STATIC_ORIGIN}${supabaseOrigin ? ' ' + supabaseOrigin : ''}`,
+  `img-src 'self' data: blob: ${GOOGLE_TILES_ORIGIN} ${GOOGLE_STATIC_ORIGIN}${supabaseOrigin ? ' ' + supabaseOrigin : ''}`,
   "font-src 'self'",
-  // Google Maps, embedded on the home and contact pages — and only after the
-  // visitor taps "Google Maps laden"; until then no request goes to Google.
+  // Google Maps, embedded on the home, contact and qibla pages — and only
+  // once the visitor has agreed to it; until then no request goes to Google.
   `frame-src ${GOOGLE_MAPS_ORIGIN}`,
   `connect-src 'self' ${GOOGLE_TILES_ORIGIN}${supabaseOrigin ? ' ' + supabaseOrigin : ''}`,
   // The Quran's recitation, one file per verse — fetched only when somebody

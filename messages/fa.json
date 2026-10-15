@@ -308,7 +308,9 @@
     "streetBtn": "خیابان",
     "fitMecca": "تا مکه",
     "privacy": "نقشه از Google Maps می‌آید و آدرس IP شما به سرور Google فرستاده می‌شود. موقعیت شما فقط روی گوشی یا کامپیوتر خودتان می‌ماند.",
-    "searching": "در حال پیدا کردن…"
+    "searching": "در حال پیدا کردن…",
+    "layerSatellite": "ماهواره",
+    "layerMap": "نقشه"
   },
   "prayer": {
     "title": "اوقات شرعی",

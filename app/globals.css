@@ -4153,6 +4153,43 @@
     border: 0;
     pointer-events: none;
   }
+  /* Over Google's embed, the map's own furniture keeps clear of Google's:
+     its "open in Maps" box in the top-left corner (the north rose moves
+     below it), its logo and credit along the bottom (the span switch rides
+     above them), and its map-type tile in the bottom-right corner, which
+     the embed cannot let anybody press — our own switch covers it. */
+  .qibla-street-frame[data-google] .qibla-street-rose {
+    inset-block-start: 64px;
+  }
+  .qibla-street-frame[data-google] .qibla-span {
+    inset-block-end: 52px;
+  }
+  .qibla-layer {
+    position: absolute;
+    right: 8px;
+    inset-block-end: 22px;
+    z-index: 2;
+    inline-size: 58px;
+    block-size: 58px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    padding: 0;
+    border: 2px solid #fff;
+    border-radius: 10px;
+    background: var(--stage);
+    color: var(--gold);
+    font-size: 10px;
+    font-weight: var(--weight-bold);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    cursor: pointer;
+  }
+  .qibla-layer:focus-visible {
+    outline: 2px solid var(--gold);
+    outline-offset: 2px;
+  }
   .qibla-street[data-embedded] {
     cursor: default;
     touch-action: auto;

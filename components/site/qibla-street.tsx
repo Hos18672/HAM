@@ -60,14 +60,17 @@ import type { Locale } from '@/lib/i18n/config';
  * direction depends on them.
  */
 
+/** The embed's map type: Google's street map (`m`) or its satellite picture (`k`). */
+type Layer = 'm' | 'k';
+
 /**
  * Google Maps' keyless embed, centred on `centre` at a whole zoom — the same
  * Web Mercator and the same 256-pixel world as `lib/slippy`, so what is drawn
  * over it lands where the map has it.
  */
-function embedUrl(centre: Coordinates, zoom: number, locale: string) {
+function embedUrl(centre: Coordinates, zoom: number, locale: string, layer: Layer) {
   const ll = `${centre.latitude.toFixed(6)},${centre.longitude.toFixed(6)}`;
-  return `https://www.google.com/maps?ll=${ll}&z=${Math.round(zoom)}&t=m&hl=${locale}&output=embed`;
+  return `https://www.google.com/maps?ll=${ll}&z=${Math.round(zoom)}&t=${layer}&hl=${locale}&output=embed`;
 }
 /** Google's own logo, which its tiles must be shown with. */
 const GOOGLE_LOGO = 'https://maps.gstatic.com/mapfiles/api-3/images/google_white5_hdpi.png';
@@ -136,6 +139,12 @@ export function QiblaStreet({
     return onGoogleConsent(setConsent);
   }, []);
   const embedded = google === null;
+  /**
+   * The embed's own map-type switch cannot be pressed — the embed takes no
+   * pointer, or a drag would move the map out from under the arrow — so
+   * this one sits on top of it, in the same corner, and does the same.
+   */
+  const [layer, setLayer] = useState<Layer>('m');
 
   useEffect(() => {
     if (!GOOGLE_KEY) return;
@@ -358,7 +367,9 @@ export function QiblaStreet({
       {/* The frame, so the attribution can sit over the corner of the map
           without living *inside* it: a `role="img"` must hold no focusable
           content, and the map's credit can be a link. */}
-      <div className="qibla-street-frame">
+      {/* Google's own furniture is only there once its map is: that is when
+          ours steps out of its way. */}
+      <div className="qibla-street-frame" data-google={(embedded && consent) || undefined}>
         <div
           ref={frame}
           className="qibla-street"
@@ -373,7 +384,7 @@ export function QiblaStreet({
           {embedded && consent && size.width > 0 ? (
             <iframe
               className="qibla-embed"
-              src={embedUrl(centre, zoom, locale)}
+              src={embedUrl(centre, zoom, locale, layer)}
               title={t('streetLabel')}
               tabIndex={-1}
               aria-hidden="true"
@@ -534,6 +545,23 @@ export function QiblaStreet({
             )}
             <span>{copyright ?? `Map data ©${new Date().getFullYear()} Google`}</span>
           </p>
+        ) : null}
+
+        {embedded && consent ? (
+          <button
+            type="button"
+            className="qibla-layer"
+            onClick={() => setLayer((current) => (current === 'm' ? 'k' : 'm'))}
+            aria-label={layer === 'm' ? t('layerSatellite') : t('layerMap')}
+            title={layer === 'm' ? t('layerSatellite') : t('layerMap')}
+          >
+            {layer === 'm' ? (
+              <GlobeHemisphereEast size={18} weight="duotone" aria-hidden="true" />
+            ) : (
+              <MapTrifold size={18} weight="duotone" aria-hidden="true" />
+            )}
+            <span>{layer === 'm' ? t('layerSatellite') : t('layerMap')}</span>
+          </button>
         ) : null}
 
         {/* The embed waits for the reader's agreement, asked here once. */}

@@ -223,7 +223,12 @@ function wholeEdition(edition: string): Promise<RawPage['ayahs']> {
   if (!entry) {
     entry = fetch(`${BASE}/quran/${edition}`, {
       signal: AbortSignal.timeout(60_000),
-      cache: 'no-store',
+      // Not 'no-store': inside a page that is built ahead, a no-store fetch
+      // stops the render ("dynamic server usage") and every Quran page of
+      // the preview came out as the error page. Next will decline to keep
+      // something this large in its cache and say so in the log; the map
+      // above keeps it instead.
+      cache: 'force-cache',
     })
       .then((response) => {
         if (!response.ok) throw new Error(`alquran.cloud ${response.status}`);

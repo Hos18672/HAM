@@ -14,7 +14,7 @@ for (let i = 0; i < 60; i++) {
 }
 const b = await chromium.launch();
 // (run from the repo root; playwright resolves from .github/probe)
-const ctx = await b.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 1, locale: 'de-AT' });
+const ctx = await b.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 0.6, locale: 'de-AT' });
 const p = await ctx.newPage();
 p.on('console', (m) => m.type() === 'error' && console.log('console:', m.text()));
 await p.goto(`${S}/fa/qibla#map`);
@@ -22,13 +22,13 @@ await p.waitForTimeout(2000);
 await p.getByRole('button', { name: /Google Maps/ }).first().click();
 await p.waitForTimeout(6000);
 console.log('iframe src', await p.locator('iframe.qibla-embed').getAttribute('src'));
-await dump('street', await p.locator('.qibla-street-frame').screenshot({ type: 'jpeg', quality: 55 }));
+await dump('street', await p.locator('.qibla-street-frame').screenshot({ type: 'jpeg', quality: 40 }));
 await p.getByRole('button', { name: 'تا مکه' }).click();
 await p.waitForTimeout(6000);
-await dump('mecca', await p.locator('.qibla-street-frame').screenshot({ type: 'jpeg', quality: 55 }));
+await dump('mecca', await p.locator('.qibla-street-frame').screenshot({ type: 'jpeg', quality: 40 }));
 await p.goto(`${S}/fa/contact`);
 await p.waitForTimeout(6000);
 await p.locator('iframe.map-embed').scrollIntoViewIfNeeded();
 await p.waitForTimeout(3000);
-await dump('contact', await p.locator('iframe.map-embed').screenshot({ type: 'jpeg', quality: 50 }));
+await dump('contact', await p.locator('iframe.map-embed').screenshot({ type: 'jpeg', quality: 35 }));
 await b.close();

@@ -73,6 +73,17 @@ const nextConfig: NextConfig = {
    */
   env: { NEXT_PUBLIC_BASE_PATH: previewBasePath ?? '' },
   poweredByHeader: false,
+  /**
+   * Self-hosted runs only (`next start`: the end-to-end tests, a local
+   * production run). Next's default lets the browser keep a page for a year
+   * under `stale-while-revalidate` with no `max-age`, so Chrome showed the
+   * copy from the last visit and fetched the new one behind it — an edit
+   * saved in the admin appeared one visit late. With the window no longer
+   * than the pages' own hour there is no such header, and the browser asks
+   * every time. Netlify rewrites the header itself (`max-age=0,
+   * must-revalidate`) and keeps its edge serving stale while it rebuilds.
+   */
+  ...(process.env.NETLIFY ? {} : { expireTime: 3600 }),
   images: {
     remotePatterns: supabaseOrigin
       ? [{ protocol: 'https', hostname: new URL(supabaseOrigin).hostname }]

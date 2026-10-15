@@ -22,13 +22,14 @@ export function generateStaticParams() {
 }
 
 /**
- * Anything that is not one of the two locales is not a page. This alone does
- * not stop the render: the response 404s, but the page underneath has already
- * started its queries and asked Postgres for the locale "favicon.ico". The
- * guard that actually runs first is `requireLocale`, which every page and
- * layout in this segment puts its param through.
+ * No `dynamicParams = false` here, though only two locales exist. Next hands
+ * that setting down to every route below, so pages that are built on their
+ * first visit rather than ahead — the 604 Quran pages, each event — counted
+ * as not existing and answered 404 on every host that honours the build's
+ * manifest (Netlify; `next start`). Anything that is not a locale is turned
+ * away by `requireLocale`, which every page and layout in this segment puts
+ * its param through before it queries anything.
  */
-export const dynamicParams = false;
 
 /**
  * For the head scripts below: `b`, the prefix the app is served under —

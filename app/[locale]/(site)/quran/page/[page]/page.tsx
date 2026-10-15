@@ -14,8 +14,7 @@ import { QuranReader } from '@/components/site/quran-reader';
  * the text does not change.
  */
 export const revalidate = 2592000;
-// The locale layout turns unknown params away; pages are rendered on request
-// instead, and `pageNumber` refuses anything but 1–604.
+// Pages are rendered on request; `pageNumber` refuses anything but 1–604.
 export const dynamicParams = true;
 
 /**

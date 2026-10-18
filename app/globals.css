@@ -2654,7 +2654,7 @@
     position: absolute;
     inset-block-end: 3px;
     left: 50%;
-    translate: -50% 0;
+    margin-left: -2px;
     inline-size: 4px;
     block-size: 4px;
     border-radius: 50%;
@@ -3540,6 +3540,18 @@
     font-size: max(11px, 3.6cqw);
     color: #b9c4bd;
     white-space: nowrap;
+  }
+  /* Without container units (before Chromium 105, as in TV browsers). */
+  @supports not (width: 1cqw) {
+    .qibla-dial {
+      inline-size: min(100%, 440px, 56vh);
+    }
+    .qibla-deg {
+      font-size: 37px;
+    }
+    .qibla-dial-card {
+      font-size: 15px;
+    }
   }
   .qibla-status {
     display: flex;
@@ -4689,7 +4701,11 @@
 
   /* The foot corner is the head corner turned over; RTL mirrors both so the
      bracket keeps opening into the page. */
+  .corner-a {
+    inset-inline-start: 18px;
+  }
   .corner-b {
+    inset-inline-end: 18px;
     transform: rotate(180deg);
   }
   :root[dir='rtl'] .corner-a {
@@ -4697,6 +4713,27 @@
   }
   :root[dir='rtl'] .corner-b {
     transform: rotate(180deg) scaleX(-1);
+  }
+  /* The ring hung off a band's corner (\`Ring\`): its size and height come in
+     as inline styles, the side from here. */
+  .orn-ring {
+    position: absolute;
+  }
+  .orn-ring[data-side='end'] {
+    inset-inline-end: var(--ring-off);
+  }
+  .orn-ring[data-side='start'] {
+    inset-inline-start: var(--ring-off);
+  }
+  .orn-panorama {
+    aspect-ratio: 2167 / 482;
+  }
+  .surah-search-icon {
+    position: absolute;
+    inset-inline-start: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--color-ink-muted);
   }
 
   .search-idle {
@@ -8512,4 +8549,57 @@ body:has(.edit-bar) .tab-bar,
   object-fit: contain;
   border-radius: var(--radius-soft);
   box-shadow: 0 24px 60px -20px rgba(0, 0, 0, 0.7);
+}
+
+/* ── Stand-ins for :has() ──────────────────────────────────────────────────
+   For the browsers without `:has()` (the older Chromium in TV and display
+   browsers): components/site/legacy-browser.tsx puts these classes on where the
+   `:has()` rules above would match. A current browser never gets them. */
+body.has-rd-app {
+  background: var(--rd-paper);
+}
+body.has-rd-app .site-header,
+body.has-rd-app .tab-bar,
+body.has-rd-app .footer-city,
+body.has-edit-bar .tab-bar,
+body.has-contact-page .footer-contact {
+  display: none;
+}
+body.has-tab-bar .footer-band {
+  padding-block-end: calc(96px + env(safe-area-inset-bottom));
+}
+@media (max-width: 1023.98px) {
+  body.has-tab-bar #main {
+    padding-block-end: calc(104px + env(safe-area-inset-bottom));
+  }
+}
+@media (min-width: 1100px) {
+  body.has-tab-bar .footer-band {
+    padding-block-end: 0;
+  }
+  body.has-contact-page .footer-grid {
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 3.2fr);
+  }
+}
+.contact-chip.is-checked {
+  background: var(--green);
+  color: var(--paper);
+  box-shadow: none;
+}
+.contact-chip.is-checked .contact-chip-check {
+  display: inline;
+}
+.prayer-next.is-open {
+  overflow: visible;
+  z-index: 30;
+}
+.prayer-next.is-open::after {
+  display: none;
+}
+.m-view.has-fab {
+  padding-block-end: 84px;
+}
+.card > .has-card-link {
+  position: static;
+  z-index: auto;
 }

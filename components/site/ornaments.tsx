@@ -146,8 +146,9 @@ export function ViennaSkyline({
       preserveAspectRatio="xMidYMax slice"
       style={{
         position: 'absolute',
-        insetInline: 0,
-        insetBlockEnd: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
         inlineSize: '100%',
         blockSize: '7rem',
         opacity,
@@ -215,12 +216,13 @@ export function Ring({
   return (
     <div
       aria-hidden="true"
+      className="orn-ring"
+      data-side={side}
       style={{
-        position: 'absolute',
-        ...(side === 'end'
-          ? { insetInlineEnd: `${-size * 0.3}px` }
-          : { insetInlineStart: `${-size * 0.3}px` }),
-        insetBlockStart: `${top}px`,
+        // The side is the stylesheet's (`.orn-ring`), so an older browser
+        // gets it spelt out too; an inline style has no fallback.
+        ['--ring-off' as string]: `${-size * 0.3}px`,
+        top: `${top}px`,
         inlineSize: `${size}px`,
         blockSize: `${size}px`,
         border: `var(--rule-hair) solid ${tone}`,
@@ -257,10 +259,10 @@ export function ViennaPanorama({
   return (
     <div
       aria-hidden="true"
+      className="orn-panorama"
       style={{
         position: 'relative',
         inlineSize: '100%',
-        aspectRatio: '2167 / 482',
         background: tone,
         opacity,
         ...mask,
@@ -300,9 +302,8 @@ export function Corner({
       style={{
         position: 'absolute',
         zIndex: 0,
-        ...(place === 'start'
-          ? { insetBlockStart: 'var(--corner-top, 18px)', insetInlineStart: 18 }
-          : { insetBlockEnd: 18, insetInlineEnd: 18 }),
+        // The inline side is in the stylesheet (`.corner-a`, `.corner-b`).
+        ...(place === 'start' ? { top: 'var(--corner-top, 18px)' } : { bottom: 18 }),
         opacity,
         pointerEvents: 'none',
       }}

@@ -156,8 +156,8 @@ export function SearchPopup({
       );
       pill.animate(
         [
-          { height: `${from.height}px`, paddingInline: '10px' },
-          { height: `${PILL_H}px`, paddingInline: '20px' },
+          { height: `${from.height}px`, paddingLeft: '10px', paddingRight: '10px' },
+          { height: `${PILL_H}px`, paddingLeft: '20px', paddingRight: '20px' },
         ],
         { duration: OPEN_MS, easing: EASE, fill: 'both' },
       );
@@ -222,8 +222,8 @@ export function SearchPopup({
     );
     pill.animate(
       [
-        { height: `${PILL_H}px`, paddingInline: '20px' },
-        { height: `${to.height}px`, paddingInline: '10px' },
+        { height: `${PILL_H}px`, paddingLeft: '20px', paddingRight: '20px' },
+        { height: `${to.height}px`, paddingLeft: '10px', paddingRight: '10px' },
       ],
       { duration: CLOSE_MS, easing: EASE, fill: 'both' },
     );
@@ -308,7 +308,10 @@ export function SearchPopup({
         onClick={onClose}
         style={{
           position: 'absolute',
-          inset: 0,
+          top: 0,
+          right: 0,
+          bottom: 0,
+          left: 0,
           background: 'rgba(10, 24, 20, 0.5)',
           backdropFilter: 'blur(7px)',
         }}

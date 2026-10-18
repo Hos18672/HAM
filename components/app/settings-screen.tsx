@@ -75,7 +75,7 @@ export function SettingsScreen({ theme }: { theme: ThemeValue }) {
             {t('adhanInApp')}
           </a>
         ) : null}
-        <p className="a-sub" style={{ paddingInline: 6, lineHeight: 1.8 }}>
+        <p className="a-sub" style={{ paddingLeft: 6, paddingRight: 6, lineHeight: 1.8 }}>
           {app ? t('adhanNoteApp') : t('adhanNote')}
         </p>
       </section>

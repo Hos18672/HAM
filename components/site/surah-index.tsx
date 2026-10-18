@@ -75,17 +75,7 @@ export function SurahIndex({
           {t('search')}
         </span>
         <span style={{ position: 'relative', display: 'block' }}>
-          <MagnifyingGlass
-            size={18}
-            aria-hidden="true"
-            style={{
-              position: 'absolute',
-              insetInlineStart: '14px',
-              insetBlockStart: '50%',
-              transform: 'translateY(-50%)',
-              color: 'var(--color-ink-muted)',
-            }}
-          />
+          <MagnifyingGlass size={18} aria-hidden="true" className="surah-search-icon" />
           <input
             type="search"
             className="input"

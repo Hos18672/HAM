@@ -994,6 +994,8 @@ export function DuaReader({
             translation: tr('translationToggle'),
             next: tr('nextLine'),
             previous: tr('previousLine'),
+            smaller: tr('smaller'),
+            larger: tr('larger'),
           }}
           onStep={stepPresent}
           onClose={closePresent}

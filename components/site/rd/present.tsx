@@ -1,6 +1,13 @@
 'use client';
 
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+  type ReactNode,
+} from 'react';
 import { CaretLeft, CaretRight, Pause, Play, Translate, X } from '@phosphor-icons/react/dist/ssr';
 import { Portal } from './ui';
 import { Ink, InkToggle } from './ink';
@@ -11,7 +18,8 @@ import type { Locale } from '@/lib/i18n/config';
  * paper-coloured words, gold for the name and the progress.
  *
  * Tap the words or press → for the next, ← for the one before (the other
- * way round in Persian), Space to play, Esc to close. It asks for the whole
+ * way round in Persian), Space to play, Esc to close, + and − for the size
+ * of the words (remembered for next time). It asks for the whole
  * screen on the way in and keeps the screen awake while it is open. The pen
  * (or D) draws over it all, for teaching; Esc puts the pen down first.
  */
@@ -22,6 +30,19 @@ export function presentSize(length: number): 'l' | 'm' | 's' | 'xs' {
   if (length < 220) return 'm';
   if (length < 480) return 's';
   return 'xs';
+}
+
+const SCALE_KEY = 'ham.present.scale';
+const MIN_SCALE = 0.6;
+const MAX_SCALE = 1.8;
+
+function storedScale(): number {
+  try {
+    const value = Number(localStorage.getItem(SCALE_KEY));
+    return value ? Math.min(MAX_SCALE, Math.max(MIN_SCALE, value)) : 1;
+  } catch {
+    return 1;
+  }
 }
 
 export function Present({
@@ -68,6 +89,8 @@ export function Present({
     pause?: string;
     next: string;
     previous: string;
+    smaller: string;
+    larger: string;
   };
   onStep: (by: 1 | -1) => void;
   onClose: () => void;
@@ -78,6 +101,19 @@ export function Present({
   const rtl = locale === 'fa';
   const root = useRef<HTMLDivElement>(null);
   const [drawing, setDrawing] = useState(false);
+  const [scale, setScale] = useState(1);
+  useEffect(() => setScale(storedScale()), []);
+  const resize = useCallback((by: number) => {
+    setScale((was) => {
+      const next = Math.min(MAX_SCALE, Math.max(MIN_SCALE, Math.round((was + by) * 10) / 10));
+      try {
+        localStorage.setItem(SCALE_KEY, String(next));
+      } catch {
+        /* private mode: this visit only */
+      }
+      return next;
+    });
+  }, []);
 
   // The whole screen, the screen kept awake, and the page behind held still.
   useEffect(() => {
@@ -163,12 +199,14 @@ export function Present({
       } else if (event.ctrlKey || event.metaKey || event.altKey) return;
       else if (event.key.toLowerCase() === 't') onToggleTranslated();
       else if (event.key.toLowerCase() === 'd') setDrawing((on) => !on);
+      else if (event.key === '+' || event.key === '=') resize(0.1);
+      else if (event.key === '-' || event.key === '_') resize(-0.1);
       else return;
       event.stopImmediatePropagation();
     };
     window.addEventListener('keydown', onKey, true);
     return () => window.removeEventListener('keydown', onKey, true);
-  }, [rtl, drawing, onStep, onClose, onPlay, onToggleTranslated]);
+  }, [rtl, drawing, onStep, onClose, onPlay, onToggleTranslated, resize]);
 
   const Back = rtl ? CaretRight : CaretLeft;
   const Forward = rtl ? CaretLeft : CaretRight;
@@ -185,6 +223,7 @@ export function Present({
         data-silent={silent ? 'on' : 'off'}
         data-drawing={drawing ? 'on' : 'off'}
         dir={rtl ? 'rtl' : 'ltr'}
+        style={{ '--present-scale': scale } as CSSProperties}
       >
         <div className="rd-present-top">
           <div className="rd-present-where">
@@ -194,6 +233,28 @@ export function Present({
             <span className="rd-present-title">{title}</span>
           </div>
           <div className="rd-present-tools">
+            <div className="rd-present-size" role="group">
+              <button
+                type="button"
+                className="rd-present-btn"
+                onClick={() => resize(-0.1)}
+                disabled={scale <= MIN_SCALE}
+                aria-label={labels.smaller}
+                title={labels.smaller}
+              >
+                <span aria-hidden="true">A−</span>
+              </button>
+              <button
+                type="button"
+                className="rd-present-btn rd-present-big"
+                onClick={() => resize(0.1)}
+                disabled={scale >= MAX_SCALE}
+                aria-label={labels.larger}
+                title={labels.larger}
+              >
+                <span aria-hidden="true">A+</span>
+              </button>
+            </div>
             <InkToggle active={drawing} onToggle={() => setDrawing((on) => !on)} />
             <button
               type="button"

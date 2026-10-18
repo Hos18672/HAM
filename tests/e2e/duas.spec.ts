@@ -214,6 +214,29 @@ test.describe('the du‘as', () => {
     await expect(overlay).toHaveCount(0);
   });
 
+  test('sets the size of the presented words, and keeps it', async ({ page }) => {
+    await page.goto('/de/duas/faraj');
+    await hydrated(page);
+    await openDisplay(page);
+    await page.getByRole('button', { name: 'Präsentation starten' }).click();
+
+    const overlay = page.locator('.rd-present');
+    const arabic = page.locator('.rd-present-ar');
+    const size = () => arabic.evaluate((el) => parseFloat(getComputedStyle(el).fontSize));
+    const before = await size();
+    await overlay.getByRole('button', { name: 'Schrift vergrößern' }).click();
+    await overlay.getByRole('button', { name: 'Schrift vergrößern' }).click();
+    expect(await size()).toBeCloseTo(before * 1.2, 0);
+    await page.keyboard.press('-');
+    expect(await size()).toBeCloseTo(before * 1.1, 0);
+
+    await page.keyboard.press('Escape');
+    await expect(overlay).toHaveCount(0);
+    await openDisplay(page);
+    await page.getByRole('button', { name: 'Präsentation starten' }).click();
+    expect(await size()).toBeCloseTo(before * 1.1, 0);
+  });
+
   test('draws over the presentation, slide by slide', async ({ page }) => {
     await page.goto('/de/duas/faraj');
     await hydrated(page);

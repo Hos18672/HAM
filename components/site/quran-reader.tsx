@@ -1130,6 +1130,8 @@ export function QuranReader({
             pause: t('pause'),
             next: t('nextVerse'),
             previous: t('previousVerse'),
+            smaller: t('smaller'),
+            larger: t('larger'),
           }}
           onStep={stepPresent}
           onClose={closePresent}
@@ -1234,7 +1236,7 @@ function Scrubber({
       <span className="rd-scrub-track">
         <i style={{ inlineSize: `${fraction * 100}%` }} />
       </span>
-      <span className="rd-scrub-thumb" style={{ insetInlineStart: `${fraction * 100}%` }} />
+      <span className="rd-scrub-thumb" style={{ ['--at' as string]: `${fraction * 100}%` }} />
     </div>
   );
 }

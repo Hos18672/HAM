@@ -74,6 +74,22 @@ const nextConfig: NextConfig = {
   env: { NEXT_PUBLIC_BASE_PATH: previewBasePath ?? '' },
   poweredByHeader: false,
   /**
+   * Compiled down like the app's own code. Next leaves node_modules as they
+   * ship, and the message formatter under next-intl ships class `static {}`
+   * blocks, which Chromium before 94 cannot parse — on a TV or display
+   * browser (a Samsung Flip runs Chromium 85 or 94) that one chunk failed,
+   * and the page fell over into the error screen on the first client render.
+   */
+  transpilePackages: [
+    'next-intl',
+    'use-intl',
+    'intl-messageformat',
+    '@formatjs/fast-memoize',
+    '@formatjs/icu-messageformat-parser',
+    '@formatjs/icu-skeleton-parser',
+    '@formatjs/intl-localematcher',
+  ],
+  /**
    * Self-hosted runs only (`next start`: the end-to-end tests, a local
    * production run). Next's default lets the browser keep a page for a year
    * under `stale-while-revalidate` with no `max-age`, so Chrome showed the

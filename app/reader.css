@@ -898,6 +898,7 @@ button.rd-medal:active {
 .rd-scrub-thumb {
   position: absolute;
   inset-block-start: 50%;
+  inset-inline-start: var(--at, 0%);
   inline-size: 12px;
   block-size: 12px;
   border-radius: 50%;
@@ -1603,6 +1604,23 @@ button.rd-medal:active {
 .rd-present-play:hover {
   transform: scale(1.06);
 }
+.rd-present-size {
+  display: flex;
+  gap: 6px;
+}
+.rd-present-btn > span {
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 1;
+}
+.rd-present-big > span {
+  font-size: 18px;
+}
+.rd-present-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+  transform: none;
+}
 .rd-present-btn[aria-pressed='true'] {
   background: rgba(200, 164, 93, 0.24);
   color: #c8a45d !important;
@@ -1643,7 +1661,7 @@ button.rd-medal:active {
 .rd-present-bism {
   margin: 0 0 14px;
   font-family: var(--rd-ar-face);
-  font-size: clamp(22px, 3vw, 34px);
+  font-size: calc(clamp(22px, 3vw, 34px) * var(--present-scale, 1));
   color: #c8a45d;
 }
 .rd-present-ar {
@@ -1656,21 +1674,21 @@ button.rd-medal:active {
   color: #c8a45d;
 }
 .rd-present-ar[data-size='l'] {
-  font-size: 56px;
+  font-size: calc(56px * var(--present-scale, 1));
 }
 .rd-present-ar[data-size='m'] {
-  font-size: 46px;
+  font-size: calc(46px * var(--present-scale, 1));
 }
 .rd-present-ar[data-size='s'] {
-  font-size: 38px;
+  font-size: calc(38px * var(--present-scale, 1));
 }
 .rd-present-ar[data-size='xs'] {
-  font-size: 30px;
+  font-size: calc(30px * var(--present-scale, 1));
 }
 .rd-present-tr {
   max-inline-size: 52ch;
   margin: 22px auto 0;
-  font-size: 24px;
+  font-size: calc(24px * var(--present-scale, 1));
   line-height: 1.6;
   color: rgba(247, 243, 232, 0.84);
 }
@@ -1709,19 +1727,19 @@ button.rd-medal:active {
 }
 @media (max-width: 640px) {
   .rd-present-ar[data-size='l'] {
-    font-size: 33px;
+    font-size: calc(33px * var(--present-scale, 1));
   }
   .rd-present-ar[data-size='m'] {
-    font-size: 28px;
+    font-size: calc(28px * var(--present-scale, 1));
   }
   .rd-present-ar[data-size='s'] {
-    font-size: 24px;
+    font-size: calc(24px * var(--present-scale, 1));
   }
   .rd-present-ar[data-size='xs'] {
-    font-size: 20px;
+    font-size: calc(20px * var(--present-scale, 1));
   }
   .rd-present-tr {
-    font-size: 17px;
+    font-size: calc(17px * var(--present-scale, 1));
   }
   .rd-present-step span {
     display: none;

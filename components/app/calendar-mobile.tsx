@@ -139,7 +139,10 @@ export function CalendarMobile({
   return (
     <div className="a-screen cal-m" style={{ gap: 14 }}>
       <h1 className="cal-m-title">{tApp('calendarTitle')}</h1>
-      <p className="a-sub" style={{ fontSize: 'calc(14px * var(--a-fs))', paddingInline: 4 }}>
+      <p
+        className="a-sub"
+        style={{ fontSize: 'calc(14px * var(--a-fs))', paddingLeft: 4, paddingRight: 4 }}
+      >
         {tApp('calendarLead')}
       </p>
 

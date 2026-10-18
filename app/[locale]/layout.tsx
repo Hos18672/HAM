@@ -11,6 +11,7 @@ import { getSettings } from '@/lib/db/queries/content';
 import { PrintPlates } from '@/components/site/print-plates';
 import { PatternDefs } from '@/components/site/ornaments';
 import { RiseObserver } from '@/components/site/rise';
+import { LegacyBrowser } from '@/components/site/legacy-browser';
 import { ServiceWorker } from '@/components/site/service-worker';
 // The Homecoming scene's own layout and page states, first so this app's
 // tokens below can override its three variables.
@@ -272,6 +273,7 @@ export default async function LocaleLayout({
           <PatternDefs />
           {children}
           <RiseObserver />
+          <LegacyBrowser />
           <ServiceWorker />
         </NextIntlClientProvider>
       </body>

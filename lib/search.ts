@@ -3,7 +3,7 @@ import { sql } from './db';
 import type { Locale } from './i18n/config';
 import { DUA_TEXT_SLUGS } from './dua-texts';
 import { searchLocal, type IndexEntry } from './search-local';
-import { staticEntries } from './search-static';
+import { staticEntries, withQuranPage } from './search-static';
 
 /**
  * Site-wide search.
@@ -205,9 +205,8 @@ export async function search(query: string, locale: Locale, limit = 12): Promise
     (a, b) => b.rank - a.rank,
   );
   const seen = new Set<string>();
-  return merged
-    .filter((hit) => (seen.has(hit.href) ? false : (seen.add(hit.href), true)))
-    .slice(0, limit);
+  const unique = merged.filter((hit) => (seen.has(hit.href) ? false : (seen.add(hit.href), true)));
+  return withQuranPage(unique, trimmed, locale).slice(0, limit);
 }
 
 async function searchDatabase(

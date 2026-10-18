@@ -7,6 +7,7 @@ import { Link } from '@/lib/i18n/navigation';
 import { digits } from '@/lib/i18n/format';
 import type { SurahInfo } from '@/lib/quran';
 import { surahKeywords } from '@/lib/surah-names';
+import { pageFromQuery, surahOnPage } from '@/lib/quran-page-query';
 import type { Locale } from '@/lib/i18n/config';
 import { Card } from '../ui/card';
 
@@ -67,6 +68,9 @@ export function SurahIndex({
   const [query, setQuery] = useState('');
 
   const shown = useMemo(() => filterSurahs(surahs, query), [query, surahs]);
+  // A page of the book, when the search names one: "50", "Seite 50", "صفحه ۵۰".
+  const asked = pageFromQuery(query);
+  const inSurah = asked ? surahs[surahOnPage(asked.page, startPage) - 1] : undefined;
 
   return (
     <div style={{ display: 'grid', gap: 'var(--space-5)' }}>
@@ -87,7 +91,29 @@ export function SurahIndex({
         </span>
       </label>
 
-      {shown.length === 0 ? (
+      {asked ? (
+        <Card variant="soft" interactive style={{ padding: 0, maxInlineSize: '24rem' }}>
+          <Link href={`/quran/page/${asked.page}`} className="surah-card quran-page-hit">
+            <span className="ayah-mark" aria-hidden="true">
+              {digits(asked.page, locale)}
+            </span>
+            <span style={{ display: 'grid', gap: '2px', minInlineSize: 0 }}>
+              <span style={{ fontWeight: 'var(--weight-semibold)' }}>
+                {t('pageShort', { n: digits(asked.page, locale) })}
+              </span>
+              {inSurah ? (
+                <span className="text-xs" style={{ color: 'var(--color-ink-muted)' }}>
+                  {t('pageIn', {
+                    surah: locale === 'fa' ? inSurah.name : inSurah.transliteration,
+                  })}
+                </span>
+              ) : null}
+            </span>
+          </Link>
+        </Card>
+      ) : null}
+
+      {asked?.named ? null : shown.length === 0 && !asked ? (
         <p aria-live="polite" style={{ color: 'var(--color-ink-muted)' }}>
           {t('none')}
         </p>

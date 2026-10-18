@@ -107,7 +107,8 @@
       "community": "Gemeinschaft",
       "prayer": "Gebetszeiten",
       "surah": "Sure",
-      "juz": "Juz"
+      "juz": "Juz",
+      "quranPage": "Koranseite"
     }
   },
   "home": {
@@ -767,7 +768,7 @@
       "lead": "Alle 114 Suren im arabischen Wortlaut, Vers für Vers mit der deutschen Übersetzung."
     },
     "search": "Sure suchen",
-    "searchPlaceholder": "Name oder Nummer",
+    "searchPlaceholder": "Name, Nummer oder Seite",
     "none": "Keine Sure gefunden.",
     "surah": "Sure",
     "ayahs": "{count} Verse",
@@ -790,6 +791,7 @@
     "translationToggle": "Übersetzung dieser Seite",
     "readAsBook": "Als Buch lesen",
     "pageShort": "Seite {n}",
+    "pageIn": "Im Koran, in {surah}",
     "markSilentShort": "Stumme Buchstaben",
     "go": "Öffnen",
     "translationShort": "Übersetzung",
@@ -811,7 +813,7 @@
     "tabSurahs": "Suren",
     "tabJuz": "Juz",
     "tabBookmarks": "Lesezeichen",
-    "searchSurahs": "Name, Übersetzung oder Nummer",
+    "searchSurahs": "Name, Übersetzung, Nummer oder Seite",
     "placeMeccan": "Mekka",
     "placeMedinan": "Medina",
     "surahMeta": "{n} Verse · {place}",

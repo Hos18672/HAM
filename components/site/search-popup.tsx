@@ -7,6 +7,7 @@ import { useRouter } from '@/lib/i18n/navigation';
 import { searchAction } from '@/app/actions/search';
 import type { SearchHit } from '@/lib/search';
 import { searchLocal, type IndexEntry } from '@/lib/search-local';
+import { withQuranPage } from '@/lib/search-static';
 import type { Locale } from '@/lib/i18n/config';
 import { Button } from '../ui/button';
 
@@ -53,7 +54,7 @@ async function find(query: string, locale: Locale): Promise<SearchHit[]> {
     }
   }
   try {
-    return searchLocal(await loadIndex(locale), query);
+    return withQuranPage(searchLocal(await loadIndex(locale), query), query, locale);
   } catch {
     return [];
   }

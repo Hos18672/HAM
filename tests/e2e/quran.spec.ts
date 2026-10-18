@@ -95,6 +95,17 @@ test.describe('the Quran reader', () => {
     expect(await kept(page)).toBe('here');
   });
 
+  test('goes to a page of the book from the sidebar search', async ({ page }) => {
+    await mark(page);
+    await page.locator('.rd-side .rd-search input').fill('Seite 50');
+    const hit = page.locator('.rd-side .quran-page-hit');
+    await expect(hit).toContainText('Seite 50');
+    await expect(page.locator('.rd-side .rd-surah-row:not(.quran-page-hit)')).toHaveCount(0);
+    await hit.click();
+    await expect(page).toHaveURL(/\/de\/quran\/page\/50$/);
+    expect(await kept(page)).toBe('here');
+  });
+
   test('sets the text size and remembers it', async ({ page }) => {
     const size = () =>
       page.evaluate(() => getComputedStyle(document.querySelector('.rd-ar')!).fontSize);

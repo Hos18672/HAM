@@ -30,6 +30,7 @@ import {
 import { Link } from '@/lib/i18n/navigation';
 import { arabicIndic, digits } from '@/lib/i18n/format';
 import { BASMALA, JUZ_COUNT, PAGE_COUNT } from '@/lib/quran-constants';
+import { pageFromQuery, surahOnPage } from '@/lib/quran-page-query';
 import type { MushafPage, PageAyah, SurahInfo } from '@/lib/quran';
 import type { Locale } from '@/lib/i18n/config';
 import { Brand } from './header';
@@ -1275,9 +1276,12 @@ function Picker({
   const [query, setQuery] = useState('');
   const marks = Object.values(bookmarks).sort((a, b) => b.en - a.en);
 
+  // A page of the book, when the search names one: "50", "Seite 50", "صفحه ۵۰".
+  const asked = pageFromQuery(query);
   const shown = useMemo(() => {
     const q = fold(query);
     if (!q) return surahs;
+    if (pageFromQuery(query)?.named) return [];
     const number = Number(q.replace(/[۰-۹]/g, (c) => String('۰۱۲۳۴۵۶۷۸۹'.indexOf(c))));
     return surahs.filter(
       (s) =>
@@ -1330,8 +1334,27 @@ function Picker({
               enterKeyHint="search"
             />
           </label>
-          {shown.length === 0 ? <p className="rd-empty">{t('none')}</p> : null}
+          {shown.length === 0 && !asked ? <p className="rd-empty">{t('none')}</p> : null}
           <ul className="rd-list" ref={list}>
+            {asked ? (
+              <li>
+                <button
+                  type="button"
+                  className="rd-surah-row quran-page-hit"
+                  onClick={() => onPick(asked.page)}
+                >
+                  <span className="rd-chip-n tabular">{d(asked.page)}</span>
+                  <span className="rd-surah-row-text">
+                    <span className="rd-surah-row-name">
+                      {t('pageShort', { n: d(asked.page) })}
+                    </span>
+                    <span className="rd-surah-row-meta">
+                      {t('pageIn', { surah: nameOf(surahOnPage(asked.page, surahPage)) })}
+                    </span>
+                  </span>
+                </button>
+              </li>
+            ) : null}
             {shown.map((s) => (
               <li key={s.number}>
                 <button

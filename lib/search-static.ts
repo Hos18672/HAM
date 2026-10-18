@@ -1,5 +1,7 @@
 import type { Locale } from './i18n/config';
 import type { IndexEntry } from './search-local';
+import type { SearchHit } from './search';
+import { pageFromQuery, surahOnPage } from './quran-page-query';
 import { JUZ_PAGES, SURAHS, surahKeywords, surahNameFa } from './surah-names';
 
 /**
@@ -244,4 +246,34 @@ export function staticEntries(locale: Locale): IndexEntry[] {
   });
 
   return [...pages, ...surahs, ...juz];
+}
+
+/** Index 1–114: the page each surah begins on. */
+const SURAH_START = [0, ...SURAHS.map((surah) => surah[3])];
+
+/**
+ * A page of the mushaf, when the query names one ("Seite 50", "صفحه ۵۰", or
+ * a bare "50"), added to the hits: first when the query said "page", after
+ * the best hit when it was only a number — that may as well be a surah's.
+ * Not in the index itself: 604 entries that only a number would ever find.
+ */
+export function withQuranPage(hits: SearchHit[], query: string, locale: Locale): SearchHit[] {
+  const asked = pageFromQuery(query);
+  if (!asked) return hits;
+  const { page } = asked;
+  const s = surahOnPage(page, SURAH_START);
+  const hit: SearchHit = {
+    id: `quran-page-${page}`,
+    kind: 'quranPage',
+    title: locale === 'de' ? `Seite ${page}` : `صفحهٔ ${faDigits(page)}`,
+    excerpt:
+      locale === 'de'
+        ? `Koran · ${s}. ${SURAHS[s - 1]?.[1] ?? ''}`
+        : `قرآن · سورهٔ ${surahNameFa(s)}`,
+    href: `/${locale}/quran/page/${page}`,
+    rank: 0,
+  };
+  const rest = hits.filter((other) => other.href !== hit.href);
+  const at = asked.named ? 0 : Math.min(1, rest.length);
+  return [...rest.slice(0, at), hit, ...rest.slice(at)];
 }

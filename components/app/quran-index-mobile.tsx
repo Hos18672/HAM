@@ -6,6 +6,7 @@ import { BookmarkSimple, MagnifyingGlass } from '@phosphor-icons/react/dist/ssr'
 import { Link } from '@/lib/i18n/navigation';
 import { digits } from '@/lib/i18n/format';
 import { JUZ_COUNT } from '@/lib/quran-constants';
+import { pageFromQuery, surahOnPage } from '@/lib/quran-page-query';
 import { filterSurahs } from '@/components/site/surah-index';
 import type { Bookmark } from '@/components/site/use-quran-store';
 import type { SurahInfo } from '@/lib/quran';
@@ -51,6 +52,8 @@ export function QuranIndexMobile({
   useEffect(() => setBookmarks(readBookmarks()), []);
 
   const shown = useMemo(() => filterSurahs(surahs, query), [surahs, query]);
+  // A page of the book, when the search names one: "50", "Seite 50", "صفحه ۵۰".
+  const asked = pageFromQuery(query);
   const name = (n: number) => surahLabel(surahs[n - 1], locale, digits(n, locale));
 
   return (
@@ -88,9 +91,31 @@ export function QuranIndexMobile({
 
       <QuranContinueCard surahs={surahs} locale={locale} variant="dark" />
 
-      {tab === 'surahs' ? (
+      {tab === 'surahs' && asked ? (
+        <ul className="a-surahs">
+          <li>
+            <Link href={`/quran/page/${asked.page}`} className="a-surah quran-page-hit">
+              <span className="a-medal">
+                <span>{digits(asked.page, locale)}</span>
+              </span>
+              <span className="a-stack a-grow">
+                <span className="a-title" style={{ fontSize: 'calc(16.5px * var(--a-fs))' }}>
+                  {t('pageShort', { n: digits(asked.page, locale) })}
+                </span>
+                <span className="a-sub">
+                  {t('pageIn', { surah: name(surahOnPage(asked.page, surahPage)) })}
+                </span>
+              </span>
+            </Link>
+          </li>
+        </ul>
+      ) : null}
+
+      {tab === 'surahs' && !asked?.named ? (
         shown.length === 0 ? (
-          <p className="a-sub">{t('none')}</p>
+          asked ? null : (
+            <p className="a-sub">{t('none')}</p>
+          )
         ) : (
           <ul className="a-surahs">
             {shown.map((surah) => (

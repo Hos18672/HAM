@@ -107,7 +107,8 @@
       "community": "همیاری",
       "prayer": "اوقات شرعی",
       "surah": "سوره",
-      "juz": "جزء"
+      "juz": "جزء",
+      "quranPage": "صفحهٔ قرآن"
     }
   },
   "home": {
@@ -767,7 +768,7 @@
       "lead": "همهٔ ۱۱۴ سوره به متن عربی، آیه به آیه همراه با ترجمهٔ فارسی."
     },
     "search": "جست‌وجوی سوره",
-    "searchPlaceholder": "نام یا شماره",
+    "searchPlaceholder": "نام، شماره یا صفحه",
     "none": "سوره‌ای پیدا نشد.",
     "surah": "سوره",
     "ayahs": "{count} آیه",
@@ -790,6 +791,7 @@
     "translationToggle": "ترجمهٔ این صفحه",
     "readAsBook": "خواندن به صورت مصحف",
     "pageShort": "صفحهٔ {n}",
+    "pageIn": "قرآن، {surah}",
     "markSilentShort": "حروف خوانده‌نشده",
     "go": "برو",
     "translationShort": "ترجمه",
@@ -811,7 +813,7 @@
     "tabSurahs": "سوره‌ها",
     "tabJuz": "جزء",
     "tabBookmarks": "نشانک‌ها",
-    "searchSurahs": "نام یا شمارهٔ سوره",
+    "searchSurahs": "نام، شمارهٔ سوره یا صفحه",
     "placeMeccan": "مکه",
     "placeMedinan": "مدینه",
     "surahMeta": "{n} آیه · {place}",

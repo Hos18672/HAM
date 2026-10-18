@@ -4,7 +4,14 @@ import { getTranslations } from 'next-intl/server';
 import { requireLocale } from '@/lib/i18n/locale-param';
 import { isLocale } from '@/lib/i18n/config';
 import { digits } from '@/lib/i18n/format';
-import { getMushafPage, getQuranIndex, getSurahList, PAGE_COUNT, TRANSLATION } from '@/lib/quran';
+import {
+  getMushafPage,
+  getQuranIndex,
+  getSurahList,
+  hasQuranFiles,
+  PAGE_COUNT,
+  TRANSLATION,
+} from '@/lib/quran';
 import { getQuranHeader } from '@/lib/quran-page';
 import { QuranReader } from '@/components/site/quran-reader';
 
@@ -64,10 +71,11 @@ export default async function MushafRoute({
   if (!n) notFound();
 
   const t = await getTranslations({ locale, namespace: 'quran' });
-  const [page, index, surahs] = await Promise.all([
+  const [page, index, surahs, fromFiles] = await Promise.all([
     getMushafPage(n, typed),
     getQuranIndex(),
     getSurahList(),
+    hasQuranFiles(),
   ]);
   // Thrown rather than rendered, so a failed fetch is not cached for a month.
   if (!page || !index || !surahs) throw new Error(t('unavailable'));
@@ -80,6 +88,7 @@ export default async function MushafRoute({
       juzPage={index.juzPage}
       locale={typed}
       translator={TRANSLATION[typed].translator}
+      fromFiles={fromFiles}
     />
   );
 }

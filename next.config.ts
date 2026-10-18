@@ -100,6 +100,14 @@ const nextConfig: NextConfig = {
    * must-revalidate`) and keeps its edge serving stale while it rebuilds.
    */
   ...(process.env.NETLIFY ? {} : { expireTime: 3600 }),
+  /**
+   * The mushaf as files (`scripts/quran-data.ts`) goes with the server too,
+   * which reads a page from disk rather than from the API (`lib/quran.ts`).
+   * Not otherwise traced: nothing imports it, it is read by path.
+   */
+  outputFileTracingIncludes: {
+    '/**': ['./public/quran-data/**/*'],
+  },
   images: {
     remotePatterns: supabaseOrigin
       ? [{ protocol: 'https', hostname: new URL(supabaseOrigin).hostname }]

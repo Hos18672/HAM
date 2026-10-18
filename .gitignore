@@ -20,3 +20,5 @@ blob-report
 
 # The local preview snapshot; CI builds its own.
 preview/
+# The mushaf as files, written by scripts/quran-data.ts at build time.
+public/quran-data/

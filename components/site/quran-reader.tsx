@@ -62,9 +62,9 @@ import {
 /**
  * The Quran, one page of the Medina mushaf at a time.
  *
- * **Only the book turns.** A page's data comes from `/api/quran/page/[n]` on
- * the live site, and from a file the preview snapshot writes out
- * (`quran-data/<locale>/<n>.json`) where there is no server. The address is
+ * **Only the book turns.** A page's data comes from a file the build writes
+ * out (`quran-data/<locale>/<n>.json`, see `scripts/quran-data.ts`), served
+ * straight from the CDN, and from `/api/quran/page/[n]` where it is missing. The address is
  * then written with `History.prototype.replaceState` — the method itself,
  * not the one Next replaces it with, which tells the router the path has
  * changed and makes it rebuild the whole route. Turning a page is not a
@@ -117,6 +117,7 @@ export function QuranReader({
   juzPage,
   locale,
   translator,
+  fromFiles = false,
 }: {
   initialPage: MushafPage;
   surahs: SurahInfo[];
@@ -124,6 +125,8 @@ export function QuranReader({
   juzPage: number[];
   locale: Locale;
   translator: string;
+  /** Whether the build wrote the pages out as files (`scripts/quran-data.ts`). */
+  fromFiles?: boolean;
 }) {
   const t = useTranslations('quran');
   const tr = useTranslations('reader');
@@ -171,9 +174,12 @@ export function QuranReader({
       if (done) return Promise.resolve(done);
       let entry = pending.get(key);
       if (!entry) {
-        const url = BASE_PATH
-          ? `${BASE_PATH}/quran-data/${locale}/${want}.json`
-          : `/api/quran/page/${want}?locale=${locale}`;
+        // The build's file where there is one, straight from the CDN; the
+        // API where the build could not write them.
+        const url =
+          BASE_PATH || fromFiles
+            ? `${BASE_PATH}/quran-data/${locale}/${want}.json`
+            : `/api/quran/page/${want}?locale=${locale}`;
         entry = fetch(url)
           .then((response) => {
             if (!response.ok) throw new Error(String(response.status));
@@ -188,7 +194,7 @@ export function QuranReader({
       }
       return entry;
     },
-    [locale],
+    [locale, fromFiles],
   );
 
   const pageUrl = useCallback(

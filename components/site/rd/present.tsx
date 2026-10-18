@@ -242,7 +242,9 @@ export function Present({
                 aria-label={labels.smaller}
                 title={labels.smaller}
               >
-                <span aria-hidden="true">A−</span>
+                <span aria-hidden="true" dir="ltr">
+                  A−
+                </span>
               </button>
               <button
                 type="button"
@@ -252,7 +254,9 @@ export function Present({
                 aria-label={labels.larger}
                 title={labels.larger}
               >
-                <span aria-hidden="true">A+</span>
+                <span aria-hidden="true" dir="ltr">
+                  A+
+                </span>
               </button>
             </div>
             <InkToggle active={drawing} onToggle={() => setDrawing((on) => !on)} />

@@ -1,6 +1,34 @@
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 
+/**
+ * A browser that has location blocked for the site: it says so when asked
+ * what it would do, and refuses at once when asked for the position.
+ */
+const blockLocation = (page: import('@playwright/test').Page) =>
+  page.addInitScript(() => {
+    Object.defineProperty(navigator.geolocation, 'getCurrentPosition', {
+      configurable: true,
+      value: (_ok: PositionCallback, fail?: PositionErrorCallback) =>
+        fail?.({
+          code: 1,
+          message: 'denied',
+          PERMISSION_DENIED: 1,
+          POSITION_UNAVAILABLE: 2,
+          TIMEOUT: 3,
+        } as GeolocationPositionError),
+    });
+    const query = navigator.permissions.query.bind(navigator.permissions);
+    navigator.permissions.query = ((descriptor: PermissionDescriptor) =>
+      descriptor.name === 'geolocation'
+        ? Promise.resolve({
+            state: 'denied',
+            addEventListener() {},
+            removeEventListener() {},
+          } as unknown as PermissionStatus)
+        : query(descriptor)) as typeof navigator.permissions.query;
+  });
+
 test.describe('prayer times', () => {
   test('shows the eight times, a next prayer and both calendars', async ({ page }) => {
     await page.goto('/de/prayer');
@@ -57,12 +85,7 @@ test.describe('prayer times', () => {
   });
 
   test('shows Vienna when the location is refused, and says so', async ({ page }) => {
-    await page.addInitScript(() => {
-      Object.defineProperty(navigator.geolocation, 'getCurrentPosition', {
-        value: (_ok: unknown, fail: (e: { code: number; PERMISSION_DENIED: number }) => void) =>
-          fail({ code: 1, PERMISSION_DENIED: 1 }),
-      });
-    });
+    await blockLocation(page);
     await page.goto('/de/prayer');
     await expect(page.locator('.prayer-next-place')).toHaveText('Heute in Wien');
     await expect(page.getByText('Der Standortzugriff wurde nicht erlaubt.')).toBeVisible();
@@ -288,22 +311,7 @@ test.describe('the qibla', () => {
   });
 
   test('falls back to the house when the location is refused, and says so', async ({ page }) => {
-    // Refused outright, rather than left to a headless runner's own
-    // behaviour: cleared permissions there neither grant nor deny, so the
-    // page sits in "locating" and the test would be measuring the timeout.
-    await page.addInitScript(() => {
-      Object.defineProperty(navigator.geolocation, 'getCurrentPosition', {
-        configurable: true,
-        value: (_ok: PositionCallback, fail?: PositionErrorCallback) =>
-          fail?.({
-            code: 1,
-            message: 'denied',
-            PERMISSION_DENIED: 1,
-            POSITION_UNAVAILABLE: 2,
-            TIMEOUT: 3,
-          } as GeolocationPositionError),
-      });
-    });
+    await blockLocation(page);
     await page.goto('/de/qibla');
 
     // The direction is still the house's, and the page says why.
@@ -315,6 +323,26 @@ test.describe('the qibla', () => {
       'data-blocked',
       'true',
     );
+  });
+
+  test('asks for the position only from the button, until it is allowed', async ({ page }) => {
+    // Asked unprompted on every visit, the browser's question is closed or
+    // ignored again and again, and Chrome then blocks the site for a week.
+    await page.addInitScript(() => {
+      (window as unknown as { asks: number }).asks = 0;
+      Object.defineProperty(navigator.geolocation, 'getCurrentPosition', {
+        configurable: true,
+        value: () => {
+          (window as unknown as { asks: number }).asks += 1;
+        },
+      });
+    });
+    await page.goto('/de/qibla');
+    await expect(page.locator('.qibla-geo-note')).toContainText('Mein Standort');
+    expect(await page.evaluate(() => (window as unknown as { asks: number }).asks)).toBe(0);
+
+    await page.getByRole('button', { name: 'Mein Standort' }).click();
+    expect(await page.evaluate(() => (window as unknown as { asks: number }).asks)).toBe(1);
   });
 
   test('recomputes from a granted location and returns to the house', async ({ page, context }) => {

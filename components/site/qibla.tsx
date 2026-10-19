@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { offerPosition, rememberedPlace } from '@/lib/prayer-place';
+import { locationPermission, offerPosition, rememberedPlace } from '@/lib/prayer-place';
 import { useTranslations } from 'next-intl';
 import {
   ArrowsClockwise,
@@ -24,7 +24,7 @@ interface CompassEvent extends DeviceOrientationEvent {
 }
 
 type CompassState = 'idle' | 'active' | 'unsupported' | 'denied';
-type GeoState = 'house' | 'locating' | 'located' | 'denied' | 'unsupported' | 'failed';
+type GeoState = 'house' | 'ask' | 'locating' | 'located' | 'denied' | 'unsupported' | 'failed';
 type Tab = 'compass' | 'map';
 
 const TABS: Tab[] = ['compass', 'map'];
@@ -226,8 +226,9 @@ export function Qibla({ locale }: { locale: Locale }) {
   }, []);
 
   /**
-   * Asked for as the page opens, because somebody who has come to this page
-   * is standing somewhere and wants to know which way to turn from *there*.
+   * Found as the page opens where the browser allows it without asking,
+   * because somebody who has come to this page is standing somewhere and
+   * wants to know which way to turn from *there*.
    * The house is the fallback, not the starting point: refuse the browser's
    * prompt, or have no sensor at all, and the page says so and shows the
    * direction from Hernals, which is still a true qibla and still useful.
@@ -246,7 +247,13 @@ export function Qibla({ locale }: { locale: Locale }) {
       setOrigin({ latitude: remembered.latitude, longitude: remembered.longitude });
       setGeo('located');
     }
-    locateMe();
+    // Only where the browser will answer without asking: an unprompted
+    // question on every visit is what gets a site blocked (see
+    // `locationPermission`). Otherwise "my location" asks, from a tap.
+    void locationPermission().then((answer) => {
+      if (answer === 'granted' || answer === 'unknown') locateMe();
+      else if (!remembered) setGeo(answer === 'denied' ? 'denied' : 'ask');
+    });
   }, [locateMe]);
 
   /**
@@ -355,7 +362,9 @@ export function Qibla({ locale }: { locale: Locale }) {
             ? t('geoFailedHelp')
             : geo === 'located'
               ? t('locatedNote', { deg: formatBearing(qibla.bearing, locale) })
-              : null;
+              : geo === 'ask'
+                ? t('askNote')
+                : null;
   // From the place shown, not from the last answer: a remembered position is
   // still the reader's when a fresh request fails.
   const mine = origin !== HOUSE;

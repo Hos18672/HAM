@@ -94,8 +94,32 @@ function start() {
   if (read(HOUSE_KEY)) return;
   const remembered = rememberedPlace();
   if (remembered) set({ choice: { kind: 'located', place: remembered }, geo: 'located' });
-  // Refreshed every visit: silent once the browser has said yes.
-  locate();
+  // Refreshed every visit, but only where the browser has already said yes
+  // and so asks nothing. Asking on every page load, unprompted, put the
+  // browser's question up again and again; Chrome counts each one closed
+  // or ignored, and after a few it blocks the site for a week without
+  // asking — which looked to the reader like "my location" had broken.
+  // Otherwise the question waits for a button.
+  void locationPermission().then((answer) => {
+    if (answer === 'granted' || answer === 'unknown') locate();
+    // Blocked: said, but a remembered position is kept, not thrown away.
+    else if (answer === 'denied' && state.choice.kind !== 'located')
+      set({ ...state, geo: 'denied' });
+  });
+}
+
+/**
+ * What the browser will do if asked for the position: answer at once
+ * (`granted`), refuse at once (`denied`), or put up its question
+ * (`prompt`). `unknown` where it will not say.
+ */
+export async function locationPermission(): Promise<PermissionState | 'unknown'> {
+  try {
+    if (typeof navigator === 'undefined' || !navigator.permissions?.query) return 'unknown';
+    return (await navigator.permissions.query({ name: 'geolocation' })).state;
+  } catch {
+    return 'unknown';
+  }
 }
 
 /** Ask the browser where the reader is, and use it. */

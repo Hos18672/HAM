@@ -2,16 +2,10 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
-import {
-  Crosshair,
-  GlobeHemisphereEast,
-  MapTrifold,
-  Minus,
-  Plus,
-} from '@phosphor-icons/react/dist/ssr';
+import { GlobeHemisphereEast, MapTrifold, Minus, Plus } from '@phosphor-icons/react/dist/ssr';
 import { KAABA, greatCirclePath, type Coordinates } from '@/lib/qibla';
 import { MAX_ZOOM, MIN_ZOOM, TILE, panned, project, tilesFor, unproject } from '@/lib/slippy';
-import { formatBearing, formatNumber } from '@/lib/i18n/format';
+import { formatBearing } from '@/lib/i18n/format';
 import {
   GOOGLE_KEY,
   dropGoogleSession,
@@ -103,7 +97,6 @@ export function QiblaStreet({
   const [size, setSize] = useState({ width: 0, height: 0 });
   const [centre, setCentre] = useState<Coordinates>(origin);
   const [zoom, setZoom] = useState(DEFAULT_ZOOM);
-  const [moved, setMoved] = useState(false);
   /**
    * How much of the earth is in view: the street the reader stands in, or
    * the whole way to Mecca. Two buttons rather than a pinch, because the
@@ -163,11 +156,11 @@ export function QiblaStreet({
     setGoogle(null);
   }, [locale]);
 
-  // The reader's own place is where this opens, and where "recentre" returns.
+  // The reader's own place is where this opens, and where "Street" returns.
   useEffect(() => {
     setCentre(origin);
     setZoom(DEFAULT_ZOOM);
-    setMoved(false);
+    setSpan('street');
   }, [origin]);
 
   useEffect(() => {
@@ -231,7 +224,6 @@ export function QiblaStreet({
     setCentre(origin);
     setZoom(DEFAULT_ZOOM);
     setSpan('street');
-    setMoved(false);
   }, [origin]);
 
   /** The widest zoom at which both places still sit inside the frame. */
@@ -250,7 +242,6 @@ export function QiblaStreet({
     setCentre(unproject({ x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 }, fits));
     setZoom(fits);
     setSpan('mecca');
-    setMoved(true);
   }, [origin, size.width, size.height]);
 
   /**
@@ -304,7 +295,6 @@ export function QiblaStreet({
       d.x = event.clientX;
       d.y = event.clientY;
       setCentre((current) => panned(current, zoom, dx, dy));
-      setMoved(true);
     },
     [zoom],
   );
@@ -316,31 +306,13 @@ export function QiblaStreet({
     setZoom((z) => Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, z + by)));
   }, []);
 
-  const recentre = useCallback(() => {
-    setCentre(origin);
-    setZoom(DEFAULT_ZOOM);
-    setMoved(false);
-  }, [origin]);
-
-  /**
-   * How wide the view is on the ground, which is what the two buttons
-   * change. The distance to Mecca was printed here at first and it never
-   * moved, so the control looked broken.
-   */
-  const across = useMemo(() => {
-    if (size.width === 0) return '';
-    const metresPerPixel =
-      (156543.03392 * Math.cos(origin.latitude * (Math.PI / 180))) / 2 ** Math.round(zoom);
-    const metres = metresPerPixel * size.width;
-    return metres < 1000
-      ? `${formatNumber(Math.round(metres / 10) * 10, locale)} ${t('metres')}`
-      : `${formatNumber(Math.round(metres / 100) / 10, locale)} ${t('kilometres')}`;
-  }, [origin.latitude, zoom, size.width, locale, t]);
-
   // The arrow is as long as the frame, so it always leaves the picture: the
   // Kaaba is 3 637 km away and no zoom puts it on a street map.
   const reach = Math.max(size.width, size.height);
   const theta = ((bearing - 90) * Math.PI) / 180;
+  // The Kaaba rides well out along the line, clear of the reader's mark and
+  // of the street names around it, so the line reads as going somewhere.
+  const kaabaOut = Math.max(64, Math.min(size.width, size.height) * 0.32);
 
   if (offline) {
     return (
@@ -424,7 +396,7 @@ export function QiblaStreet({
                 <>
                   <defs>
                     <linearGradient id="qibla-street-ray" x1="0" y1="0" x2="1" y2="0">
-                      <stop offset="0%" stopColor="var(--goldInk)" stopOpacity="0.5" />
+                      <stop offset="0%" stopColor="var(--goldInk)" stopOpacity="0.9" />
                       <stop offset="100%" stopColor="var(--gold)" />
                     </linearGradient>
                   </defs>
@@ -434,8 +406,8 @@ export function QiblaStreet({
                     x2={me.x + Math.cos(theta) * reach}
                     y2={me.y + Math.sin(theta) * reach}
                     stroke="#ffffff"
-                    strokeOpacity="0.85"
-                    strokeWidth="8"
+                    strokeOpacity="0.9"
+                    strokeWidth="11"
                     strokeLinecap="round"
                   />
                   <line
@@ -444,7 +416,7 @@ export function QiblaStreet({
                     x2={me.x + Math.cos(theta) * reach}
                     y2={me.y + Math.sin(theta) * reach}
                     stroke="url(#qibla-street-ray)"
-                    strokeWidth="4"
+                    strokeWidth="6"
                     strokeLinecap="round"
                   />
                   {/* The Kaaba rides on the line, near the reader: it stands
@@ -452,7 +424,7 @@ export function QiblaStreet({
                     Where the map is wide enough to hold the real one, it is
                     drawn there instead. */}
                   <g
-                    transform={`translate(${me.x + Math.cos(theta) * 74} ${me.y + Math.sin(theta) * 74})`}
+                    transform={`translate(${me.x + Math.cos(theta) * kaabaOut} ${me.y + Math.sin(theta) * kaabaOut})`}
                   >
                     <circle r="17" fill="var(--card)" opacity="0.95" />
                     <circle r="17" fill="none" stroke="var(--gold)" strokeWidth="1.5" />
@@ -489,43 +461,6 @@ export function QiblaStreet({
 
           {/* And said in words, because an icon on its own is a guess. */}
           <p className="qibla-street-who">{originLabel}</p>
-
-          {/* North, as a paper compass would show it — turning with the phone
-            where the phone knows which way it faces. */}
-          <div className="qibla-street-rose" aria-hidden="true">
-            <svg
-              viewBox="-20 -20 40 40"
-              style={{ transform: `rotate(${headingLive ? -heading : 0}deg)` }}
-            >
-              <circle r="18" fill="var(--card)" stroke="var(--line)" strokeWidth="1" />
-              <path d="M0 -14 L4.5 2 L0 -1.5 Z" fill="var(--color-accent-2-text)" />
-              <path d="M0 14 L-4.5 -2 L0 1.5 Z" fill="var(--color-ink-muted)" />
-              <path d="M0 -14 L-4.5 2 L0 -1.5 Z" fill="var(--goldInk)" />
-            </svg>
-          </div>
-        </div>
-
-        {/* One small segmented switch in the bottom corner rather than two
-            big pills across the street: the map is what this tab is for. */}
-        <div className="qibla-span" role="group" aria-label={t('streetLabel')}>
-          <button
-            type="button"
-            className="qibla-span-btn"
-            aria-pressed={span === 'street'}
-            onClick={toStreet}
-          >
-            <MapTrifold size={15} weight="duotone" aria-hidden="true" />
-            <span>{t('streetBtn')}</span>
-          </button>
-          <button
-            type="button"
-            className="qibla-span-btn"
-            aria-pressed={span === 'mecca'}
-            onClick={toMecca}
-          >
-            <GlobeHemisphereEast size={15} weight="duotone" aria-hidden="true" />
-            <span>{t('fitMecca')}</span>
-          </button>
         </div>
 
         {google ? (
@@ -576,9 +511,24 @@ export function QiblaStreet({
           </button>
         ) : null}
 
-        {/* Zoom and recentre as a slim column in the top corner, the way
-            every phone map keeps them: out of the street, under the thumb. */}
+        {/* North and zoom as one slim column in the top corner, the way
+            every phone map keeps them: out of the street, under the thumb.
+            "Street" under the map is the way back to the reader. */}
         <div className="qibla-street-controls">
+          {/* North, as a paper compass would show it — turning with the phone
+              where the phone knows which way it faces. At the head of the
+              column, so all of the map's own controls are in one corner. */}
+          <div className="qibla-street-rose" aria-hidden="true">
+            <svg
+              viewBox="-20 -20 40 40"
+              style={{ transform: `rotate(${headingLive ? -heading : 0}deg)` }}
+            >
+              <circle r="18" fill="var(--card)" stroke="var(--line)" strokeWidth="1" />
+              <path d="M0 -14 L4.5 2 L0 -1.5 Z" fill="var(--color-accent-2-text)" />
+              <path d="M0 14 L-4.5 -2 L0 1.5 Z" fill="var(--color-ink-muted)" />
+              <path d="M0 -14 L-4.5 2 L0 -1.5 Z" fill="var(--goldInk)" />
+            </svg>
+          </div>
           <div className="qibla-zoom" role="group" aria-label={t('zoom')}>
             <button
               type="button"
@@ -588,9 +538,6 @@ export function QiblaStreet({
             >
               <Plus size={14} weight="bold" aria-hidden="true" />
             </button>
-            <span className="qibla-zoom-value tabular" aria-hidden="true">
-              {across}
-            </span>
             <button
               type="button"
               onClick={() => changeZoom(-1)}
@@ -600,16 +547,6 @@ export function QiblaStreet({
               <Minus size={14} weight="bold" aria-hidden="true" />
             </button>
           </div>
-          <button
-            type="button"
-            className="qibla-recentre"
-            onClick={recentre}
-            disabled={!moved && zoom === DEFAULT_ZOOM}
-            aria-label={t('recentreMe')}
-            title={t('recentreMe')}
-          >
-            <Crosshair size={16} weight="bold" aria-hidden="true" />
-          </button>
           {/* That the compass is live is said by the north rose, which turns
               with the phone. Still announced, for a reader not looking at it. */}
           {headingLive ? (
@@ -623,15 +560,39 @@ export function QiblaStreet({
       <p className="text-xs" style={{ color: 'var(--color-ink-muted)' }}>
         {t('streetHint')}
       </p>
-      {embedded ? (
-        consent ? (
-          <button type="button" className="map-load-hide" onClick={() => setGoogleConsent(false)}>
-            {tContact('hideMap')}
+      <div className="qibla-map-foot">
+        {/* Under the map rather than on it: the street is what the map is
+            for, and a switch over it hid the very line it was there for. */}
+        <div className="qibla-span" role="group" aria-label={t('streetLabel')}>
+          <button
+            type="button"
+            className="qibla-span-btn"
+            aria-pressed={span === 'street'}
+            onClick={toStreet}
+          >
+            <MapTrifold size={15} weight="duotone" aria-hidden="true" />
+            <span>{t('streetBtn')}</span>
           </button>
-        ) : (
-          <p className="map-load-note">{tContact('loadMapNote')}</p>
-        )
-      ) : null}
+          <button
+            type="button"
+            className="qibla-span-btn"
+            aria-pressed={span === 'mecca'}
+            onClick={toMecca}
+          >
+            <GlobeHemisphereEast size={15} weight="duotone" aria-hidden="true" />
+            <span>{t('fitMecca')}</span>
+          </button>
+        </div>
+        {embedded ? (
+          consent ? (
+            <button type="button" className="map-load-hide" onClick={() => setGoogleConsent(false)}>
+              {tContact('hideMap')}
+            </button>
+          ) : (
+            <p className="map-load-note">{tContact('loadMapNote')}</p>
+          )
+        ) : null}
+      </div>
     </div>
   );
 }

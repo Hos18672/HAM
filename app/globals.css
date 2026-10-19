@@ -3404,6 +3404,81 @@
   .qibla-panel[hidden] {
     display: none;
   }
+  /* The answer, in words, under the tabs: a small north-up dial with the
+     arrow at the bearing, the figure large, and where it is taken from and
+     how far it is under it. */
+  .qibla-reading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 12px 16px 0;
+    flex-shrink: 0;
+    min-inline-size: 0;
+  }
+  .qibla-reading[data-tab='compass'] .qibla-reading-dial,
+  .qibla-reading[data-tab='compass'] .qibla-reading-main {
+    display: none;
+  }
+  .qibla-reading[data-tab='compass'] .qibla-reading-sub {
+    text-align: center;
+  }
+  .qibla-reading-dial {
+    inline-size: 46px;
+    block-size: 46px;
+    flex-shrink: 0;
+    overflow: visible;
+  }
+  .qibla-reading-ring {
+    fill: rgba(247, 243, 232, 0.06);
+    stroke: rgba(200, 164, 93, 0.55);
+    stroke-width: 1.4;
+  }
+  .qibla-reading-north {
+    fill: currentColor;
+    opacity: 0.7;
+    font-size: 8px;
+    font-weight: var(--weight-bold);
+    text-anchor: middle;
+    dominant-baseline: central;
+  }
+  .qibla-reading-needle {
+    fill: var(--gold);
+    transition: transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .qibla-reading-hub {
+    fill: currentColor;
+  }
+  .qibla-reading-words {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-inline-size: 0;
+  }
+  .qibla-reading-main {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 2px 10px;
+    margin: 0;
+    line-height: 1.15;
+  }
+  .qibla-reading-deg {
+    font-size: calc(26px * var(--a-fs, 1));
+    font-weight: var(--weight-bold);
+    color: var(--gold);
+    white-space: nowrap;
+  }
+  .qibla-reading-card {
+    font-size: calc(16px * var(--a-fs, 1));
+    font-weight: var(--weight-bold);
+  }
+  .qibla-reading-sub {
+    margin: 0;
+    font-size: calc(12.5px * var(--a-fs, 1));
+    line-height: 1.5;
+    opacity: 0.78;
+  }
   .qibla-panel-compass {
     flex: 1;
     min-block-size: 0;
@@ -3583,9 +3658,7 @@
     flex: 1;
     min-block-size: 0;
     position: relative;
-    margin: 14px;
-    border-radius: 16px;
-    overflow: hidden;
+    margin: 12px 14px 14px;
   }
   .qibla-panel-map > * {
     block-size: 100%;
@@ -3597,12 +3670,13 @@
      sitting under it. */
   .qibla-panel-map .qibla-map {
     block-size: 100%;
-    grid-template-rows: minmax(0, 1fr);
-    gap: 0;
+    grid-template-rows: minmax(0, 1fr) auto;
+    gap: 10px;
   }
   .qibla-panel-map .qibla-street-frame {
     block-size: 100%;
     min-block-size: 0;
+    overflow: hidden;
   }
   .qibla-panel-map .qibla-street {
     aspect-ratio: auto;
@@ -3691,8 +3765,7 @@
   .qibla-zoom button {
     inline-size: 100%;
   }
-  .qibla-zoom button,
-  .qibla-recentre {
+  .qibla-zoom button {
     min-inline-size: 34px;
     block-size: 34px;
     display: grid;
@@ -3703,37 +3776,23 @@
     color: var(--head);
     cursor: pointer;
   }
-  .qibla-zoom button:disabled,
-  .qibla-recentre:disabled {
+  .qibla-zoom button + button {
+    border-block-start: 1px solid var(--line);
+  }
+  .qibla-zoom button:disabled {
     opacity: 0.4;
     cursor: default;
   }
-  .qibla-zoom-value {
-    padding: 2px 4px;
-    border-block: 1px solid var(--line);
-    white-space: nowrap;
-    font-size: 9.5px;
-    font-weight: var(--weight-bold);
-    line-height: 1.2;
-    text-align: center;
-    color: var(--color-ink-muted);
-    direction: ltr;
+  /* Under the map: street or the whole way, and Google's "hide" beside it. */
+  .qibla-map-foot {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 6px 14px;
+    inline-size: 100%;
   }
-  .qibla-recentre {
-    inline-size: 34px;
-    border-radius: 999px;
-    background: var(--card);
-    box-shadow:
-      inset 0 0 0 1px var(--line),
-      0 4px 12px rgba(0, 0, 0, 0.18);
-  }
-  /* Street or the whole way: one small segmented switch in the bottom-left
-     corner, sitting on the line above the credit. */
   .qibla-span {
-    position: absolute;
-    left: 10px;
-    inset-block-end: 24px;
-    z-index: 2;
     display: flex;
     padding: 3px;
     gap: 2px;
@@ -3776,13 +3835,7 @@
     stroke-linecap: round;
   }
 
-  /* On a phone the rose shrinks to match the column of controls. Scoped to
-     the tab so it beats the rose's own rule further down the file. */
   @media (max-width: 40rem) {
-    .qibla-panel-map .qibla-street-rose {
-      inline-size: 34px;
-      block-size: 34px;
-    }
     .qibla-panel-map .qibla-attribution {
       font-size: 10px;
     }
@@ -3860,31 +3913,6 @@
     line-height: 1.6;
     color: var(--color-ink-muted);
   }
-  .qibla-figures {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 18px;
-  }
-  .qibla-figure {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    min-inline-size: 0;
-  }
-  .qibla-figure-name {
-    font-size: calc(12.5px * var(--a-fs, 1));
-    font-weight: var(--weight-bold);
-    color: var(--goldInk);
-  }
-  .qibla-figure-value {
-    font-size: clamp(26px, 3.2vw, 42px);
-    line-height: 1;
-    font-weight: var(--weight-bold);
-  }
-  .qibla-figure-unit {
-    font-size: calc(14px * var(--a-fs, 1));
-    color: var(--color-ink-muted);
-  }
   /* On the stage, under the dial: gold on the dark green, as the dial's own
      accents are, so it reads as part of the instrument. */
   .qibla-go {
@@ -3919,22 +3947,6 @@
     line-height: 1.7;
     color: var(--color-ink-muted);
     text-wrap: pretty;
-  }
-  .qibla-origin {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin: 0;
-    padding: 14px 18px;
-    border-radius: 18px;
-    background: color-mix(in srgb, var(--ink) 8%, transparent);
-    font-size: calc(13px * var(--a-fs, 1));
-    line-height: 1.6;
-    color: var(--color-ink-muted);
-  }
-  .qibla-origin > svg {
-    color: var(--goldInk);
-    flex-shrink: 0;
   }
   .qibla-privacy {
     grid-column: 1 / -1;
@@ -4029,10 +4041,6 @@
       font-size: calc(13px * var(--a-fs, 1));
       gap: 6px;
     }
-    .qibla-figure-value {
-      font-size: calc(24px * var(--a-fs, 1));
-    }
-    .qibla-figure-name,
     .qibla-field-name {
       font-size: calc(12px * var(--a-fs, 1));
     }
@@ -4110,12 +4118,10 @@
     block-size: 100%;
     pointer-events: none;
   }
+  /* At the head of the column of controls, the same width as the zoom. */
   .qibla-street-rose {
-    position: absolute;
-    inset-block-start: 10px;
-    inset-inline-start: 10px;
-    inline-size: 44px;
-    block-size: 44px;
+    inline-size: 34px;
+    block-size: 34px;
     pointer-events: none;
     filter: drop-shadow(0 4px 8px rgba(20, 40, 30, 0.25));
   }
@@ -4166,16 +4172,10 @@
     pointer-events: none;
   }
   /* Over Google's embed, the map's own furniture keeps clear of Google's:
-     its "open in Maps" box in the top-left corner (the north rose moves
-     below it), its logo and credit along the bottom (the span switch rides
-     above them), and its map-type tile in the bottom-right corner, which
-     the embed cannot let anybody press — our own switch covers it. */
-  .qibla-street-frame[data-google] .qibla-street-rose {
-    inset-block-start: 64px;
-  }
-  .qibla-street-frame[data-google] .qibla-span {
-    inset-block-end: 52px;
-  }
+     its "open in Maps" box has the top-left corner to itself (ours are all
+     in the top right), its logo and credit the bottom edge, and its
+     map-type tile in the bottom-right corner, which the embed cannot let
+     anybody press — our own switch covers it. */
   .qibla-layer {
     position: absolute;
     right: 8px;
@@ -6146,8 +6146,10 @@ a.week-link:hover {
 }
 .qibla-panel-map .map-load-note,
 .qibla-panel-map .map-load-hide {
+  flex-basis: auto;
   color: var(--stage-ink);
-  justify-self: center;
+  font-size: calc(12px * var(--a-fs, 1));
+  opacity: 0.8;
   text-align: center;
 }
 /* ─── The contact page ───────────────────────────────────────────────────────

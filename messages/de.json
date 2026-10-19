@@ -311,7 +311,8 @@
     "privacy": "Die Karte kommt von Google Maps; dabei wird Ihre IP-Adresse an Googles Server übertragen. Ihr Standort wird nur auf Ihrem Gerät verwendet.",
     "searching": "Wird gesucht …",
     "layerSatellite": "Satellit",
-    "layerMap": "Karte"
+    "layerMap": "Karte",
+    "distanceLine": "{km} km bis Mekka"
   },
   "prayer": {
     "title": "Gebetszeiten",

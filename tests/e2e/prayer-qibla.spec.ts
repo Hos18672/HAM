@@ -267,9 +267,9 @@ test.describe('the qibla', () => {
 
     // 136.6° and about 3 638 km: the great-circle qibla from Hernals. It
     // needs no permission and no sensor, so it is on the page from the start.
-    await expect(page.locator('.qibla-figure-value').first()).toHaveText('136,6°');
-    await expect(page.locator('.qibla-figure-value').nth(1)).toHaveText(/3\s?638/);
-    await expect(page.locator('.qibla-origin')).toContainText('Vereinshaus');
+    await expect(page.locator('.qibla-reading-deg')).toHaveText('136,6°');
+    await expect(page.locator('.qibla-reading-km')).toContainText(/3\s?638/);
+    await expect(page.locator('.qibla-reading-from')).toContainText('Vereinshaus');
     await expect(page.locator('.qibla-deg')).toHaveText('136,6°');
   });
 
@@ -279,8 +279,8 @@ test.describe('the qibla', () => {
     await context.setGeolocation({ latitude: 47.0707, longitude: 15.4395 });
     await page.goto('/de/qibla');
 
-    await expect(page.locator('.qibla-origin')).toContainText('Ihrem Standort');
-    await expect(page.locator('.qibla-figure-value').first()).not.toHaveText('136,6°');
+    await expect(page.locator('.qibla-reading-from')).toContainText('Ihrem Standort');
+    await expect(page.locator('.qibla-reading-deg')).not.toHaveText('136,6°');
     await expect(page.getByRole('button', { name: 'Mein Standort' })).toHaveAttribute(
       'aria-pressed',
       'true',
@@ -307,20 +307,20 @@ test.describe('the qibla', () => {
     await page.goto('/de/qibla');
 
     // The direction is still the house's, and the page says why.
-    await expect(page.locator('.qibla-figure-value').first()).toHaveText('136,6°');
+    await expect(page.locator('.qibla-reading-deg')).toHaveText('136,6°');
     await expect(page.locator('.qibla-geo-note')).toBeVisible();
-    await expect(page.locator('.qibla-origin')).toContainText('Vereinshaus');
+    await expect(page.locator('.qibla-reading-from')).toContainText('Vereinshaus');
   });
 
   test('recomputes from a granted location and returns to the house', async ({ page, context }) => {
     await context.grantPermissions(['geolocation']);
     await context.setGeolocation({ latitude: 47.0707, longitude: 15.4395 });
     await page.goto('/de/qibla');
-    await expect(page.locator('.qibla-origin')).toContainText('Ihrem Standort');
+    await expect(page.locator('.qibla-reading-from')).toContainText('Ihrem Standort');
 
     await page.getByRole('button', { name: 'Vereinshaus' }).click();
-    await expect(page.locator('.qibla-figure-value').first()).toHaveText('136,6°');
-    await expect(page.locator('.qibla-origin')).toContainText('Vereinshaus');
+    await expect(page.locator('.qibla-reading-deg')).toHaveText('136,6°');
+    await expect(page.locator('.qibla-reading-from')).toContainText('Vereinshaus');
   });
 
   test('states plainly when the compass is unavailable', async ({ page }) => {
@@ -523,7 +523,6 @@ test.describe('the qibla', () => {
 
         const clashes = await page.evaluate(() => {
           const names = [
-            '.qibla-street-rose',
             '.qibla-street-controls',
             '.qibla-street-who',
             '.qibla-span',
@@ -584,11 +583,11 @@ test.describe('the qibla', () => {
             return el ? Math.round(el.getBoundingClientRect().height) : 0;
           };
           return {
-            recentre: h('.qibla-recentre'),
+            zoom: h('.qibla-zoom button'),
             span: h('.qibla-span-btn'),
           };
         });
-        expect(sizes, `control sizes at ${locale} ${width}`).toEqual({ recentre: 34, span: 28 });
+        expect(sizes, `control sizes at ${locale} ${width}`).toEqual({ zoom: 34, span: 28 });
       }
     }
   });
@@ -602,7 +601,7 @@ test.describe('the qibla', () => {
     await expect(page.locator('.qibla-map-svg')).toBeVisible();
   });
 
-  test('puts the stage and the figures on one screen, in both languages', async ({ page }) => {
+  test('puts the stage and the reading on one screen, in both languages', async ({ page }) => {
     for (const [width, height] of [
       [375, 667],
       [768, 1024],
@@ -619,17 +618,16 @@ test.describe('the qibla', () => {
           const stage = box('.qibla-stage');
           return {
             stageBottom: stage.bottom,
-            factsBottom: box('.qibla-figures').bottom,
+            factsBottom: box('.qibla-reading').bottom,
             sideways: document.documentElement.scrollWidth - document.documentElement.clientWidth,
           };
         });
         const where = `${locale} ${width}x${height}`;
         // The instrument is on the first screen everywhere.
         expect(fit.stageBottom, `stage at ${where}`).toBeLessThanOrEqual(height + 1);
-        // And where there is room beside it, so are the figures.
-        if (width >= 900) {
-          expect(fit.factsBottom, `figures at ${where}`).toBeLessThanOrEqual(height + 1);
-        }
+        // And so is the reading — the bearing, from where, how far — at the
+        // top of it, on every screen.
+        expect(fit.factsBottom, `reading at ${where}`).toBeLessThanOrEqual(height + 1);
         // Nothing is ever cut off at the edge.
         expect(fit.sideways, `sideways scroll at ${where}`).toBe(0);
       }

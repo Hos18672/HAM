@@ -9,7 +9,6 @@ import {
   Compass as CompassIcon,
   Crosshair,
   HouseLine,
-  MapPin,
   MapTrifold,
   NavigationArrow,
 } from '@phosphor-icons/react/dist/ssr';
@@ -308,6 +307,29 @@ export function Qibla({ locale }: { locale: Locale }) {
           </div>
         </div>
 
+        {/* The answer itself, in words: which way, from where, and how far.
+            The map alone left a reader to find it in a picture full of other
+            things. Over the dial, whose own face already gives the bearing,
+            only where it is taken from and how far. */}
+        <div className="qibla-reading" data-tab={tab}>
+          <ReadingDial bearing={qibla.bearing} north={t('cardinal.n')} />
+          <div className="qibla-reading-words">
+            <p className="qibla-reading-main">
+              <span className="qibla-reading-deg tabular">
+                {formatBearing(qibla.bearing, locale)}°
+              </span>
+              <span className="qibla-reading-card">{t(`cardinalLong.${qibla.cardinal}`)}</span>
+            </p>
+            <p className="qibla-reading-sub">
+              <span className="qibla-reading-from">{originLabel}</span>
+              <span aria-hidden="true"> · </span>
+              <span className="qibla-reading-km">
+                {t('distanceLine', { km: formatDistanceKm(qibla.distanceKm, locale) })}
+              </span>
+            </p>
+          </div>
+        </div>
+
         <div
           id="qibla-panel-compass"
           role="tabpanel"
@@ -407,34 +429,35 @@ export function Qibla({ locale }: { locale: Locale }) {
             ) : null}
           </div>
 
-          <div className="qibla-figures">
-            <div className="qibla-figure">
-              <span className="qibla-figure-name">{t('bearing')}</span>
-              <span className="qibla-figure-value">{formatBearing(qibla.bearing, locale)}°</span>
-              <span className="qibla-figure-unit">{t(`cardinalLong.${qibla.cardinal}`)}</span>
-            </div>
-            <div className="qibla-figure">
-              <span className="qibla-figure-name">{t('distanceToKaaba')}</span>
-              <span className="qibla-figure-value">
-                {formatDistanceKm(qibla.distanceKm, locale)}
-              </span>
-              <span className="qibla-figure-unit">{t('kilometresLong')}</span>
-            </div>
-          </div>
-
           <p className="qibla-hint">
             {compass === 'denied' ? t('error.denied') : t('compassHint')}
           </p>
         </div>
-
-        <p className="qibla-origin">
-          <MapPin size={22} weight="duotone" aria-hidden="true" />
-          <span>{mine ? t('fromYourLocation') : t('fromHouse')}</span>
-        </p>
       </aside>
 
       <p className="qibla-privacy">{t('privacy')}</p>
     </div>
+  );
+}
+
+/* ─── The reading's small dial ──────────────────────────────────────────── */
+
+/**
+ * The bearing as a picture beside the words: north at the top, as on the
+ * map, and an arrow at the angle the figure gives.
+ */
+function ReadingDial({ bearing, north }: { bearing: number; north: string }) {
+  return (
+    <svg className="qibla-reading-dial" viewBox="-24 -24 48 48" aria-hidden="true">
+      <circle r="22" className="qibla-reading-ring" />
+      <text y="-14.5" className="qibla-reading-north">
+        {north}
+      </text>
+      <g style={{ transform: `rotate(${bearing}deg)` }} className="qibla-reading-needle">
+        <path d="M0 -18 L6 4 L0 0.5 L-6 4 Z" />
+      </g>
+      <circle r="2.4" className="qibla-reading-hub" />
+    </svg>
   );
 }
 

@@ -183,14 +183,26 @@ export function Qibla({ locale }: { locale: Locale }) {
   }
 
   /* ── Position ─────────────────────────────────────────────────────────── */
+  /** Which request is current: an answer to an older one is dropped. */
+  const request = useRef(0);
   const locateMe = useCallback(() => {
     if (typeof navigator === 'undefined' || !navigator.geolocation) {
       setGeo('unsupported');
       return;
     }
+    const id = ++request.current;
     setGeo('locating');
+    // The browser's own timeout only starts once its prompt is answered. A
+    // prompt dismissed or left open never calls back at all, and the button
+    // sat on "searching" for good. An answer that comes after this still
+    // counts.
+    const watchdog = window.setTimeout(() => {
+      if (request.current === id) setGeo((now) => (now === 'locating' ? 'failed' : now));
+    }, 20_000);
     navigator.geolocation.getCurrentPosition(
       (position) => {
+        window.clearTimeout(watchdog);
+        if (request.current !== id) return;
         setOrigin({
           latitude: position.coords.latitude,
           longitude: position.coords.longitude,
@@ -199,11 +211,16 @@ export function Qibla({ locale }: { locale: Locale }) {
         offerPosition(position.coords.latitude, position.coords.longitude);
       },
       (error) => {
+        window.clearTimeout(watchdog);
+        if (request.current !== id) return;
         // Refused: back to the house, which is what the message says is shown.
         if (error.code === error.PERMISSION_DENIED) setOrigin(HOUSE);
         setGeo(error.code === error.PERMISSION_DENIED ? 'denied' : 'failed');
       },
-      { enableHighAccuracy: true, timeout: 10_000, maximumAge: 60_000 },
+      // The qibla changes by a fraction of a degree across a whole city, so
+      // the quick network position is plenty. Insisting on GPS made a phone
+      // indoors time out and the button look broken.
+      { enableHighAccuracy: false, timeout: 15_000, maximumAge: 300_000 },
     );
   }, []);
 
@@ -224,11 +241,16 @@ export function Qibla({ locale }: { locale: Locale }) {
     // Where the reader was last time, at once, while the browser finds where
     // they are now.
     const remembered = rememberedPlace();
-    if (remembered) setOrigin({ latitude: remembered.latitude, longitude: remembered.longitude });
+    if (remembered) {
+      setOrigin({ latitude: remembered.latitude, longitude: remembered.longitude });
+      setGeo('located');
+    }
     locateMe();
   }, [locateMe]);
 
   function backToHouse() {
+    // A position still on its way must not take the house back again.
+    request.current += 1;
     setOrigin(HOUSE);
     setGeo('house');
   }
@@ -268,13 +290,17 @@ export function Qibla({ locale }: { locale: Locale }) {
     geo === 'locating'
       ? t('locating')
       : geo === 'denied'
-        ? t('error.geoDenied')
+        ? t('geoDeniedHelp')
         : geo === 'unsupported'
           ? t('error.geoUnsupported')
           : geo === 'failed'
-            ? t('error.geoFailed')
-            : null;
-  const mine = geo === 'located';
+            ? t('geoFailedHelp')
+            : geo === 'located'
+              ? t('locatedNote', { deg: formatBearing(qibla.bearing, locale) })
+              : null;
+  // From the place shown, not from the last answer: a remembered position is
+  // still the reader's when a fresh request fails.
+  const mine = origin !== HOUSE;
   const originLabel = mine ? t('fromYourLocation') : t('fromHouse');
 
   const tabIcon = { compass: CompassIcon, map: MapTrifold };
@@ -416,7 +442,6 @@ export function Qibla({ locale }: { locale: Locale }) {
                 aria-pressed={mine}
                 className="qibla-seg-btn"
                 onClick={locateMe}
-                disabled={geo === 'locating'}
               >
                 <Crosshair size={17} weight="duotone" aria-hidden="true" />
                 <span>{geo === 'locating' ? t('searching') : t('myLocation')}</span>

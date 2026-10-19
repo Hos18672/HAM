@@ -321,6 +321,11 @@ test.describe('the qibla', () => {
     await page.getByRole('button', { name: 'Vereinshaus' }).click();
     await expect(page.locator('.qibla-reading-deg')).toHaveText('136,6°');
     await expect(page.locator('.qibla-reading-from')).toContainText('Vereinshaus');
+
+    // And the button asks again, and says so beside itself.
+    await page.getByRole('button', { name: 'Mein Standort' }).click();
+    await expect(page.locator('.qibla-reading-from')).toContainText('Ihrem Standort');
+    await expect(page.locator('.qibla-geo-note')).toContainText('ab Ihrem Standort berechnet');
   });
 
   test('states plainly when the compass is unavailable', async ({ page }) => {

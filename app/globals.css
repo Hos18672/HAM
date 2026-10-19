@@ -3904,6 +3904,12 @@
     background: var(--stage);
     color: var(--stage-ink);
   }
+  /* Location blocked by the browser: the button says so, in the red the
+     note under it explains. */
+  .qibla-seg-btn[data-blocked] {
+    color: var(--holiday);
+    box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--holiday) 45%, transparent);
+  }
   .qibla-seg-btn:disabled {
     cursor: default;
   }

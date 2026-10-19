@@ -9,6 +9,7 @@ import {
   Compass as CompassIcon,
   Crosshair,
   HouseLine,
+  LockSimple,
   MapTrifold,
   NavigationArrow,
 } from '@phosphor-icons/react/dist/ssr';
@@ -248,6 +249,63 @@ export function Qibla({ locale }: { locale: Locale }) {
     locateMe();
   }, [locateMe]);
 
+  /**
+   * Whether the browser has location blocked for this site. Pressing the
+   * button then cannot even bring up the prompt: the browser refuses at
+   * once, and the button looked as if it did nothing. So the button says
+   * it is blocked, and the moment the reader allows it in the browser's
+   * settings and comes back, the page asks again by itself.
+   */
+  const [blocked, setBlocked] = useState(false);
+  const blockedNow = useRef(false);
+  useEffect(() => {
+    if (typeof navigator === 'undefined' || !navigator.permissions?.query) return;
+    let live = true;
+    let status: PermissionStatus | null = null;
+    const update = () => {
+      if (!status || !live) return;
+      const now = status.state === 'denied';
+      if (blockedNow.current && !now) locateMe();
+      blockedNow.current = now;
+      setBlocked(now);
+    };
+    // Some browsers only notice a change made in their settings when the
+    // page is shown again, and never fire `change`.
+    const recheck = () => {
+      if (document.visibilityState !== 'visible') return;
+      void navigator.permissions
+        .query({ name: 'geolocation' })
+        .then((fresh) => {
+          if (!live) return;
+          status = fresh;
+          update();
+        })
+        .catch(() => {});
+    };
+    void navigator.permissions
+      .query({ name: 'geolocation' })
+      .then((found) => {
+        if (!live) return;
+        status = found;
+        found.addEventListener('change', update);
+        update();
+      })
+      .catch(() => {
+        // Not every browser answers for geolocation; the error still tells.
+      });
+    document.addEventListener('visibilitychange', recheck);
+    return () => {
+      live = false;
+      status?.removeEventListener('change', update);
+      document.removeEventListener('visibilitychange', recheck);
+    };
+  }, [locateMe]);
+  useEffect(() => {
+    if (geo !== 'denied') return;
+    blockedNow.current = true;
+    setBlocked(true);
+  }, [geo]);
+
   function backToHouse() {
     // A position still on its way must not take the house back again.
     request.current += 1;
@@ -441,9 +499,14 @@ export function Qibla({ locale }: { locale: Locale }) {
                 type="button"
                 aria-pressed={mine}
                 className="qibla-seg-btn"
+                data-blocked={(blocked && !mine) || undefined}
                 onClick={locateMe}
               >
-                <Crosshair size={17} weight="duotone" aria-hidden="true" />
+                {blocked && geo !== 'locating' ? (
+                  <LockSimple size={17} weight="duotone" aria-hidden="true" />
+                ) : (
+                  <Crosshair size={17} weight="duotone" aria-hidden="true" />
+                )}
                 <span>{geo === 'locating' ? t('searching') : t('myLocation')}</span>
               </button>
             </div>

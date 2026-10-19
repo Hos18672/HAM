@@ -313,7 +313,7 @@
     "layerSatellite": "Satellit",
     "layerMap": "Karte",
     "distanceLine": "{km} km bis Mekka",
-    "geoDeniedHelp": "Der Standort wurde nicht freigegeben, daher gilt die Richtung ab dem Vereinshaus. Um Ihren Standort zu verwenden, erlauben Sie ihn in den Browser-Einstellungen (Schloss-Symbol neben der Adresse) und tippen Sie erneut auf „Mein Standort“.",
+    "geoDeniedHelp": "Der Standort wurde nicht freigegeben, daher gilt die Richtung ab dem Vereinshaus. Um Ihren Standort zu verwenden, erlauben Sie ihn: im Browser über das Schloss-Symbol neben der Adresse, in der installierten App in den Einstellungen des Telefons unter Apps. Sobald Sie zurückkommen, wird die Richtung von selbst neu berechnet.",
     "geoFailedHelp": "Der Standort konnte nicht ermittelt werden. Ist die Ortung des Geräts eingeschaltet? Bitte tippen Sie erneut auf „Mein Standort“.",
     "locatedNote": "Qibla ab Ihrem Standort berechnet: {deg}°"
   },

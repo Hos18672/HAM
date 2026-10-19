@@ -310,6 +310,11 @@ test.describe('the qibla', () => {
     await expect(page.locator('.qibla-reading-deg')).toHaveText('136,6°');
     await expect(page.locator('.qibla-geo-note')).toBeVisible();
     await expect(page.locator('.qibla-reading-from')).toContainText('Vereinshaus');
+    // And the button itself says it is blocked, rather than looking unpressed.
+    await expect(page.getByRole('button', { name: 'Mein Standort' })).toHaveAttribute(
+      'data-blocked',
+      'true',
+    );
   });
 
   test('recomputes from a granted location and returns to the house', async ({ page, context }) => {
